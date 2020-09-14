@@ -1,0 +1,176 @@
+<h1>Vectors</h1>
+<p>Abstract Data Types (ADTs) example: Vectors. Also called "collections".
+
+<p>Vector: a data structure for representing lists.
+
+<p>Collection: an object that stores data, a.k.a. "data structure"
+<ul>
+<li>the objects stored are called elements</li>
+<li>Also known as ADTs (abstract data types)</li>
+</ul>
+
+<p>Standard Template Library (STL): C++ built-in standard library of collections: <code>vector</code>, <code>map</code>, <code>list</code>, ... Powerful but somewhat hard to use for new coders (messy syntax).
+
+<p>Stanford C++ library (SPL): custom library of collections
+<ul>
+<li>Vector, Grid, Stack, Queue, Set, Map, ...</li>
+<li>Similar to STL, but simpler interface and error messages</li>
+<li>Note the capitalized first letter (unlike STL)</li>
+</ul>
+
+<h2>Vectors (Lists)</h2>
+<pre>
+#include "vector.h"
+</pre>
+<p><b>vector</b> (aka <b>list</b>): a collection of elements with 0-based indexes
+<ul>
+<li>include the type of elements in &lt;&gt; brackets</li>
+</ul> 
+<pre>
+//initialize a vector containing 5 integers
+//        index   0   1   2   3  4V
+Vector&lt;int&gt; nums {42, 17, -6, 0, 28};
+
+Vector&lt;string&gt; names; // {}
+names.add("abc"); //{"abc"}
+names.add("xyz"); //{"abc", "xyz"}
+names.insert(0, "ghi"); //{"ghi", "abc", "xyz"}
+</pre>
+
+<h3>Arrays and comparison with vectors</h3>
+C++ also has the notion of arrays with similar meaning as vectors:
+<pre>
+int nums[5];
+string names[3];
+nums[0] = 32;
+names[1] = "hello";
+</pre>
+Some problems with C++ arrays:
+<ul>
+<li>Arrays have a fixed size and cannot be easily resized
+<ul>
+<li>No way to know the size of the array just from the array variable. (e.g., no <code>num.length()</code>)</li>
+</ul>
+<li>C++ allows you to index out of the array bounds (garbage memory) without necessarily crashing or warning!
+<pre>
+names[7] = "hello"; //this will not crash but will lead to unexpected behaviour
+cout << names[7]; //prints garbage or crashes uncermoniously.
+</pre>
+</li>
+<li>An array does not support many operations that you'd want:
+<ul>
+<li>inserting/deleting elements into the front/middle/back of the array, reversing, sorting the elements, searching for a given value, ...</li>
+</ul>
+</li>
+</ul>
+
+<p>Discuss string vs. Vector&lt;char&gt;
+
+<h3>Vector members</h3>
+<table style="width:100%" border="1">
+ <tr>
+  <th>Member function name</th>
+  <th>Description</th>
+ </tr>
+  <tr>
+<td><code>v.add(value)</code><br>
+<code>v += value</code><br>
+<code>v += v1, v2, ..., vN;</code><br>
+</td><td>
+appends value(s) at end of vector</td></tr>
+<tr>
+<td><code>v.clear()</code></td>
+<td>removes all elements</td>
+</tr>
+<tr>
+<td>
+<code>v[i]</code> or <code>v.get(i)</code>
+</td>
+<td>
+returns the value at given index
+</td>
+</tr>
+<tr>
+<td><code>v.insert(i, value);</code></td>
+<td>inserts a given value just before the given index, shifting subsequent values to the right.</td>
+</tr>
+<tr>
+<td><code>v.isEmpty()</code></td>
+<td>returns true if the vector contains no elements</td>
+</tr>
+<tr>
+<td><code>v.remove(i)</code></td>
+<td>removes/returns value at given index, shifting subsequent values to the left.</td>
+</tr>
+<tr>
+<td><code>v[i] = value</code> or <code>v.set(i, value);</code></td>
+<td>replaces value at given index</td>
+</tr>
+<tr>
+<td><code>v.subList(start, lentgh);</code></td>
+<td>returns new vector of subrange of indices</td>
+</tr>
+<tr>
+<td><code>v.size()</code></td>
+<td>returns the number of elements in vector</td>
+</tr>
+<tr>
+<td><code>v.toString()</code></td>
+<td>returns a string representation of the vector such as "{1, 3, 70, -8}"</td>
+</tr>
+<tr>
+<td><code>ostr &lt;&lt; v</code></td>
+<td>prints v to given output stream (e.g., <code>cout &lt;&lt; v</code>)</td>
+</tr>
+</table>
+
+<p>Example: Iterating over a vector
+<pre>
+Vector&lt;string&gt; names {"ab", "cd", ef"};
+
+for (int i = 0; i < names.size(); i++) {
+  cout << names[i] << endl; //for loop: ab cd ef
+}
+
+for (int i = names.size() - 1; i >= 0; i--) {
+  cout << names[i] << endl; //for loop backwards: ef cd ab
+}
+
+for (string name : names) {
+  cout << name << endl; //"for-each" loop: ab cd ef
+}
+//cannot edit (insert/delete) in for-each loop.
+</pre>
+
+<p>Another example: insert/remove
+<pre>
+v.insert(2, 42);
+</pre>
+Shifts elements right to make room for the new element<br>
+Old vector
+<pre>
+index  0  1  2  3  4
+value  3  8  9  7  5
+</pre>
+New vector
+<pre>
+index  0  1  2  3  4  5
+value  3  8 42  9  7  5
+</pre>
+
+<p>Similarly,
+<pre>
+v.remove(1);
+</pre>
+Shifts elements left to cover the space left by the removed element.
+Old vector
+<pre>
+index  0  1  2  3  4  5
+value  3  8 42  9  7  5
+</pre>
+New vector
+<pre>
+index  0  1  2  3  4
+value  3 42  9  7  5
+</pre>
+Efficiency? These operations are slower the more elements they need to shift.

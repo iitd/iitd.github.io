@@ -1,0 +1,78 @@
+<html>
+<head><title> Graded Assignment 5</title></head>
+
+<body>
+<h2><font color="deeppink"> GRADED ASSIGNMENT 5 </font>&nbsp; Due Date:- Tuesday, 6 November 2018, 6:00 PM</h2><br>
+
+<h3><font color="blue"> KEY NOTES </font></h3>
+<ol>
+<li><p> Just follow the guidelines provided in each question before proceeding towards submission. </p></li>
+<li><p> Each question comes up with a requested file, You just need to write code within the function body of the requested file provided.</p></li>
+<li><p><strong> Maximum Grade for GA 4 Qn 1 and Qn 2 is 15. Maximum Grade for GA 4 Qn 3 is 20.</strong></p></li>
+</ol>
+
+<br>
+
+<h3><font color="red"> ~ WARNINGS ~ </font></h3>
+
+<ul>
+<li><p> Do not change the name of the file. </p></li>
+<li><p> Do not change the function definition of the requested file. </p></li>
+<li><p> Do not write main function within the requested file. </p></li>
+<li><p> Do not take input or print any kind of output. </p></li>  
+</ul>
+
+<br>
+<p><font color="fuchsia">Link 2: </font>&nbsp;<a href="https://iitd-plos.github.io/col100/labs/GradedAssignment5.pdf">Graded Assignment 5 questions</a></p>
+<p><font color="fuchsia">Link 3: </font>&nbsp;<a href="https://iitd-plos.github.io/col100/labs/asefm.pdf"> Adding Security Exceptions Configuration To Your Browser For Moodle</a></p>
+<br>
+
+<h3><font color="brown">ADDITIONAL INFORMATION</font></h3>
+<p> You might be wondering how your code will run without a main method. So here is the explanation. </p>
+
+<p> We have a created a main.cpp file in moodle which contains the main method. This main.cpp file is hidden from the students. Our main.cpp file calls the function in the requested file. After we receive the required arguments we have a checker function which checks if the students answers are correct or not.</p>
+
+<p> Here is a sample example for your understanding purpose only.</p>
+
+<p>Our main.cpp contains code something like this...</p>
+<code><font color="firebrick">
+#include "iostream" <br><br>
+
+using namespace std; <br><br>
+
+extern int uniqueInteger(vector&lt;int&gt; V); // it defines that uniqueInteger function is in an external file<br><br> 
+
+bool check(int studentAnswer, int correctAnswer){ <br>
+
+if(studentAnswer==correctAnswer) return true; <br>
+
+return false; <br>
+}<br><br>
+
+int main(){ <br><br>
+
+vector&lt;int&gt;  V {1,2,3,3,2};<br>
+
+int studentAnswer = uniqueInteger(V); // Call to the function unique Integer that is inside the requested file<br>
+
+int correctAnswer = 1;<br>
+
+bool correct = check(studentAnswer, correctAnswer); // Check if student answer is correct <br>
+
+int grade=0;<br>
+if(correct) grade=10;<br>
+else grade=0;<br><br>
+
+
+}<br><br>
+
+</font></code>
+<p> Now say the requested file name is Ga3Qn3.cpp<p>
+<p> We compile your code using the command 'g++ main.cpp Ga3Qn3.cpp' and then run it using './a.out' </p>
+<p> This is just for a simple understanding on how the things work. In practice we have additional scripts running to handle the grading and number of test cases.<p>
+
+
+
+
+</body>
+</html>

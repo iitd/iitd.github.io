@@ -1,0 +1,59 @@
+<h4>Relational operators</h4>
+<ul>
+<li> <code>&lt;</code>, <code>&gt;</code>: less than, greater than, e.g., <code>1&lt;2</code>, <code>x&lt;2</code>, etc.</li>
+<li><code>==</code>, <code>!=</code>: equal, not-equal, e.g., <code>x!=y</code>, <code>z==2</code>.</li>
+<li><code>&lt;=</code>, <code>&gt;</code>: less than or equal, greater than or equal.</li>
+</ul>
+All relational operational return boolean values: <code>true</code> or </code>false</code>. You can assign these values to variables for example:
+<pre>
+int x = 3;
+int y = 4;
+bool z = (x == y);
+</pre>
+
+<h4>Type interactions</h4>
+<ul>
+<li><code>int/int</code>: <code>int</code></li>
+<li><code>double/double</code>: <code>double</code></li>
+<li><code>int/double</code>: <code>double</code></li>
+</ul>
+In general: expressions always return the most expressive type.
+
+<h4>Exercises</h4>
+<ul>
+<li>What is the type of <code>9/4</code>? What is the value?</li>
+<li>What is the type of <code>9/4.0</code>? What is the value?</li>
+</ul>
+
+<!--<h4>Familiar syntax</h4>
+<pre>
+int x = 42 + 7 * -5;               // variables, types
+double pi = 3.14159;
+char c = 'Q';                      /* two comment styles */
+bool b = true;
+for (int i = 0; i &lt; 10; i++) {     // for loops
+    if (i % 2 == 0) {              // if statements
+        x += i;
+    }
+}
+while (x &gt; 0 && c == 'Q' || b) {   // while loops, logic
+    x = x / 2;
+    if (x == 42) { return 0; }
+}
+fooBar(x, 17, c);                  // function call
+barBaz("this is a string");        // string usage
+</pre>
+-->
+<h3>User Input and Output</h3>
+<h4>Console Output</h4>
+<ul>
+ <li><pre>cout &lt;&lt; expression &gt;&gt; expression ...</pre></li>
+ <li><pre>cout &lt;&lt; "You are " &gt;&gt; age &gt;&gt; " years old!";</pre></li>
+ <li><code>endl</code>
+  <ul>
+   <li>A variable that means "end of line"</li>
+   <li>Same as "\n", but more compatible with all operating systems.</li>
+  </ul>
+ </li>
+ <li><pre>cout &lt;&lt; "You are " &lt;&lt; age &lt;&lt; " years old!" &lt;&lt; endl;</pre></li>
+</ul>

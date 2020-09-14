@@ -1,0 +1,250 @@
+<h1>Strings</h1>
+<h4>Member functions</h4>
+<table style="width:100%" border="1">
+ <tr>
+  <th>Member function name</th>
+  <th>Description</th>
+ </tr>
+ <tr>
+  <td><code>s.append(str)</code></td>
+  <td>add text to the end of a string</td>
+ </tr>
+ <tr>
+  <td><code>s.compare(str)</code></td>
+  <td>return &lt;0, 0, or &gt;0 depending on relative ordering</td>
+ </tr>
+ <tr>
+  <td><code>s.erase(index, length)</code></td>
+  <td>delete text from a string starting at given <code>index</code></td>
+ </tr>
+ <tr>
+  <td><code>s.find(str), s.rfind(str)</code></td>
+  <td>first or last index where the start of <em>str</em> appears in this string (returns string::npos if not found).</td>
+ </tr>
+ <tr>
+  <td><code>s.insert(index, str)</code></td>
+  <td>add text into a string at a given index.</td>
+ </tr>
+ <tr>
+  <td><code>s.length() or s.size()</code></td>
+  <td>number of characters in this string.</td>
+ </tr>
+ <tr>
+  <td><code>s.replace(index, len, str)</code></td>
+  <td>replaces <em>len</em> chars at given index with new text.</td>
+ </tr>
+ <tr>
+  <td><code>s.substr(start, length) or s.substr(start)</code></td>
+  <td>the next <code>length</code> characters beginning at <em>start</em> (inclusive); if <em>length</em> omitted, graps till end of string.</td>
+ </tr>
+</table>
+Example:
+<pre>
+string name = "Thomas Edison";
+if (name.find("Edi") != string::npos) {
+  name.erase(7, 6); //"Thomas" remains
+}
+</pre>
+
+<h4>Operators</h4>
+<ul>
+<li><b>Concatenate</b> using <code>+</code> or <code>+=</code>:
+<pre>
+string s1 = "Nik";
+s1 += "ola"; //Nikola
+</pre>
+</li>
+<li><b>Compare</b> using relational operators (ASCII ordering):
+<pre>
+string s2 = "Tesla";  // ==, !=, <, <=, >, >=
+if (s1 < s2 && s2 != "abc") { //true
+  ...
+}
+</pre>
+</li>
+<li>Strings are "<b>mutable</b>", i.e., they can be changed!
+<pre>
+s1.append(" Tesla"); //"Nikola Tesla"
+s1.erase(3, 3);  //"Nik Tesla"
+s1[8] = '@';  //"Nik Tesl@"
+</pre>
+</ul>
+
+<h4>Stanford library for strings</h4>
+<table style="width:100%" border="1">
+ <tr>
+  <th>function name</th>
+  <th>Description</th>
+ </tr>
+ <tr>
+  <td><code>endsWith(str, suffix), startsWith(str, suffix)</code></td>
+  <td>true if <em>str</em> ends or begins with the given text <em>suffix</em></td>
+ </tr>
+ <tr>
+  <td><code>integerToString(int), realToString(double), stringToInteger(str), stringToReal(str)</code></td>
+  <td>convert between numbers and strings</td>
+ </tr>
+ <tr>
+  <td><code>equalsIgnoreCase(s1, s2)</code></td>
+  <td>true if s1 and s2 have same chars, ignoring casing</td>
+ </tr>
+ <tr>
+  <td><code>toLowerCase(str), toUpperCase(str)</code></td>
+  <td>returns an upper/lowercase version of a string.</td>
+ </tr>
+ <tr>
+  <td><code>trim(str)</code></td>
+  <td>return string with surrounding whitespace removed.</td>
+ </tr>
+</table>
+Example:
+<pre>
+if (startsWith(name, "Mr. ")) {
+  name += integerToString(age) + " years old";
+}
+</pre>
+
+<p>Exercise: implement endsWith() using rfind() and length().
+
+<p>Exercise: implement endsWith() using substr() and length().
+
+<p>Exercise: what's the output?
+<pre>
+void mystery(string a, string &b)
+{
+  a.erase(0, 1);   // erase 1 from index 0
+  b += a[0];
+  b.insert(3, "FOO");  //insert at index 3
+}
+
+int main()
+{
+  string a = "nikola";
+  string b = "tesla";
+  mystery(a, b);
+  cout << a << " " << b << endl;
+  return 0;
+}
+</pre>
+What is printed?
+<pre>
+nikola tesFOOlai
+</pre>
+
+<p>String exercise: write a function <code>nameDiamond</code> that accepts a string parameter and prints its letters in a "diamond" format as shown below. For example, <code>nameDiamond("TESLA")</code> should print:
+<pre>
+T
+TE
+TES
+TESL
+TESLA
+ ESLA
+  SLA
+   LA
+    A
+</pre>
+
+<p>Solution
+<pre>
+void nameDiamond(string s)
+{
+  int len = s.length();
+  //print top half of diamond
+  for (int i = 1; i <= len; i++) {
+    cout << s.substr(0, i) << endl;
+  }
+  //print bottom half of diamond
+  for (int i = 1; i < len; i++) {
+    for (int j = 0; j < i; j++) { //indent
+      cout << " "; // with spaces
+    }
+    cout << s.substr(i, len - i) << endl;
+  }
+}
+</pre>
+
+<p>Another solution
+<pre>
+void nameDiamond(string s)
+{
+  int len = s.length();
+  //print top half of diamond
+  for (int i = 1; i <= len; i++) {
+    cout << s.substr(0, i) << endl;
+  }
+  //print bottom half of diamond
+  for (int i = 1; i < len; i++) {
+    s.replace(i, 1, " ");
+    cout << s.substr(i, len - i) << endl;
+  }
+}
+</pre>
+Question: Will this solution work if the parameter <code>s</code> was pass-by-reference?  What if <code>s</code> was a const reference parameter?
+
+<h4>C vs. C++ strings</h4>
+<ul>
+<li>C++ has two kinds of strings: <b>C strings</b> (char arrays) and <b>C++ strings</b> (String objects).</li>
+<li>A string literal such as <code>"hi there"</code> is a C string!
+<ul>
+<li>C strings don't include any methods/behaviour shown previously. e.g., no member functions like <code>length</code>, <code>find</code>, or operators.</li>
+</ul>
+</li>
+<li>Converting between the two types:
+<ul>
+<li>string("text") : C string to C++ string</li>
+<li>string.c_str() : C++ string to C string</li>
+</ul>
+</li>
+</ul>
+
+<h4>C string bugs</h4>
+<ul>
+<li> string s = "hi" + "there";  //C-string + C-string</li>
+<li> string s = "hi" + '?';  //C-string + char</li>
+<li> string s = "hi" + 41;  //C-string + int</li>
+</ul>
+C strings can't be concatenated with <code>+</code>. C-string + char/int produces garbage, not "hi?" or "hi41". The bug usually manifests in print statements and you will see partial strings.
+
+<ul>
+<li>string s = "hi"; s += 41;
+<ul>
+<li>Adds character with ASCII value 41 ')', doesn't produce "hit41"</li>
+</ul>
+<li> int n = (int) "42";   //n = 0x7ffdcb08
+<ul>
+<li>Bug; sets <code>n</code> to the memory address of the C string "42"!!</li>
+</ul>
+</li>
+</li>
+</ul>
+
+<h4>C string bugs fixed</h4>
+<ul>
+<li> string s = string("hi") + "there";  //C-string + C-string</li>
+<li> or:
+<pre>
+string s = "hi";  //convert to C++ string
+s += "there";
+</pre>
+</li>
+</ul>
+These both compile and work properly.
+
+<p>Similarly:
+<pre>
+string s = "hi";  //convert to C++ string
+s += '?';
+</pre>
+Works because of auto-conversion from C string to C++ string in <code>string a = ...</code>.
+
+<p>For appending integers to strings:
+<pre>
+s += integerToString(41); //"hi?41"
+</pre>
+
+<p>Another example:
+<pre>
+int n = stringToInteger("42"); //42
+</pre>
+
+<p>Explicit string-int conversion using Stanford library.

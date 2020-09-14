@@ -1,0 +1,8 @@
+<p>Who stores what?
+<ul>
+	<li>cr3: physical address
+	<li>GDT descriptor: linear address
+	<li>IDT descriptor: virtual address
+</ul>
+
+

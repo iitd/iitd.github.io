@@ -1,0 +1,43 @@
+@startuml
+
+autonumber
+
+
+main_stack  -> main_stack       : allocate fiber stack and do stack_reset
+activate fiber_stack
+main_stack  -> fiber_stack      : stack_saverestore
+
+...fiber_stack does some computation...
+
+autonumber 10
+fiber_stack -> fiber_stack      : explicitly yield using stack_saverestore
+fiber_stack -> main_stack       : stack_saverestore (explicit yield: saves few registers)
+
+...main_stack does something...
+
+autonumber 20
+main_stack  -> fiber_stack      : stack_saverestore (restores few registers)
+fiber_stack -> fiber_stack      : continue computation
+
+...fiber_stack continues computation...
+
+autonumber 30
+fiber_stack -> fiber_stack      : timer expired. interrupt handler
+fiber_stack -> main_stack       : ring0_preempt (preemption: saves all registers)
+
+...main_stack does something...
+autonumber 40
+
+main_stack  -> fiber_stack      : stack_saverestore (restore all registers)
+fiber_stack -> fiber_stack      : continue computation
+
+...fiber_stack continues computation...
+
+autonumber 70
+fiber_stack -> fiber_stack      : decides to terminate
+fiber_stack -> main_stack       : stack_saveretore (explicit yield for termination)
+main_stack  -> main_stack       : deallocates fiber stack
+deactivate fiber_stack
+
+
+@enduml

@@ -1,0 +1,7 @@
+Some tips on implementing the VM assignment:
+<ul>
+	<li>Follow the order of implementation suggested in the assignment documentation</li>
+	<li>Synchronization bugs are hard and inevitable: start with using coarse-grained locks (maybe one lock for entire VM handling), and test. If tests pass, then try using finer-grained locks</li>
+	<li>Be careful about the order of locking (to avoid deadlocks). You may need to restructure your code to obey the order</li>
+	<li>Use debugging tools like gdb with qemu, or bochs internal debugger.</li>
+</ul>

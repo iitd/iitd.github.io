@@ -1,0 +1,410 @@
+<title>Scheduling</title>
+<html>
+<head>
+</head>
+<body>
+
+<h1>Scheduling</h1>
+
+<p>Required reading: Eliminating receive livelock
+
+<h2>Overview</h2>
+
+<ul>
+
+<li>What is scheduling?
+    <ul>
+	<li>OS policies and mechanisms to allocate resources to entities.
+	<li>Usually in the context of resources where re-assignment
+	    can happen with some frequency: CPU cycles, network
+	    bandwidth, disk accesses, memory when swapping to disk.
+	<li>Not so applicable to more static resources like disk space.
+	<li>Entities that you might want to give resources to: users,
+	    processes, threads, web requests, or MIT accounts.
+
+	<p>
+
+	<li>Scheduling unavoidable with shared resources (whether implicit
+	    or explicit), but particularly interesting when demand exceeds
+	    available resources (e.g. demand for CPU is infinite with
+	    compute-bound tasks).
+	<li>A good scheduling policy ensures that the most important
+	    entity gets the resources it needs.
+	<li>Many polices for resource to entity allocation are possible:
+	    strict priority, divide equally, shortest job first, minimum
+	    guarantee combined with admission control.
+
+	<p>
+
+	<li>This topic was popular in the days of time sharing, when
+	    there was a shortage of resources all around.
+	<li>Many scheduling problems become not very interesting when
+	    you can just buy a faster CPU or a faster network.
+	<li>Exception: web sites and large-scale networks often cannot
+	    be made fast enough to handle peak demand (flash crowds,
+	    attacks) so scheduling becomes important again.
+	    For example may want to prioritize paying customers, or
+	    address denial-of-service attacks.
+	<li>Exception 2: some scheduling decisions have non-linear
+	    effects on overall system behavior, not just different
+	    performance for different users.  For example today's paper.
+    </ul>
+
+<li>Key problems
+    <ul>
+	<li>Gap between desired policy and available mechanism.
+	    High-level desired policies often don't have a one-to-one
+	    mapping onto available scheduling mechanisms.  Scheduler
+	    can approximate policy, or implement it under certain
+	    assumptions, etc.
+
+	<li>Conflicting goals, e.g. low latency, high throughput,
+	    and fairness.  The scheduler must make a trade-off between
+	    the goals.
+
+	<li>Interaction between different schedulers.
+	    Just optimizing the CPU scheduler may do little to for
+	    the overall desired policy.
+    </ul>
+
+<li>General plan for scheduling mechanisms
+    <ol>
+	<li>Understand where scheduling is occuring.
+	<li>Expose scheduling decisions, allow control.
+	<li>Account for resource consumption, to allow intelligent control.
+    </ol>
+
+<li>What policy does JOS enforce for scheduling environments?
+    <ul>
+	<li>Reading between the lines, equal time for all environments:
+	    JOS's mechanism is that the 10 msec timer time-slices in
+	    round-robin among all runnable environments.
+
+	<li>But this only works if processes are compute-bound.
+	    What if a process gives up some of its 10 ms to wait
+	    for input?  Do we have to keep track of that and give
+	    it back?
+
+	<li>For a long time Linux had a similar problem, where a
+	    process can use CPU time "undetected" by yielding just
+	    before the 10ms timer interrupt.
+
+	<li>How long should the quantum be?  is 10 msec the right answer?
+	    Shorter quantum will lead to better interactive performance,
+	    but lowers overall system throughput because we will reschedule
+	    more, which has overhead.
+
+	<li>What if the environment computes for 1 msec and sends an IPC to
+	    a server environment?  Shouldn't the server get more CPU time
+	    because it operates on behalf of all other functions?
+
+	<li>Potential improvements for JOS: track "recent" CPU use
+	    (e.g., over the last second) and always run environment to
+	    which we "owe" the most CPU time. (But can't accumulate CPU
+	    debt forever...)
+
+	<li>Other solution: directed yield; specify on the yield to which
+	    environment you are donating the remainder of the quantuam
+	    (e.g., to an IPC server so that it can compute on the
+	    environment's behalf).
+    </ul>
+
+<li>Pitfall: Priority Inversion
+    <ul>
+	<li>Assume policy is strict priority.<br>
+	    Thread T1: low priority
+	    (e.g. check to see if I have new mail periodically).<br>
+	    Thread T2: medium priority.<br>
+	    Thread T3: high priority (e.g. real-time game).
+	<li>T1: acquire(l)<br>
+	    context switch to T3 (maybe T3 wakes up needs to run:
+	    it has priority)<br>
+	    T3: acquire(l)... must wait for T1 to release(l)...<br>
+	    context switch to T2 (again, perhaps T2 needs to run &
+	    has prio over T1)<br>
+	    T2 computes for a while<br>
+	    T3 is indefinitely delayed despite high priority
+	<li>Can solve if T3 lends its priority to holder of lock
+	    it is waiting for, so T1 runs instead of T2.
+	<li>This is really a multiple scheduler problem,
+	    since locks schedule access to locked resource.
+	<li>(Diagram.)
+    </ul>
+
+<li>Pitfall: Efficiency and conflicting requirements.
+    <ul>
+	<li>Efficiency often conflicts with fairness, or any other policy.
+	<li>Long time quantum for efficiency in CPU scheduling
+	    versus low delay and context-switching overhead.
+	<li>Shortest seek versus FIFO disk scheduling.
+	<li>Contiguous read-ahead vs data needed now.
+	<li>For example, scheduler swaps out an idle emacs to let
+	    gcc run faster with more phys mem.
+	    What happens when user types a key?
+	<li>These issues don't fit well into a "who gets to go next"
+	    scheduler framework.
+	<li>Inefficient scheduling may make <i>everybody</i> slower,
+	    including high priority users.
+    </ul>
+
+<li>Pitfall: Multiple Interacting Schedulers.
+    <ul>
+	<li>Suppose you want your emacs to have priority over
+	    everything else.  Give it high CPU priority.
+	    Does that mean nothing else will run if emacs wants to run?
+	<li>No: Disk scheduler might not know to favor emacs's disk I/Os.
+	    Typical UNIX disk scheduler favors disk efficiency, not process
+	    prio.
+	<li>Suppose emacs needs more memory.  Other processes have dirty
+	    pages; emacs must wait.  Disk scheduler doesn't know these other
+	    processes' writes are high prio.
+    </ul>
+
+<li>Pitfall: Server Processes.
+    <ul>
+	<li>Suppose emacs uses X windows to display.
+	    The X server must serve requests from many clients.
+	<li>Does it know that emacs' requests should be given priority?
+	<li>Does the OS know to raise X's priority when it is serving emacs?
+	<li>Similarly for DNS, and NFS.  Does the network know to give
+	    emacs's NFS requests priority?
+    </ul>
+
+<li>In short, scheduling is a system problem.
+    There are many schedulers; they interact.
+    The CPU scheduler is usually the easy part.
+    The hardest part is system structure.
+    For example, the <i>existence</i> of interrupts is bad for scheduling.
+    Conflicting goals may limit effectiveness.
+
+</ul>
+
+<h2>Case study: UNIX in 1990</h2>
+
+<ul>
+<li>What did UNIX scheduling look like at time of Livelock paper?
+    <ul>
+	<li>Uni-processor
+	<li>No spin-locks in kernel
+    </ul>
+
+<li>Different contexts:
+    <ul>
+	<li>Process, user half
+	<li>Process, kernel half
+	<li>Soft interrupts
+	<li>Device ("hard") interrupts
+	<li>(Diagram.)
+    </ul>
+
+<li>User half, kernel half, and device interrupts are analogous to xv6.
+    Soft interrupts delay the work from device interrupts until later,
+    and are pre-emptable, unlike device interrupts themselves.
+    Typically soft intr runs when last hard intr finishes.
+
+<li>Rules for context transitions:
+    <ul>
+	<li>Hardware can force hard interrupt any most times except in
+	    a hard intr (same as xv6)
+	<li>Soft interrupt can be invoked any time except during a soft
+	    or hard intr
+	<li>Interrupt must complete before interrupted code can continue,
+	    since interrupts share stack (same as xv6)
+	<li>Timer interrupt does *not* switch kernel halves, only voluntary
+	    switch via sleep()
+	<li>Never runs a user half if any kernel half wants to run
+	<li>User halfs pre-emptable via timer interrupt (same as xv6)
+    </ul>
+
+<li>Thus, priority structure:
+    hard intr &gt; soft intr &gt; kernel half &gt; user half
+
+<li>Why no pre-emptable kernel halves?
+    <ul>
+	<li>To avoid most locks (remember -- uniprocessor)
+	<li>Only have to worry about concurrency from interrupts
+	<li>Kernel halves disable interrupts (up to certain
+	    priority level) in critical sections
+    </ul>
+
+<li>Why soft interrupts?
+    <ul>
+	<li>For time-consuming processing in response to hard interrupts,
+	    which should run relatively soon, and might not be associated
+	    with any specific kernel half (e.g.  TCP ACKs, ARP responses,
+	    etc.)
+	<li>Hard interrupt does time-critical stuff, schedules soft interrupt,
+	    more hard interrupts can occur during soft int.
+	<li>Short-running hard interrupts avoid input overruns.
+    </ul>
+
+<li>Paper's application is packet forwarding -- let's look at how that works.
+    (Diagram.)
+
+<li>Receive interrupt (hard intr)
+    <ul>
+	<li>Copy incoming packet to memory
+	<li>Append packet pointer to IP input queue (ipintrq)
+	<li>Schedule IP soft interrupt
+    </ul>
+
+<li>IP soft interrupt
+    <ul>
+	<li>For each packet in IP input queue,
+	<li>Decide what to do with it
+	<li>Forward out a different network interface?
+	    <ul>
+		<li>Append packet pointer to output interface's if_snd queue
+		<li>Feed packet to output interface hardware, if it was idle
+	    </ul>
+	<li>Deliver to a user program?
+	    <ul>
+		<li>Append packet pointer to socket Q
+		<li>Wake up process
+	    </ul>
+    </ul>
+
+<li>Transmit interrupt (hard intr)
+    <ul>
+	<li>Free last packet buffer
+	<li>Copy packet from if_snd queue to h/w
+	<li>Tell h/w to transmit
+    </ul>
+
+<li>Network interface hardware (e.g. ethernet)
+    <ul>
+	<li>Executes concurrent to the main CPU
+	<li>Has small receive buffer on interface h/w (a few packets)
+	<li>Raises receive interrupt for each received packet
+	<li>Has small output buffer (a few packets)
+	<li>Raises transmit-complete interrupts when buffers open up
+    </ul>
+
+<li>Why the input queue (ipintrq)?
+<li>Why the output queue (if_snd)?
+<li>Is this a good arrangement?
+
+</ul>
+
+<h2>Paper discussion</h2>
+
+<ul>
+
+<li>Explain Figure 6-1.  Why does it go up?  What determines how high
+the peak is?  Why does it go down?  What determines how fast it goes
+does? (The peak at 5000 means total processing time is 200 us.
+The x-intercept at 13000 means input processing alone takes 77 us.
+So each additional four inputs/second eliminates one output/second.)
+
+<li>Would livelock show up for disk interrupts?
+
+<li>Why not tell the O/S scheduler to give interrupts lower priority?
+Non-preemptible.  Could you fix this by making interrupts faster? (No)
+
+<li>Why not completely process each packet in the interrupt handler?
+(I.e. forward it?) Still need an output queue. Recv intr routine
+might never return, thus no tx complete interrupts, thus no
+transmissions. Also maybe interface h/w overruns during short input bursts.
+Wouldn't be fair if multiple input interfaces.
+
+<li>Big picture: we've surrendered all control over scheduling
+various actions to the CPU's interrupt mechanism. And it doesn't
+give us the control we need to enforce our desired policy:
+output has precedence over input.
+
+<li>What about using polling instead of interrupts?  Solves overload
+problem, but under low low either wastes CPU or has high latency.
+
+<p>
+
+<li>What's the paper's solution?
+<ul>
+<li>No IP input queue.
+<li>Device input polling and IP input processing in kernel thread.
+<li>Device receive interrupt just wakes up thread. And leaves
+interrupts *disabled* for that device.
+<li>Thread does all input and output processing, then re-enables interrupts.
+<li>[show pseudo-code; where can we make scheduling decisions?]
+</ul>
+
+<li>Why does this work?  What happens when packets arrive too fast?
+What happens when packets arrive slowly?
+
+<p>
+
+<li>Explain Figure 6-3.
+<ul>
+<li>Why does "Polling (no quota)" work badly? (Input still starves
+xmit complete processing.)
+<li>Why does it quickly fall to zero, rather than gradually decreasing?
+Previously transmit had priority over IP, but not anymore.
+Estimate: x-intercept at 6500 means 150 usec for RX+IP.
+Made problem worse by doing more work before discarding packet.
+</ul>
+
+<li>Explain Figure 6-4.
+<ul>
+
+<li>Why does "Polling, no feedback" behave badly? There's a queue in
+front of screend.  We can still give 100% to input thread, 0% to
+screend.
+
+<li>Why does "Polling w/ feedback" behave well? Input thread yields
+when queue to screend fills.
+
+<li>What if screend hangs, what about other consumers of packets?
+(e.g., can you ssh to machine to fix screend?)  Fortunately screend
+typically is only application. Also, re-enable input after timeout.
+
+</ul>
+
+<li>Big picture: polling loop gives us more control -- but only knows
+about device and IP packet processing, not about other activities
+on host.
+
+<p>
+
+<li>Why are the two solutions different?
+<ol>
+<li> Polling thread <i>with quotas</i>.
+<li> Feedback from full queue.
+</ol>
+<li>In theory, two solutions appears to be mostly interchangeable.
+    Can use polling thread, with callback to schedule screend to
+    run on some quota of packets, or use feedback for ipintrq/if_snd.
+<li>Feedback more general, no magic numbers.
+<li>In practice, passing feedback from IF_ENQUEUE(if_snd) all the way
+    back to receive processing might require a lot of changes.
+
+<p>
+
+<li>If we apply the proposed fixes, does the phenomemon totally go
+ away? (e.g. for web server, waits for disk, &c.)
+<ul>
+<li>Can the net device throw away packets without slowing down host?
+<li>Problem: We want to drop packets only for applications with big queues.
+But requires work to determine which application a packet belongs to.
+Perhaps interface hardware should look at packets and decide...
+<li>Solution worked well in paper for linear flow, clear feedback path.
+</ul>
+
+<li>What if processing has more complex structure?
+<ul>
+<li>Chain of processing stages with queues? Does feedback work?
+    What happens when a late stage is slow?
+<li>Split at some point, multiple parallel paths? No so great; one
+    slow path blocks all paths.
+</ul>
+
+<li>Can we formulate any general principles from paper?
+<ul>
+<li>Don't spend time on new work before completing existing work.
+<li>Or give new work lower priority than partially-completed work.
+<li>Corollary: If you might discard, do it as early as possible.
+</ul>
+
+<p>
+
+<li>How would you build packet forwarding in JOS?
+
+</ul>

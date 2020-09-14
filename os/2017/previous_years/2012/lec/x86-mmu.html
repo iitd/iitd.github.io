@@ -1,0 +1,55 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+
+<title>Homework: x86 paging</title>
+<link rel="stylesheet" href="x86-mmu_files/homework.css" type="text/css">
+</head><body>
+
+<h1>Homework: x86 paging</h1>
+
+Read chapters 5 and 6 of the
+<a href="http://pdos.csail.mit.edu/6.828/2011/readings/i386/toc.htm">Intel 80386 Reference Manual</a>.
+These chapters explain the x86 Memory Management Unit (MMU),
+which we will cover in lecture today and which you need
+to understand in order to do lab 2.
+
+<h2>Hand-In Procedure</h2>
+
+You are to turn in this homework during lecture. Please
+write up your answers to the exercises below and hand them in to a
+6.828 staff member at the beginning of lecture.
+
+<h2>Assignment</h2>
+Get the source code for <a href="http://pdos.csail.mit.edu/6.828/2011/labs/lab2/">lab 2</a>,
+and read through the <code>mem_init()</code> function in
+<tt>kern/pmap.c</tt>.
+Try to understand from the code what page mappings are being constructed.
+You may find the discussion in part 3 of
+the <a href="http://pdos.csail.mit.edu/6.828/2011/labs/lab2/">lab assignment</a> helpful.
+
+<div class="question">
+<p><b>Submit</b>: Draw a diagram of the virtual address space constructed
+by <tt>mem_init()</tt>, and identify any instances where multiple
+regions of virtual memory might be pointing to the same physical memory.
+Explain why the kernel might want to have different virtual addresses
+pointing to the same physical memory.</p>
+</div>
+
+At the end of <tt>mem_init()</tt>, the kernel finally switches from
+the <code>entry_pgdir</code> set up in <tt>kern/entry.S</tt> to the
+newly created <code>kern_pgdir</code>.
+
+<div class="question">
+<p><b>Submit</b>: Draw a diagram of the virtual address space
+represented by <code>entry_pgdir</code> (the definition is
+in <tt>kern/entrypgdir.c</tt>).  What about the layouts of
+the <code>entry_pgdir</code> and the <code>kern_pgdir</code> make it
+safe for the kernel to switch from the former the latter and continue
+executing?</p>
+</div>
+
+<!-- lecture: walk through entry.S transition, starting with
+entry_pgdir layout to answer homework and stepping through EIP switch
+(pretty similar to xv6 entry). See lab 2 questions. -->
+
+</body></html>

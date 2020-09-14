@@ -1,0 +1,21 @@
+@startuml
+
+: interrupt handler gets called;
+if ( called from user mode) then
+  : ring3_preempt;
+else
+    if ( called from main_stack ) then
+       : main_stack_handler;
+    else
+       : ring0_preempt begin;
+       : call C function to send eoi to lapic;
+       if ( ok to preempt ) then
+           : save context;
+           : ...;
+       else
+           : ignore;
+       endif
+    endif
+endif
+
+@enduml

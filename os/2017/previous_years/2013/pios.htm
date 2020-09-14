@@ -1,0 +1,75 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+	<title>PIOS: Parallel Instructional Operating System</title>
+	<style>
+	img { margin: 10px; }
+	</style>
+</head><body>
+
+<h1>PIOS: Parallel Instructional Operating System</h1>
+
+<i>PIOS lab materials have been taken from Bryan Ford's CS422 at Yale University.</i>
+
+<h3>PIOS Design Overview</h3>
+
+<img src="pios_files/spaces.png" align="right" border="0">
+
+PIOS consists of a boot loader, a microkernel,
+a user-space runtime embedded in a minimal C library,
+and a set of sample applications.
+The PIOS microkernel implements only four system calls
+(one only for debugging),
+and supervises
+a hierarchy of single-threaded, shared-nothing address spaces,
+as illustrated in the figure at right.
+User-level code in these spaces
+execute in parallel on multiple CPUs or multiple nodes in a cluster,
+synchronizing and communicating in a simple parent/child rendezvous
+and virtual memory copy model.
+The kernel extends its API across distributed clusters,
+mostly transparently,
+by migrating a user-level space cross-node
+when it needs to rendezvous with a space on a different node.
+
+<p>
+Despite the kernel API's minimality,
+PIOS's user-space runtime builds atop it
+a number of familiar Unix abstractions
+such as fork/wait process management,
+console I/O, a logically shared file system,
+and shared-memory multithreading.
+In doing so, the design of PIOS's runtime
+introduces students
+not only to conventional operating abstractions
+such as files, I/O, and user-space shells,
+but also to some advanced distributed systems techniques
+such as weakly-consistent state replication
+and distributed shared memory.
+
+<h3>Lab Exercises</h3>
+<ul>
+<li>	<a href="lab1/">Lab 1: Initializing PC Hardware</a>:
+	booting the kernel, printing to the console, understanding the stack,
+	handling processor traps, privilege levels, protected control transfer,
+	and page-based physical memory allocation.
+</li><li>	<a href="lab2/">Lab 2: Processes and Synchronization</a>:
+	using spinlocks in a multiprocessor kernel,
+	scheduling processes on physical CPU cores,
+	system calls for user-space process management and synchronization,
+	preemption, and trap reflection.
+</li><li>	<a href="lab3/">Lab 3: Virtual Memory</a>:
+	managing x86 page tables, loading ELF executables,
+	system call argument copyin/copyout,
+	virtual memory management with copy-on-write and merge.
+</li><li>	<a href="lab4/">Lab 4: Files and I/O</a>:
+	emulating a Unix file API in user space,
+	console input/output,
+	Unix-style fork/exec and command-line arguments,
+	file system reconciliation between processes.
+</li><li>	<a href="lab5/">Lab 5: Cluster Computing</a>:
+	PCI and E100 network device drivers,
+	process state migration across nodes,
+	address space migration.
+</li></ul>
+</body></html>

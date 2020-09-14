@@ -1,0 +1,1 @@
+our $course = "csl373"

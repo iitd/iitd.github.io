@@ -1,0 +1,97 @@
+TITLE: COL718 : High-Performance Computing : Schedule
+SEMESTER: Sem I, 2019-20
+Start: Jul 22, 2019
+Stop: Nov 15, 2019
+Schedule: Tuesday, Wednesday, Friday
+HEADER: <h3>Important: This page is not being maintained actively. Please see <a href=references.html>references</a> for information on slides, books, papers, etc. that are used in class, if you do not find them here.</h3><br>
+
+HOLIDAY: Sep 10. Muharam
+HOLIDAY: Oct 02. Gandhi Jayanti
+HOLIDAY: Oct 04. Semester break
+HOLIDAY: Oct 08. Semester break
+HOLIDAY: Oct 08. Dussehra
+HOLIDAY: Mar 07. Semester break
+HOLIDAY: Nov 12. Guru Nanak's Birthday
+HOLIDAY: Apr 17. Mahavir Jayanti
+HOLIDAY: Apr 19. Good Friday
+HOLIDAY: May 6. Idu'l Fitr
+
+SKIP: Aug 27. MINOR1 TESTS
+SKIP: Aug 28. MINOR1 TESTS
+SKIP: Sep 17. Midterm
+SKIP: Sep 25. MINOR2 TESTS
+SKIP: Sep 27. MINOR2 TESTS
+
+==
+LEC: <a href=lec/intro.html>Introduction to interactions between computer architecture, compiler, and operating system, and implications on performance, reliability and security.</a>
+==
+LEC: <a href=lec/intro.html>Introduction to interactions between computer architecture, compiler, and operating system, and implications on performance, reliability and security.</a>
+==
+LEC: <a href=lec/intro.html>Introduction to interactions between computer architecture, compiler, and operating system, and implications on performance, reliability and security.</a>
+==
+LEC: Discuss x86 ISA, discuss architecture <a href=lec/basics.html>basics</a>
+==
+LEC: <a href=slides/OOOpipelines.pptx>Out-of-order superscalar architecture</a>
+==
+LEC: <a href=slides/OOOpipelines.pptx>Out-of-order superscalar architecture</a>
+==
+LEC: <a href=slides/OOOpipelines.pptx>Out-of-order superscalar architecture</a>
+==
+LEC: <a href=slides/OOOpipelines.pptx>Out-of-order superscalar architecture</a>
+==
+LEC: <a href=slides/OOO-II.pptx>More out-of-order superscalar architecture</a>
+==
+LEC: <a href=slides/OOO-II.pptx>More out-of-order superscalar architecture</a>
+==
+LEC: <a href=slides/OOO-II.pptx>More out-of-order superscalar architecture</a>
+==
+LEC: <a href=slides/OOO-II.pptx>More out-of-order superscalar architecture</a>
+==
+LEC: <a href=https://www.7-cpu.com/cpu/Haswell.html>Haswell architecture specs</a>
+==
+LEC: <a href=ref/vol6iss1_art01.pdf>Simultaneous Multi-threading</a>
+==
+LEC: <a href=ref/vol6iss1_art01.pdf>Simultaneous Multi-threading</a>
+==
+LEC: <a href=ref/vol6iss1_art01.pdf>Simultaneous Multi-threading</a>
+==
+LEC: <a href=ref/vol6iss1_art01.pdf>Simultaneous Multi-threading</a>
+==
+LEC: <a href=https://dl.acm.org/citation.cfm?id=349320>Exploiting superword level parallelism with multimedia instruction sets</a>
+==
+LEC: <a href=https://dl.acm.org/citation.cfm?id=349320>Exploiting superword level parallelism with multimedia instruction sets</a>
+==
+LEC: <a href=https://dl.acm.org/citation.cfm?id=349320>Exploiting superword level parallelism with multimedia instruction sets</a>
+==
+LEC: <a href=https://dl.acm.org/citation.cfm?id=349320>Exploiting superword level parallelism with multimedia instruction sets</a>
+==
+LEC: Memory and Cache organization (H&P 3rd edition, chapter 5, sections 5.1-5.5)
+==
+LEC: Memory and Cache organization (H&P 3rd edition, chapter 5, sections 5.1-5.5)
+==
+LEC: Memory and Cache organization (H&P 3rd edition, chapter 5, sections 5.1-5.5)
+==
+LEC: Polyhedral Optimizations - Compilers (dragon) book, chapter 11, sections 11.4 - 11.7 (discussed only self reuse, dependency analysis, space-partition constraints, and some primitive affine transforms namely fusion, reindexing, scaling, reversal).
+==
+LEC: Polyhedral Optimizations - Compilers (dragon) book, chapter 11, sections 11.4 - 11.7 (discussed only self reuse, dependency analysis, space-partition constraints, and some primitive affine transforms namely fusion, reindexing, scaling, reversal).
+==
+LEC: Polyhedral Optimizations - Compilers (dragon) book, chapter 11, sections 11.4 - 11.7 (discussed only self reuse, dependency analysis, space-partition constraints, and some primitive affine transforms namely fusion, reindexing, scaling, reversal).
+==
+LEC: Polyhedral Optimizations - Compilers (dragon) book, chapter 11, sections 11.4 - 11.7 (discussed only self reuse, dependency analysis, space-partition constraints, and some primitive affine transforms namely fusion, reindexing, scaling, reversal).
+==
+LEC: Polyhedral Optimizations - Compilers (dragon) book, chapter 11, sections 11.4 - 11.7 (discussed only self reuse, dependency analysis, space-partition constraints, and some primitive affine transforms namely fusion, reindexing, scaling, reversal).
+==
+LEC: Polyhedral Optimizations - Compilers (dragon) book, chapter 11, sections 11.4 - 11.7 (discussed only self reuse, dependency analysis, space-partition constraints, and some primitive affine transforms namely fusion, reindexing, scaling, reversal).
+==
+LEC: Polyhedral Optimizations - Compilers (dragon) book, chapter 11, sections 11.4 - 11.7 (discussed only self reuse, dependency analysis, space-partition constraints, and some primitive affine transforms namely fusion, reindexing, scaling, reversal). Also discussed true-sharing, false-sharing and performance implications.
+==
+LEC: ABIs (<a href=lec/abi_slides.pdf>slides</a>), Address space, 32-bit vs. 64 bit register bitwidths, virtual memory tradeoffs for 32-bit and 64-bit, UB semantics at ABI (e.g., stack overflow) and in general, caching tradeoffs for 32-bit and 64-bit and the <a href=https://en.wikipedia.org/wiki/X32_ABI>x32 abi</a>.
+==
+LEC: ABIs (<a href=lec/abi_slides.pdf>slides</a>), Address space, 32-bit vs. 64 bit register bitwidths, virtual memory tradeoffs for 32-bit and 64-bit, UB semantics at ABI (e.g., stack overflow) and in general, caching tradeoffs for 32-bit and 64-bit and the <a href=https://en.wikipedia.org/wiki/X32_ABI>x32 abi</a>.
+==
+LEC: <a href=http://www.cse.iitd.ac.in/~sbansal/pubs/hawkeye.pdf>Huge-page support in architecture and OS</a> (<a href=http://www.cse.iitd.ac.in/~sbansal/pubs/HawkEye_Slides.pdf>slides</a>)
+==
+LEC: <a href=http://www.cse.iitd.ac.in/~sbansal/csl862-virt/lec/intro.pdf>Virtualization</a>, <a href=https://poorvi.cse.iitd.ac.in/~sbansal/col718/VirtualMachines.pptx>another set of slides</a> (IITD-internal link)
+==
+LEC: <a href=slides/coherence.pptx>Directory coherence</a>
+==

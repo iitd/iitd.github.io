@@ -1,0 +1,11 @@
+Chapter 0
+---------
+- Page 4: "an pathname" --> "a pathname"
+- Page 9: "hint-sight" --> "hind-sight"
+- Page 9: "build-in" --> "built-in"
+- A diagram showing hierarchy of processes and who is waiting for whom when a pipe is used on a shell.
+
+Chapter 1
+---------
+- A figure showing the memory layout with the boot sector, the stack, etc. at bootup time
+- 

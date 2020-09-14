@@ -1,0 +1,21 @@
+On some platforms, the following problem has been encountered:
+<pre>
+The file offset passed from the 'load' function to the 'load_segment'
+function in process.c is coming out to be 0 whereas it should be 4096
+(first page has the headers of the executable). I couldn't figure out why
+this is happening
+</pre>
+
+Here is a temporary fix:
+<pre>
+In load function comment out a line as shown below:
+       if (!load_segment (file, file_page, (void *) mem_page,
+                   read_bytes, zero_bytes, writable))
+               goto done;
+       }
+       else
+       // goto done;
+          break;
+Also uncomment the lines in load_segment if you have commented it earlier.
+ It should solve the problem. 
+</pre>

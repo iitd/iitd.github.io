@@ -1,0 +1,44 @@
+
+<html>
+<head>
+<title>Homework: memory and processes in xv6</title>
+<link rel="stylesheet" href="../labs.css" type="text/css" />
+</head>
+<body>
+
+<h2><a href="..">Operating Systems</a></h2>
+<hr>
+
+<h1>Homework: memory and processes in xv6</h1>
+
+
+
+<p>
+Be sure you have read <a href="../xv6-book/mem.pdf">xv6 chapter 2</a>
+and familiarized yourself with the xv6 code it refers to before lecture.
+
+<p>
+Use QEMU with GDB to trace through the free list creation
+and memory allocation process described in the first part of the chapter.
+Make sure you understand how the C pointer arithmetic
+in <code>kfree</code>'s <code>for</code> loop works:
+especially the relationship between the
+<samp>rp</samp>, <samp>r</samp>, and <samp>p</samp> variables.
+
+<p>
+Also step through
+the creation of the first process by <code>allocproc()</code>,
+and then step through the first context switch <i>into</i> that process
+via the assembly language <code>swtch()</code> code.
+
+<p>
+<b>Nothing to turn in for this lecture.</b>
+
+
+<p><hr><p>
+<i>Based on Yale CPSC422 materials
+	by Bryan Ford and others</i>
+
+</body>
+</html>
+

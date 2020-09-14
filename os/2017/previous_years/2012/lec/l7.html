@@ -1,0 +1,299 @@
+<title>L8</title>
+<html>
+<head>
+</head>
+<body>
+
+<!--
+    notes for next year:
+    - talk about preemption and why we might want it earlier on
+ -->
+
+<h1>Context switching</h1>
+
+<p>Required reading: proc.c (focus on scheduler() and sched()), swtch.S.
+Also process creation: sys_fork() and copyproc().
+
+<h3>Overview</h3>
+
+<p>Big picture: more programs than CPUs.  How to share the
+limited number of CPUs among the programs?
+
+<p>Idea: have the kernel transparently switch the CPU(s) among
+programs, giving them a "virtual CPU" abstraction.
+
+<p>Terminology: I'm going to call a switch from one program to
+another a <i>context switch</i>.
+
+<h3>The program's view of context switching</h3>
+
+For this discussion we're going to assume that the O/S runs each
+program in a "process", which couples an address space with a single
+thread of control.  For the most part each process appears to have a
+dedicated CPU, but if processes compare notes they can see that the CPU
+is actually multiplexed, with this process-visible behavior:
+
+<ul>
+<li>When a process makes a system call that blocks, the kernel
+arranges to take the CPU away and run a different process.
+For example, if read() needs to wait for the hard disk to
+finish reading a block, the kernel will cause a different
+process to run until the disk has finished.
+<li>The kernel time-slices the CPU among processes that
+compute a lot.
+<li>Both of the above are largely transparent to the process,
+in the sense that the kernel resumes a process with the
+same register and memory state it had when the kernel suspended it.
+(Except that a system call may explicitly modify state required
+to express its return value or data read by e.g. read().)
+</ul>
+
+<p>The kernel also exposes system calls for handling
+processes; here are the main XV6 process system calls:
+<ul>
+<li>fork: create a new process, which is a copy of the parent
+<li>exec: execute a program file
+<li>exit: terminate the calling process
+<li>wait: wait for a child process to call exit
+<li>kill: kill process
+<li>sbrk: grow the address space of a process.
+</ul>
+
+<h3>The kernel's view of context switching</h3>
+
+As you know, the xv6 kernel maintains a kernel stack for each process,
+on which to run system calls for the process. At any given time,
+multiple processes may be executing system calls inside the kernel.
+This is a common kernel arrangement -- multiple threads of control in
+the kernel address space, one per user-level process.  A kernel thread
+must be capable of suspending and giving the CPU away, because the
+implementation of many system calls involves blocking to wait for
+I/O. That's the reason why each xv6 process has its own kernel stack.
+
+<p>Terminology: if a process has entered the kernel, the kernel stack
+and CPU registers of the resulting thread of control is called the
+processes <i>kernel thread</i>.
+
+<p>
+In this arrangment, the kernel doesn't directly switch CPUs
+among processes. Instead, the kernel has a number of mechanisms
+which combine to switch among processes:
+
+<ul>
+<li>User->kernel transitions, which we've seen when we looked at
+system calls and interrrupts.
+If a process is running and makes a user->kernel
+transition, we're then running in the process's kernel thread.
+This transition saves the state of the
+user process -- saving its register in a <tt>struct trapframe</tt>
+on the process's kernel stack. A user->kernel transition
+initializes fresh register state for the process's kernel thread.
+<li>Switching between kernel threads. If a kernel thread calls
+sched() or yield() or sleep(), the kernel saves that kernel
+thread's registers, picks another runnable kernel thread, and
+restores its registers  -- restoring ESP and EIP cause a
+stack switch and control switch.
+scheduler() also switches user segments; this has no immediate effect,
+it only affects what happens on a future return from kernel to user.
+<li>Kernel->user transitions. A return to user space restores
+the user registers from the trapframe, and implicitly loses
+the register state of the process's kernel thread.
+<li>Timer interrupts. The timer interrupt handler implements
+time-slicing by calling yield(). At a low level yield() only
+switches between kernel threads, but the interrupt may have caused
+a user->kernel transition, so the net effect is often to
+switch between user processes.
+</ul>
+
+<p>
+Processes can be in a number of states (see proc.h):
+UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE.
+Diagram of possible states (skip ZOMBIE for now) and
+transitions between them.
+
+<p>
+allocproc, userinit.
+
+<p>
+sys_fork.  why save pid in a temp variable? [1883]
+
+<h3>xv6 code examples</h3>
+
+Let's watch what happens when a timer interrupt causes an
+involuntary context switch between two compute-bound user
+processes. The user process:
+
+<pre>
+main(){
+  fork();
+  while(1)
+    ;
+}
+</pre>
+
+<p>
+Run bochs with a single CPU (<tt>bochs -q -f uni</tt>, then
+<tt>load-symbols "kernel.sym"</tt>).
+Break in yield(), then print stack using <tt>x/16x $esp</tt>
+on kernel stack of one of the processes,
+The return EIP should be trap(). <!--(but might be alltraps; why?)-->
+
+<p>
+Why does yield() need to acquire proc_table_lock? [1973]
+When will the lock be released?
+
+<p>
+Why state = RUNNABLE? What was state's previous value?
+
+<p>
+yield() calls sched() which calls swtch()
+<tt>b "swtch", s, c, print stack</tt>.
+Look at definition of struct context: it's a set of saved registers.
+swtch() will save into one context, restore from another.
+What are the two contexts?
+<tt>x/8x</tt> the context addrs.
+
+<p>
+Where do we think swtch() will return to?
+
+<p>
+Why doesn't swtch() save EAX in struct context?
+
+<p>
+At end of swtch(), what stack are we running on?
+
+<p>
+Where does print-stack show swtch() will return to? Why did
+this happen?
+
+<p>
+scheduler() is in the middle of a loop that checks to see whether
+each process would like to run (is RUNNABLE).
+
+<p>
+If scheduler() finds no RUNNABLE process, it finishes the
+loop, releases the lock, but then immediately re-acquires
+the lock at the start of the outer loop.  Why release
+just to re-acquire?
+
+<p>
+That is, suppose for a while there are no RUNNABLE processes.
+What will the CPUs spend their time doing?
+
+<p>
+Why do we need to disable interrupts while holding locks in the kernel?
+For example, why do we disable interrupts when grabbing a lock,
+e.g. in scheduler?
+or tickslock in sys_sleep, trap?
+
+<p>If we always had enough idle processes, we could avoid having
+to release the lock.
+
+<p>
+On the other hand, what would happen if we never enabled interrupts
+in scheduler() and kept spinning with no processes to run?
+
+<p>
+How does the scheduler avoid picking the same process that just
+called yield (if there's another process that can run)?
+
+<p>
+scheduler() has its own stack (in cpus[x]). Why? Why not just
+call it directly from sched()? I.e. why not have scheduler()
+run on the stack of the last process that gave up the CPU?
+Because the scheduler() on a multiprocessor system may need
+to release the ptable lock. And the parent of an exiting process
+might deallocate it's child stack. So if the scheduler was
+running on the child's stack at that time, we have a problem.
+Hence, scheduler needs a separate stack. Could idle processes
+make this possible? yes, because in that case the scheduler
+does not need to release the lock (in some sense, we are using
+the idle process's stack).
+<br>
+- On an SMP, scheduler may have to release ptable lock<br>
+- If a ptable lock is released, it is possible that the old process's stack
+gets deallocated (if it had just called exit)<br>
+- Hence the scheduler must run on a different stack from old process's stack.
+
+
+<p>
+What policy does scheduler() use to give CPU time to processes?
+
+<p>
+We know scheduler() is going to run the other cpu-bound process,
+by calling usegment() and swtch() to restore other process's registers
+and stack.   Why does it set state to RUNNING?  (That is, what's the
+functional difference between RUNNABLE and RUNNING?)
+
+<p>
+Do we need to call usegment in scheduler?  Can we call it just
+before returning to user-space instead?  What does usegment do
+exactly (set stack-top, user segments)?
+
+<p>
+Break in swtch() again, and check that we are indeed switching
+to the other process's stack, and step through to the return
+from its call to yield() from trap().
+
+<p>
+Break in swtch() a few times to see that we're bouncing between
+two processes (based on their context address values).
+
+<p>
+How do we garbage-collect processes in xv6?  Can't deallocate
+the stack we're running on right now.  When does a process get
+deallocated?  Back to process state diagram, ZOMBIE state.
+Why does exit pass children to init, rather than to its own parent?
+
+<p>
+How do we kill a process?  Why not turn it into a ZOMBIE directly?
+
+<h3>Wrap-up</h3>
+
+More sophisticated operating systems usually allow multiple threads of
+control in a process. How could we do this for xv6? Each thread would
+have its own user-space stack in the process address space. There
+would be a few more system calls: perhaps thread_fork(),
+thread_exit(), and thread_wait(). The kernel would have to split
+<tt>struct proc</tt> into a structure describing overall process
+resources (address space and open files), and a kernel stack and set
+of saved registers per thread. That way multiple threads from a
+process could be executing system calls inside the kernel.
+
+<p>
+How would a context switch between threads differ from a context
+switch between processes?
+
+<p>
+Added complication with kernel threads: concurrent syscalls?
+
+<p>
+We could also implement threads in user-space (maybe even pre-emptive
+with a periodic interrupt like SIGALRM).
+What's the difference?
+What do we gain from kernel threads?
+
+<!--
+<p>
+It's worth comparing xv6's fairly conventional context switches with
+those of JOS.  JOS has only one thread active in the kernel at a time,
+and thus only a single kernel stack (not one per process) and no
+thread switching inside the kernel. It only has an analogue to xv6's
+kernel entry/exit to save/restore user thread state. But as a direct
+consequence JOS 1) can't run the kernel concurrently on multiple CPUs
+and 2) cannot have system calls that block in the middle (e.g. to look
+up a multi-component path name).
+
+<p>
+What would look different in JOS's implementation of scheduling,
+interrupts?  What's the equivalent of swtch()?
+-->
+
+<p>
+We've seen the complete story of how xv6 switches between user
+processes. This is the concrete realization of the virtual CPU
+abstraction. The core mechanism is swtch(), which saves and restores
+thread register state and thus switches stacks (ESP) and changes the
+control flow (EIP). We also saw a bit of what it takes to integrate
+thread switching with the concurrency brought by multiple CPUs and by
+interrupts.

@@ -1,0 +1,268 @@
+<h4>Parameters</h4>
+If the toaster is a method: then the bread slice is a parameter to the toaster. The toaster converts a bread slice into a toasted bread slice. Different inputs (e.g., wheat bread, oat bread, etc.) will provide different outputs. Some inputs are illegal, e.g., cannot give a spoon as an input to a toaster.
+
+<p>Similarly, can provide parameters to methods. The methods use the values of the parameters as inputs to their computation.
+
+Example:
+<pre>
+void printGreeting(string myname)
+{
+  cout << "Hello " << myname << endl;
+  cout << "I hope you had a great day." << endl;
+}
+
+int main()
+{
+  string name = getLine("Next name? ");
+  while (name != "")
+  {
+    printGreeting(name);
+    name = getLine("Next name? ");
+  }
+  return 0;
+}
+</pre>
+
+<p>What will happen if you execute the following?
+
+<pre>
+void printGreeting(string myname)
+{
+  cout << "Hello " << name << endl;
+  cout << "I hope you had a great day." << endl;
+}
+
+int main()
+{
+  string name = getLine("Next name? ");
+  while (name != "")
+  {
+    printGreeting(name);
+    name = getLine("Next name? ");
+  }
+  return 0;
+}
+</pre>
+This will result in a compile error! Note that variable <i>name</i> is local to the scope of the main function. Passing it as a parameter 
+creates a copy of the variable and stores it in <i>myname</i> inside the scope of the printGreetings function.
+
+<p>General syntax
+<pre>
+type name(type name, type name, ...)
+{
+  statement1;
+  statement2;
+  ...
+}
+</pre>
+
+<p>Another example:
+<pre>
+printGreeting(5);
+</pre>
+Prints a greeting a certain number of times. What would the method declaration and definition look like.
+
+<p>
+<b>Multiple Arguments </b> <br><br>
+In general, a function can have multiple arguments.
+<pre>
+ret_type function(type_1 arg_1, type_2 arg_2, ... , type_n arg_n){
+  ..
+  ..
+}
+</pre>
+
+<p>Write a function
+<pre>
+printGreeting("abc", 5);
+</pre>
+Prints greeting to abc 5 times.
+
+<p>Parameter values can be derived from constant values, variables, or arbitrary expressions. Show previous examples where variables are used for parameter values.
+
+<p>Show a run involving main function and printGreeting function for the following code:
+<pre>
+void printGreeting(int times)
+{
+  for (int i = 0; i < times; i++) {
+    cout << "Hello, world!" << endl;
+  }
+}
+int main()
+{
+  int repeats = 5;
+  printGreeting(repeats);
+}
+</pre>
+There will be one variable (box) for <code>repeats</code> in <code>main</code> function. Similarly, there will be one variable (box) for <code>times</code> in <code>printGreeting</code> function. The printGreeting's scope will get created only when control transfers to it, and will get destroyed when control returns from it back to <code>main</code>.
+
+<p><b>Parameters are copies</b>!
+<pre>
+void addFive(int x) {
+     x = x + 5;
+     cout<< "(Inside addFive): New x is "<< x;
+}
+
+int main() {
+  int x=3;
+  addFive(x);
+  cout<< "(Inside main): New x = "<< x;
+}
+</pre>
+What will the output of the above program? How would you change it to have the desired output? We will come to back to this soon when we talk about return values.
+<p>
+Revisiting function declaration and function call syntax: A method can accept multiple parameters separated by commas; when calling it, you must pass values for each parameter.
+<br><br> Declaration:
+<pre>
+type name(type name, ..., type name)
+{
+  statements;
+}
+</pre>
+<br>Call:
+<pre>
+name(value, value, ..., value);
+</pre>
+
+<b>Exercise:</b>
+Write a function drawBox(height,width) which takes two arguments 'height' and 'width' and draws of a box of the corresponding size. 
+For example, drawBox(3,5) should draw a box as follows:
+<pre>
+*****
+*   *
+*****
+</pre>
+And drawBox(4,4) should draw a box as follows:
+<pre>
+****
+*  *
+*  *
+****
+</pre>
+
+<p>Potential solution: define one top-level function called <code>drawBox(height, width)</code> and two functions <code>drawLine(width)</code> (for top and bottom lines) and <code>drawSide(width)</code> for middle lines. Show implementation of all three functions. We will do this as one of our lab assignment questions!
+
+<h4>Return Values</h4>
+Return values let you give back some information when a method is finished, e.g., toasted bread in our toaster method.
+
+<p>Some examples we have already seen: simpio functions <code>getInteger</code>, <code>getLine</code>, etc.
+
+<h4>Return Types</h4>
+The function declarations specify the type of the return value (just like they specify the type of the parameter values). Types say what is legal and what is illegal.
+
+<p>Example:
+<pre>
+double metersToCm(double meters)
+{
+  return 100*meters;
+}
+
+int main()
+{
+  double meters = getDouble("meters?");
+  double cm = metersToCm(meters);
+  cout << cm << " centimeters." << endl;
+  return 0;
+}
+</pre>
+Show execution: how variables are created, how parameter values are copied, how the <code>metersToCm</code> function uses values in the parameter variables, how return value is copied back.
+
+<p>If a method returns something, you can use it directly in an expression!
+<pre>
+int main()
+{
+  double meters = getDouble("meters?");
+  cout << metersToCm(meters) << " centimeters." << endl;
+  return 0;
+}
+</pre>
+
+
+<h4>Parameters vs. Return</h4>
+<ul>
+	<li>Parameters: Send information "in" to the method from the caller. 
+	<li>Return: Send information "out" of the method to the caller. 
+</ul>
+
+Method operates on its parameters and computes a value to be returned (show using a diagram).
+<br><br>
+
+<i>metersToCm</i> Example Above:
+<ul>
+<li>Parameter: value in centimeters
+<li> Return: value in meters (after the doing the rquired computation)
+</ul>
+
+Another Exmaple: <br>
+<pre>
+#include &lt;iostream&gt;
+#include &lt;cmath&gt;
+int main() {
+ int x=-42;
+ int x_abs=abs(x);
+ cout<<"Absolute value of " << x << " = " << x_abs << endl;
+ double y=2.03;
+ double y_rnd=round(y);
+ cout<<"The rounded value of " << y << " = " << y_rnd << endl;
+}
+</pre>
+ Explain parameter/return with respect to <i>abs</i> and <i>round</i> functions.
+ <p>
+ Another example: Returning Boolean values.
+<pre>
+bool checkEven(int number) {
+  if(number % 2 == 0) 
+    return true;
+  else
+    return false;
+}
+
+int main() {
+    n = getInteger("n?");
+    bool is_even=checkEven(n);
+    cout << "The number is even is " << is_even << endl;
+}
+</pre>
+
+Note: Function ends as soon as it encounters a reutrn statement.
+<pre>
+bool checkEven(int number) {
+  if(number % 2 == 0) 
+    return true;
+  else
+    return false;
+  cout << "This line will never be executed!" << endl;
+}
+</pre>
+<p>
+What happens to the last <i>cout</i> statement? It will neven be excuted: why? Talk about the flow of the program and the return statements.
+<p>
+
+Fixing the <i>addFive</i> program: use a return value.
+<pre>
+int addFive(int x) {
+     x = x + 5;
+     cout<< "(Inside addFive): New x is "<< x;
+     return x;
+}
+
+int main() {
+  int x=3;
+  x=addFive(x);
+  cout<< "(Inside main): New x is "<< x;
+}
+</pre>
+<p> What will be the output of the program above?
+<p>
+Question: Why use a return statement? Why not simply print in the original function itself? <br>
+Answer: We may need the value for future computations in the caller. See below. 
+<br>
+<pre>
+int main() {
+  int x=3;
+  x=addFive(x);
+  x=2*x;
+  cout<< "(Inside main): New x is "<< x;
+}
+</pre>
+

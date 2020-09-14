@@ -1,0 +1,559 @@
+
+<HTML>
+<HEAD>
+	<TITLE>CPSC 422/522: Operating Systems, Spring 2010
+		
+		&mdash Reading List
+		
+	</TITLE>
+	<LINK REL="stylesheet" HREF="stylesheet.css">
+</HEAD>
+<BODY>
+
+<table cellspacing="2" cellpadding="10" width="100%">
+<tbody>
+<tr>
+
+<td bgcolor="white" align="left">
+<H1>CS422/522: Operating Systems, Spring 2010
+	
+	&mdash Reading List
+	
+</H1>
+
+<table cellpadding="5" bgcolor="blue">
+<tr><td bgcolor="white" align="center">
+<a href="index">Home</a> &nbsp;&ndash;&nbsp;
+<a href="info">Overview</a> &nbsp;&ndash;&nbsp;
+<a href="sched">Schedule</a> &nbsp;&ndash;&nbsp;
+<a href="reference">Reference</a> &nbsp;&ndash;&nbsp;
+<a href="reading">Reading List</a> &nbsp;&ndash;&nbsp;
+<a href="tools">Tools</a> &nbsp;&ndash;&nbsp;
+<a href="../pios">PIOS</a> &nbsp;&ndash;&nbsp;
+<a href="prior">Prior Years</a>
+</table>
+
+</td>
+
+<td align="center" valign="center" width="80" bgcolor="white">
+<a href="http://www.yale.edu/">
+<img border="0" src="images/yaleclr.jpg" width="70" height="79">
+</a>
+</td>
+
+</tr>
+</tbody>
+</table>
+
+<hr>
+
+
+<center>
+<H2><b>CS422/522 Operating Systems Reading List</b></H2>
+<b>a selected bibliography of systems research</b>
+</center>
+
+<P><HR width="50%"><P><H3><a name="historical">Historical Perspective</a></H3><P>
+
+<ul>
+<li> E. W. Dijkstra. 
+     <a href="bib/dijkstra68the.pdf"><strong>
+	The Structure of the THE Multiprogramming System</strong></a>. 
+     Communications of the ACM 11(5), May 1968.<p>
+
+<li> D. M. Ritchie and K. Thompson. 
+     <a href="bib/ritchie74unix.pdf"><strong>
+	The UNIX Timesharing System</strong></a>. 
+     Communications of the ACM 17(7), July 1974.<p>
+
+<li> K. Thompson. 
+     <a href="bib/thompson78unix.pdf"><strong>Unix Implementation</strong></a>.
+     Bell System Technical Journal, 57(6), pp. 1931-1946, July 1978. <p>
+
+<li> D. M. Ritchie
+     <a href="bib/ritchie79unix.pdf"><strong>
+	The Evolution of the UNIX Time-sharing System</strong></a>. 
+     Proc. of the Symposium on Language Design and Programming Methodology,
+	pp. 25-35, September 1979.<p>
+
+<li> B. W. Lampson. 
+     <a href="bib/lampson83hints.pdf"><strong>
+	Hints for Computer System Design</strong></a>. 
+     Proc. of the 9th ACM Symposium on Operating Systems Principles, 
+     pp. 33-48, October 1983. <p>
+</ul> 
+
+<P><HR width="50%"><P><H3><a name="structure">Structure and Organization</a></H3><P>
+
+<ul>
+<li> D. D. Redell, Y. K. Dalal, T. R. Horsley, H. C. Lauer, 
+     W. C. Lynch, P. R. McJones, H. G. Murray, and  S. C. Purcell.
+     <a href="bib/redell80pilot.pdf"><strong>
+	Pilot: An Operating System for a Personal Computer.</strong></a>.
+     Communications of the ACM 23(2), pp. 81-92, February 1980.<p>
+
+<li> M. Accetta, R. Baron, W. Bolosky, D. Golub, R. Rashid, A. Tavanian,
+     and M. Young. 
+     <a href="bib/accetta86mach.pdf"><strong>
+	Mach: A New Kernel Foundation for Unix Development</strong></a>.
+     Proc. of the Summer 1986 USENIX Conference, pp. 93-112, June 1986. <p>
+
+<li> D. Golub, R. Dean, A. Forin, and R. Raashid.
+     <a href="bib/golub90unix.pdf"><strong>
+	Unix as an Application Program</strong></a>.
+     Proc. of the Summer 1990 USENIX Conference, pp. 87-95, June 1990. <p>
+
+<li> H. Massalin and C. Pu.
+     <strong>Theads and Input/Output in the Synthesis Kernel</strong>.
+     Proc. of the 12th ACM Symposium on Operating Systems Principles,
+     pp. 191-201, December 1989. <p> 
+
+<li> T. Anderson, H. Levy, B. Bershad, and E. Lazowska. 
+     <a href="bib/anderson91interaction.pdf"><strong>
+	The Interaction of Architecture and
+	Operating System Design</strong></a>. 
+     Proc. of the 4th Conference on Architecture Support for Programming
+     Languages and Operating Systems, pp. 108-119, April 1991. <p>
+
+<li> J. Chase, H. Levy, M. Feeley, and E. Lazowska. 
+     <a href="bib/chase94sharing.pdf"><strong>
+	Sharing and Protection in a Single Address Space
+	Operating System</strong></a>. 
+     ACM Trans. on Computer Systems, November 1994.<p>
+
+<li> B. Bershad, S. Savage, P. Pardyak, E. Sirer, M. Fiuczynski, D. Becker, 
+     C. Chambers, and S. Eggers. 
+     <a href="bib/bershad95spin.pdf"><strong>Extensibility, Safety and 
+     Performance in the SPIN Operating System</strong></a>. 
+     Proc. of the 15th ACM Symposium on Operating Systems Principles, 
+     pp. 267--284, December 1995. <p>
+
+<li> J. Liedtke.
+     <a href="bib/liedtke95micro.pdf"><strong>
+	On Micro-Kernel Construction</strong></a>.
+     Proc. of the 15th ACM Symposium on Operating Systems Principles,
+     pp. 237-250, December 1995. <p>
+
+<li> E. Bugnion, S. Devine, and M. Rosenblum. 
+     <a href="bib/bugnion97disco.pdf"><strong>
+	Disco: Running Commodity Operating Systems 
+     on Scalable Multiprocessors</strong></a>.
+     Proc. of the 16th ACM Symposium on Operating Systems Principles,
+     pp. 143-156, December 1997. <p>
+
+<li> B. Ford, G. Back, G. Benson, J. Lepreau, A. Lin, and O. Shivers.
+     <a href="bib/ford97flux.pdf"><strong>
+	The Flux OSKit: A Substrate for OS and Language Research</strong></a>. 
+     Proc. of the 16th ACM Symposium on Operating Systems Principles,
+     pp. 38-51, December 1997. <p>
+
+<li> G. Back, P. Tullmann, L. Stoller, W. C. Hsieh, and J. Lepreau.
+     <a href="bib/back98java.pdf"><strong>Java Operating Systems: 
+     Design and Implementation</strong></a>.
+     Technical Report UUCS-98-015, Univ. of Utah, August 1998.
+</ul> 
+
+
+<P><HR width="50%"><P><H3><a name="concurrency">Threads and Concurrency</a></H3><P>
+
+<ul>
+<li> C.A.R. Hoare.
+     <a href="bib/hoare74monitors.pdf"><strong>
+	Monitors: An Operating System Structuring Concept</strong></a>.
+     Communications of the ACM 17(10), pp. 549-557, October 1974. <p>
+
+<li> C.A.R. Hoare.
+     <a href="bib/hoare78communicating.pdf"><strong>
+	Communicating Sequential Processes</strong></a>.
+     Communications of the ACM 21(8), pp. 666-677, August 1978. <p>
+
+<li> B. W. Lampson and D. D. Redell. 
+     <a href="bib/lampson80mesa.pdf"><strong>
+	Experience with Processes and Monitors in Mesa</strong></a>.
+     Communications of the ACM 23(2), pp. 105-117, February 1980. <p>
+
+<li> M. Herlihy.
+     <a href="bib/herlihy90methodology.pdf"><strong>
+	A Methodology for Implementing Highly Concurrent 
+	Data Structures</strong></a>.
+     Proc. of the 2nd ACM SIGPLAN Symp. on Principles and Practice 
+     of Parallel Programming, pp. 197-206, March 1990. <p>
+
+<li> T. Anderson, B. Bershad, E. Lazowska, and H. Levy. 
+     <a href="bib/anderson92scheduler.pdf"><strong>
+	Scheduler Activations: Effective Kernel Support for the
+	User-Level Management of Parallelism</strong></a>.
+     ACM Trans. on Computer Systems 10(1), pp. 53-79, Feburary 1992. <p>
+
+<li> S. Savage, M. Burrows, G. Nelson, P. Sobalvarro, and T. Anderson.  
+     <a href="bib/savage97eraser.pdf"><strong>
+	Eraser: A Dynamic Race Detector for Multithreaded Programs</strong></a>.
+     ACM Transaction on Computer Systems, 15(4), November 1997.
+</ul>
+
+<P><HR width="50%"><P><H3><a name="communication">Communication and Networking</a></H3><P>
+
+<ul>
+<li> R. M. Metcalfe and D. R. Boggs. 
+     <a href="bib/metcalfe76ethernet.pdf"><strong>
+	Ethernet: Distributed Packet Switching for
+	Local Computer Networks</strong></a>.
+     Communications of the ACM 19(7), pp. 395-404, July 1976. <p>
+
+<li> A. D. Birrell and B. J. Nelson.  
+     <a href="bib/birrel84implementing.pdf"><strong>
+	Implementing Remote Procedure Calls</strong></a>.
+     ACM Trans. on Computer Systems 2(1), pp. 39-59, February 1984. <p> 
+
+<li> B. N. Bershad, T. E. Anderson, E. D. Lazowska, and H. M. Levy.  
+     <a href="bib/bershad90lightweight.pdf"><strong>
+	Lightweight Remote Procedure Call</strong></a>.
+     ACM Trans. on Computer Systems 8(1), pp.37-55, February 1990. <p>
+
+<li> N. C. Hutchinson and L. L. Peterson. 
+     <a href="bib/hutchinson91xkernel.pdf"><strong>
+	The x-Kernel: An Architecture for
+	Implementing Network Protocols</strong></a>. 
+     IEEE Trans. on Software Engineering, 17(1), 
+     pp. 64-76, January 1991. <p>
+
+<li> T. von Eicken, D. E. Culler, S. C. Goldstein, and K. E. Schauser. 
+     <a href="bib/voneicken92active.pdf"><strong>
+	Active Messages: a Mechanism for Integrated Communication
+	and Computation</strong></a>.
+     Proc. of the 19th Int. Symp. on Computer Architecture, 
+     pp. 256-266, May 1992. <p>
+
+<li> J. Liedtke.
+     <a href="bib/liedtke93improving.pdf"><strong>
+	Improving IPC by Kernel Design</strong></a>.
+     Proc. of the 14th ACM Symp. on Operating Systems Principles, 
+     pp. 175-187, December 1993. <p>
+
+<li> P. Druschel and L. L. Peterson.
+     <a href="bib/druschel93fbufs.pdf"><strong>
+	Fbufs: A High-Bandwidth Cross-Domain Transfer Facility</strong></a>.
+     Proc. of the 14th ACM Symp. on Operating Systems Principles, 
+     pp. 189-202, December 1993. <p>
+
+<li> E. A. Brewer, R. H. Katz, et al.
+     <a href="bib/brewer98network.pdf"><strong>
+	A Network Architecture for Heterogeneous Mobile Computing</strong></a>.
+     IEEE Personal Communications, October 1998. <p>
+
+<li> D. L. Tennenhouse and D. J. Wetherall. 
+     <a href="bib/tennenhouse96active.pdf"><strong>
+	Towards an Active Network Architecture</strong></a>.
+     Proc. Multimedia Computing and Networking'96, January 1996. <p>
+
+<li> A. Fox, S. Gribble, Y. Chawathe, E. Brewer, and P. Gauthier. 
+     <a href="bib/fox97cluster.pdf"><strong>
+	Cluster-based Scalable Network Services</strong></a>.
+     Proc. of the 16th ACM Symp. on Operating Systems Principles, 
+     pp. 78-91, October 1997. <p>
+</ul>
+
+<P><HR width="50%"><P><H3><a name="vm">Virtual Memory</a></H3><P>
+
+<ul>
+<li> H. M. Levy and P. Lipman. 
+     <strong>Virtual Memory Management in the VAX/VMS Operating System</strong>.
+     Computer 15(3), pp. 35-41, March 1982. <p>
+
+<li> R. Rashid, A. Tevanian, M. Young, D. Golub, R. Baron, D. Black, 
+     W. Bolosky, and J. Chew. 
+     <a href="bib/rashid87machine.pdf"><strong>
+	Machine-Independent Virtual Memory Management for
+	Paged Uniprocessor and Multiprocessor Architectures</strong></a>.
+     Proc. of the 2nd International Conference on Architectural 
+     Support for Programming Languages and Operating Systems, 
+     pp. 31-39, October 1987. <p>
+
+<li> M. Young, A. Tevanian, R. Rashid, D. Golub, J. Eppinger,
+     J. Chew, W. Bolosky, D. Black, R. Baron, 
+     <a href="bib/young87duality.pdf"><strong>
+	The Duality of Memory and Communication in the Implementation
+	of a Multiprocessor Operating System</strong></a>.
+     Proc. of the 11th ACM Symp. on  Operating Systems Principles, 
+     pp. 63-76, November 1987. <p>
+
+<li> K. Li and P. Hudak.  
+     <a href="bib/li89memory.pdf"><strong>
+	Memory Coherence in Shared Virtual Memory Systems</strong></a>.
+     ACM Trans. on Computer Systems 7(4), pp. 321-359, November 1989. <p>
+
+<li> D. Scales and K. Gharachorloo. 
+     <a href="bib/scales97towards.pdf"><strong>
+	Towards Transparent and Efficient Software
+	Distributed Shared Memory</strong></a>.
+     Proc. of the 16th ACM Symp. on  Operating Systems 
+     Principles, pp. 157-169, Oct. 1997.<p>
+</ul>
+
+<P><HR width="50%"><P><H3><a name="fs">File Systems and I/O</a></H3><P>
+
+<ul>
+<li> M. K. McKusick, W. N. Joy, S. J. Leffler, and R. S. Fabry.  
+     <a href="bib/mckusick84fast.pdf"><strong>
+	A Fast File System for UNIX</strong></a>. 
+     ACM Trans. on Computer Systems 2(3), pp. 181-197, August 1984. <p>
+
+<li> M. Satyanarayanan, J. H. Howard, D. A. Nichols,
+     R. N. Sidebotham, A. Z. Spector, and M. J. West.
+     <a href="bib/satyanarayanan85itc.pdf"><strong>
+	The ITC Distributed File System: Principles and Design</strong></a>.
+     Proc. of the 10th ACM Symposium on Operating Systems Principles,
+     pp. 35-50, December 1985. <p>
+
+<li> D. A. Patterson, G. Gibson, and R. H. Katz.
+     <a href="bib/patterson88raid.pdf"><strong>
+	A Case for Redundant Array of Inexpensive Disks (RAID)</strong></a>.
+     Proc. ACM SIGMOD International Conference on Management of Data, 
+     pp. 109-116, June 1988 <p>
+
+<li> M. N. Nelson, B. B. Welch, and J. K. Ousterhout.  
+     <a href="bib/nelson88sprite.pdf"><strong>
+	Caching in the  Sprite Network File System</strong></a>.
+     ACM Trans. on Computer Systems 6(1), pp. 134-154,February 1988. <p>
+
+<li> J. H. Howard, M. L. Kazar, S. G. Menees, D. A. Nichols,  
+     M. Stayanayanan, R. N. Sidebotham, and M. J. West.  
+     <a href="bib/howard88scale.pdf"><strong>
+	Scale and Performance in a Distributed File System</strong></a>.
+     ACM Trans. on Computer Systems 6(1), pp. 51-81, February 1988. <p>
+
+<li> D. K. Gifford, P. Jouvelot, M. Sheldon, and J. O'Toole. 
+     <a href="bib/gifford91semantic.pdf"><strong>Semantic File Systems</strong></a>.
+     Proc. of the 12th ACM Symposium on Operating Systems Principles, 
+     pp. 16-25, October 1991. <p>
+
+<li> J. J. Kistler and M. Satyanarayanan.
+     <a href="bib/kistler92coda.pdf"><strong>
+	Disconnected Operation in the Coda File System</strong></a>.
+     Proc. of the 13th Symposium on Operating Systems Principles,
+     pp. 213-225, October 1991. <p>
+
+<li> M. Rosenblum and J. K. Ousterhout.
+     <a href="bib/rosenblum92design.pdf"><strong>The Design and Implementation of a 
+     Log-Structured File System</strong></a>.  
+     ACM Trans. on Computer Systems 10(1), pp. 26-52, February 1992. <p>
+
+<li> C. Thekkath, T. Mann, and E. Lee.  
+     <a href="bib/thekkath97frangipani.pdf"><strong>
+	Frangipani: A Scalable Distributed File System</strong></a>.
+     Proc. of the 16th ACM Symposium on Operating Systems Principles, 
+     pp. 224-237, October 1997. <p>
+
+<li> V. Pai, P. Drushel, and W. Zwaenepoel.
+     <a href="bib/pai00iolite.pdf"><strong>
+	IO-Lite: A Unified I/O Buffering and Caching System</strong></a>.
+     ACM Trans. on Computer Systems 18(1), pp. 37-66, February 2000. <p>
+</ul>
+
+<P><HR width="50%"><P><H3><a name="security">Protection and Security</a></H3><P>
+
+<ul>
+<li> B. W. Lampson. 
+     <a href="bib/lampson71protection.pdf"><strong>Protection</strong></a>. 
+     Proc. of the 5th Princeton Symposium on Information Sciences and 
+     Systems, pp. 437-443, March 1971. <p>
+
+<li> B. W. Lampson. 
+     <a href="bib/lampson73note.pdf"><strong>
+	A Note on the Confinement Problem</strong></a>.
+     Communications of the ACM, 16(10), pp. 613-615, October 1973. <p>
+
+<li> J. H. Saltzer and M. D. Schroeder. 
+     <a href="bib/saltzer75protection.pdf">
+     <strong>The Protection of Information in Computer Systems</strong></a>.
+     Proc. of the IEEE 63(9), pp. 1278-1308, September 1975. <p>
+
+<li> R. M. Needham and M. D. Schroeder. 
+     <a href="bib/needham78using.pdf"><strong>
+	Using Encryption for Authentication in
+	Large Networks of Computers</strong></a>.
+     Communications of the ACM 21(12), pp.993-998, December 1978. <p> 
+
+<li> D. E. Denning and P. J. Denning. 
+     <a href="bib/denning79security.pdf"><strong>Data Security</strong></a>.
+     Computing Surveys, 11(3), pp. 227-249, September 1979. <p>
+
+<li> R. Morris and K. Thompson. 
+     <strong>Password Security: A Case History</strong>.
+     Communications of the ACM, 22(11), pp. 594-597, November 1979. <p>
+
+<li> R. L. Rivest, S. Shamir, and L. Adleman.
+     <a href="bib/rivest78method.pdf"><strong>
+	A Method for Obtaining Digital Signatures and
+	Public Key Cryptosystems</strong></a>.
+     Communications of the ACM, 21(2), pp. 120-126, February 1978. <p>
+
+<li> J. G. Steiner, C. Neuman, and J. I. Schiller.
+     <a href="bib/steiner88kerberos.pdf"><strong>
+	Kerberos: An Authentication Service for
+	Open Network Systems</strong></a>.
+     Proc. of USENIX '88, pp. 191-202, February 1988. <p>
+
+<li> B. Lampson, M. Abadi, M. Burrows, and E. Wobber.
+     <a href="bib/lampson92authentication.pdf">
+     <strong>Authentication in Distributed Systems: Theory 
+     and Practice</strong></a>.
+     ACM Transactions on Computer Systems, 10(4), 
+     pp. 265-310, November 1992. <p>
+
+<li> K. Thompson.
+     <a href="bib/thompson84reflections.pdf"><strong>
+	Reflections on Trusting Trust</strong></a>.
+     Communications of ACM, 27(8), pp. 761-763, August 1984. <p>
+
+<li> N. Haller.
+     <a href="bib/haller94skey.pdf"><strong>
+	The S/Key One-Time Password System</strong></a>.
+     Proc. of the ISOC Symposium on Network and Distributed
+     System Security, February 1994. <p>
+</ul>
+
+<P><HR width="50%"><P><H3><a name="distributed">Distributed Systems</a></H3><P>
+
+<ul>
+<li> D.S. Parker, Jr., G. J. Popek, G. Rudisin, A. Stoughton,
+     B. J. Walker, E. Walton, J. M. Chow, D. Edwards, S. Kiser, and C. Kline.
+     <a href="bib/parker83detection.pdf"><strong>
+	Detection of Mutual Inconsistency in Distributed Systems</strong></a>.
+     IEEE Trans. on Software Engineering, SE-9(3), May 1983. <p>
+
+<li> B. Walker, G. Popek, R. English, C. Kline,  and G. Thiel.  
+     <a href="bib/walker83locus.pdf"><strong>
+	The LOCUS Distributed Operating System</strong></a>.
+     Proc. of the 9th ACM Symposium on Operating Systems Principles, 
+     pp. 49-69, October 1983. <p>
+
+<li> M. D. Schroeder, A. D. Birrell, and R. M. Needham.  
+     <a href="bib/schroeder84grapevine.pdf"><strong>
+	Experience with Grapevine:
+	The Growth of a Distributed System</strong></a>.
+     ACM Trans. on Computer Systems, 2(1), February 1984.<p>
+
+<li> E. Jul, H. Levy, N. Hutchinson, and A. Black.  
+     <a href="bib/jul88mobility.pdf"><strong>
+	Fine-Grained Mobility in the Emerald System</strong></a>.
+     ACM Trans. on Computer Systems 6(1), pp. 109-133, February 1988. <p>
+
+<li> R. Pike, D. L. Presotto, K. Thompson, and H. Trickey,
+     <a href="bib/pike90plan9.pdf"><strong>Plan 9 from Bell Labs</strong></a>.
+     Proc. of 1990 USENIX Conference. <p>
+
+<li> I. Leslie, D. McQuley, R. Black, T. Roscoe, P. Barham, D. Evers, 
+     R. Fairbairns, and E. Hyden. 
+     <a href="bib/leslie95design.pdf"><strong>The Design and Implementation of an 
+     Operating System to Support 
+     Distributed Multimedia Application</strong></a>.
+     Journal on Selected Areas in Communications, June 1995. 
+
+<li> D. B. Terry, M. M. Theimer, K. Petersen, A. J. Demers,
+     M. J. Spreitzer, and C. H. Hauser.
+     <a href="bib/terry95managing.pdf"><strong>Managing update conflicts
+	in Bayou, a weakly connected replicated storage system</strong></a>.
+     Proc. of 1995 
+     Proc. of the 15th ACM Symposium on Operating Systems Principles, 
+     pp. 172-183, December 1995. <p>
+</ul>
+
+<P><HR width="50%"><P><H3><a name="reliability">Reliability and Recovery</a></H3><P>
+
+<ul>
+<li> Jim Gray.
+     <a href="bib/gray81transaction.pdf"><strong>
+	The Transaction Concept: Virtues and Limitations</strong></a>.
+     Proc. 7th International Conference on Very Large Data Bases,
+      pp. 144-154, September 1981. <p>
+
+<li> B. M. Oki, B. H. Liskov, and R. W. Scheifler. 
+     <a href="bib/oki85reliable.pdf"><strong>
+	Reliable Object Storage to Support Atomic Actions</strong></a>.
+     Proc. of the 10th ACM Symposium on Operating Systems Principles, 
+     pp. 147-159, December 1985. <p>
+
+<li> A. Borg, W. Blau, W. Graetsch, F. Herrmann, and W. Oberle.
+     <a href="bib/borg89faulttolerance.pdf"><strong>
+	Fault Tolerance under UNIX</strong></a>.
+     ACM Trans. on Computer Systems 7(1), pp. 1-24, February 1989. <p>
+
+<li> J. Gray and D. P. Sieworek. 
+     <a href="bib/gray91highavailability.pdf"><strong>
+	High-Availability Computer Systems</strong></a>.
+     Computer 24(9), pp. 39-48, September 1991. <p>
+
+<li> K. R. Birman.  
+     <a href="bib/birman92process.pdf"><strong>
+	The Process Group Approach to
+	Reliable Distributed Computing</strong></a>.
+     Communications of the ACM, 36(12), December 1993. <p>
+
+<li> M. Satyanarayanan, H. H. Mashburn, P. Kumar, D. C. Steere, and 
+     J. J. Kistler.  
+     <a href="bib/satyanarayanan94lightweight.pdf"><strong>
+	Lightweight Recoverable Virtual Memory</strong></a>.  
+     ACM Trans. on Computer Systems, 12(1), pp.33-57, February 1994. <p> 
+</ul>
+
+<P><HR width="50%"><P><H3><a name="bugs">Bugs and System Failures</a></H3><P>
+
+<ul>
+<li> N. G. Leveson and C. S. Turner. 
+     <a href="bib/leveson93therac.pdf"><strong>
+	An Investigation of the Therac-25 accidents</strong></a>.
+     IEEE Computer, 26(7), pp. 18-41, July 1993. <p>
+
+<li> J. Lions, L. Lebeck, J. Fauquembergue, G. Kahn, W. Kubbat, 
+     S. Levedag, L. Mazzini, D. M. Thomson, and C. O'Halloran.
+     <a href="bib/lions96ariane5.pdf"><strong>
+	ARIANE 5 Flight 501 Failure: Report by the Inquiry Board</strong></a>.
+     European Space Agency Report, Paris, July 1996. <p>
+
+<li> G.E. Reeves. 
+     <a href="bib/reeves97what.pdf"><strong>
+	What Really Happened on Mars?</strong></a>.
+     Personal Communication. December 1997. <p>
+</ul>
+
+
+<P><HR width="50%"><P><H3><a name="misc">Miscellaneous</a></H3><P>
+
+<ul>
+<li> R. Scheifler and J. Gettys. 
+     <a href="bib/scheifler86xwindow.pdf"><strong>The X Window System</strong></a>.
+     ACM Trans. on Graphics, 5(2), pp. 79-109, April 1986. <p>
+
+<li> B. Bershad, J. Ellis, and D. Redell.
+     <a href="bib/bershad92fast.ps"><strong>Fast Mutual 
+     Exclusion for Uniprocessors</strong></a>.
+     Proc. of ASPLOS 1992. <p>
+
+<li> C.A.R. Hoare.
+     <a href="bib/hoare81emperor.pdf"><strong>
+	The Emperor's Old Clothes</strong></a>.
+     Communications of the ACM, 24(2), pp. 75-83, February 1981. <p>
+
+<li> R. Levin, D. D. Redell,
+     <a href="bib/levin83evaluation.pdf"><strong>
+	An Evaluation of the 9th SOSP Submissions</strong></a>.
+     Operating Systems Review, 17(3), pp. 35-40, July 1983.<p>
+</ul>
+
+
+<P><HR><P>
+<ADDRESS>Copyright (c) 2000-2010
+<a href="http://www.cs.yale.edu/users/shao-zhong/">Zhong Shao</a>
+and
+<a href="http://www.cs.yale.edu/people/ford.html">Bryan Ford</a>,
+<a href="http://www.cs.yale.edu/">Department of Computer Science</a>,
+<a href="http://www.yale.edu/">Yale University</a><br>
+Many course materials derived from
+<a href="http://pdos.csail.mit.edu/6.828/">6.828</a>
+by Frans Kaashoek and others at MIT.
+</ADDRESS> 
+
+</BODY>
+</HTML>
+

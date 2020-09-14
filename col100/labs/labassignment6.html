@@ -1,0 +1,69 @@
+<h3> Assignment 6</h3>
+<h4>Lab assignment 6 is available on the moodle for your practice. Please note that this is an ungraded assignment. You can submit the answers directly on the moodle for the first two questions. For the 3rd question, you can use your preferred IDE to write the code and then copy paste that on the moodle.</h4>
+<h4>We encourage you to do these ungraded assignments by yourself until the end, as this will help you to improve your coding skills.</h4>
+<ol>
+<li><b>Reference parameters</b>: What is the output of the following code?
+<pre>
+void mystery(int &b, int c, int &a)
+{
+  a++;
+  b--;
+  c += a;
+}
+
+int main()
+{
+  int a = 5;
+  int b = 2;
+  int c = 8;
+  mystery(c, a, b);
+  cout << a << " " << b << " " << c << endl;
+  return 0;
+}
+</pre>
+Explain.
+</li>
+<li><b>Return values</b>: What is the output of the following code?
+<pre>
+int mystery(int b, int c)
+{
+  return c + 2 * b;
+}
+
+int main()
+{
+  int a = 4;
+  int b = 2;
+  int c = 5;
+  a = mystery(c, b);
+  c = mystery(b, a);
+  cout << a << " " << b << " " << c << endl;
+  return 0;
+}
+</pre>
+Explain.
+</li>
+<li><b>Square root by Newton's method</b>: In order to compute the square
+root of a number <code>a</code>, we can start with some approximate value
+<code>x</code> and refine it as follows:
+<pre>
+y = (x + a/x)/2
+</pre>
+For example, if <code>a=4</code> and our initial estimate is <code>x=3</code>,
+then:
+<pre>
+y = (3 + 4/3)/2 = 2.1666
+</pre>
+We can repeat the process again with <code>y'</code> as our new estimate. Continuing the above example, we get:
+<pre>
+y' = (2.1666 + 4/2.1666)/2 = 2.0064
+</pre>
+Now, repeat again with <code>y'</code> as our new estimate until there is no change in the value computed.
+
+<p>Implement a function <code>float square_root(float a, int k)</code> that takes in a floating point number <code>a</code>, an integer <code>k</code> corresponding to the number of times to repeat the estimation procedure and returns the square root. If <code>k &lt;= 0</code>, then the function is expected to run until there is no change in the estimated value. Use the initial estimate of <code>1.0</code> for all cases.
+
+<p>Examples:
+<ul>
+<li> square_root(4, 2) should return <code>2.05</code> (as the initial estimate is <code>1.0</code>.</li>
+<li> square_root(4, 0) should return <code>2.0</code></li>
+</ul>

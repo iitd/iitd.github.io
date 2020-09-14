@@ -1,0 +1,234 @@
+Start: Jan 3, 2013
+Stop: May 1, 2013
+Schedule: Tuesday, Thursday, Friday
+
+HOLIDAY: Jan 14. Makar Sakranti 
+HOLIDAY: Jan 17. Monday Time Table
+HOLIDAY: Jan 26. Republic Day
+HOLIDAY: Feb 5. Minor Test 1
+HOLIDAY: Feb 22. Midterm Presentations
+HOLIDAY: Mar 5. Mid-sem break
+HOLIDAY: Mar 7. Mid-sem break
+HOLIDAY: Mar 8. Mid-sem break
+HOLIDAY: Mar 15. No class
+HOLIDAY: Mar 19. No class
+HOLIDAY: Mar 21. No class
+HOLIDAY: Mar 22. Minor Test 2
+HOLIDAY: Mar 27. Holi
+HOLIDAY: Mar 29. Good Friday
+HOLIDAY: Apr 19. Ram Navami
+HOLIDAY: Apr 24. Mahavir Jayanti
+
+HEADER: Links to notes etc. on future days are <i>tentative only</i>. They are here only to give you an idea what the future will bring.<br>SG refers to the book by Silberschatz and Galvin<br>
+FOOTER: <i>Many course materials derived from <a href=http://pdos.csail.mit.edu/6.828/>6.828</a> by Frans Kaashoek and others at MIT; some derived from Dawson Engler's <a href=cs140.stanford.edu>cs140</a> course materials at Stanford</i>
+TITLE: CSL373/CSL633 : Operating Systems : Schedule
+SEMESTER: Sem II, 2012-13
+
+==
+
+<a href=lab1>Lab 1: Initializing PC Hardware</a>
+OUT: Jan 3
+DUE: Feb 5
+
+==
+
+<a href=pintos/doc/pintos_3.html>Lab 2: Pintos User Programs</a>
+OUT: Jan 29
+DUE: Feb 22
+
+==
+
+<a href=pintos/doc/pintos_4.html>Lab 3: Pintos Virtual Memory</a>
+OUT: Feb 22
+DUE: Mar 29
+
+==
+
+<a href=pintos/doc/pintos_5.html>Lab 4: Pintos File System</a>
+OUT: Apr 2
+DUE: Apr 30
+
+==
+
+LEC: <a href=lec/l1.html>Introduction, OS Abstractions</a> (<a href=slides/l1.pdf>slides</a>)
+PREP: Read <a href=bib/ritchie79evolution.pdf>The Evolution of the Unix Time-Sharing System</a>, optionally read <a href=http://pubs.opengroup.org/onlinepubs/009695399/functions/fork.html>Multi-threading and Fork</a>.
+OSC: chapter 1, <a href=http://linux.die.net/man/7/pipe>pipe</a> man page, <a href=http://www.gnu.org/s/hello/manual/libc/Interrupted-Primitives.html>Interrupted Primitives</a>
+
+==
+
+LEC: <a href=lec/threads.html>System Calls and Threads</a> (<a href=slides/threads.pdf>slides</a>)
+
+==
+
+LEC: ..continued.
+PREP: Read <a href=book-rev6.pdf>xv6 chapter 0</a>.
+
+==
+
+LEC: ..continued.
+
+==
+
+LEC: <a href=lec/l3.html>x86 Processor Basics</a> (<a href=slides/l3.pdf>slides</a>, <a href=lec/l3-handout.html>handout</a>)
+PREP: do <a href=lec/l1-hw.html>homework</a>. Read <a href=book-rev6.pdf>xv6 chapter 1</a> and optionally <a href=ref/pc-arch.html>IA-32 guide</a>
+
+==
+
+LEC: ..continued
+
+==
+
+LEC: ..continued
+
+==
+
+LEC: ..continued
+
+==
+
+LEC: <a href=lec/l11.html>Address Translation</a> (<a href=slides/l11.pdf>slides</a>)
+PREP: do <a href=lec/l3-hw.html>homework</a> (<a href=lec/l3-pointers.c>l3-pointers.c</a>), read <a href=ref/ia32-3.pdf>80386 chapter 3</a>,
+
+==
+
+LEC: ..continued
+
+==
+
+LEC: ..continued
+
+==
+
+LEC: <a href=lec/l4.html>Processes and Memory Allocation</a> (<a href=lec/l4-mmu.pdf>MMU</a>, <a href=lec/x86_translation_and_registers.pdf>paging</a>)
+PREP: Read <a href=book-rev6.pdf>xv6 chapter 2</a>, <a href=http://duartes.org/gustavo/blog/post/anatomy-of-a-program-in-memory>Process Anatomy</a>;
+OSC: 3.1-3.3
+
+==
+
+LEC: ..continued
+
+==
+
+
+LEC: ..continued
+
+==
+
+LEC: ..continued
+
+==
+
+LEC: <a href=lec/l-processes.txt>Process Creation</a>
+PREP: do <a href=lec/l4-hw.html>homework</a>
+
+==
+
+LEC: <a href=lec/l5.html>Modes, Stacks, and Traps</a> (<a href=lec/l5-idt.pdf>handout</a>)
+PREP: Read <a href=book-rev6.pdf>xv6 chapter 3</a>
+
+==
+
+LEC: ..continued
+PREP:
+
+==
+
+LEC: <a href=lec/l7.html>Context Switching</a>
+PREP: Read <a href=book-rev6.pdf>xv6 chapter 5 through section "<i>Code: Scheduling</i>"</a> with proc.c, setjmp.S, and sys_fork (in sysproc.c)
+OSC: chapter 5
+
+==
+
+LEC: <a href=lec/l6.html>Multiprocessors and Locking</a>
+PREP: Read <a href=book-rev6.pdf>xv6 chapter 4</a> with spinlock.c and skim mp.c<br><a href=http://stackoverflow.com/questions/187761/recursive-lock-mutex-vs-non-recursive-lock-mutex>Recursive vs. Non-Recursive Locks</a>
+
+==
+
+LEC: ..continued
+PREP: do <a href=lec/l5-hw.html>homework</a>.
+OSC: chapter 9
+
+==
+
+LEC: <a href=lec/l9.pdf>Abstracting Synchronization</a>
+
+==
+
+LEC: ..continued
+PREP: Read <a href=http://poorvi.cse.iitd.ernet.in/~sbansal/csl373/resources/kaashoek-concurrency.ps>Kaashoek's concurrency notes</a> (internal link)
+
+==
+
+LEC: <a href=lec/l8.html>Process Coordination</a>
+PREP: Read rest of <a href=book-rev6.pdf>xv6 chapter 5</a>; read remainder of proc.c and sys_wait, sys_exit, sys_kill.
+OSC: chapters 6, 7
+
+==
+
+LEC: VM Swapping and Page Replacement (<a href=lec/lecture10.pdf>l10</a>, <a href=lec/lecture11.pdf>l11</a>).<br>Advanced Reading: "CAR: CLOCK with Adaptive Replacement" (<a href=http://www.cse.iitd.ernet.in/~sbansal/pubs/fast04.pdf>PDF</a>, <a href=http://www.cse.iitd.ernet.in/~sbansal/pubs/fast04ppt.pdf>PDF of Presentation</a>)
+OSC: chapter 9
+PREP: do <a href=lec/l8-hw.html>homework</a>
+
+==
+
+LEC: Page Replacement (<a href=lec/lecture12.pdf>l12</a>)
+
+==
+
+LEC: <a href=lec/l12.html>Files and Disk I/O</a>
+PREP: readi, writei, filewrite, fileread, dirlink, create, and code related to these system calls in fs.c, bio.c, ide.c, sysfile.c, and file.c. Commentary on these functions in <a href=book-rev6.pdf>xv6 chapter 6</a> and <a href=book-rev6.pdf>chapter 7</a>
+OSC: chapters 12, 13
+
+==
+
+LEC: ..contd
+
+==
+
+LEC: ..contd
+
+==
+
+LEC: ..contd
+
+==
+
+LEC: <a href=lec/l-crash.txt>Crash Recovery and Logging</a>
+
+==
+
+LEC: ..contd
+PREP: do <a href=lec/l10-hw.html>homework</a>
+
+==
+
+LEC: <a href=lec/l-journal.txt>File system performance and reliability</a>
+PREP: Read <a href=bib/tweedie98journaling.pdf>Journaling the Linux ext2fs Filesystem</a>
+
+==
+
+LEC: <a href=lec/l-sync.html>Performance and durability</a>
+PREP: Read <a href=bib/nightingale06rethink.pdf>Rethink the sync</a>, do <a href=lec/log-hw.html>homework</a>
+
+==
+
+LEC: <a href=lec/l-rcu.html>Multi-processor coordination: lock free</a>
+PREP: Read <a href=bib/mckenney01read.pdf>Read-Copy-Update</a>, optionally <a href=bib/clements-bonsai.pdf>Address Space Using RCU Trees</a>
+
+==
+
+LEC: ..contd.
+
+==
+
+LEC: Thrashing (<a href=lec/lecture13.pdf>l13</a>)
+
+==
+
+LEC: <a href=lec/l-scheduling-policies.html>Scheduling Policies</a> (<a href=lec/l-scheduling-policies.pdf>slides</a>)
+
+==
+
+LEC: <a href=lec/security.html>Security and Access Control</a>
+
+==

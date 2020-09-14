@@ -1,0 +1,137 @@
+
+<html>
+<head>
+<title>Homework: locking</title>
+<link rel="stylesheet" href="../labs.css" type="text/css" />
+</head>
+<body>
+
+<h2><a href="..">CPSC 422/522: Operating Systems</a></h2>
+<hr>
+
+<h1>Homework: locking</h1>
+
+
+
+<p>
+<b>Read</b>: spinlock.c
+
+<p>
+<b>Hand-In Procedure</b>
+<p>
+You are to turn in this homework at the beginning of lecture. Please
+write up your answers to the exercises below and hand them in to a
+staff member at the beginning of lecture.
+<p>
+
+<b>Assignment</b>:
+In this assignment we will explore some of the interaction
+between interrupts and locking.
+<p>
+
+Make sure you understand what would happen if the kernel executed
+the following code snippet:
+<pre>
+  struct spinlock lk;
+  initlock(&amp;lk, "test lock");
+  acquire(&amp;lk);
+  acquire(&amp;lk);
+</pre>
+(Feel free to use QEMU to find out.  <code>acquire</code> is in <code>spinlock.c</code>.)
+<p>
+
+An <code>acquire</code> ensures interrupts are off
+on the local processor using the <code>cli</code> instruction
+(via <code>pushcli()</code>),
+and interrupts remain off until the <code>release</code>
+of the last lock held by that processor
+(at which point they are enabled using <code>sti</code>).
+<p>
+
+Let's see what happens if we turn on interrupts while
+holding the <code>ide</code> lock.
+In <code>iderw</code> in <code>ide.c</code>, add a call
+to <code>sti()</code> after the <code>acquire()</code>,
+and a call to <code>cli()</code> just before the <code>release()</code>.
+Rebuild the kernel and boot it in QEMU.
+Chances are the kernel will panic soon after boot; try booting QEMU a few times
+if it doesn't.
+<p>
+
+<div class="required">
+<p><span class="header">Turn in:</span>
+explain in a few sentences why the kernel panicked.
+You may find it useful to look up the stack trace
+(the sequence of <code>%eip</code> values printed by <code>panic</code>)
+in the <code>kernel.asm</code> listing.
+</p></div>
+
+Remove the <code>sti()</code> and <code>cli()</code> you added,
+rebuild the kernel, and make sure it works again.
+<p>
+
+Now let's see what happens if we turn on interrupts
+while holding the <code>file_table_lock</code>.
+This lock  protects the table of file descriptors,
+which the kernel modifies when an application opens or closes
+a file.
+In <code>filealloc()</code> in <code>file.c</code>, add
+a call to
+<code>sti()</code> after the call to <code>acquire()</code>,
+and a <code>cli()</code> just before <b>each</b> of the
+<code>release()</code>es.
+You will also need to add 
+<code>#include "x86.h"</code> at the top of the file after
+the other <code>#include</code> lines.
+Rebuild the kernel and boot it in QEMU.
+It will not panic.
+<p>
+
+<div class="required">
+<p><span class="header">Turn in:</span>
+explain in a few sentences why the kernel didn't panic.
+Why do <code>file_table_lock</code> and <code>ide_lock</code> have
+different behavior in this respect?
+<p>
+You do not need to understand anything about the details of the IDE hardware
+to answer this question, but you may find it helpful to look 
+at which functions acquire each lock, and then at when those
+functions get called.
+</p></div>
+
+<p>
+(There is a very small but non-zero chance that the kernel will panic
+with the extra <code>sti()</code> in <code>filealloc()</code>.
+If the kernel <i>does</i> panic, make doubly sure that
+you removed the <code>sti()</code> call from 
+<code>iderw</code>.  If it continues to panic and the
+only extra <code>sti()</code> is in <code>filealloc()</code>,
+then E-mail the staff
+and think about buying a lottery ticket.)
+<p>
+
+<div class="required">
+<p><span class="header">Turn in:</span>
+Why does <code>release()</code> clear
+<code>lk-&gt;pcs[0]</code> and <code>lk-&gt;cpu</code>
+<i>before</i> clearing <code>lk-&gt;locked</code>?
+Why not wait until after? 
+</p></div>
+
+
+
+<p><hr><p>
+<address>
+<a href="http://www.cs.yale.edu/people/ford.html">Bryan Ford</a>,
+<a href="http://www.cs.yale.edu/">Department of Computer Science</a>,
+<a href="http://www.yale.edu/">Yale University</a>
+</address> 
+
+
+<i>Based on MIT 6.828 materials
+	by Frans Kaashoek and others</i>
+
+
+</body>
+</html>
+

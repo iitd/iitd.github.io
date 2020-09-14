@@ -1,0 +1,102 @@
+<html>
+<head>
+<title>L1</title>
+</head>
+<body>
+
+<h1>Introduction to UNIX System Calls</h1>
+
+<h2>Outline</h2>
+<ul>
+<li>System Calls: fork, exec, exit, wait, open, read, write, close
+<li>Case Study: Unix/xv6 shell (simplified)
+</ul>
+
+<h2>System Calls</h2>
+<ul>
+	<li>"Kernel functions" that perform privileged operations on behalf
+of the process. As an OS designer, one of the goals is to minimize the
+system call interface.</li>
+</ul>
+
+<h2>Case study: Unix/xv6 shell (simplified)</h2>
+
+<ul>
+<li>provides an interactive command execution and programming language
+<li>typically handles login session, runs other processes
+<li>look at some simple examples of shell operations, how they
+    use different OS abstractions, and how those abstractions
+    fit together.
+    See <a href="../bib/ritchie74unix.pdf">Unix paper</a>
+    if you are unfamiliar with the shell.
+<li>Basic structure:
+<pre>
+	while (1) {
+	    write (1, "$ ", 2);			// 1 = STDOUT_FILENO
+	    readcommand (0, command, args);	// parse user input, 0 = STDIN_FILENO
+	    if ((pid = fork ()) == 0) {		// child?
+		exec (command, args, 0);
+	    } else if (pid > 0) {		// parent?
+		wait (0);			// wait for child to terminate
+	    } else {
+		perror ("Failed to fork\n");
+	    }
+	}
+</pre>
+<li>system calls: <code>read</code>, <code>write</code>,
+	<code>fork</code>, <code>exec</code>, <code>wait</code>.
+    conventions: -1 return value signals error,
+    error code stored in <code>errno</code>,
+    <code>perror</code> prints out a descriptive error
+    message based on <code>errno</code>.
+<li>What's the shell doing?
+    fork, exec, wait: process diagram
+    (PID, address space -- memory of the process, parent links).
+    fork returns twice, in some sense!
+<li>why call "wait"?  to wait for the child to terminate and collect
+    its exit status.  (if child finishes, child becomes a zombie until
+    parent calls wait.)
+
+<li>Example:
+<pre>
+	$ ls
+</pre>
+<li>how does ls know which directory to look at? (cwd variable is copied during fork)
+<li>how does it know what to do with its output? (fd[1] is initialized by the shell)
+<li>I/O: process has file descriptors, numbered starting from 0.
+<li>system calls: open, read, write, close
+
+<li>numbering conventions:
+<ul>
+<li>file descriptor 0 for input (e.g., keyboard). read_command: 
+<pre>
+     read (0, buf, bufsize)
+</pre>
+<li>file descriptor 1 for output (e.g., terminal)
+<pre>
+     write (1, "hello\n", strlen("hello\n"))
+</pre>
+<li>file descriptor 2 for error (e.g., terminal)
+</ul>
+<li>on fork, child inherits open file descriptors from parent (show in
+    process diagram).
+<li>on exec, process retains file descriptors, except those specifically
+    marked as close-on-exec: <code>fcntl(fd, F_SETFD, FD_CLOEXEC)</code>
+
+<li>How does the shell implement:
+<pre>
+     $ ls > tmp1
+</pre>
+just before exec insert:
+<pre>
+	close(1);
+	creat("tmp1", 0666);   // fd will be 1
+</pre>
+<p>The kernel always uses the first free file descriptor, 1 in this case.
+    Could use <code>dup2()</code> to clone a file descriptor to a new number.
+
+<li>Good illustration for why fork + exec vs. CreateProcess on Windows.
+    (CreateProcess takes 10 arguments.)
+</body>
+
+

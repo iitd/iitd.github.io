@@ -1,0 +1,281 @@
+<h2>Maps</h2>
+Stores <b>pairs</b> of information
+<ul>
+<li>First half of the pair is called <b>key</b>.</li>
+<li>The second half is the associated <b>value</b>.</li>
+<li>Find a value by looking up its associated key.</li>
+<li>Useful when you will have only half the information available later in the program.</li>
+<li>Keys must be unique --- just like elements in a Set!</li>
+</ul>
+
+<p>Comparison with Vector
+<ul>
+<li>Vectors lookup elements by <em>index</em>, Maps look them up by <em>key</em>.</li>
+<li>Need to have two types: for the key and for the value</li>
+<li>Ordered by key, not index</li>
+</ul>
+
+<p>Example
+<pre>
+map.put (key, value) 
+</pre>
+<ul>
+<li><code>map[key] = value;</code></li>
+<li>Adds the key if it was not already in the map</li>
+<li>Otherwise edits (overwrites) its value</li>
+</ul>
+
+<p>
+<pre>
+map.get(key)
+</pre>
+<ul>
+<li><code>map[key]</code> : this alternate syntax will create a key with the <b>default</b> value in the map if it did not already exist.</li>
+</ul>
+
+<p>
+<pre>
+map.remove(key)
+</pre>
+<ul>
+<li>No effect if the key is not in the map. Otherwise removes the key-value pair from the map.</li>
+</ul>
+
+<h3>Member functions</h3>
+<table style="width:100%" border="1">
+<tr>
+<td><code>m.put(key, value)</code></td>
+<td><code>m[key] = value</code></td>
+<td>O(log N)</td>
+<td>Inserts the key-value pair if the key does not already exist; else (if key already exists), overwrites</td>
+</tr>
+<tr>
+<td><code>m[key] = value</code></td>
+<td><code>m[key] = value</code></td>
+<td>O(log N)</td>
+<td>Inserts the key-value pair if the key does not already exist; else (if key already exists), overwrites</td>
+</tr>
+<tr>
+<td><code>m.get(key)</code></td>
+<td><code>m.at(key)</code></td>
+<td>O(log N)</td>
+<td>If key already exists, returns the corresponding value; raises exception if key was not present.</td>
+</tr>
+<tr>
+<td><code>m[key]</code></td>
+<td><code>m[key]</code></td>
+<td>O(log N)</td>
+<td>If key already exists, returns the corresponding value; if key was not present, adds a default value for the key to <code>m</code> and returns it.</td>
+</tr>
+<tr>
+<td><code>m.remove(key)</code></td>
+<td><code>m.erase(key)</code></td>
+<td>O(log N)</td>
+<td>If key exists, removes the key and associated value. Else, no effect.</td>
+</tr>
+<tr>
+<td><code>m.containsKey(key)</code></td>
+<td><code>m.find(key) != m.end()</code></td>
+<td>O(log N)</td>
+<td>Returns true if key exists in m.</td>
+</tr>
+
+</table>
+
+<p>Map Example: Dictionary
+<pre>
+ifstream file;  
+promptUserForFile(file, "Where is your dictionary?");  
+Map&lt;string, string&gt; dictionary;   
+string word; 
+  
+while (getline(file, word)) {
+    string definition;      
+    getline(file, definition);      
+    dictionary[word] = definition;  
+}   
+while (true) {
+    string query = getLine("Word to look up?");       
+    if (dictionary.containsKey(query)) {          
+       cout << "The definition is " << dictionary[query] << endl;     
+    } else {
+       cout << "I don't know that word!" << endl;      
+    }  
+}   
+</pre>
+Question: what if the user was also interested in the list of words for a given meaning? One option is to loop over maps; another option is to maintain a reverse map; we will look at both options one by one.
+
+<p>Looping over Maps
+<ul>
+<li>Maps also don't have indices, so we use a for-each loop over the keys</li>
+<li>Iterates in sorted order over the keys (alphabetical order for strings)</li>
+<li>Cannot edit the keys while we iterate (can edit values!)</li>
+</ul>
+<pre>
+Map&lt;string, int&gt; phonebook;		
+phonebook["Director"] = 12345678;	
+phonebook["Dean"] = 98765432;	
+...
+		
+//prints in alphabetical order  
+for (string name : phonebook) { 
+    int phoneNumber = phonebook[name]; 
+    cout << "I’m going to call " << name; 
+    cout << " at " << phoneNumber << endl;  
+}
+</pre>
+
+For C++ STL, the for-each loop iterates using key-value; access key using .first, access value using .second. example:
+<pre>
+Map&lt;string, int&gt; phonebook;		
+phonebook["Director"] = 12345678;	
+phonebook["Dean"] = 98765432;	
+...
+		
+//prints in alphabetical order  
+for (pair&lt;string, int&gt; name_phone : phonebook) { 
+    string name = name_phone.first;
+    int phoneNumber = name_phone.second;
+    cout << "I’m going to call " << name; 
+    cout << " at " << phoneNumber << endl;  
+}
+</pre>
+
+
+
+<h3>Word Count</h3>
+<ul>
+<li>We have found the number of unique words in a file. Another statistic is: how often is each word used in the file.</li>
+</ul>
+Given an input file, print each unique word with its frequency in lexicographic order.
+
+<p>Input <code>in.txt</code>:
+<pre>
+to be or not to be
+hello world
+the world is not enough
+i think therefore i am
+</pre>
+
+<p>Output:
+<pre>
+am: 1
+be: 2
+enough: 1
+hello: 1
+i: 2
+is: 1
+not: 2
+or: 1
+the: 1
+therefore: 1
+think: 1
+to: 2
+world: 2
+</pre>
+
+<p>Program:
+<code>
+int main()
+{
+  ifstream infile("in.txt");
+  string word;
+  Map&lt;string, int&gt; wc;
+  while (infile >> word) {
+    if (!wc.containsKey(word)) {
+      wc[word] = 0;
+    }
+    wc[word]++;
+  }
+  for (string w : wc) {
+    cout << w << ": " << wc[w] << endl;
+  }
+}
+</code>
+
+
+<h3>Word Count sorted on word frequency</h3>
+Example:
+<p>Input <code>in.txt</code>:
+<pre>
+to be or not to be
+hello world
+the world is not enough
+i think therefore i am
+</pre>
+
+<p>Output:
+<pre>
+be: 2
+i: 2
+not: 2
+to: 2
+world: 2
+am: 1
+enough: 1
+hello: 1
+is: 1
+or: 1
+the: 1
+therefore: 1
+think: 1
+</pre>
+
+<p>Need to devise a solution where the frequency is the key. One solution: after constructing <code>wc</code>, create another map where the frequency is the key. But now, multiple words can have the same frequency, so what should be the value of this map? e.g., <code>set&lt;string&gt;</code>.
+<pre>
+Map&lt;int, Set&lt;string&gt;&gt;
+</pre>
+Could you use a <code>Vector</code> instead of <code>Set</code>. How about using a Queue or Stack?
+
+<pre>
+int main()
+{
+  ifstream infile("in.txt");
+  string word;
+  Map&lt;string, int&gt; wc;
+  while (infile >> word) {
+    if (!wc.containsKey(word)) {
+      wc[word] = 0;
+    }
+    wc[word]++;
+  }
+  Map&lt;int, set&lt;string&gt;&gt; wc_sorted;
+  for (string w : wc) {
+    int wfreq = wc[w];
+    if (!wc_sorted.containsKey(wfreq)) {
+      wc_sorted[wfreq] = Set&lt;string&gt;();
+    }
+    wc_sorted[wfreq].add(w);
+  } 
+  for (int wfreq : wc_sorted) {
+    Set&lt;string&gt; words = wc_sorted[wfreq];
+    for (string word : words) {
+      cout << word << ": " << wfreq << endl;
+    }
+  }
+}
+</pre>
+
+<h3>Another example of nested ADTs</h3>
+Problem: we want to schedule dinner with a group of our friends.
+<ul>
+<li>We have a text file with all our friends' preferences. example:
+<pre>
+ram
+Staff Canteen
+Rainbows
+
+shyam
+Rajdhani Chatkare
+Govardhan
+Rainbows
+
+geeta
+Govardhan
+Rainbows
+</pre>
+</li>
+<li>Given a group of friends, where should we eat to maximize happiness? We may not be able to satisfy everyone, but we want to maximize the number of satisfied friends.</li>
+<li>Which ADTs should we use?</li>
+<li>What will be our program?</li>
+</ul>

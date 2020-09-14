@@ -1,0 +1,179 @@
+<h2>ADTs continued: Stacks</h2>
+
+So far: Vector (for 1-D data) and Grid (for 2-D data)
+
+<p>A new ADT: the Stack.
+<ul>
+<li>A specialized data structure that only allows a user to add, access and remove the <b>last</b> element
+<ul>
+<li><b>"Last in, First out"</b></li>
+<li>Super-fast (O(1)) for these operations
+<ul>
+<li>Built directly into the hardware</li>
+</ul>
+</ul>
+</li>
+<li>Main operations:
+<ul>
+<li><b>push(value)</b>: add an element to the end of the stack.</li>
+<li><b>pop()</b>: remove and return the last element in the stack</li>
+<li><b>peek()</b>: return (but do not remove) the last element in the stack</li>
+</ul>
+</ul>
+
+<p>Stacked examples:
+<ul>
+<li>Real life: Rotis, Clothes, Plates in the dining hall, question papers in examination hall, ...</li>
+<li>In Computer Science:
+<ul>
+<li>Function calls</li>
+<li>Keeping track of edits to undo or pages visited on a website to go back to.</li>
+</ul>
+</li>
+</ul>
+
+<p>Stack syntax
+<pre>
+#include "stack.h" 
+Stack<int> nums;
+nums.push(1); 
+nums.push(3); 
+nums.push(5); 
+cout << nums.peek() << endl; // 5 
+cout << nums << endl; // {1, 3, 5} 
+nums.pop(); // nums = {1, 3} 
+s.isEmpty()  O(1)  returns true if stack has no 
+</pre>
+
+<p>Member functions
+<table style="width:100%" border="1">
+<tr>
+<td><code>s.isEmpty()</code></td>
+<td>O(1)</td>
+<td>returns true if stack has no elements</td>
+</tr>
+<tr>
+<td><code>s.peek()</code></td>
+<td>O(1)</td>
+<td>returns top value without removing it; throws an error if stack is empty</td>
+</tr>
+<tr>
+<td><code>s.pop()</code></td>
+<td>O(1)</td>
+<td>removes top value and retuns it; throws an error if stack is empty</td>
+</tr>
+<tr>
+<td><code>s.push(value)</code></td>
+<td>O(1)</td>
+<td>places given value on top of stack, increasing its size by one</td>
+</tr>
+<tr>
+<td><code>s.size()</code></td>
+<td>O(1)</td>
+<td>returns number of elements in stack.</td>
+</tr>
+</table>
+
+<p>Stack limitations/patterns
+<ul>
+<li>You cannot access a stack's elements by index!
+<pre>
+Stack&lt;int&gt; s;
+for (int i = 0; i &lt; s.size(); i++) {
+  do something with s[i]; //does not compile!
+}
+</pre>
+THE ABOVE CODE WILL NOT COMPILE!
+</li>
+<li>Instead you pull elements out of the stack one at a time.</li>
+<li>common pattern: pop each element until the stack is empty.
+<pre>
+//process (and empty!) an entire stack
+while (!s.isEmpty()) {
+  int i = s.pop();
+  //do something with i
+}
+</pre>
+</li>
+</ul>
+
+<p>Exercise: Sentence Reversal
+<ul>
+<li>Goal: print the words of a sentence in reverse order
+<ul>
+<li>Input: "I am xyz".  Output: "xyz am I"</li>
+<li>Input: "Hello". Output: "Hello"</li>
+</ul>
+</li>
+<li>Assume characters are only letters and spaces</li>
+<li>How could we use a Stack?</li>
+</ul>
+
+<p>Solution 1: use istringstream.
+
+<p>Solution 2: do it by hand
+<pre>
+void printSentenceReverse(const string &sentence) {  
+    Stack&lt;string&gt; wordStack;  
+    for (char c : sentence) {  
+        if (c == ' ') {  
+            wordStack.push(word);  
+            word = ""; // reset  
+        } else {  
+            word += c;  
+        }  
+    }  
+    if (word != "") {  
+        wordStack.push(word);  
+    }  
+    cout << " New sentence: ";  
+    while (!wordStack.isEmpty()) {  
+        word = wordStack.pop();  
+        cout << word << SPACE;  
+    }  
+    cout << endl; 
+} 
+</pre>
+
+<p>In summary: when to use what?
+<ul>
+<li>2-D data? Use grids</li>
+<li>1-Data? Which elements do I need to access?
+<ul>
+<li>Frequent looping or middle elements? Use Vector</li>
+<li>Last element? Use Stack</li>
+</ul>
+</li>
+</ul>
+
+<h3>Mapping to C++ STL functions</h3>
+<p>Member functions (first Stanford function, then STL function, then description): reference <a href=http://www.cplusplus.com/reference/stack/stack/>http://www.cplusplus.com/reference/stack/stack/</a>:
+<table style="width:100%" border="1">
+<tr>
+<td><code>s.isEmpty()</code></td>
+<td>s.empty()</td>
+<td>returns true if stack has no elements</td>
+</tr>
+<tr>
+<td><code>s.peek()</code></td>
+<td>s.top()</td>
+<td>returns top value without removing it; throws an error if stack is empty</td>
+</tr>
+<tr>
+<td><code>s.pop()</code></td>
+<td>s.pop()</td>
+<td>C++ STL version only removes top value (but does not return it); throws an error if stack is empty</td>
+</tr>
+<tr>
+<td><code>s.push(value)</code></td>
+<td>s.push(value)</td>
+<td>places given value on top of stack, increasing its size by one</td>
+</tr>
+<tr>
+<td><code>s.size()</code></td>
+<td>s.size()</td>
+<td>returns number of elements in stack.</td>
+</tr>
+</table>
+
+

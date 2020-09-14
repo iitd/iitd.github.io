@@ -1,0 +1,359 @@
+<title>L3: Operating System Organization</title>
+
+<pre>
+Operating System Organization
+
+the topic is overall o/s design
+  lots of ways to structure an o/s -- how to decide?
+  looking for principles and approaches
+
+what does an o/s *have* to do?
+  for e.g. desktop or server use
+  let apps use machine resources
+  multiplex resources among apps
+  isolate / protect
+  allow cooperation / interaction
+  we'll talk about three approaches, but others exist e.g. Java VM
+
+what's the traditional approach? (Linux, xv6)
+  virtualize some resources: cpu and memory
+    simulate a dedicated cpu and memory system for each app
+    why? it's a simple model for app programmers
+  abstract others: storage, network, IPC
+    layer a sharable abstraction over h/w (file system, IP/TCP)
+
+example: virtualize the cpu (show slide on processes = simplicity)
+  goal: simulate a dedicated cpu for each process
+    we want transparent CPU multiplexing
+    process need not think about how it interacts w/ other processes
+  o/s runs different processes in turn, via clock interrupt
+    clock means process doesn't need to do anything special to switch
+    also prevents hogging
+  how to achieve transparency?
+    o/s saves state, then restores
+  what does o/s save?
+    eight regs, EIP, seg regs, eflags, page table base ptr
+  where does o/s save it?
+    o/s keeps per-process table of saved states
+  the return from clock interrupt restores a *different* process's state
+  the point: process doesn't have to worry about multiplexing!
+  note: while this is the traditioal approach to virtualizing the CPU,
+    maybe not the best: see exokernel paper
+  type 'ps' on shell. How does 'ps' work?
+
+example: virtualize memory (show slide on processes = isolation)
+  idea: simulate a complete memory system for each process
+    so process has complete freedom how it uses that memory
+    doesn't have to worry about other processes
+    so addresses 0..2^32 all work, but refer to private memory
+    convenient: all programs can start at zero
+      and memory looks contiguous, good for large arrays &c
+    safe: can't even *name* another process's memory
+  again: traditional but we'll soon see it's a very limiting approach
+    really want apps to have more control than this style of VM implies
+  how can we do this? after all, the processes do in fact share the RAM
+
+how to create address spaces? (show figure)
+  could have only one process at a time in physical memory
+    would spend lots of time swapping in and out to disk
+    made sense 40 years ago w/ small memory machines
+  could use x86 segments (show figure)
+    put each process in a different range of physical memory
+    CS, DS, &c point to current process's base
+    looks good: addresses start at zero, contiguous, isolation
+    this is how x86 and original unix worked
+    need to prevent process from modifying seg regs
+      but allow kernel to modify them
+      386 has the hardware we need
+      h/w "privilege level" bit: on in kernel, off in apps
+      and ways to jump back and forth (syscalls, interrupts, return)
+		but: fragmentation (show figure), all mem must be resident,
+         can't have vm > phys
+  could use x86 paging hardware
+    MMU array w/ entry for each 4k range of "virtual" address space
+      refers to phy address for that "page"
+      this is the page table
+    now we don't have a fragmentation problem
+    o/s tells h/w to switch page table when switching process
+    level of indirection allows o/s to play other tricks
+      demand paging: (explain using figure)
+        process bigger than available physical memory?
+        "page-out" (write) pages to disk, mark PTEs invalid
+        if process tries to use one of those pages, MMU causes page fault
+          kern finds phys mem, page-in from disk, mark PTE valid
+        this works because apps use only a fraction of mem at a given time
+        need h/w valid flag, page faults, and re-startable instructions
+      copy-on-write:
+        avoid copy implied by fork() -- won't be needed if exec()
+        make parent and child share the physical memory pages
+        if either writes, do the copy then
+        so need per-page write-protect flag
+    both of above are transparent to application
+      still thinks it has simple dedicated memory from 0..2^32
+    paging h/w has turned out to be one of the most fruitful ideas in o/s
+			you'll be using it a lot in labs. The "right" page size is an engineering
+      decision. What should it depend on? Guesses on the approximate page size?
+
+Process = Thread + Address Space
+	In theory, each process (or thread) is an independent turing machine
+  (show slide on 'the multithreading illusion')
+
+Threads versus Procedures
+  Threads may resume out of order
+    - cannot use LIFO stack to save state
+    - general solution: duplicate stack
+  Threads switch less often
+    - Don't partition registers (why?)
+  Threads involuntarily interrupted
+    - Thread switch code saves all registers (compare with procedure call)
+  More than one thread can run
+    - Scheduling (who to run next?) becomes an issue
+    - For procedures, the candidate to run is obvious
+
+Process != Program (show slide)
+
+o/s = event-driven
+  while (1) {
+    wait for an event;
+    respond to the event;
+  }
+	event examples:
+   - user program issues a system call to read a file
+   - disk controller finishes reading the disk block and generates interrupt
+   - A firefox user asks for a URL to be retrieved
+   - Packet arrives over network
+   - Timer interrupt fires
+
+o/s organization
+  step back, what does a traditional o/s look like?
+
+traditional organization: monolithic o/s
+  h/w, kernel, user
+  kernel is a big program: process ctl, vm, fs, network
+  all of kernel runs w/ full hardware privilege (very convenient)
+  good: easy for sub-systems to cooperate (e.g. paging and file system)
+  bad: interactions => complex, bugs are easy, no isolation within o/s
+  philosophy: convenience (for app or o/s programmer)
+    for any problem, either hide it from app, or add a new system call
+    (we need philosophy because there is not much science here)
+  very successful approach
+
+alterate organization: microkernel
+  philosophy: IPC and user-space servers
+    for any problem, make a new server, talk to it w/ RPC
+  h/w, kernel, server processes, apps
+  servers: VM, FS, TCP/IP, Print, Display
+  split up kernel sub-systems into server processes
+    some servers have privileged access to some h/w (e.g. FS and disks)
+  apps talk to them via IPC / RPC
+  kernel's main job: fast IPC
+  good: simple/efficient kernel, sub-systems isolated, enforced better modularity
+  bad: cross-sub-system optimization harder, lots of IPCs may be slow
+  in the end, lots of good individual ideas, but overall plan didn't catch on
+
+alternate organization: exokernel
+  philosophy: eliminate all abstractions
+    for any problem, expose h/w or info to app, let app do what it wants
+  h/w, kernel, environments, libOS, app
+  an exokernel would not provide address space, virtual cpu, file system, TCP
+  instead, give control to app:
+    phys pages, addr mappings, clock interrupts, disk i/o, net i/o
+    let app build nice address space if it wants, or not
+    should give aggressive apps much more flexibility
+  challenges:
+    how to multiplex cpu/mem/&c if you expose directly to apps?
+    how to get security/isolation despite apps having low-level control?
+    how to multiplex w/o understanding: disk (file system), incoming tcp pkts
+
+exokernel example: memory
+  what are the resources? (phys pages, mappings)
+  what does an app need to ask the kernel to do?
+    pa = AllocPage()
+    DeallocPage(pa)
+    TLBwr(va, pa)
+  and these kernel->app upcalls:
+    PageFault(va)
+    PleaseReleaseAPage()
+  what does o/s need to do to make multiplexing work?
+    ensure app only creates mappings to phys pages it owns
+    track what env owns what phys pages
+    decide which app to ask to give up a phys page when system runs out
+      that app gets to decide which of its pages
+
+simple example: shared memory
+  two processes want to share memory, for fast interaction
+    note traditional "virtual address space" doesn't allow for this
+  process a: pa = AllocPage()
+             put 0x5000 -> pa in private table
+             PageFault(0x5000) upcall -> TLBwr(0x5000, pa)
+             give pa to process b (need to tell exokernel...)
+  process b:
+             put 0x6000 -> pa in private table
+             ...
+
+example cool thing you could do w/ exokernel-style memory
+  databases like to keep a cache of disk pages in memory
+  problem on traditional o/s:
+    assume an o/s with demand-paging to/from disk
+    if DB caches some disk data, and o/s needs a phys page,
+      o/s may page-out a DB page holding a cached disk block
+    but that's a waste of time: if DB knew, it could release phys
+      page w/o writing, and later read it back from DB file (not paging area)
+  1. exokernel needs phys mem for some other app
+  2. exokernel sends DB a PleaseReleaseAPage() upcall
+  3. DB picks a clean page, calls DeallocPage(pa)
+  4. OR DB picks dirty page, writes to disk, then DeallocPage(pa)
+    
+exokernel example: cpu
+  what does it mean to expose cpu to app?
+    kernel tells app when it is taking away cpu
+    kernel tells app when it gives cpu to app
+  so if app is running and timer interrupt causes end of slice
+    cpu jumps from app into kernel
+    kernel jumps back into app at "please yield" upcall
+    app saves state (registers, EIP, &c)
+    app calls Yield()
+  when kernel decides to resume app
+    kernel jumps into app at "resume" upcall
+    app restores those saved registers and EIP
+    (app knows best which registers to save. e.g., callee-saved versus
+     caller-saved).
+
+what cool things could an app do w/ exokernel-style cpu management?
+  suppose time slice ends in the middle of
+    acquire(lock);
+    ...
+    release(lock);
+  you don't want the app to be holding the lock the whole time!
+    then maybe other apps can't make forward progress
+  so the "please yield" upcall can first complete the critical section
+
+fast RPC with direct cpu management
+  how does traditional o/s let apps communicate?
+    pipes (or sockets)
+    picture: buffer in kernel, lots of copying and system calls
+    RPC probably takes 8 kernel/user crossings (read()s and write()s) [figure]
+  how does exokernel help?
+    Yield() can take a target process argument
+      almost a direct jump to an instruction in target process
+      kernel allows only entries at approved locations in target
+    kernel leaves regs alone, so can contain arguments
+      (in constrast to traditional restore of target's registers)
+    target app uses Yield() to return
+    so only 4 crossings [figure]
+
+procedure calls v/s thread switching
+  save active caller regs
+  call foo
+       --------------->
+                          save used callee registers
+                              ... do work ...
+													restore callee registers
+                          jumps back to pc
+              <---------
+   restore caller regs
+   
+	 What state is saved proactively? What state is saved lazily? What state
+   is not saved?
+
+Synchronous thread switching (assuming ~RISC architecture)
+   # scheduler called by running thread (e.g., using thread_yield())
+   # cswitch called by scheduler: a0 holds ptr to old thread blk
+   #                              a1 holds ptr to new thread blk
+   cswitch:
+       add sp, sp, -128
+       st  s0, 0(sp)       # save callee registers
+       st  s1, 4(sp)
+       st  s2, 8(sp)
+       ...
+       st  ra, 124(sp)     # save return address
+       st  sp, 0(a0)       # save stack pointer
+       ld  sp, 0(a1)       # load new stack pointer
+			 ld  s0, 0(sp)       # load up in reverse
+			 ld  s1, 4(sp)       # load up in reverse
+			 ld  s2, 8(sp)       # load up in reverse
+       ...
+       ld  ra, 124(sp)     # load return address
+			 add sp, sp, 128     # pop-off the stack
+       j   ra
+       
+
+Asynchronous thread switching (assuming ~RISC architecture)
+   # k0 = reserved register
+   # save current state:
+	 # triggered by interrupt. save current thread. call scheduler
+   save_state:
+       add sp, sp, -128
+       st  s0, 0(sp)       # save callee regs
+       st  s1, 0(sp)       
+       ...
+       st  t0, 64(sp)      # save caller regs
+       st  t1, 68(sp)
+       ...
+       st  epc, 132(sp)    # interrupt pc
+       ld  k0, current_thread
+       st  sp, 0(k0)
+			 ld  sp, scheduler_stack
+       j   scheduler
+
+   # restore current state
+   # called by scheduler
+   restore_state:
+       ld k0, current_thread
+       ld sp, 0(k0)
+       ld s0, 0(sp)
+       ld s1, 4(sp)
+       ...
+       ld t0, 64(sp)
+       ...
+       add sp, sp, 128
+       ld k0, 132(sp)      # old pc
+       j  k0
+
+
+
+
+Q: What is special about k0? k0 needs to be a register that is never used by
+	 the thread logic (it is not saved or restored). k0 can also be a memory
+   location
+Q: Some differences from synchronous thread switching?
+    -- Jump to scheduler performed after saving running thread registers.
+    -- Need to save caller-saved regs too. why?
+
+Real o/s permutations based on:
+  - one or many address spaces
+  - one or many threads per address space
+
+  # of addr spaces        |         1           |       many
+  --------------------------------------------------------------------
+  # of threads/addr-space |                     |
+           1              |  MS-DOS, Macintosh  |   Traditional Unix
+  --------------------------------------------------------------------
+          many            |  Embedded systems,  |   VMS, Mach, OS/2,
+                          |      Pilot          | Win/NT, Solaris, HP-UX,
+                          |                     |      Linux
+
+Example: web server
+  - Server must handle many requests
+  - Non-cooperating version:
+       while (1) {
+					con = AcceptConnection();
+					ProcessFork(ServiceWebPage(), con);
+       }
+    What are some disadvantages? Expensive to start new process, heavyweight
+    context switch overhead (changing address spaces)
+
+  - Web Server Using Threads:
+       while (1) {
+           con = AcceptConnection();
+           ThreadFork(ServiceWebPage(), con);
+       }
+     Looks almost the same but has many advantages due to shared address
+     space among multiple threads:
+			 - Can share file caches kept in memory, results of CGI scripts, etc.
+       - Threads are *much* cheaper to create than processes, so lower
+         per-request overhead
+
+     Q: Would a user-level (say many-to-one) thread package make sense here? When one request blocks on disk, all block ...
+
+</pre>

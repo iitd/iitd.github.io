@@ -1,0 +1,355 @@
+<html>
+<head>
+    <title>Multi-processor coordination without locks</title>
+</head>
+<body>
+
+<h1>Multi-processor coordination without locks</h1>
+
+<p>Required reading:
+    <a href="../bib/mckenney01read.pdf">Read-Copy Update</a>.
+
+<p>How to avoid using locks.  Even with scalable locks, their use can
+  be expensive.  Let's start with a simple data structure and try to
+  allow for concurrent access, so that we get a feel for the issues.
+
+<h2>Searchable stack using locks</h2>
+
+<pre>
+	struct element {
+	    int key;
+	    int value;
+	    struct element *next;
+	};
+
+	struct element *top;
+
+	void push(struct element *e) {
+	    e->next = top;
+	    top = e;
+	}
+
+	struct element *pop(void) {
+	    struct element *e = top;
+	    top = e->next;
+	    return e;
+	}
+
+	int search(int key) {
+	    struct element *e = top;
+	    while (e) {
+		if (e->key == key)
+		    return e->value;
+	        e = e->next;
+	    }
+	    return -1;
+	}
+
+this is clearly not going to work on a concurrent system
+
+global spinlock: performance
+    how many concurrent ops?  just one CPU at a time
+    bus interactions?  bounce cache line for both reads, writes
+
+global read-write lock: performance
+    how many concurrent ops?  theoretically, could do one per CPU
+    bus interactions?  bounce cache line for both reads, writes
+    draw timing diagram of CPU interactions
+    we might be slower on two CPUs than on a single CPU!
+
+is it going to get better if we allocate a read-write lock for each item?
+    concurrency still possible
+    but penalty even worse: N_{elem} cache line bounces for each search traversal
+
+more scalable locking schemes
+    paper alludes to a fairly simple one: brlock
+    N cpus would have N locks, one per CPU
+    readers lock their CPU's lock, writers must lock each CPU's lock
+    must use up N 64-byte cache lines, even though each lock is just a bit.. (why? because anything at a finer granularity will still cause cache bouncing)
+</pre>
+
+<h2>Avoiding locks</h2>
+
+<pre>
+why do we want to avoid locks?
+    performance
+    complexity
+    deadlock
+    priority inversion
+
+what's the plan?
+    reduce the operation we want to perform to some atomic x86 instruction
+    x86 LOCK prefix makes many read-modify-write instructions atomic
+    simple example: implement atomic counters by adding LOCK prefix
+    most general thing is cmpxchg, whose pseudo-code is:
+
+	int cmpxchg(int *addr, int old, int new) {
+	    int was = *addr;
+	    if (was == old)
+		*addr = new;
+	    return was;
+	}
+
+    cmpxchg was used in the implementation of MCS locks, but we can
+    also use it directly for concurrent, correct access to the linked
+    list.
+
+    how to avoid race conditions in our linked list?
+
+	void push(struct element *e) {
+	again:
+	    e->next = top;
+	    if (cmpxchg(&top, e->next, e) != e->next)
+		goto again;
+	}
+
+	struct element *pop(void) {
+	again:
+	    struct element *e = top;
+	    if (cmpxchg(&top, e, e->next) != e)
+		goto again;
+	    return e;
+	}
+
+    search can be the same as in the non-concurrent case (almost..)
+
+why is this better than not having locks?
+    readers no longer generate spurious updates, which incurred performance hit
+    not having to think about deadlock is great
+
+problem 1: lock-free data structures require careful design, hw support
+    suppose we want to remove arbitrary elements, not just the first one
+    what could go wrong if we try to use the same cmpxchg?
+    need DCAS (double-compare-and-swap) to implement remove properly
+	must make sure neither previous nor next element changed
+	x86 hardware doesn't have DCAS
+    can do some tricks because x86 provides 8-byte cmpxchg
+	only for sequential memory addresses
+	can potentially play tricks by staggering the 8 bytes across two pages
+	unlikely to win in performance once we start invalidating TLB entries
+
+problem 2: memory reuse
+    when can we free a memory block, if other CPUs could be accessing it?
+	other CPU's search might be traversing any of the elements
+	we could try bumping a refcount, but that introduces cacheline bounces
+	and what about CPUs that are just about to bump the refcount?
+
+    worse, reusing a memory block can corrupt list
+	stack contains three elements
+	    top -> A -> B -> C
+	CPU 1 about to pop off the top of the stack,
+	    preempted just before cmpxchg(&top, A, B)
+	CPU 2 pops off A, B, frees both of them
+	    top -> C
+	CPU 2 allocates another item (malloc reuses A) and pushes onto stack
+	    top -> A -> C
+	CPU 1: cmpxchg succeeds, stack now looks like
+	    top -> B -> C
+
+    strawman solution for specific problem (actually used by some systems):
+	type-stable memory (stack-elements never become non-stack-elements)
+	each stack element has a reuse counter
+	include generation# along with each pointer (so that cmpxchg notices)
+
+    but for more complex data structures this becomes hard to solve
+	for example, readers must check that data structure hasn't been freed
+	we'll see shortly how RCU can help us reuse memory
+</pre>
+
+<p><a href="http://www.cl.cam.ac.uk/netos/papers/2007-cpwl.pdf">This
+ paper by Fraser and Harris</a> compares lock-based implementations
+ versus corresponding non-blocking implementations of a number of data
+ structures.
+
+<p>It is not possible to make every operation lock-free, and there are
+  times we will need an implementation of acquire and release.
+  Research on lock-free data structures is active; the last word
+  isn't said on this topic yet.
+
+<h2>RCU</h2>
+
+<pre>
+lock-free data structures are good for readers, but fairly tricky for updaters
+    lock-free updates were serving two purposes:
+	atomically change state seen by readers
+	    relatively easy -- swap pointers
+	detect and prevent conflicts with other updaters
+	    requires a lot more thought, makes spinlocks seem good again?
+    RCU separates these two purposes
+	make updates appear atomic to readers
+	    allows readers to run without any special synchronization
+	use any other scheme to coordinate between updaters
+	    locks are easy, but can use lock-free updates, or a single writer
+	    performance-wise, doesn't matter -- cacheline bounce going to happen either way
+
+how will this work?
+    key idea: leave old data for readers, don't update in-place
+	no need for reader locks if they don't see changes in-place
+	fundamentally removes need for feedback from readers to updaters!
+    instead, update by copying data items, atomically change pointers
+	makes need for memory reuse mechanism even more acute, more on that in a bit
+    benefits
+	reader code simpler, avoids locking issues and bus ops to notify updaters
+	writer code simpler than lock-free data structures
+	good performance for read-heavy workloads
+
+example: linked list
+    section 2 in paper
+    what's the performance like for the locking+refcounted case (fig 4,5,6)?
+	search: 3 shared memory writes, even though not modifying anything
+	delete: 5 memory writes
+    what if we make the list lock more optimized for readers?
+	search: still 1 shared memory write, due to refcount for reclaiming memory
+	delete: 3+NCPU memory writes
+    what's the RCU plan?
+	figures 8, 9, 10
+	illustrate what happens with diagram
+	unusual semantics -- reader sees old data, as we don't update in-place
+	paper argues this is OK in some cases
+	    when does this occur?  reader concurrent with update
+	    since they are concurrent, order often not strictly defined
+	    so OK to make reader execute on old data as if before update
+
+	search: no shared memory writes, going to be really fast
+	delete: 4 memory writes (2 maybe local to deleting CPU?), plus RCU stuff
+    paper makes RCU seem very natural here; what wouldn't have worked?
+	in-place list modifications
+	would need to translate into insert of a new element, removal of older one
+	hold mutex for the list during update
+
+what's the problem, again?
+    when can we reuse memory from an old element?
+    .. so that we don't crash readers accessing it
+    .. so that we don't see weird cmpxchg behavior
+
+cool observation: CPUs go through cyclical activity
+    get a system call, interrupt, etc
+    process that event, perhaps issuing other operations, and go to sleep/run user code
+    once we're done, kernel code likely not holding any pointers of interest
+    reuse memory once every possible reader has reached such a quiescent state
+    kernels are good workload: kernel code never runs for a long time
+    diagram: quiescent states, grace period
+
+how to make this work?
+    need to figure out what's a quiescent state
+    need to detect when every reader has been through a quiescent state
+
+quiescent states
+    on Linux, idling or context-switching indicates a quiescent state
+    paper claims Linux is "non-preemptible": what does this mean?
+	will not idle or yield if kernel code wants to run
+    kernel not allowed to hold pointer to an RCU-managed element when blocking
+    what could happen on xv6?
+	kernel could be pre-empted, context-switched elsewhere while holding ptr
+	what would be a quiescent state and grace period in xv6?
+
+detection algorithm
+    simple alg: use scheduler to wait for a quiescent period on each CPU
+    figure 17 illustrates how the detection algorithm works
+    code in figure 18
+
+    better alg: figure 29
+	basically, put code from figure 18 into scheduler, and parallelize
+	global bitmask tracks CPUs that need to reach a quiescent state
+	when CPU notices its bit set, waits for a quiescent state and clears it
+	when bitmask=0 (all CPUs have quiesced), we've quiesced
+
+tricks to making RCU work well
+    batch deferred RCU work to only run one instance of detection alg at a time
+    pre-allocate space for batching linked list entry, to defer-free from intr
+    avoiding global data structures in RCU itself
+	keep callbacks (e.g. memory freeing) local to each CPU
+	bump a global generation counter for each time we quiesce
+	for each new generation, CPU can run callbacks from previous generation
+	    must keep track of when a callback was entered
+	    cannot run a callback too soon
+
+so what did RCU buy us?
+    good scalability for read-heavy workloads -- reading incurs no bus writes
+    updates locking overhead similar, but perhaps more data copying
+    cost: memory isn't freed immediately, grace period detection running in background
+
+    paper doesn't talk a whole lot about performance: 30% better on 4 CPUs?
+	other works: 4-CPU system RCU microbenchmark wins by factor of 2-4
+	    assuming <20% updates
+	unclear if the paper's suggested 1/NCPU fraction is relevant or not
+	seems to depend more on the cost of update-in-place vs copy-update
+</pre>
+
+<h2>RCU applications</h2>
+
+<pre>
+widely used in Linux: about 200 files using RCU
+
+network routing table
+    OK to have stale data because external state won't wait for our spinlock anyway
+    entries not updated in-place -- instead, insert and delete operations
+    often many more packets than route updates
+
+module unloading
+    kernel module:
+	loads code into kernel's memory (e.g. /dev/random)
+	registers function pointers (e.g. open for /dev/random's major/minor numbers)
+    problem: if we're unloading, when can we free module's memory?
+	other CPUs might be holding references to module code, or be executing it
+    strawman: refcount on module tracks saved pointers or active function calls
+	very expensive for short calls, e.g. stat(/dev/random)
+    RCU allows us to avoid refcounts for short-lived use that doesn't span quiescence
+    still use refcounts when we go to sleep or save a pointer for later use..
+
+    two-phase unloading:
+	wait for refcount to reach zero (no long-term holders)
+	remove function pointers from major/minor number table: prevent new threads
+	wait for short-term holders to go away (grace period)
+	unload module for real
+
+    similar design comes up in many other cases, e.g. event processing
+	want to register for input events (keyboard, mouse)
+	when is it safe to unregister and free memory?
+	not a performance problem
+	instead, RCU helps avoid read-locking, potential deadlock, etc
+
+    NMI processing
+	a particular case of the event processing workload
+	but there's no way to mask interrupts!
+	could not have done this with locks even if we wanted to
+
+FD flags
+    effectively an existence lock
+    why is it safe to let other CPUs access an old FD flags array?
+	presumably updates grab a lock, so therefore ordered w.r.t. updates?
+	order for reads not well-defined anyway, so doesn't matter
+
+CPU array
+    what's cool about this case?
+    without RCU, pervasive changes: locks or other changes for each access to CPU array
+    with RCU, almost no work outside of the update code
+
+RCU on a single CPU in Linux
+    slight performance win from pointless locking
+    simplifies locking complexity, esp. in interrupt context
+    do we need quiescent state detection on a single CPU?  can we free memory right away?
+	still need quiescent state detection due to interrupts
+
+RCU in xv6
+    due to preemption, must reach quiescent state in each kernel thread
+    how would we find a grace period?
+	look at threads running something other than wait() or user code
+	wait for them to go through a quiescent state
+    where might RCU come in useful?
+	read-only access to inodes, buffer cache entries?
+	is it ok to use stale copy?  order undefined for concurrent read+update anyway.
+	single array of structs would not work so well -- requires update-in-place
+	would need a separate linked list of "active" inodes, bufs
+	so we could avoid acquire/release in fstat, for example
+
+would we use RCU in pintos?
+    no SMP support -- not going to get any SMP benefits.
+    no preemption or interrupts while in kernel -- not needed even for single CPU.
+
+so when is RCU a good technique?
+    perhaps if we don't need immediate feedback from readers to updaters
+    provides performance, simplicity for these readers
+</pre>
+
+</body></html>

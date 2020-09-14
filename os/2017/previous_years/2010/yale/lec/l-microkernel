@@ -1,0 +1,348 @@
+<html>
+<head>
+    <title>Microkernels and capabilities</title>
+</head>
+<body>
+
+<h1>Microkernels and capabilities</h1>
+
+<p>Required reading:
+    <a href="../readings/keykos.pdf">KeyKOS</a>,
+    <a href="../readings/hardy-confused-deputy.html">Confused deputy</a>.
+
+<p>Reference reading:
+    <a href="../readings/keykos-osr.pdf">KeyKOS details</a>.
+
+<h2>Microkernels</h2>
+
+<pre>
+the microkernel vision
+    implement main o/s abstractions as user-space servers
+	files, tcp, process mgmt, paging
+    kernel provides minimum to support servers
+	address spaces
+	threads
+	inter-process communication (IPC)
+	some IPC handle which can send/receive messages
+
+why attractive?
+    (compared to monolithic UNIX-style design)
+    isolation (vs bugs)
+    fault-tolerant (restart individual services)
+    modular (understandable, replaceable services)
+    easier to distribute (IPC allows services on other hosts)
+    easier to run on multiprocessor (since many servers)
+    easier to provide scheduling, priority (at least at kernel API)
+    easier to provide security (at least at kernel API)
+
+history
+    individual ideas around since the beginning
+    lots of research projects starting early 1980s
+    hit the big time w/ CMU's Mach in 1986
+    thought to be too slow in early 1990s
+    now slowly returning (OSX, QNX in embedded systems/routers, etc)
+    ideas very influential on non-microkernels
+
+microkernels in practice
+    huge issue: Unix compatibility
+	critical to widespread adoption
+	difficult: Unix was not designed in a modular fashion
+    Mach, L4: one big Unix server
+	not a huge practical difference from a single Linux kernel
+	Mach in particular was quite slow, many decided microkernels a bad idea
+    KeyKOS: more interesting structure
+	split up Unix into many entities
+	first, some background on what problems KeyKOS was trying to solve
+</pre>
+
+<h2>Capabilities</h2>
+
+<pre>
+traditional access control model:
+    process has some privileges (in Unix model: UID)
+    for each syscall, kernel checks that process's privileges allow it (e.g. opening file)
+
+what problem was Norm Hardy facing on such a system?
+    wanted to give fortran compiler access to a special file (/sysx/stat) to collect statistics
+    gave fortran compiler (/sysx/fort) a "home files license"
+	kind-of like setuid on Unix; allowed process to write to /sysx
+    user executed "/sysx/fort code.f -o /sysx/bill"
+    wiped out unrelated billing file
+
+whose problem is this?
+    paper argues all components were working fine in isolation
+    problem was giving extra privileges to the compiler
+     -> every file access made by the compiler was now more
+	privileged, even though only one of them (opening
+	/sysx/stat) should have been!  doing this correctly
+	would have required looking at all places where we
+	opened files in the compiler.
+    proposal: explicitly specify privileges to use for every operation
+
+why might this be a good idea?
+    easier to write secure, privileged programs
+	program will not grant its privileges to things done on user's behalf
+
+what are the limitations?
+    somewhat invasive design implications
+    have to pass around capabilities instead of user-meaningful names
+    notion of a user identity is at odds with a pure-capability design
+
+capabilities used in many settings
+    hardware: Cambridge CAP system, x86 segments (in a way)
+    OS kernel: Hydra, KeyKOS (and its successors)
+    distributed systems: Amoeba
+	self-authenticating capabilities don't need to be tracked by OS kernel the same way we'd track FDs
+
+capability-like things appear in many places
+    Unix FDs
+    Java object references (and type-safe languages in general)
+    URLs (that include authority info, rather than using HTTP auth)
+</pre>
+
+<h2>KeyKOS</h2>
+
+<pre>
+KeyKOS: capability as the base access control mechanism
+    more structure than Mach
+
+very small kernel, provides a few kinds of objects to applications:
+    devices - access to underlying hardware, given to device driver processes
+    pages - 4KB of data, basically a page of memory
+    nodes - a block of 16 keys (key is their term for a capability)
+
+    segments - a virtual address space
+	like a page table or page directory, implemented using nodes, mapping to page keys at the leaves
+	can construct segments out of other segments
+    meters - CPU time allocation (even CPU-time explicitly allocated!)
+    domains - something like a Unix process
+
+domains are the most interesting object:
+    16 general-purpose key slots (kind-of like capability registers)
+	effectively an implicit node object
+    address slot: key to entire virtual memory of process
+    meter slot: key to CPU meter for process
+    keeper slot: key to another domain that will handle exceptions
+
+objects named by keys
+    key is actually a 12-byte blob, but cannot handle their bytes directly
+    instead, manipulated through explicit operations, kind-of like FDs (open, close, dup)
+    the KeyBits service returns the actual 12 bytes behind any key given to it
+	unknown: can you supply a virtualized KeyBits to hide the fact that
+		 other keys are being virtualized as well?
+
+what API does the kernel provide?
+    at a low level, just 3 system calls:
+	void FORK(key k, msg m): send m to k's domain, continue running afterwards
+	msg *CALL(key k, msg m): send m to k's domain (+ newly-formed resume key for sender) and suspend
+	msg *RETURN(key k, msg m): send m to k (will be returned from its CALL) and wait for next message
+
+	why does the kernel require the receiver to be available?  what's the alternative?
+	why does RETURN wait for a new message?  what if we don't want to wait?
+    process/domain has 3 states: available, running, waiting
+	process transition diagram
+	kernel design suggests an object-oriented structure for applications
+    other things you'd expect to be system calls are messages to special kernel-managed objects
+	CALL to a device to access it
+	how would you map a page of memory?
+	what are the benefits of doing it this way?  easy to override built-in kernel objects.
+
+how could one give keys to others?
+    can clone keys (like dup on a Unix FD)
+    keys include restriction flags -- e.g. can make a read-only 
+    IPC primitive allowed passing 4 keys (which could refer be nodes for more keys)
+    can tack a "data byte" onto a key on creation (delivered to the key's domain on key invocation)
+	useful for keeping track of where this key came from
+	distinguish multiple callers of the same service domain
+	we'll see how it might be used later on
+
+object keepers (for meters, segments, domains) handle exceptions:
+    segment keeper: domain to handle page faults
+	conceptual model: want program loads and stores to translate into IPC messages
+	hardware doesn't quite do this for us
+	so treat address space as a cache, and insert/remove mappings as needed
+	load/store on an invalid mapping now will generate an IPC message
+    meter keeper: domain to call when CPU time expires, controls CPU time allocation
+	really more about billing than fine-grained scheduling policy
+    domain keeper: domain to call for other CPU exceptions
+	didn't vector FORK/CALL/RETURN system calls to keeper; should it have?
+    kernel makes faults look like a CALL from the faulting domain to keeper
+    invoked keeper gets a "service key" to faulting object, to fix it up as needed
+
+where do objects come from?
+    a "bank", implemented as a domain of its own (synthesized the first time system boots up)
+	top-level bank has all nodes and pages in a system
+	other objects (domains, meters, segments) are really just special forms of a node
+    how many nodes/pages did a bank have?
+	total disk space in a system (has nothing to do with a machine's DRAM size)
+	would that be a good idea today?
+	    probably not in general-purpose systems: want over-allocation for performance
+	    maybe OK for embedded or special-purpose systems
+    invoke a bank to allocate a new object, returns a "service key" for that object
+    for domain, can populate domain's slots and make it runnable
+	very much like JOS exofork
+    how to free up space?
+	child space banks can be deallocated completely, releasing resources to parent
+
+what was the idea of persistence?
+    applications have no notion of a disk, just memory
+    kernel periodically saves complete system state to disk
+    no other kernel state of interest
+	kernel stacks, scheduler queues, buffers -> ephemeral
+	open files, processes, messages waiting to be sent -> stored in kernel objects
+
+how did applications use the disk, then?
+    just store data in memory
+    kernel saves it to disk eventually
+    to read from disk, just access memory; kernel will demand-page if necessary
+
+why does KeyKOS need persistence?
+    kernel provides no way of recovering lost capabilities
+    would have needed some special mechanism to "synthesize" capabilities on bootup
+    with persistence, can use capabilities for controlling access to data on disk
+
+problems with persistence
+    could be saving a lot of unnecessary stuff to disk
+    could be hard to recover if "init" dies
+    could be hard to kill runaway processes
+	how do meters and space banks help?
+    hard to deal with bad blocks
+
+KeyKOS (and its predecessor, GNOSIS) was a very different system than Unix
+    no file system root
+    every user has their own "home directory", which just mapped names to keys
+    keys included both files and processes that you could invoke (using CALL or FORK)
+    one user's home directory is not nameable by other users (unless granted)
+    every user has a persistent shell domain that keeps a key to user's home dir
+    a login process ("receptionist") keeps a password and start key for each user's shell domain
+    user types in password, login does an RPC call into user's shell, passing in a key for user's terminal
+    when invoking a command in shell, must say if argument is a string or a capability for file of that name
+    must specify all capabilities at invocation time
+</pre>
+
+<h2>KeyNIX</h2>
+
+<pre>
+how did the paper implement Unix compatibility?
+    special Unix keeper to emulate Unix
+    a separate Unix keeper for each Unix process
+    shared state stored in explicitly-shared segment
+
+how did the filesystem work?
+    separate domain for each inode
+    file inodes stored data in segment objects
+	to read/write, insert the file's segment into your address-space segment
+	because file inode is isolated from the rest of the FS code, easy to implement local optimizations
+	    paper suggests storing data in the inode itself, for small files
+    directory inodes supported lookup, insert, unlink messages
+    who maintains consistency?  what happens on a crash?
+    how does fsync work?  two kinds of fsync (in KeyKOS at least).
+
+file system access control
+    Unix model
+	inodes have an owner user ID and group ID
+	access permissions for the user, group, and everyone else
+    unfortunately this is fundamentally at odds with capability model (users and groups are ambient authority)
+    paper doesn't describe what happened
+    simple version: kernel domain keeps track of an application's user/group IDs, checks against inode's fields
+    better version: embed who's accessing the file in the inode key's data byte (user, group, or everyone else)
+	inode returns appropriate segment key based on the file's perms for the entity specified in data byte
+	    e.g. read-only segment for read-only access, or nothing if access prohibited
+	directory inodes can propagate the data byte to any keys they return for files and sub-directories
+	how would we get the user an appropriate key for his home directory in the first place?
+	    maybe directory inodes keep a user or group password, and allow a "dirlookup-with-password" op
+	    or KeyKOS-style: user home dir key kept by login service, shell keeps homedir key along w/ FS root
+
+what benefits do we get from implementing Unix with capabilities (KeyNIX)?
+    perhaps a more reliable kernel (fault isolation)
+    what happened if you crashed your kernel?
+	maybe locked entries in the shared table -- not so great
+	could corrupt other process table entries or file descriptors
+	can we design the system a little better?
+	    what about shared file descriptors?
+	    what about process table?  how to name entries?
+    can run apps in different Unix universes (i.e. different process&FD table segment) on same machine
+	could also have multiple file systems
+
+performance evaluation
+    overall, seems to perform OK for such a radical design
+    hard to draw any fundamental conclusions about KeyKOS -- little said about why Mach performs poorly
+    1st fundamental problem: namei slow
+	what were their proposed alternatives?
+	1) one namei domain stores all directories, but keep one domain per file inode
+	2) one domain for entire filesystem, like Mach/L4
+    2nd fundamental problem: implementing asynchronous mechanisms (KeyKOS IPC is synchronous)
+	how did they implement pipes?
+	    queue domain at each end to avoid blocking main kernel domain
+	    wanted to to handle signals (^C) even if process blocked writing to pipe
+	    figure 2 in paper
+	    [perhaps pseudo-code for kernel and queue domains]
+
+how did KeyKOS integrate the Unix model with capabilities?
+    still susceptible to confused deputy problem
+    capabilities have to be implemented at all levels, Unix lacks them
+    avoiding confused deputies in Unix would require changing programming conventions
+</pre>
+
+<h2>Discussion</h2>
+
+<pre>
+compare to other microkernels?
+    KeyKOS has somewhat more structure than Mach
+    synchronous IPC in KeyKOS, async in Mach
+	complicates Mach kernel, hard to say if performance win or not
+    Mach has lots of system calls for operating on ports
+    KeyKOS implements the same thing with messages
+    superficial difference: KeyKOS has fewer system calls (but so what..)
+    more interesting difference:
+	KeyKOS allows programs to provide their own implementation of
+	    objects that might traditionally be serviced by the kernel.
+	Mach always handles system calls in the kernel, would need some
+	    special system call redirection mechanism.
+
+compare to JOS, exokernel?
+    what ideas could we use from these papers?
+	capability naming
+	    env IDs: cannot pass rights to others right now
+	full persistence
+	    conflicts with exokernel philosophy
+	    but could work
+	per-file protection domains
+	    might incur a high overhead in JOS, at least with naive impl
+	    lab 5 has a single file server, though could easily run many of them
+	allowing applications to handle faults
+	    JOS kind-of does this with page fault upcalls
+	    might be nice to vector these to another environment
+	    or vector everything (including syscalls) to another environment
+
+compare to xv6, Linux?
+    can use file descriptor passing as capabilities
+    would have been nice to pass other things as capabilities too
+	child PIDs (so processes other than parent can wait)
+    a lot of process structure exposed to applications
+	easier to write a debugger
+	easier to do some lower-level optimizations
+
+    still have ambient authority -- process has a uid
+    must use setuid to switch privileges before/after operations
+    leads to programs that try to emulate security checks in userspace
+    part of why TOCTTOU problems are abundant
+
+why didn't pure-capability systems catch on?
+    tightly couples naming and access control, limited notion of user identity
+    requires structuring your data around your access control policy
+	e.g. can give someone a capability for an entire directory, harder to specify permissions for each file
+    biggest win was probably in distributed systems
+    capabilities appear in various forms (Java objects)
+
+what about microkernels?
+    running Unix in a single server process not very interesting
+    doing interesting things like KeyKOS requires more design effort
+    harder to evolve system
+	because low-level primitives can be specific to original requirements, changes could require re-design
+    optimizations or features that affect multiple subsystems are hard
+	sendfile affects FS + network stack
+	fixing priority inversion might require re-design
+</pre>
+
+</body></html>

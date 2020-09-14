@@ -1,0 +1,89 @@
+<h2>Why are we using Stanford libraries in the course?</h2>
+
+<p><b>Purpose</b>: We have been receiving several questions from the students
+and from the TAs on the relevance of using Stanford libraries for teaching
+COL100.  This document is intended to dispel some misconceptions and offer
+some explanations.
+
+<p>We list some common questions raised:
+<ul>
+<li><b>Why are we using these libraries in the first place?</b>
+
+<p>This course introduces the students to common programming abstractions
+found in modern languages. Some of these abstractions are very difficult
+to understand initially but become clear as we go along in the course.
+The Stanford libraries are intended to bridge this gap: you can focus
+on the intended concepts to be learned and not get entangled in several
+syntactic issues that appear in the Standard C++ library.
+
+<p>Example: We have not discussed the concept of an <code>iterator</code>
+in the ADTs, e.g., inserting of an element in a vector
+can be done using the element index using Stanford libraries; however this requires an iterator in
+the Standard C++ library.  There are more such examples.
+
+<p>We do not want to spend too much time in discussing all these intricacies
+of C++ STL --- the Stanford library nicely hides these ugly details and lets
+us focus on the core concepts of computer science. In many cases, we later
+learn about C++ STL (e.g., streams vs. integerToString()) in any case; but
+this method of first learning an easier abstraction before being exposed to the
+internal details, is perhaps much easier to grasp for most students.
+</li>
+<li><b>If I already understand C++ STL by reading the online
+STL documentation, can I just use STL and avoid Stanford libraries as
+much as possible?</b>
+<p>Absolutely. The Stanford libraries are just available as a support to you.
+If you do not like them, do not use them. It is
+largely optional. Some exceptions are where we may explicitly
+mention that a certain ADT is available only in the Stanford library (e.g.,
+<code>Grid</code>) and so you may be forced to know about it. We do
+make it clear before exams in these cases.
+</li>
+<li><b>Won't Stanford libraries handicap me? I won't be able to use them
+in any other context, e.g., programming contests</b>.
+<p>This is not true. As far as we know, you are free to include any libraries
+in programming contests. That is not to say that we recommend using
+Stanford libraries all your life --- as we said earlier, they are only
+intended to provide a more gradual learning curve in introductory
+CS courses.
+</li>
+<li><b>But if I learn using Stanford libraries, how am I learning about the
+real world?</b>
+<p>Almost all Stanford ADTs have a direct counter-part in the C++ STL.
+For example, <code>Vector</code> is an easier version of STL <code>vector</code>.
+<code>Grid</code> is an easier version of <code>vector&lt;vector&gt;</code>.
+Similarly, Queue is an easier version of <a href=http://www.cplusplus.com/reference/queue/queue/>C++ STL <code>queue</code></a>, Stack is an easier
+version of <a href=http://www.cplusplus.com/reference/stack/stack/>C++ STL <code>stack</code></a>, Set is an easier version of <a href=http://www.cplusplus.com/reference/set/set/>C++ STL <code>set</code></a>, Map is an easier version
+of <a href=http://www.cplusplus.com/reference/map/map/>C++ STL <code>map</code></a> and so on...
+
+<p>The member functions in the two different ADTs also have almost a direct
+one-to-one correspondence with each other. However many things are simplified
+in the Stanford ADT. After you learn problem-solving using Stanford ADTs, migrating
+to C++ STL ADTs is fairly easy.
+</li>
+<li><b>Are Stanford libraries superior or advanced in any way to C++ STL?</b>
+<p>No! In fact, it is quite likely the Stanford libraries are slower and
+less general and more buggy than the C++ STL library. While the Stanford library is perhaps
+the work of 1-5 people over 1-2 years, the C++ STL library is the work of thousands of people
+over multiple decades.
+
+<p>We are using Stanford library only for their gentle learning slope for
+students getting introduced to ADTs for the first time.
+</li>
+<li><b>Stanford libraries are discussed in lectures, but sometimes programming assignments are based on C++ STL</b>
+<p>We try to avoid this, but often cannot --- for example, if one of the Stanford library
+ADT is not working correctly (has bugs), we request you to use the corresponding STL ADT. In these cases,
+we always try and ensure that we provide the required documentation to map from Stanford
+ADT methods to C++ STL methods. As you may have noticed, these mappings are fairly easy
+and straight-forward.
+</li>
+<li><b>Can I use Stanford libraries beyond COL100?</b>
+<p>Yes you can, as long as you obey the License agreement provided in the Stanford libraries. Please note that most software development today happens by "standing on the shoulders
+of others", i.e., by reusing the work of others. A very common method of reusing other
+people's work is to use the libraries written by them. Hopefully, using the Stanford libraries
+(and looking inside them at some point) will give you some exposure to this common software engineering
+practice.
+</li>
+<li><b>Some of my questions are still not answered in this document.</b>
+<p>Please feel free to write to col100-staff@iitd.ac.in if you still have unanswered questions or concerns.
+</li>
+</ul>

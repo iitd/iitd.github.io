@@ -1,0 +1,127 @@
+
+<html>
+<head>
+<title>Homework: sleep and wakeup</title>
+<link rel="stylesheet" href="../labs.css" type="text/css" />
+</head>
+<body>
+
+<h2><a href="..">CPSC 422/522: Operating Systems</a></h2>
+<hr>
+
+<h1>Homework: sleep and wakeup</h1>
+
+
+
+<p>
+<b>Read</b>: proc.c (sleep(), wakeup(), exit(), kill() and wait()),
+sys_wait(), sys_exit(), sys_kill().
+
+<p>
+<b>Hand-In Procedure</b>
+<p>
+You are to turn in this homework at the beginning of lecture. Please
+write up your answers to the questions below and hand them in to a
+6.828 staff member at the beginning of lecture.
+<p>
+<b>Introduction</b>
+<p>
+
+Remember in <a href="../lec/l-lock.html">lecture 7</a> we discussed
+locking a linked list implementation. The insert code was:
+
+<pre>
+        struct list *l;
+        l = list_alloc();
+        l->next = list_head;
+        list_head = l;
+</pre>
+
+and if we run the insert on multiple processors simultaneously with no locking,
+this ordering of lines can cause one of the inserts to be lost:
+
+<pre>
+        CPU1                           CPU2
+       
+        struct list *l;
+        l = list_alloc();
+        l->next = list_head;
+                                       struct list *l;
+                                       l = list_alloc();
+                                       l->next = list_head;
+                                       list_head = l;
+        list_head = l;
+</pre>
+
+<p>
+
+In this case, CPU2's new list element will be lost when CPU1
+updates <code>list_head</code>.  Adding a lock that protects the final
+two lines of <code>insert()</code> makes the read and write of
+<code>list_head</code> atomic, so that this ordering is impossible.
+<p>
+
+The reading for this lecture includes the implementation
+of <code>sleep()</code> and <code>wakeup()</code>, which processes
+running in the kernel use to coordinate with each other.  Usually one
+process waits for something to happen by calling <code>sleep()</code>,
+and another process later indicates that the event has occured by
+calling <code>wakeup()</code>. For example, a <code>read()</code> on
+an empty pipe involves a <code>sleep()</code> to wait for input; a
+later <code>write()</code> to the pipe calls <code>wakeup()</code>. 
+<p>
+
+One problem that the <code>sleep()</code> and <code>wakeup()</code>
+implementations avoid is races in which process A has decided to sleep
+but has not quite gone to sleep, at which point process B calls
+<code>wakeup()</code> but doesn't see that A is sleeping and thus does not wake A
+up.  If it were possible for this to occur, A would have missed the
+event it was <code>sleep()</code>ing for, and its <code>sleep()</code>
+might never terminate. 
+
+<p>
+
+Read the code with this in mind.
+
+<p>
+<br><br>
+<b>Questions</b>
+<p>
+(Answer and hand in.)
+<p>
+
+1.  How does the <code>ptable.lock</code> help avoid this problem?  Give an
+ordering of instructions (like the above example for linked list
+insertion)
+that could result in a wakeup being missed if
+the <code>ptable.lock</code> were not used. 
+You need only include the relevant lines of code.
+<p>
+
+2.  <code>sleep</code> is also protected by a second lock, its second argument,
+which need not be the <code>ptable.lock</code>.  Look at the example in ide.c,
+which uses the <code>idelock</code>.  Give an ordering of instructions that could
+result in a wakeup being missed if the <code>idelock</code> were not being used.
+(Hint: this should not be the same as your answer to question 2.  The
+two locks serve different purposes.)<p>
+
+<br><br>
+<b>This completes the homework.</b>
+
+
+
+<p><hr><p>
+<address>
+<a href="http://www.cs.yale.edu/people/ford.html">Bryan Ford</a>,
+<a href="http://www.cs.yale.edu/">Department of Computer Science</a>,
+<a href="http://www.yale.edu/">Yale University</a>
+</address> 
+
+
+<i>Based on MIT 6.828 materials
+	by Frans Kaashoek and others</i>
+
+
+</body>
+</html>
+

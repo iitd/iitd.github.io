@@ -1,0 +1,19 @@
+<h2>Homework: Logging</h2>
+<br><br>
+Read: log.c.<br>
+<br><br>
+Insert a print statement in bwrite (in bio.c) so that you get a print every
+time a block is written to disk:
+<pre>
+  cprintf("bwrite sector %d\n", b->sector);
+</pre>
+	Build and boot a new kernel and run this:
+<pre>
+	  $ rm README
+</pre>
+		You should see a sequence of bwrite prints after the rm.
+		<br><br>
+		<h4>Submit:</h4>
+
+		The bwrite lines, each annotated with the kind of information that is being written to the disk (e.g., "README's inode", "allocation bitmap"). If the log is being written, note both that the log is being written and also what kind of information is being written to the log.<br><br>
+				    Mark with an arrow the first point at which, if a crash occured, README would be missing after a reboot (after the call to recover_from_log()). [no marks for this part, but just think on your own].

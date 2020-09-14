@@ -1,0 +1,162 @@
+<html>
+<head>
+<title>L4</title>
+</head>
+<body>
+
+<h1>PC Architecture and Processor Setup</h1>
+
+<h2>Outline</h2>
+<ul>
+<li>PC architecture
+<li>x86 instruction set
+</ul>
+
+<h2>PC architecture</h2>
+
+<ul>
+<li>A full PC has:
+  <ul>
+  <li>one or more x86 CPUs, each containing:
+	<ul>
+	<li>	integer registers (can you name them?) and execution unit
+	<li>	floating-point/vector registers and execution unit(s)
+	<li>	memory management unit (MMU)
+	<li>	multiprocessor/multicore: local interrupt controller (APIC)
+	</ul>
+  <li>memory
+  <li>disk (IDE, SCSI, USB)
+  <li>keyboard
+  <li>display
+  <li>other resources: BIOS ROM, clock, ...
+  </ul>
+
+<li>We will start with the original 16-bit 8086 CPU (1978)
+<li>CPU runs instructions:
+<pre>
+for(;;){
+	run next instruction
+}
+</pre>
+<li>Draw figure with common bus, I/O, and CPU. The CPU has registers, cache,
+etc.
+<li>Draw figure showing EIP and how it gets incremented automatically after
+executing each instruction.
+
+<li>Needs work space: registers
+	<ul>
+	<li>four 16-bit data registers: AX, BX, CX, DX
+	<li>each in two 8-bit halves, e.g. AH and AL
+	<li>very fast, very few
+	</ul>
+
+<li>More work space: memory
+	<ul>
+	<li>CPU sends out address on address lines (wires, one bit per wire)
+	<li>Data comes back on data lines
+	<li><i>or</i> data is written to data lines
+	</ul>
+
+<li>Add address registers: pointers into memory
+	<ul>
+	<li>SP - stack pointer
+	<li>BP - frame base pointer
+	<li>SI - source index
+	<li>DI - destination index
+	</ul>
+
+<li>Instructions are in memory too!
+	<ul>
+	<li>IP - instruction pointer (PC on PDP-11, everything else)
+	<li>increment after running each instruction
+	<li>can be modified by CALL, RET, JMP, conditional jumps
+	</ul>
+
+<li>Want conditional jumps
+	<ul>
+	<li>FLAGS - various condition codes
+		<ul>
+		<li>whether last arithmetic operation overflowed
+		<li> ... was positive/negative
+		<li> ... was [not] zero
+		<li> ... carry/borrow on add/subtract
+		<li> ... etc.
+		<li>whether interrupts are enabled
+		<li>direction of data copy instructions
+		</ul>
+	<li>JP, JN, J[N]Z, J[N]C, J[N]O ...
+	</ul>
+
+<li>What if we want to use more than 2^16 bytes of memory?
+	<ul>
+        <li>8086 has 20-bit physical addresses, can have 1 Meg RAM
+        <li>the extra four bits usually come from a 16-bit "segment register":
+	<li>CS - code segment, for fetches via IP
+	<li>SS - stack segment, for load/store via SP and BP
+	<li>DS - data segment, for load/store via other registers
+	<li>ES - another data segment, destination for string operations
+        <li>virtual to physical translation: pa = va + seg*16
+        <li>e.g. set CS = 4096 to execute starting at 65536
+        <li>tricky: can't use the 16-bit address of a stack variable as a pointer
+        <li>a <i>far pointer</i> includes full segment:offset (16 + 16 bits)
+        <li>tricky: pointer arithmetic and array indexing across segment boundaries
+	</ul>
+
+<li>But 8086's 16-bit addresses and data were still painfully small, so
+	80386 added support for 32-bit data and addresses (1985)
+  <ul>
+  <li>boots in 16-bit mode, bootasm.S switches to 32-bit mode
+  <li>registers are 32 bits wide, called EAX rather than AX
+  <li>operands and addresses that were 16-bit became 32-bit in 32-bit mode, e.g. ADD does 32-bit arithmetic
+  <li>prefixes 0x66/0x67 toggle between 16-bit and 32-bit operands and addresses: in 32-bit mode, MOVW is expressed as 0x66 MOVW
+  <li>the .code32 in bootasm.S tells assembler to generate 0x66 for e.g. MOVW
+  <li>80386 also changed segments and added paged memory...
+  </ul>
+
+
+<li>Example instruction encoding
+<pre>
+	b8 cd ab		<i>16-bit CPU,  AX <- 0xabcd</i>
+	b8 34 12 cd ab		<i>32-bit CPU, EAX <- 0xabcd1234</i>
+	66 b8 cd ab		<i>32-bit CPU,  AX <- 0xabcd</i>
+</pre>
+
+<li>...and even 32 bits eventually wasn't enough, so
+	AMD added support for 64-bit data addresses (1999)
+	<ul>
+	<li>	registers are 64 bits wide, called RAX, RBX, etc.
+	<li>	8 more general-purpose registers: R8 thru R15
+	<li>	boot: <i>still</i> go thru 16-bit and 32-bit modes on the way!
+	</ul>
+</ul>
+
+<h2>x86 Instruction Set</h2>
+
+<ul>
+	<li>Intel syntax: <tt>op dst, src</tt> (Intel manuals!)
+	<li>AT&amp;T (gcc/gas) syntax: <tt>op src, dst</tt> (labs, xv6)
+		<ul>
+		<li>uses b, w, l suffix on instructions to specify size of operands
+		</ul>
+	<li>Operands are registers, constant, memory via register, memory via constant
+	<li>	Examples:
+		<table cellspacing=5>
+		<tr><td><u>AT&amp;T syntax</u> <td><u>"C"-ish equivalent</u>
+		<tr><td>movl %eax, %edx <td>edx = eax; <td><i>register mode</i>
+		<tr><td>movl $0x123, %edx <td>edx = 0x123; <td><i>immediate</i>
+		<tr><td>movl 0x123, %edx <td>edx = *(int32_t*)0x123; <td><i>direct</i>
+		<tr><td>movl (%ebx), %edx <td>edx = *(int32_t*)ebx; <td><i>indirect</i>
+		<tr><td>movl 4(%ebx), %edx <td>edx = *(int32_t*)(ebx+4); <td><i>displaced</i>
+		</table>
+
+<li>Instruction classes
+	<ul>
+	<li>data movement: MOV, PUSH, POP, ...
+	<li>arithmetic: TEST, SHL, ADD, AND, ...
+	<li>i/o: IN, OUT, ...
+	<li>control: JMP, JZ, JNZ, CALL, RET
+	<li>string: REP MOVSB, ...
+	<li>system: IRET, INT
+	</ul>
+</body>
+</html>

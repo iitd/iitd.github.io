@@ -1,0 +1,12 @@
+# pack-refs with: peeled 
+c764c7c32c12746ff63bab8e82342918a0f0b95b refs/heads/coroutine
+a75726c9d7e676188150643fa98703f62281e908 refs/heads/fiber
+09e2049a01df5023781547040c43b023ffada2f3 refs/heads/fiber_schedular
+7827fa4ccad8e9c01ee8dbdb998876a5a06fb45d refs/heads/keyboard
+a0022c0252403833f1ff2aa5d44786df50516da7 refs/heads/master
+1c6304a8adde2c3448005977fb509aad75d27aa8 refs/heads/multicore
+e1424d5d26ae2d41b8d1c930b229fac434a46bff refs/heads/preemption
+409117e1b0879a9cc17ee33cc4f18adf8b056a33 refs/heads/ring3
+9fb69c640c1d3d2606f9f458fe08e8291c9e4c28 refs/heads/serial
+7a9142a3e29060bfefed155fcf645453502758b3 refs/heads/shell
+1030bbaf537e937d3c64b64b760fffce5a51dfac refs/heads/vgatext

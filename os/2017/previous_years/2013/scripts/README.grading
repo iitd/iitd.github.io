@@ -1,0 +1,7 @@
+Cut copy paste all information from "Consolidated Attendance page" to roster.xxxx. Modify Roster.pm to reflect the roster.xxxx filename.
+
+Run 'perl clean_roster.pl'
+Run 'perl convert_to_gcl_ids.pl'
+Run 'perl grading.pl'
+
+Upload 'roster.xxxx.csv' to upload marks

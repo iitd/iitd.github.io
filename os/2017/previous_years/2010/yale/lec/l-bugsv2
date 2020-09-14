@@ -1,0 +1,144 @@
+<pre>
+KLEE
+Notes from Nickolai Zeldovich (6.893)
+====
+
+what's the goal of this paper?
+    build a tool to test programs (metric: coverage)
+    to find bugs (metric: number of bugs found)
+    test case for both: GNU Coreutils
+    test for correctness by comparing output of different impl of some program
+
+how to find bugs?
+    static: analyze the code and find potential problems
+    runtime: try to run the code and come up with test cases
+    usual trade-off: no false neg's (soundness, finds all bugs) vs false pos's
+
+program analysis
+    works well for localized properties
+    proving properties for the entire program is tricky
+	widely used analysis: type system
+	workaround: simplifying assumptions, summarization at function level
+	example: avoid divide-by-zero, or avoid SQL inj
+	    user-input annotations or special types
+	    function summ: track what values could be zero, or came from user
+    advantage: might be able to prove the absence of certain classes of bugs
+	recent work: can prove a microkernel implements a spec
+	(who checks the spec though, or the analysis tool?)
+    weakness: false positives
+	extreme case: to prove program correct might have to change
+		      perfectly correct code to make it easier to prove/analyze
+
+fuzzers
+    analyzing code is hard, esp. for complex bugs and large programs
+    idea: try to find bugs by sending random input and seeing what breaks
+    1. find inputs
+	manual but sometimes non-obvious
+	e.g. server issuing queries (whois?)
+	e.g. desktop OS kernel treating CD or USB data as a file system
+    2. write input generation code
+	key: make the generation deterministic (use an RNG, save the seed)
+	completely random inputs unlikely to get very "deep"
+	so write a more targeted input generator, e.g. for web server:
+	    issue HTTP-like requests
+	    know what an HTTP header looks like
+	    understand URL structure?
+	time-consuming and you might gloss over important details
+    3. feed inputs & watch for bugs
+	not clear what's a bug and if you've triggered one
+	easiest kinds of bugs to find: crashes, likely due to mem corruption
+	hard: bugs that violate app semantics (facebook privacy settings?)
+    [4. manually explore the bug]
+
+do fuzzers work?
+    advantage: no false positives, if our bug detection rules are good
+    advantage: no need to control entire execution env
+	can fuzz black-box systems over the network
+	no need to recompile into LLVM, etc
+    advantage: no need for source code
+    disadvantage: hard to cover everything
+	can miss bugs because didn't happen to try a particular input
+	paper comparison: random tests don't get sufficient coverage
+	    intuition: random tests can't generate "structure"
+    klee: uses the application's own code to generate structure for test cases
+	still not perfect (doesn't prove correctness), but more effective
+
+how does klee work?
+    recompile source into LLVM -- bytecode that's a bit higher-level than x86
+    bytecode could be executed normally to produce the same result
+
+    klee's execution environment:
+	registers, memory locations might not have specific values ("symbolic")
+	llvm bytecode interpreted over these symbolic values
+
+    how are these symbolic values represented?
+	initial symbolic inputs: completely unconstrained
+	other values: expressions in terms of initial inputs
+	precise: bitwise accuracy
+	     can compute exactly what any value would be for a particular input
+
+    what happens when the klee interpreter wants to run an llvm bytecode op?
+	if all operands are concrete: run it as usual
+	symbolic non-branches: create a new expression for the result
+	symbolic branches:
+	    try both!   just add a path constraint that reflects the branch cond.
+	example: figure 1
+	    what are the initial symbolic inputs?
+	    what are the constraints we get at each fork?
+	    what is tr trying to match in klee's inputs?  sth. like '[a-z]'
+            what is the input that triggers bug? 'tr [ "" ""' 
+
+    what happens when klee hits a bug or sth. else of interest?
+	STP solver invoked to produce an example satisfying constraints
+	should be able to pick any inputs that satisfy the current path's constr
+	lots of optimizations needed to make this efficient
+	simplest optimization: on branch, check if it's always true or false
+
+how does klee know what to check?
+    understands C semantics and what might cause a crash
+	out-of-bounds access, divide-by-zero
+	treats these ops as a check/branch first, then a panic() on the err path
+    programmers already write assertions, klee uses them as error indications
+	assert(a < 100)
+	assert(ptr != NULL)
+    programmers can write assertions specifically for klee to define bugs
+
+environment modeling
+    problem: rest of the world isn't symbolic
+    models written in C, run within klee like the rest of the code
+    libc runs within klee on top of model (model at syscall level)
+    can have files with symbolic data, etc
+    can have system calls potentially returning errors at each invocation
+
+what optimizations do they need to make klee run fast?
+    break up memory array into per-object arrays
+    state compaction
+	log-like data structures: easy to fork & append
+    query optimization
+	constraint independence
+	counter-example cache
+    state scheduling
+	what's their goal here?  coverage
+	what's their implied baseline scheduler?  random over reached states
+	1: random path selection
+	2: coverage-optimized search
+	scheduler time slicing, almost like a real OS scheduler
+
+previous tools (buffer overflows, xfi) couldn't get precise object size info
+    what happens in klee?  how do they know which object a read/write accesses?
+	guess what possible objects could a symbolic pointer be referring to
+	fork the state for each possibility
+    what happens if they guess wrong?
+	likely: try to solve for an example and fail (so then kill state)
+
+does klee have false positives?
+    klee tries to reproduce any candidate bugs on unmodified app
+	knows all inputs, tries to set up external environment to match
+    should be about as good as the defition of a "bug" in the first place
+	if you're worried about sec'ty vuln, might not care about null ptr crash
+
+how could you use Klee for 6.828 labs?
+    what bugs did you introduce?
+    would Klee catch them?
+
+</pre>

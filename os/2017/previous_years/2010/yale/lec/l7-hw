@@ -1,0 +1,116 @@
+
+<html>
+<head>
+<title>Homework: scheduling</title>
+<link rel="stylesheet" href="../labs.css" type="text/css" />
+</head>
+<body>
+
+<h2><a href="..">CPSC 422/522: Operating Systems</a></h2>
+<hr>
+
+<h1>Homework: scheduling</h1>
+
+
+
+<p>
+<b>Read</b>: swtch.S and proc.c (focus on the code that switches
+between processes, specifically <code>scheduler</code> and <code>sched</code>).
+Also process creation: sys_fork() and copyproc().
+
+<p>
+<b>Hand-In Procedure</b>
+<p>
+You are to turn in this homework during lecture. Please
+write up your answers to the exercises below and hand them in to a
+staff member at the beginning of lecture.
+<p>
+<b>Introduction</b>
+
+<p>
+In this homework you will investigate how the kernel switches between
+two processes. 
+
+<p>
+<b>Assignment</b>:
+<p>
+
+Suppose a process that is running in the kernel
+calls <code>sched()</code>, which ends up jumping
+into <code>scheduler()</code>.
+
+<p>
+<b>Turn in</b>: 
+Where is the stack that <code>sched()</code> executes on?
+
+<p>
+<b>Turn in</b>: 
+Where is the stack that <code>scheduler()</code> executes on?
+
+<p>
+<b>Turn in:</b>
+When <code>sched()</code> calls <code>swtch()</code>,
+does that call to <code>swtch()</code> ever return? If so, when?
+
+<p>
+Now think back to <a href="../lec/l2.html">lecture 2</a> and the invariants
+that gcc expects any function, including <code>swtch</code>, to
+maintain.  Compare these invariants with what <code>swtch</code>
+actually implements, and the state that our kernel maintains in
+a <code>struct context</code>.
+
+<p>
+<b>Turn in</b>: Could <code>swtch</code> do less work and still be
+correct?  Could we reduce the size of a <code>struct context</code>?
+Provide concrete examples if yes, or argue for why not.
+
+<p>
+Surround the call to <code>swtch()</code> in <code>scheduler()</code> with calls
+to <code>cprintf()</code> like this:
+<pre>
+  cprintf("a");
+  swtch(&cpu->scheduler, &proc->context);
+  cprintf("b");
+</pre>
+<p>
+Similarly,
+surround the call to <code>swtch()</code> in <code>sched()</code> with calls
+to <code>cprintf()</code> like this:
+
+<pre>
+  cprintf("c");
+  swtch(&proc->context, cpu->scheduler);
+  cprintf("d");
+</pre>
+<p>
+Rebuild your kernel and boot it on QEMU.
+With a few exceptions
+you should see a regular four-character pattern repeated over and over.
+
+<p>
+<b>Turn in</b>: What is the four-character pattern?
+
+<p>
+<b>Turn in</b>: The very first characters are <code>ac</code>. Why does
+this happen?
+
+<p>
+<b>This completes the homework.</b>
+
+
+
+<p><hr><p>
+<address>
+<a href="http://www.cs.yale.edu/people/ford.html">Bryan Ford</a>,
+<a href="http://www.cs.yale.edu/">Department of Computer Science</a>,
+<a href="http://www.yale.edu/">Yale University</a>
+</address> 
+
+
+<i>Based on MIT 6.828 materials
+	by Frans Kaashoek and others</i>
+
+
+</body>
+</html>
+

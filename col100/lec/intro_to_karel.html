@@ -1,0 +1,103 @@
+<h3>Karel</h3>
+<ul>
+ <li>Introduce Karel's world as on Page 2 of the document.</li>
+ <li>Discuss the example on page 8 of the document.</li>
+ <li>Discuss how the code can become large and hard-to-read. How abstractions through function definitions can help --- turnRight and turnAround.  Why these abstractions? Why not moveAndTurnLeft? Intuitiveness, generality.</li>
+ <li>Discuss pothole example on page 14 where a beeper needs to be placed to fill the pothole.</li>
+ <li>Discuss the case where we do not know if a beeper is already present or not. Introduce conditions like beeperPresent(), frontisClear().</li>
+ <li>Discuss how other conditions can be implemented using these conditions. e.g., leftIsClear() involves turnLeft(); ret = frontIsClear(); turnRight(); return ret;.</li>
+ <li>Introduce the notion of a variable. <code>ret</code> is a variable in the example above.
+<ul>
+<li><b>Code Variables</b>: A "variable" is like a box that holds a value
+<pre>
+x = 7;
+</pre>
+This stores the value <code>7</code> into the variable (i.e. box) <code>x</code>.
+</li>
+<li>Later <code>x</code> in the code retrieve the value from the box</li>
+<li><code>x</code> becomes a shorthand for <code>7</code> (whatever is in the box)</li>
+<li>Using <code>=</code> in this way is called "variable assignment"</li>
+<li>Example usage
+<ul>
+<li>Assign a value into a variable once</li>
+<li>Then use that variable many times below</li>
+<li>A convenient shorthand in the code</li>
+</ul>
+</li>
+<li>Programming with variables:
+<pre>
+name = "ABCDEFGH"
+print "happy birthday to " + name
+print "happy birthday to " + name
+</pre>
+</li>
+</ul>
+</li>
+<li>Similarly introduce constants TRUE and FALSE. Implement <code>noBeeperPresent()</code> using <code>beeperPresent()</code>.</li>
+<li>Introduce <code>if-then-else</code> construct and show its example usage to implement the case where you fill the pothole only if a beeper is not already present.</li>
+<li>Formalize the meaning of <code>if-then-else</code> a bit more using arbitrary statements as follows:
+<pre>
+if (cond) {
+  S1;
+  S2;
+} else {
+  S3;
+  S4;
+}
+S5;
+S6;
+</pre>
+If <code>cond</code> is TRUE, then <code>S1;S2;S5;S6;</code> get executed.
+
+<p>
+If <code>cond</code> is FALSE, then <code>S3;S4;S5;S6;</code> get executed.
+</li>
+<li><code>if</code> can appear without <code>else</code>:
+<pre>
+if (cond) {
+  S1;
+  S2;
+}
+S5;
+S6;
+</pre>
+What happens if <code>cond</code> is TRUE?  What happens if <code>cond</code> is FALSE?
+</li>
+<li>Now consider the case where we need to repeatedly fill potholes in the road; All potholes are equidistant at distance 1 from each other.
+<ul>
+<li>One option is to write the code multiple times. e.g., if there are 5 potholes, write the code 5 times. What if there are one million potholes?</li>
+<li>Motivate the need for a construct that allows repitition of a given program/instructions: <code>for</code> loop.</li>
+</ul>
+</li>
+<li><b>For loop</b>: allows repeating up to "<code>count</code>" number of times, i.e., <code>count</code> iterations:
+<pre>
+for (i = 0; i < _count_; i++)
+{
+  S1;
+  S2; 
+}
+</pre>
+</li>
+<li>Only the <code>count</code> can be changed by the user in this loop. This loop says that make <code>i</code> count from 0 to <code>count-1</code>.</li>
+<li>Can write the code as:
+<pre>
+numPotholes = 5
+for (i = 0; i < numPotholes; i++) {
+  fillNextPothole();
+}
+</pre>
+</li>
+<li>Graphically show the state after every loop iteration for this example.</li>
+<li>Show the semantics of this loop for general instructions S1 and S2 in the body.</li>
+<li>Discuss another program where Karel wants to keep walking till it hits the wall. Can this be done with the for loop? One option is: if we know the maximum length of a street or an avenue, we can use that count, and use an if condition in the body. But this is unsatisfactory because how will we know the maximum length? Overestimation = bad because inefficient. Underestimation = very bad because incorrect.</li>
+<li>Discuss while loop:
+<pre>
+define moveTillClear()
+{
+  while (frontIsClear())
+  {
+    move()
+  }
+}
+</pre>
+</ul>

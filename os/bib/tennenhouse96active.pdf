@@ -1,0 +1,12172 @@
+%PDF-1.2
+%‚„œ”
+2 0 obj
+<<
+/Length 8218
+>>
+stream
+BT
+/F6 1 Tf
+10 0 0 10 54 80 Tm
+0 0 0 rg
+/GS1 gs
+0 Tc
+(____________________________________)Tj
+1.4 -1.3 TD
+0 Tw
+(*)Tj
+0.5501 -0.3 TD
+0.018 Tc
+0.184 Tw
+[({dlt,djw}@lcs.mit.edu.  http://www.tns.lcs.mit.edu/.  An earlier version of this paper was delivered during the)]TJ
+-1.9501 -1.1 TD
+0.008 Tc
+0.081 Tw
+(keynote session of Multimedia Computing and Networking, San Jose, CA, January 1996.)Tj
+/F8 1 Tf
+18 0 0 18 143 706 Tm
+0.015 Tc
+0.145 Tw
+(Towards an Active Network Architecture)Tj
+/F6 1 Tf
+12 0 0 12 200 678 Tm
+-0.006 Tc
+0 Tw
+(David L. Tennenhouse and David J. Wetherall)Tj
+18.3447 0.25 TD
+0 Tc
+(*)Tj
+-18.4281 -1.5833 TD
+(Telemedia, Networks and Systems Group, MIT)Tj
+/F8 1 Tf
+10 0 0 10 54 622 Tm
+0.008 Tc
+(ABSTRACT)Tj
+/F10 1 Tf
+1.4 -1.7 TD
+0.051 Tc
+0.507 Tw
+(Active networks allow their users to inject)Tj
+-1.4 -1.1 TD
+0.008 Tc
+0.079 Tw
+[(customized programs into the nodes of the network.  An)]TJ
+T*
+0.085 Tw
+(extreme case, in which we are most interested, replaces)Tj
+T*
+0.012 Tc
+0.123 Tw
+(packets with \322capsules\323 \320 program fragments that are)Tj
+T*
+0.007 Tc
+0.071 Tw
+(executed at each network router/switch they traverse.)Tj
+1.4 -1.4 TD
+0.066 Tw
+(Active architectures permit a massive increase in the)Tj
+-1.4 -1.1 TD
+0.026 Tc
+0.264 Tw
+(sophistication of the computation that is performed)Tj
+T*
+0.01 Tc
+0.096 Tw
+[(within the network.  They will enable new applications,)]TJ
+T*
+0.008 Tc
+0.08 Tw
+(especially those based on application-specific multicast,)Tj
+T*
+0.024 Tc
+0.239 Tw
+(information fusion, and other services that leverage)Tj
+T*
+0.011 Tc
+0.109 Tw
+[(network-based computation and storage.  Furthermore,)]TJ
+T*
+0.045 Tc
+0.454 Tw
+(they will accelerate the pace of innovation by)Tj
+T*
+0.04 Tc
+0.398 Tw
+(decoupling network services from the underlying)Tj
+T*
+0.013 Tc
+0.128 Tw
+(hardware and allowing new services to be loaded into)Tj
+T*
+0.002 Tc
+0.015 Tw
+[(the infrastructure  on demand.)]TJ
+1.4 -1.4 TD
+0.018 Tc
+0.176 Tw
+(In this paper, we describe our vision of an active)Tj
+-1.4 -1.1 TD
+0.006 Tc
+0.056 Tw
+(network architecture, outline our approach to its design,)Tj
+T*
+0.007 Tc
+0.073 Tw
+(and survey the technologies that can be brought to bear)Tj
+T*
+0.017 Tc
+0.169 Tw
+[(on its implementation.  We propose that the research)]TJ
+T*
+0.008 Tc
+0.085 Tw
+(community mount a joint effort to develop and deploy a)Tj
+T*
+0.009 Tc
+0.087 Tw
+(wide area ActiveNet.)Tj
+/F8 1 Tf
+0 -2.3 TD
+0.004 Tc
+0.043 Tw
+[(1.  INTRODUCTION)]TJ
+/F6 1 Tf
+1.4 -1.7 TD
+0.023 Tc
+0.228 Tw
+(Traditional data networks passively transport bits)Tj
+-1.4 -1.1 TD
+0.011 Tc
+0.109 Tw
+[(from one end system to another.  Ideally, the user data)]TJ
+T*
+0.014 Tc
+0.145 Tw
+(is transferred opaquely, i.e., the network is insensitive)Tj
+T*
+0.017 Tc
+0.169 Tw
+(to the bits it carries and they are transferred between)Tj
+T*
+0.041 Tc
+0.407 Tw
+[(end systems without modification.  The role of)]TJ
+T*
+0.01 Tc
+0.097 Tw
+(computation within such networks is extremely limited,)Tj
+T*
+0.026 Tc
+0.257 Tw
+(e.g., header processing in packet-switched networks)Tj
+T*
+0.008 Tc
+0.083 Tw
+(and signaling in connection-oriented networks.)Tj
+1.4 -1.4 TD
+0.019 Tc
+0.193 Tw
+(Active Networks break with tradition by allowing)Tj
+-1.4 -1.1 TD
+0.008 Tc
+0.081 Tw
+(the network to perform customized computations on the)Tj
+T*
+0.018 Tc
+0.182 Tw
+[(user data.  For example, a user of an active network)]TJ
+T*
+0.025 Tc
+0.251 Tw
+(could send a customized compression program to a)Tj
+T*
+0.008 Tc
+0.077 Tw
+(node within the network \(e.g., a router\) and request that)Tj
+T*
+0.019 Tc
+0.189 Tw
+(the node execute that program when processing their)Tj
+T*
+0.009 Tc
+0.093 Tw
+[(packets.  These networks are \322active\323 in two ways:)]TJ
+1.8 -1.3 TD
+0.088 Tw
+[(\245)-541(Switches perform computations on the user data)]TJ
+0.9 -1.1 TD
+0.003 Tc
+0.033 Tw
+(flowing through them.)Tj
+-0.9 -1.3 TD
+0.008 Tc
+0.085 Tw
+[(\245)-542(Individuals can inject programs into the network,)]TJ
+0.9 -1.1 TD
+0.076 Tw
+(thereby tailoring the node processing to be user-)Tj
+T*
+0.014 Tc
+0.139 Tw
+(and application-specific.)Tj
+-1.3 -1.4 TD
+0.013 Tc
+0.132 Tw
+(We have identified several architectural approaches)Tj
+-1.4 -1.1 TD
+0.028 Tc
+0.277 Tw
+[(to active networks.  One approach, which we find)]TJ
+27 52.4 TD
+0.013 Tc
+0.134 Tw
+(particularly interesting, replaces the passive packets of)Tj
+0 -1.1 TD
+0.032 Tc
+0.323 Tw
+(present day architectures with active \322capsules\323 \320)Tj
+T*
+0.024 Tc
+0.235 Tw
+(miniature programs that are executed at each router)Tj
+T*
+0.011 Tc
+0.105 Tw
+[(they traverse.  This change in architectural perspective,)]TJ
+T*
+0.084 Tc
+0.838 Tw
+(from passive packets to active capsules,)Tj
+T*
+0.055 Tc
+0.548 Tw
+(simultaneously addresses both of the \322active\323)Tj
+T*
+0.046 Tc
+0.465 Tw
+[(properties described above.  User data can be)]TJ
+T*
+0.026 Tc
+0.258 Tw
+(embedded within these mini-programs, in much the)Tj
+T*
+0.011 Tc
+0.107 Tw
+(way a page\325s contents are embedded within a fragment)Tj
+T*
+0.015 Tc
+0.149 Tw
+[(of PostScript code.  Furthermore, capsules can invoke)]TJ
+T*
+0.011 Tc
+0.114 Tw
+(pre-defined program methods or plant new ones within)Tj
+T*
+0.004 Tc
+0.039 Tw
+(network nodes.)Tj
+1.4 -1.4 TD
+0.017 Tc
+0.17 Tw
+(Our work is motivated by both technology \322push\323)Tj
+-1.4 -1.1 TD
+0.039 Tc
+0.395 Tw
+[(and user \322pull\323.  The technology \322push\323 is the)]TJ
+T*
+0.033 Tc
+0.335 Tw
+(emergence of \322active\323 technologies, compiled and)Tj
+T*
+0.036 Tc
+0.359 Tw
+(interpreted, supporting the encapsulation, transfer,)Tj
+T*
+0.371 Tw
+(interposition, and safe and efficient execution of)Tj
+T*
+0.026 Tc
+0.256 Tw
+[(program fragments.  Today, active technologies are)]TJ
+T*
+0.02 Tc
+0.203 Tw
+(applied within individual end systems and above the)Tj
+T*
+0.017 Tc
+0.173 Tw
+(end-to-end network layer; for example, to allow Web)Tj
+T*
+0.026 Tc
+0.259 Tw
+(servers and clients to exchange program fragments.)Tj
+T*
+0.042 Tc
+0.419 Tw
+(Our innovation is to leverage and extend these)Tj
+T*
+0.012 Tc
+0.12 Tw
+(technologies for use within the network \320 in ways that)Tj
+T*
+0.022 Tc
+0.218 Tw
+(will fundamentally change today\325s model of what is)Tj
+T*
+0.008 Tc
+0.079 Tw
+(\322in\323 the network.)Tj
+1.4 -1.4 TD
+0.025 Tc
+0.249 Tw
+(The \322pull\323 comes from the ad hoc collection of)Tj
+-1.4 -1.1 TD
+0.039 Tc
+0.393 Tw
+(firewalls, Web proxies, multicast routers, mobile)Tj
+T*
+0.016 Tc
+0.162 Tw
+(proxies, video gateways, etc. that perform user-driven)Tj
+T*
+0.02 Tc
+0.195 Tw
+[(computation at nodes \322within\323 the network.  Despite)]TJ
+T*
+0.016 Tc
+0.155 Tw
+[(architectural injunctions against them, these nodes are)]TJ
+T*
+0.019 Tc
+0.187 Tw
+(flourishing, suggesting user and management demand)Tj
+T*
+0.012 Tc
+0.123 Tw
+[(for their services.  We are developing the architectural)]TJ
+T*
+0.008 Tc
+0.083 Tw
+(support and common programming platforms to support)Tj
+T*
+0.014 Tc
+0.136 Tw
+(the diversity and dynamic deployment requirements of)Tj
+T*
+0.012 Tc
+0.12 Tw
+[(these \322interposed\323 services.  Our goal is to replace the)]TJ
+T*
+0.02 Tc
+0.201 Tw
+(numerous ad hoc approaches to their implementation)Tj
+T*
+0.015 Tc
+0.147 Tw
+(with a generic capability that allows users to program)Tj
+T*
+0.004 Tc
+0.043 Tw
+(their networks.)Tj
+1.4 -1.4 TD
+0.018 Tc
+0.176 Tw
+(There are three principal advantages to basing the)Tj
+-1.4 -1.1 TD
+0.045 Tc
+0.446 Tw
+(network architecture on the exchange of active)Tj
+T*
+0.01 Tc
+0.105 Tw
+(programs, rather than passive packets:)Tj
+1.8 -1.3 TD
+0.009 Tc
+0.086 Tw
+[(\245)-541(Exchanging code provides a basis for adaptive)]TJ
+0.9 -1.1 TD
+0.01 Tc
+0.103 Tw
+(protocols, enabling richer interactions than the)Tj
+T*
+0.008 Tc
+0.081 Tw
+(exchange of fixed data formats.)Tj
+-0.9 -1.3 TD
+0.01 Tc
+0.095 Tw
+[(\245)-540(Capsules provide a means of implementing fine)]TJ
+0.9 -1.1 TD
+0.012 Tc
+0.118 Tw
+(grained application-specific functions at)Tj
+T*
+0.008 Tc
+0.075 Tw
+[(strategic points within the network.)]TJ
+ET
+endstream
+endobj
+3 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/F6 4 0 R
+/F8 5 0 R
+/F10 6 0 R
+>>
+/ExtGState <<
+/GS1 7 0 R
+>>
+>>
+endobj
+10 0 obj
+<<
+/Length 9166
+>>
+stream
+BT
+/F6 1 Tf
+10 0 0 10 72 718 Tm
+0 0 0 rg
+/GS1 gs
+0.008 Tc
+0.082 Tw
+[(\245)-542(The programming abstraction provides a)]TJ
+0.9 -1.1 TD
+0.006 Tc
+0.061 Tw
+(powerful platform for user-driven customization)Tj
+T*
+0.008 Tc
+0.08 Tw
+(of the infrastructure, allowing new services to be)Tj
+T*
+0.011 Tc
+0.106 Tw
+(deployed at a faster pace than can be sustained)Tj
+T*
+0.008 Tc
+0.083 Tw
+(by vendor driven standardization processes.)Tj
+-1.3 -1.4 TD
+0.012 Tc
+0.116 Tw
+(This paper presents our vision of an active network)Tj
+-1.4 -1.1 TD
+0.009 Tc
+0.095 Tw
+(architecture and the approach we are following towards)Tj
+T*
+0.03 Tc
+0.301 Tw
+[(the deployment of an operational ActiveNet.  The)]TJ
+T*
+0.027 Tc
+0.275 Tw
+(active network approach opens a Pandora\325s box of)Tj
+T*
+0.048 Tc
+0.478 Tw
+(safety, security, and resource allocation issues.)Tj
+T*
+0.025 Tc
+0.248 Tw
+(Although we do not present a complete design, we)Tj
+T*
+0.019 Tc
+0.192 Tw
+(identify a number of specific research issues, outline)Tj
+T*
+0.012 Tc
+0.121 Tw
+(the approach we are following towards their resolution)Tj
+T*
+0.023 Tc
+0.226 Tw
+(and identify the technologies we intend to leverage.)Tj
+T*
+0.017 Tc
+0.169 Tw
+(Our plan is to bootstrap a wide area ActiveNet using)Tj
+T*
+0.032 Tc
+0.324 Tw
+(similar techniques to those used by the prototype)Tj
+T*
+0.042 Tc
+0.415 Tw
+(MBONE, i.e., by locating platforms at strategic)Tj
+T*
+0.011 Tc
+0.105 Tw
+(locations and \322tunneling\323 through existing transmission)Tj
+T*
+(facilities, such as the Internet.)Tj
+1.4 -1.4 TD
+0.008 Tc
+0.077 Tw
+(In the next section we provide a description of some)Tj
+-1.4 -1.1 TD
+0.039 Tc
+0.394 Tw
+(of the \322lead user\323 applications that motivate an)Tj
+T*
+0.032 Tc
+0.324 Tw
+(architecture that facilitates computation within the)Tj
+T*
+0.025 Tc
+0.253 Tw
+[(network.  In section 3, we provide an overview of)]TJ
+T*
+0.02 Tc
+0.201 Tw
+(active networks, a high-level perspective on how we)Tj
+T*
+0.011 Tc
+0.107 Tw
+(propose to organize their platforms and an introduction)Tj
+T*
+0.013 Tc
+0.129 Tw
+[(to the research issues that must be addressed.  Section)]TJ
+T*
+0.133 Tw
+(4 describes the \322instruction set\323 issues associated with)Tj
+T*
+0.016 Tc
+0.16 Tw
+(an interoperable programming model and how \322active)Tj
+T*
+0.018 Tc
+0.178 Tw
+(technologies\323 can be leveraged to effect the safe and)Tj
+T*
+0.017 Tc
+0.166 Tw
+[(efficient evaluation of capsules.  We then discuss the)]TJ
+T*
+0.023 Tc
+0.233 Tw
+(management of node resources, such as storage and)Tj
+T*
+0.05 Tc
+0.498 Tw
+(link bandwidth, followed by our plan for the)Tj
+T*
+0.016 Tc
+0.166 Tw
+[(deployment of a research ActiveNet.  We realize that)]TJ
+T*
+0.018 Tc
+0.181 Tw
+(our work challenges some key assumptions that have)Tj
+T*
+0.027 Tc
+0.27 Tw
+(guided recent networking research and so the final)Tj
+T*
+0.028 Tc
+0.279 Tw
+(sections of this paper discuss the architectural and)Tj
+T*
+0.007 Tc
+0.071 Tw
+(structural questions raised by our approach.)Tj
+/F8 1 Tf
+0 -2.3 TD
+0.07 Tw
+[(2.  LEAD USERS)]TJ
+/F6 1 Tf
+1.4 -1.7 TD
+0.022 Tc
+0.223 Tw
+(Recently, there has been considerable interest in:)Tj
+-1.4 -1.1 TD
+0.015 Tc
+0.147 Tw
+(agent technologies, which allow mobile code to travel)Tj
+T*
+0.026 Tc
+0.257 Tw
+(from clients to servers; and in Web applets, which)Tj
+T*
+0.023 Tc
+0.233 Tw
+(allow mobile code to travel from servers to clients.)Tj
+T*
+0.026 Tc
+0.259 Tw
+(Active networks bridge this dichotomy by allowing)Tj
+T*
+0.027 Tc
+0.272 Tw
+(applications to dispatch computation to where it is)Tj
+T*
+0.02 Tc
+(needed.)Tj
+1.4 -1.4 TD
+0.038 Tc
+0.375 Tw
+[(We are encouraged by the observation that a)]TJ
+-1.4 -1.1 TD
+0.007 Tc
+0.072 Tw
+(number of lead users have pressing requirements for the)Tj
+T*
+0.03 Tc
+0.305 Tw
+(transparent interposition of computation within the)Tj
+T*
+0.008 Tc
+0.077 Tw
+[(network.  These include the developers of:)]TJ
+1.8 -1.3 TD
+0.012 Tc
+0.123 Tw
+[(\245)-538(Firewalls, which are typically located at)]TJ
+0.9 -1.1 TD
+0.112 Tw
+(administrative boundaries.)Tj
+-0.9 -1.3 TD
+0.009 Tc
+0.088 Tw
+[(\245)-541(Web proxies and other services, such as DNS)]TJ
+0.9 -1.1 TD
+0.01 Tc
+0.103 Tw
+(and multicast routers, that form strategic vertices)Tj
+T*
+0.009 Tc
+0.094 Tw
+(of copy, fusion and cache \322trees\323.)Tj
+-0.9 -1.3 TD
+0.013 Tc
+0.133 Tw
+[(\245)-537(Mobile/Nomadic gateways, placed near the)]TJ
+0.9 -1.1 TD
+0.008 Tc
+0.082 Tw
+(edges of the network where there are significant)Tj
+27 64 TD
+0.011 Tc
+0.106 Tw
+(discontinuities in the available bandwidth, e.g.,)Tj
+0 -1.1 TD
+0.008 Tc
+0.076 Tw
+(the base stations of wireless networks.)Tj
+-1.3 -1.4 TD
+0.024 Tc
+0.237 Tw
+(These lead applications demonstrate that there is)Tj
+-1.4 -1.1 TD
+0.011 Tc
+0.105 Tw
+[(user \322pull\323 towards active networks.  In the absence of)]TJ
+T*
+0.121 Tw
+(a coherent approach to interposition they have adopted)Tj
+T*
+0.027 Tc
+0.272 Tw
+[(a variety of ad hoc strategies.  In many cases the)]TJ
+T*
+0.028 Tc
+0.282 Tw
+(interposed platforms present the facade of network)Tj
+T*
+0.011 Tc
+0.107 Tw
+(layer routers, but actually perform application- or user-)Tj
+T*
+0.024 Tc
+0.243 Tw
+[(specific functions.  Active networks will rationalize)]TJ
+T*
+0.009 Tc
+0.088 Tw
+(these diverse activities by providing a uniform platform)Tj
+T*
+0.006 Tc
+0.061 Tw
+(for network-based computation.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.02 Tc
+(Firewalls)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.026 Tc
+0.255 Tw
+(Firewalls implement filters that determine which)Tj
+-1.4 -1.1 TD
+0.033 Tc
+0.329 Tw
+(packets should be passed transparently and which)Tj
+T*
+0.039 Tc
+0.389 Tw
+[(should be blocked.  Although they have a peer)]TJ
+T*
+0.059 Tc
+0.593 Tw
+(relationship to other routers, they implement)Tj
+T*
+0.012 Tc
+0.121 Tw
+(application- and user- specific functions, in addition to)Tj
+T*
+0.024 Tc
+0.244 Tw
+[(packet routing.  The need to update the firewall to)]TJ
+T*
+0.01 Tc
+0.105 Tw
+(enable the use of new applications is an impediment to)Tj
+T*
+0.024 Tc
+0.245 Tw
+[(their adoption.  In an Active Network, this process)]TJ
+T*
+0.031 Tc
+0.308 Tw
+(could be automated by allowing applications from)Tj
+T*
+0.027 Tc
+0.272 Tw
+(approved vendors to authenticate themselves to the)Tj
+T*
+0.009 Tc
+0.087 Tw
+(firewall and inject the appropriate modules into it.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.014 Tc
+0.143 Tw
+(Web Proxies)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.029 Tc
+0.291 Tw
+(Web proxies are an example of an application-)Tj
+-1.4 -1.1 TD
+0.295 Tw
+(specific service that is tailored to the serving and)Tj
+T*
+0.033 Tc
+0.326 Tw
+[(caching of World Wide Web pages.  Harvest [1])]TJ
+T*
+0.019 Tc
+0.191 Tw
+(employs a hierarchical scheme in which cache nodes)Tj
+T*
+0.015 Tc
+0.154 Tw
+(are located near the edges of the network, i.e., within)Tj
+T*
+0.009 Tc
+0.089 Tw
+[(the end user organizations.  This system is scalable and)]TJ
+T*
+0.015 Tc
+0.15 Tw
+(could be extended by allowing nodes of the hierarchy)Tj
+T*
+0.012 Tc
+0.118 Tw
+(to be located at strategic points within the networks of)Tj
+T*
+0.018 Tc
+0.185 Tw
+[(the access providers and inter-exchange carriers.  An)]TJ
+T*
+0.02 Tc
+0.196 Tw
+(interesting problem is the development of algorithms)Tj
+T*
+0.019 Tc
+0.186 Tw
+(and tools that automatically balance the hierarchy by)Tj
+T*
+0.035 Tc
+0.345 Tw
+(re-positioning the caches themselves, not just the)Tj
+T*
+0.052 Tc
+0.515 Tw
+[(cached information. Schemes such as dynamic)]TJ
+T*
+0.012 Tc
+0.118 Tw
+(hierarchical caching [2] and geographical push-caching)Tj
+T*
+0.006 Tc
+0.061 Tw
+([3] begin to address this issue.)Tj
+1.4 -1.4 TD
+0.042 Tc
+0.425 Tw
+(A further argument in favor of using active)Tj
+-1.4 -1.1 TD
+0.032 Tc
+0.322 Tw
+(technologies for web caching is that a significant)Tj
+T*
+0.019 Tc
+0.186 Tw
+(fraction of web pages are dynamically computed and)Tj
+T*
+0.018 Tc
+[(not susceptible to traditional \(passive\) caching.  This)]TJ
+T*
+0.181 Tw
+(suggests the development of web proxy schemes that)Tj
+T*
+0.03 Tc
+0.298 Tw
+(support \322active\323 caches that store and execute the)Tj
+T*
+0.009 Tc
+0.09 Tw
+(programs that generate web pages.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.018 Tc
+0.185 Tw
+(Mobile/Nomadic Computing)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.025 Tc
+0.255 Tw
+(Interposition strategies are used by a number of)Tj
+-1.4 -1.1 TD
+0.05 Tc
+0.496 Tw
+[(researchers addressing mobility.  For example,)]TJ
+T*
+0.029 Tc
+0.289 Tw
+(Kleinrock [4] describes a \322nomadic router\323 that is)Tj
+T*
+0.024 Tc
+0.237 Tw
+(interposed between an end system and the network.)Tj
+T*
+0.028 Tc
+0.284 Tw
+(This module observes and adapts to the means by)Tj
+T*
+0.009 Tc
+0.092 Tw
+(which the end system is connected to the network, e.g.,)Tj
+T*
+0.008 Tc
+0.077 Tw
+(through a phone line in a hotel room versus through the)Tj
+T*
+0.017 Tc
+0.166 Tw
+[(LAN in the home office.  It might decide to perform)]TJ
+T*
+0.02 Tc
+0.204 Tw
+(more file caching or link compression when the end)Tj
+T*
+0.028 Tc
+0.284 Tw
+(system is connected through a low bandwidth link)Tj
+ET
+endstream
+endobj
+11 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/F6 4 0 R
+/F8 5 0 R
+>>
+/ExtGState <<
+/GS1 7 0 R
+>>
+>>
+endobj
+13 0 obj
+<<
+/Length 9578
+>>
+stream
+BT
+/F6 1 Tf
+10 0 0 10 54 720 Tm
+0 0 0 rg
+/GS1 gs
+0.018 Tc
+0.178 Tw
+(and/or invoke additional security, such as encryption,)Tj
+0 -1.1 TD
+0.007 Tc
+0.068 Tw
+(when operating away from the home office.)Tj
+1.4 -1.4 TD
+0.02 Tc
+0.195 Tw
+(Similarly, \322nomadic agents and gateways\323 [4] are)Tj
+-1.4 -1.1 TD
+0.032 Tc
+0.316 Tw
+[(nodes that support mobility.  They are located at)]TJ
+T*
+0.039 Tc
+0.387 Tw
+(strategic points that bridge networks with vastly)Tj
+T*
+0.013 Tc
+0.128 Tw
+(different bandwidth and reliability characteristics, such)Tj
+T*
+0.014 Tc
+0.138 Tw
+(as the junctions between wired and wireless networks.)Tj
+T*
+0.006 Tc
+0.056 Tw
+(Application-neutral work on TCP snooping [5] improves)Tj
+T*
+0.015 Tc
+0.146 Tw
+(the performance of TCP connections by retaining per-)Tj
+T*
+0.016 Tc
+0.165 Tw
+(connection state information at wireless base stations.)Tj
+T*
+0.027 Tc
+0.268 Tw
+(Application-specific services performed at gateways)Tj
+T*
+0.012 Tc
+0.12 Tw
+(include file caching and the transcoding of images [6].)Tj
+T*
+0.026 Tc
+0.262 Tw
+(The InfoPad [7] takes the process even further, by)Tj
+T*
+0.021 Tc
+0.216 Tw
+(instantiating user-specific \322pad servers\323 supporting a)Tj
+T*
+0.017 Tc
+0.17 Tw
+(range of applications, such as voice and hand-writing)Tj
+T*
+0.012 Tc
+0.116 Tw
+(recognition, at intermediate nodes.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.01 Tc
+0.104 Tw
+(New Application Domains)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.016 Tc
+0.161 Tw
+(There is an untapped reservoir of applications that)Tj
+-1.4 -1.1 TD
+0.012 Tc
+0.117 Tw
+(require sophisticated network-based services to support)Tj
+T*
+0.044 Tc
+0.439 Tw
+(the distribution and fusion of information. One)Tj
+T*
+0.017 Tc
+0.17 Tw
+(promising direction is the development of multi-point)Tj
+T*
+0.021 Tc
+0.212 Tw
+(communication strategies that are more flexible than)Tj
+T*
+0.026 Tc
+0.261 Tw
+(the existing IP multicast service, which performs a)Tj
+T*
+0.041 Tc
+0.407 Tw
+(very limited computation on the user data, i.e.,)Tj
+T*
+0.017 Tc
+0.175 Tw
+[(copying.  Application-specific multicast, for example,)]TJ
+T*
+0.014 Tc
+0.136 Tw
+(would provide the mechanism to realize the quality of)Tj
+T*
+0.007 Tc
+0.066 Tw
+(service filtering suggested in [8] for video-conferencing.)Tj
+1.4 -1.4 TD
+0.015 Tc
+0.153 Tw
+(Information fusion is an example of a domain that)Tj
+-1.4 -1.1 TD
+0.025 Tc
+0.255 Tw
+[(may leverage interposed computation.  Applications)]TJ
+T*
+0.053 Tc
+0.533 Tw
+(such as sensor fusion, simulation and remote)Tj
+T*
+0.02 Tc
+0.201 Tw
+(manipulation, allow users to \322see\323 composite images)Tj
+T*
+0.03 Tc
+0.3 Tw
+(constructed by fusing information obtained from a)Tj
+T*
+0.026 Tc
+0.266 Tw
+(number of sensors. Fusing data within the network)Tj
+T*
+0.016 Tc
+0.163 Tw
+(reduces the bandwidth requirements at the users, who)Tj
+T*
+0.019 Tc
+0.189 Tw
+[(are located at the periphery of the network.  Placing)]TJ
+T*
+0.04 Tc
+0.396 Tw
+(application-specific computation near where it is)Tj
+T*
+0.011 Tc
+0.109 Tw
+(needed also addresses latency limitations by shortening)Tj
+T*
+0.113 Tw
+(the critical feedback loops of interactive applications.)Tj
+/F8 1 Tf
+0 -2.3 TD
+0.007 Tc
+0.067 Tw
+[(3.  ACTIVE NETWORKS)]TJ
+/F6 1 Tf
+1.4 -1.7 TD
+0.02 Tc
+0.198 Tw
+(In this section, we provide an overview of active)Tj
+-1.4 -1.1 TD
+0.009 Tc
+0.086 Tw
+(networks \320 highly programmable networks that perform)Tj
+T*
+0.017 Tc
+0.165 Tw
+(computations on the user data that is passing through)Tj
+T*
+0.039 Tc
+0.388 Tw
+[(them.  We distinguish two approaches to active)]TJ
+T*
+0.044 Tc
+0.445 Tw
+(networks, discrete and integrated, depending on)Tj
+T*
+0.016 Tc
+0.156 Tw
+(whether programs and data are carried discretely, i.e.,)Tj
+T*
+0.017 Tc
+0.166 Tw
+(within separate messages, or in an integrated fashion.)Tj
+T*
+0.01 Tc
+0.102 Tw
+(We then provide a high-level description of how active)Tj
+T*
+0.044 Tc
+0.436 Tw
+(nodes might be organized and describe a node)Tj
+T*
+0.021 Tc
+0.214 Tw
+(programming model that could provide the basis for)Tj
+T*
+0.007 Tc
+0.075 Tw
+(cross-platform interoperability.)Tj
+/F8 1 Tf
+0 -2.1 TD
+0.012 Tc
+0.122 Tw
+(3.1 Programmable Switches \320 A Discrete Approach)Tj
+/F6 1 Tf
+1.4 -1.6 TD
+0.015 Tc
+0.15 Tw
+(The processing of messages may be architecturally)Tj
+-1.4 -1.1 TD
+0.013 Tc
+0.135 Tw
+(separated from the business of injecting programs into)Tj
+T*
+0.01 Tc
+0.102 Tw
+(the node, with a separate mechanism for each function.)Tj
+T*
+0.042 Tc
+0.423 Tw
+(Users would send their packets through such a)Tj
+T*
+0.023 Tc
+0.232 Tw
+(\322programmable\323 node much the way they do today.)Tj
+27 65.5 TD
+0.019 Tc
+0.192 Tw
+(When a packet arrives, its header is examined and a)Tj
+0 -1.1 TD
+0.014 Tc
+0.141 Tw
+[(program is dispatched to operate on its contents.  The)]TJ
+T*
+0.045 Tc
+0.454 Tw
+(program actively processes the packet, possibly)Tj
+T*
+0.041 Tc
+0.407 Tw
+[(changing its contents.  A degree of customized)]TJ
+T*
+0.03 Tc
+0.306 Tw
+[(computation is possible because the header of the)]TJ
+T*
+0.009 Tc
+0.093 Tw
+(message identifies which program should be run \320 so it)Tj
+T*
+0.027 Tc
+0.276 Tw
+(is possible to arrange for different programs to be)Tj
+T*
+0.008 Tc
+0.076 Tw
+(executed for different users or applications.)Tj
+1.4 -1.4 TD
+0.022 Tc
+0.215 Tw
+(The separation of program execution and loading)Tj
+-1.4 -1.1 TD
+0.025 Tc
+0.247 Tw
+(might be valuable when it is desirable for program)Tj
+T*
+0.044 Tc
+0.444 Tw
+(loading to be carefully controlled or when the)Tj
+T*
+0.009 Tc
+0.091 Tw
+[(individual programs are relatively large.  This approach)]TJ
+T*
+0.015 Tc
+0.152 Tw
+(is used, for example, in the Intelligent Network being)Tj
+T*
+0.031 Tc
+0.313 Tw
+[(standardized by CCITT.  In the Internet, program)]TJ
+T*
+0.008 Tc
+0.084 Tw
+(loading could be restricted to a router\325s operator who is)Tj
+T*
+0.016 Tc
+0.164 Tw
+(furnished with a \322back door\323 through which they can)Tj
+T*
+0.031 Tc
+0.308 Tw
+[(dynamically load code.  This back door would at)]TJ
+T*
+0.03 Tc
+0.303 Tw
+(minimum authenticate the operator and might also)Tj
+T*
+0.025 Tc
+0.247 Tw
+(perform extensive checks on the code that is being)Tj
+T*
+0.019 Tc
+0.195 Tw
+[(loaded.  Note that allowing operators to dynamically)]TJ
+T*
+0.013 Tc
+0.135 Tw
+(load code into their routers would be useful for router)Tj
+T*
+0.026 Tc
+0.261 Tw
+(extensibility purposes, even if the programs do not)Tj
+T*
+0.008 Tc
+0.081 Tw
+(perform application- or user-specific computations.)Tj
+/F8 1 Tf
+0 -2.1 TD
+0.011 Tc
+0.106 Tw
+(3.2 Capsules \320 An Integrated Approach)Tj
+/F6 1 Tf
+1.4 -1.6 TD
+0.015 Tc
+0.148 Tw
+(A more extreme view of active networks is one in)Tj
+-1.4 -1.1 TD
+0.011 Tc
+(which )Tj
+ET
+0 0 0 RG
+0 J 0 j 0.5 w 10 M []0 d
+1 i 
+352.775 426 m
+376.493 426 l
+S
+BT
+10 0 0 10 352.775 427 Tm
+0.03 Tc
+(every )Tj
+2.7284 0 TD
+0.01 Tc
+0.096 Tw
+[(message is a program.  Every message, or)]TJ
+-5.6059 -1.2 TD
+0.012 Tc
+0.125 Tw
+(capsule, that passes between nodes contains a program)Tj
+0 -1.1 TD
+0.014 Tc
+0.138 Tw
+(fragment \(of at least one instruction\) that may include)Tj
+T*
+0.018 Tc
+0.18 Tw
+[(embedded data.  When a capsule arrives at an active)]TJ
+T*
+0.026 Tc
+0.26 Tw
+(node, its contents are evaluated, in much the same)Tj
+T*
+0.014 Tc
+0.137 Tw
+(way that a PostScript printer interprets the contents of)Tj
+T*
+0.009 Tc
+0.088 Tw
+(each file that is sent to it.)Tj
+1.4 -1.4 TD
+0.026 Tc
+0.26 Tw
+(Figure 1 provides a conceptual view of how an)Tj
+-1.4 -1.1 TD
+0.03 Tc
+0.299 Tw
+[(active node might be organized.  Bits arriving on)]TJ
+T*
+0.028 Tc
+0.279 Tw
+(incoming links are processed by a mechanism that)Tj
+T*
+0.042 Tc
+0.415 Tw
+(identifies capsule boundaries, possibly using the)Tj
+T*
+0.014 Tc
+0.141 Tw
+(framing mechanisms provided by traditional link layer)Tj
+T*
+0.016 Tc
+0.158 Tw
+[(protocols.  The capsule\325s contents are dispatched to a)]TJ
+T*
+0.014 Tc
+0.141 Tw
+(transient execution environment where they can safely)Tj
+T*
+0.034 Tc
+0.342 Tw
+[(be evaluated.  We hypothesize that programs are)]TJ
+T*
+0.031 Tc
+0.311 Tw
+(composed of \322primitive\323 instructions, that perform)Tj
+T*
+0.021 Tc
+0.215 Tw
+(basic computations on the capsule contents, and can)Tj
+T*
+0.024 Tc
+0.241 Tw
+(also invoke external \322methods\323, which may provide)Tj
+T*
+0.059 Tc
+0.59 Tw
+(access to resources external to the transient)Tj
+T*
+0.011 Tc
+0.105 Tw
+[(environment.  The execution of a capsule results in the)]TJ
+T*
+0.008 Tc
+0.076 Tw
+(scheduling of zero or more capsules for transmission on)Tj
+T*
+0.02 Tc
+0.203 Tw
+(the outgoing links and may change the non-transient)Tj
+T*
+0.036 Tc
+0.362 Tw
+[(state of the node.  The transient environment is)]TJ
+T*
+0.012 Tc
+0.115 Tw
+(destroyed when capsule evaluation terminates.)Tj
+/F8 1 Tf
+0 -2.1 TD
+0.121 Tw
+(3.3 Programming With Capsules)Tj
+/F6 1 Tf
+1.4 -1.6 TD
+0.015 Tc
+0.147 Tw
+(Our distinction between the discrete and integrated)Tj
+-1.4 -1.1 TD
+0.013 Tc
+0.128 Tw
+(approaches is one of perspective, primarily useful as a)Tj
+T*
+0.037 Tc
+0.371 Tw
+(basis for comparing two ways of thinking about)Tj
+T*
+0.012 Tc
+0.118 Tw
+[(networks and their programming.  In practical terms, a)]TJ
+T*
+0.026 Tc
+0.258 Tw
+(network based on the integrated approach could be)Tj
+T*
+0.032 Tc
+0.322 Tw
+(programmed to emulate the discrete approach and)Tj
+T*
+0.334 Tw
+[(vice-versa.  Nonetheless, we are intrigued by the)]TJ
+ET
+endstream
+endobj
+14 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/F6 4 0 R
+/F8 5 0 R
+>>
+/ExtGState <<
+/GS1 7 0 R
+>>
+>>
+endobj
+16 0 obj
+<<
+/Length 57106
+>>
+stream
+0.8 0.953 1 rg
+/GS1 gs
+1 i 
+391.98 700.5 m
+391.98 689.736 356.364 681 312.48 681 c
+268.596 681 232.98 689.736 232.98 700.5 c
+232.98 711.264 268.596 720 312.48 720 c
+356.364 720 391.98 711.264 391.98 700.5 c
+f*
+0.298 0.737 1 RG
+0 J 0 j 1 w 10 M []0 d
+391.48 700.5 m
+391.48 690.012 356.088 681.5 312.48 681.5 c
+268.872 681.5 233.48 690.012 233.48 700.5 c
+233.48 710.988 268.872 719.5 312.48 719.5 c
+356.088 719.5 391.48 710.988 391.48 700.5 c
+s
+0.298 0.827 1 rg
+430.96 641.52 m
+430.96 627.996 379.44 617.02 315.96 617.02 c
+252.48 617.02 200.96 627.996 200.96 641.52 c
+200.96 655.044 252.48 666.02 315.96 666.02 c
+379.44 666.02 430.96 655.044 430.96 641.52 c
+f*
+0.298 0.827 1 RG
+430.48 641.52 m
+430.48 628.272 378.96 617.52 315.48 617.52 c
+252 617.52 200.48 628.272 200.48 641.52 c
+200.48 654.768 252 665.52 315.48 665.52 c
+378.96 665.52 430.48 654.768 430.48 641.52 c
+s
+0.5 g
+317.98 565.02 m
+317.98 550.668 291.324 539.02 258.48 539.02 c
+225.636 539.02 198.98 550.668 198.98 565.02 c
+198.98 579.372 225.636 591.02 258.48 591.02 c
+291.324 591.02 317.98 579.372 317.98 565.02 c
+f*
+0 G
+317.48 565.5 m
+317.48 551.148 291.048 539.5 258.48 539.5 c
+225.912 539.5 199.48 551.148 199.48 565.5 c
+199.48 579.852 225.912 591.5 258.48 591.5 c
+291.048 591.5 317.48 579.852 317.48 565.5 c
+s
+0.298 0.651 1 rg
+310.96 568.02 m
+310.96 553.668 284.304 542.02 251.46 542.02 c
+218.616 542.02 191.96 553.668 191.96 568.02 c
+191.96 582.372 218.616 594.02 251.46 594.02 c
+284.304 594.02 310.96 582.372 310.96 568.02 c
+f*
+310.52 568.02 m
+310.52 553.944 284.088 542.52 251.52 542.52 c
+218.952 542.52 192.52 553.944 192.52 568.02 c
+192.52 582.096 218.952 593.52 251.52 593.52 c
+284.088 593.52 310.52 582.096 310.52 568.02 c
+s
+0.5 g
+448 567 m
+448 552.648 421.344 541 388.5 541 c
+355.656 541 329 552.648 329 567 c
+329 581.352 355.656 593 388.5 593 c
+421.344 593 448 581.352 448 567 c
+f*
+447.5 566.46 m
+447.5 552.108 421.068 540.46 388.5 540.46 c
+355.932 540.46 329.5 552.108 329.5 566.46 c
+329.5 580.812 355.932 592.46 388.5 592.46 c
+421.068 592.46 447.5 580.812 447.5 566.46 c
+s
+0.298 0.651 1 rg
+440.98 570 m
+440.98 555.648 414.324 544 381.48 544 c
+348.636 544 321.98 555.648 321.98 570 c
+321.98 584.352 348.636 596 381.48 596 c
+414.324 596 440.98 584.352 440.98 570 c
+f*
+440.48 569.94 m
+440.48 555.864 414.048 544.44 381.48 544.44 c
+348.912 544.44 322.48 555.864 322.48 569.94 c
+322.48 584.016 348.912 595.44 381.48 595.44 c
+414.048 595.44 440.48 584.016 440.48 569.94 c
+s
+BT
+/F11 1 Tf
+9.713 0 0 9.894 212 566 Tm
+0 0 0 rg
+0 Tc
+0 Tw
+(F)Tj
+0.03 0 TD
+(F)Tj
+0 0.03 TD
+(F)Tj
+-0.03 0 TD
+(F)Tj
+0.5832 -0.03 TD
+(r)Tj
+0.03 0 TD
+(r)Tj
+0 0.03 TD
+(r)Tj
+-0.03 0 TD
+(r)Tj
+0.4162 -0.03 TD
+(a)Tj
+0.03 0 TD
+(a)Tj
+0 0.03 TD
+(a)Tj
+-0.03 0 TD
+(a)Tj
+0.5832 -0.03 TD
+(m)Tj
+0.03 0 TD
+(m)Tj
+0 0.03 TD
+(m)Tj
+-0.03 0 TD
+(m)Tj
+0.9241 -0.03 TD
+(e)Tj
+0.03 0 TD
+(e)Tj
+0 0.03 TD
+(e)Tj
+-0.03 0 TD
+(e)Tj
+0.6057 -0.03 TD
+( )Tj
+0.03 0 TD
+( )Tj
+0 0.03 TD
+( )Tj
+-0.03 0 TD
+( )Tj
+0.3635 -0.03 TD
+(/)Tj
+0.03 0 TD
+(/)Tj
+0 0.03 TD
+(/)Tj
+-0.03 0 TD
+(/)Tj
+0.5681 -0.03 TD
+( )Tj
+0.03 0 TD
+( )Tj
+0 0.03 TD
+( )Tj
+-0.03 0 TD
+( )Tj
+0.3635 -0.03 TD
+(D)Tj
+0.03 0 TD
+(D)Tj
+0 0.03 TD
+(D)Tj
+-0.03 0 TD
+(D)Tj
+0.7307 -0.03 TD
+-0.205 Tc
+(ii)Tj
+0.03 0.03 TD
+0 Tc
+(i)Tj
+-0.03 0 TD
+(i)Tj
+0.2649 -0.03 TD
+(s)Tj
+0.03 0 TD
+(s)Tj
+0 0.03 TD
+(s)Tj
+-0.03 0 TD
+(s)Tj
+0.5393 -0.03 TD
+(p)Tj
+0.03 0 TD
+(p)Tj
+0 0.03 TD
+(p)Tj
+-0.03 0 TD
+(p)Tj
+0.6321 -0.03 TD
+(a)Tj
+0.03 0 TD
+(a)Tj
+0 0.03 TD
+(a)Tj
+-0.03 0 TD
+(a)Tj
+0.5832 -0.03 TD
+(t)Tj
+0.03 0 TD
+(t)Tj
+0 0.03 TD
+(t)Tj
+-0.03 0 TD
+(t)Tj
+0.4734 -0.03 TD
+(c)Tj
+0.03 0 TD
+(c)Tj
+0 0.03 TD
+(c)Tj
+-0.03 0 TD
+(c)Tj
+0.5754 -0.03 TD
+(h)Tj
+0.03 0 TD
+(h)Tj
+0 0.03 TD
+(h)Tj
+-0.03 0 TD
+(h)Tj
+4.8693 -0.1311 TD
+(S)Tj
+0.03 0 TD
+(S)Tj
+0 0.03 TD
+(S)Tj
+-0.03 0 TD
+(S)Tj
+0.636 -0.03 TD
+(c)Tj
+0.03 0 TD
+(c)Tj
+0 0.03 TD
+(c)Tj
+-0.03 0 TD
+(c)Tj
+0.5754 -0.03 TD
+(h)Tj
+0.03 0 TD
+(h)Tj
+0 0.03 TD
+(h)Tj
+-0.03 0 TD
+(h)Tj
+0.6135 -0.03 TD
+(e)Tj
+0.03 0 TD
+(e)Tj
+0 0.03 TD
+(e)Tj
+-0.03 0 TD
+(e)Tj
+0.6057 -0.03 TD
+(d)Tj
+0.03 0 TD
+(d)Tj
+0 0.03 TD
+(d)Tj
+-0.03 0 TD
+(d)Tj
+0.6321 -0.03 TD
+(u)Tj
+0.03 0 TD
+(u)Tj
+0 0.03 TD
+(u)Tj
+-0.03 0 TD
+(u)Tj
+0.6135 -0.03 TD
+-0.205 Tc
+(ll)Tj
+0.03 0.03 TD
+0 Tc
+(l)Tj
+-0.03 0 TD
+(l)Tj
+0.2649 -0.03 TD
+(e)Tj
+0.03 0 TD
+(e)Tj
+0 0.03 TD
+(e)Tj
+-0.03 0 TD
+(e)Tj
+0.6057 -0.03 TD
+( )Tj
+0.03 0 TD
+( )Tj
+0 0.03 TD
+( )Tj
+-0.03 0 TD
+( )Tj
+0.3635 -0.03 TD
+(/)Tj
+0.03 0 TD
+(/)Tj
+0 0.03 TD
+(/)Tj
+-0.03 0 TD
+(/)Tj
+0.5681 -0.03 TD
+( )Tj
+0.03 0 TD
+( )Tj
+0 0.03 TD
+( )Tj
+-0.03 0 TD
+( )Tj
+0.3635 -0.03 TD
+(T)Tj
+0.03 0 TD
+(T)Tj
+0 0.03 TD
+(T)Tj
+-0.03 0 TD
+(T)Tj
+0.6701 -0.03 TD
+(r)Tj
+0.03 0 TD
+(r)Tj
+0 0.03 TD
+(r)Tj
+-0.03 0 TD
+(r)Tj
+0.4162 -0.03 TD
+(a)Tj
+0.03 0 TD
+(a)Tj
+0 0.03 TD
+(a)Tj
+-0.03 0 TD
+(a)Tj
+0.5832 -0.03 TD
+(n)Tj
+0.03 0 TD
+(n)Tj
+0 0.03 TD
+(n)Tj
+-0.03 0 TD
+(n)Tj
+0.6135 -0.03 TD
+(s)Tj
+0.03 0 TD
+(s)Tj
+0 0.03 TD
+(s)Tj
+-0.03 0 TD
+(s)Tj
+0.5393 -0.03 TD
+(m)Tj
+0.03 0 TD
+(m)Tj
+0 0.03 TD
+(m)Tj
+-0.03 0 TD
+(m)Tj
+0.9241 -0.03 TD
+-0.205 Tc
+(ii)Tj
+0.03 0.03 TD
+0 Tc
+(i)Tj
+-0.03 0 TD
+(i)Tj
+0.2649 -0.03 TD
+(t)Tj
+0.03 0 TD
+(t)Tj
+0 0.03 TD
+(t)Tj
+-0.03 0 TD
+(t)Tj
+ET
+0.6 0.902 1 rg
+242 652 m
+244 651 l
+245 652 l
+247 653 l
+250 653 l
+254 649 l
+255 650 l
+256 650 l
+257 649 l
+259 648 l
+260 647 l
+260 644 l
+259 643 l
+260 641 l
+261 640 l
+261 637 l
+257 633 l
+255 634 l
+254 634 l
+252 632 l
+248 630 l
+246 630 l
+244 631 l
+244 632 l
+237 632 l
+235 634 l
+232 634 l
+229 637 l
+229 639 l
+230 640 l
+230 642 l
+229 643 l
+229 646 l
+230 647 l
+232 648 l
+233 649 l
+234 649 l
+237 652 l
+238 652 l
+239 653 l
+239 652 l
+242 652 l
+f*
+0 0.627 1 rg
+241 652 3 -1 re
+f
+243 652 1 -1 re
+f
+243 652 2 -1 re
+f
+244 652 2 -1 re
+f
+245 652 m
+246 653 l
+247 653 l
+247 652 l
+246 651 l
+245 651 l
+f
+246 653 2 -1 re
+f
+247 653 3 -1 re
+f
+249 653 m
+250 653 l
+252 652 l
+252 651 l
+251 651 l
+249 652 l
+f
+251 652 2 -1 re
+f
+252 652 1 -2 re
+f
+252 651 m
+253 651 l
+254 650 l
+254 649 l
+253 649 l
+252 650 l
+f
+253 650 2 -1 re
+f
+254 650 2 -1 re
+f
+255 650 3 -1 re
+f
+257 650 m
+258 650 l
+260 649 l
+260 648 l
+259 648 l
+257 649 l
+f
+259 649 1 -3 re
+f
+259 647 m
+260 647 l
+261 646 l
+261 645 l
+260 645 l
+259 646 l
+f
+260 646 m
+261 646 l
+261 645 l
+260 644 l
+259 644 l
+259 645 l
+f
+259 645 1 -3 re
+f
+259 643 m
+260 643 l
+261 642 l
+261 641 l
+260 641 l
+259 642 l
+f
+260 642 m
+261 642 l
+262 641 l
+262 640 l
+261 640 l
+260 641 l
+f
+261 641 1 -3 re
+f
+261 639 1 -3 re
+f
+261 637 m
+262 637 l
+262 636 l
+261 635 l
+260 635 l
+260 636 l
+f
+260 636 m
+261 636 l
+261 635 l
+260 634 l
+259 634 l
+259 635 l
+f
+259 635 m
+260 635 l
+260 634 l
+259 633 l
+258 633 l
+258 634 l
+f
+258 634 m
+259 634 l
+259 633 l
+256 633 l
+256 634 l
+f
+256 634 m
+257 634 l
+257 633 l
+254 633 l
+254 634 l
+f
+254 634 m
+255 634 l
+255 633 l
+253 633 l
+253 634 l
+f
+253 634 m
+254 634 l
+254 633 l
+253 632 l
+252 632 l
+252 633 l
+f
+252 633 m
+253 633 l
+253 632 l
+252 631 l
+251 631 l
+251 632 l
+f
+251 632 m
+252 632 l
+252 631 l
+250 630 l
+249 630 l
+249 631 l
+f
+249 631 m
+250 631 l
+250 630 l
+248 630 l
+248 631 l
+f
+248 631 m
+249 631 l
+249 630 l
+246 630 l
+246 631 l
+f
+246 631 m
+247 631 l
+247 630 l
+244 630 l
+244 631 l
+f
+243 632 m
+244 632 l
+245 631 l
+245 630 l
+244 630 l
+243 631 l
+f
+242 633 m
+243 633 l
+244 632 l
+244 631 l
+243 631 l
+242 632 l
+f
+242 633 m
+243 633 l
+243 632 l
+240 632 l
+240 633 l
+f
+240 633 m
+241 633 l
+241 632 l
+239 631 l
+238 631 l
+238 632 l
+f
+238 632 m
+239 632 l
+239 631 l
+237 631 l
+237 632 l
+f
+237 632 m
+237 633 l
+238 633 l
+238 631 l
+237 631 l
+f
+236 634 m
+237 634 l
+238 633 l
+238 632 l
+237 632 l
+236 633 l
+f
+235 635 m
+236 635 l
+237 634 l
+237 633 l
+236 633 l
+235 634 l
+f
+235 635 m
+236 635 l
+236 634 l
+234 634 l
+234 635 l
+f
+234 635 m
+235 635 l
+235 634 l
+232 634 l
+232 635 l
+f
+230 636 m
+231 636 l
+233 635 l
+233 634 l
+232 634 l
+230 635 l
+f
+229 637 m
+230 637 l
+231 636 l
+231 635 l
+230 635 l
+229 636 l
+f
+229 638 1 -2 re
+f
+228 640 m
+229 640 l
+230 638 l
+230 637 l
+229 637 l
+228 639 l
+f
+228 640 m
+229 641 l
+230 641 l
+230 640 l
+229 639 l
+228 639 l
+f
+229 641 m
+230 642 l
+231 642 l
+231 641 l
+230 640 l
+229 640 l
+f
+229 643 m
+230 643 l
+231 642 l
+231 641 l
+230 641 l
+229 642 l
+f
+228 644 m
+229 644 l
+230 643 l
+230 642 l
+229 642 l
+228 643 l
+f
+228 644 m
+228 645 l
+229 645 l
+229 643 l
+228 643 l
+f
+228 645 m
+229 646 l
+230 646 l
+230 645 l
+229 644 l
+228 644 l
+f
+229 646 m
+230 648 l
+231 648 l
+231 647 l
+230 645 l
+229 645 l
+f
+230 648 m
+231 649 l
+232 649 l
+232 648 l
+231 647 l
+230 647 l
+f
+231 649 3 -1 re
+f
+233 649 2 -1 re
+f
+234 649 m
+234 650 l
+235 650 l
+235 648 l
+234 648 l
+f
+234 650 m
+235 651 l
+236 651 l
+236 650 l
+235 649 l
+234 649 l
+f
+235 651 m
+236 652 l
+237 652 l
+237 651 l
+236 650 l
+235 650 l
+f
+236 652 m
+237 653 l
+238 653 l
+238 652 l
+237 651 l
+236 651 l
+f
+237 653 2 -1 re
+f
+238 653 2 -1 re
+f
+239 653 m
+240 653 l
+242 652 l
+242 651 l
+241 651 l
+239 652 l
+f
+0.6 0.902 1 rg
+378 646 m
+380 645 l
+381 645 l
+383 647 l
+386 647 l
+388 646 l
+390 644 l
+390 643 l
+391 644 l
+393 644 l
+394 643 l
+396 643 l
+396 641 l
+397 639 l
+396 638 l
+396 637 l
+397 635 l
+398 634 l
+398 631 l
+395 628 l
+390 628 l
+390 627 l
+389 626 l
+385 624 l
+383 624 l
+381 625 l
+380 626 l
+378 627 l
+377 626 l
+374 626 l
+373 628 l
+369 628 l
+368 629 l
+366 630 l
+366 634 l
+367 635 l
+366 636 l
+366 640 l
+369 643 l
+371 643 l
+372 644 l
+372 645 l
+374 647 l
+376 647 l
+378 646 l
+f*
+0 0.627 1 rg
+377 647 m
+378 647 l
+381 646 l
+381 645 l
+380 645 l
+377 646 l
+f
+380 646 1 -1 re
+f
+380 646 2 -1 re
+f
+381 647 1 -2 re
+f
+381 647 3 -1 re
+f
+383 647 2 -1 re
+f
+384 647 3 -1 re
+f
+386 647 2 -1 re
+f
+387 647 m
+388 647 l
+389 646 l
+389 645 l
+388 645 l
+387 646 l
+f
+388 646 m
+389 646 l
+390 645 l
+390 644 l
+389 644 l
+388 645 l
+f
+389 645 m
+390 645 l
+391 644 l
+391 643 l
+390 643 l
+389 644 l
+f
+390 644 2 -1 re
+f
+391 644 2 -1 re
+f
+392 644 2 -1 re
+f
+393 644 m
+394 644 l
+396 643 l
+396 642 l
+395 642 l
+393 643 l
+f
+395 643 m
+396 643 l
+397 642 l
+397 641 l
+396 641 l
+395 642 l
+f
+396 642 1 -3 re
+f
+396 640 1 -3 re
+f
+396 638 1 -2 re
+f
+396 637 1 -2 re
+f
+396 636 m
+397 636 l
+398 635 l
+398 634 l
+397 634 l
+396 635 l
+f
+397 635 1 -3 re
+f
+397 633 1 -2 re
+f
+397 632 m
+398 632 l
+398 631 l
+397 629 l
+396 629 l
+396 630 l
+f
+396 630 m
+397 630 l
+397 629 l
+396 628 l
+395 628 l
+395 629 l
+f
+395 629 m
+396 629 l
+396 628 l
+395 627 l
+394 627 l
+394 628 l
+f
+394 628 m
+395 628 l
+395 627 l
+393 627 l
+393 628 l
+f
+393 628 m
+394 628 l
+394 627 l
+391 627 l
+391 628 l
+f
+391 628 m
+392 628 l
+392 627 l
+390 627 l
+390 628 l
+f
+390 628 m
+391 628 l
+391 627 l
+389 627 l
+389 628 l
+f
+389 628 m
+390 628 l
+390 627 l
+389 625 l
+388 625 l
+388 626 l
+f
+388 626 m
+389 626 l
+389 625 l
+387 624 l
+386 624 l
+386 625 l
+f
+386 625 m
+387 625 l
+387 624 l
+386 623 l
+385 623 l
+385 624 l
+f
+385 624 m
+386 624 l
+386 623 l
+382 623 l
+382 624 l
+f
+381 625 m
+382 625 l
+383 624 l
+383 623 l
+382 623 l
+381 624 l
+f
+379 626 m
+380 626 l
+382 625 l
+382 624 l
+381 624 l
+379 625 l
+f
+378 627 m
+379 627 l
+380 626 l
+380 625 l
+379 625 l
+378 626 l
+f
+378 627 m
+379 627 l
+379 626 l
+376 626 l
+376 627 l
+f
+376 627 m
+377 627 l
+377 626 l
+376 625 l
+375 625 l
+375 626 l
+f
+374 627 m
+375 627 l
+376 626 l
+376 625 l
+375 625 l
+374 626 l
+f
+374 627 m
+375 627 l
+375 626 l
+373 626 l
+373 627 l
+f
+372 628 m
+373 628 l
+374 627 l
+374 626 l
+373 626 l
+372 627 l
+f
+371 629 m
+372 629 l
+373 628 l
+373 627 l
+372 627 l
+371 628 l
+f
+371 629 m
+372 629 l
+372 628 l
+370 628 l
+370 629 l
+f
+370 629 m
+371 629 l
+371 628 l
+368 628 l
+368 629 l
+f
+368 629 m
+369 629 l
+369 628 l
+367 628 l
+367 629 l
+f
+365 631 m
+366 631 l
+368 629 l
+368 628 l
+367 628 l
+365 630 l
+f
+365 631 m
+365 632 l
+366 632 l
+366 630 l
+365 630 l
+f
+365 632 m
+365 633 l
+366 633 l
+366 631 l
+365 631 l
+f
+365 633 m
+365 635 l
+366 635 l
+366 632 l
+365 632 l
+f
+365 635 m
+366 636 l
+367 636 l
+367 635 l
+366 634 l
+365 634 l
+f
+365 637 m
+366 637 l
+367 636 l
+367 635 l
+366 635 l
+365 636 l
+f
+365 637 m
+365 638 l
+366 638 l
+366 636 l
+365 636 l
+f
+365 638 m
+365 639 l
+366 639 l
+366 637 l
+365 637 l
+f
+365 639 m
+365 641 l
+366 641 l
+366 638 l
+365 638 l
+f
+365 641 m
+366 642 l
+367 642 l
+367 641 l
+366 640 l
+365 640 l
+f
+366 642 m
+368 643 l
+369 643 l
+369 642 l
+367 641 l
+366 641 l
+f
+368 643 2 -1 re
+f
+369 643 2 -1 re
+f
+370 643 m
+371 644 l
+372 644 l
+372 643 l
+371 642 l
+370 642 l
+f
+371 644 m
+372 646 l
+373 646 l
+373 645 l
+372 643 l
+371 643 l
+f
+372 646 2 -1 re
+f
+373 646 m
+374 647 l
+375 647 l
+375 646 l
+374 645 l
+373 645 l
+f
+374 647 2 -1 re
+f
+375 647 2 -1 re
+f
+376 647 2 -1 re
+f
+0.6 0.902 1 rg
+335 652 m
+337 651 l
+338 651 l
+339 652 l
+341 653 l
+345 653 l
+347 652 l
+350 649 l
+354 649 l
+357 648 l
+357 646 l
+358 644 l
+357 642 l
+357 641 l
+358 639 l
+359 638 l
+359 634 l
+358 632 l
+356 630 l
+354 629 l
+351 629 l
+350 630 l
+349 629 l
+348 627 l
+345 626 l
+343 625 l
+341 625 l
+338 626 l
+337 627 l
+335 628 l
+333 628 l
+331 627 l
+330 628 l
+329 628 l
+327 630 l
+323 630 l
+319 632 l
+319 638 l
+321 639 l
+319 640 l
+319 645 l
+322 648 l
+325 648 l
+326 649 l
+327 651 l
+329 652 l
+330 653 l
+332 653 l
+335 652 l
+f*
+0 0.627 1 rg
+334 653 m
+335 653 l
+338 652 l
+338 651 l
+337 651 l
+334 652 l
+f
+337 652 1 -1 re
+f
+337 652 2 -1 re
+f
+338 652 m
+339 653 l
+340 653 l
+340 652 l
+339 651 l
+338 651 l
+f
+339 653 m
+341 654 l
+342 654 l
+342 653 l
+340 652 l
+339 652 l
+f
+341 654 2 -1 re
+f
+342 654 3 -1 re
+f
+344 654 m
+345 654 l
+347 653 l
+347 652 l
+346 652 l
+344 653 l
+f
+346 653 m
+347 653 l
+348 652 l
+348 651 l
+347 651 l
+346 652 l
+f
+347 652 m
+348 652 l
+349 651 l
+349 650 l
+348 650 l
+347 651 l
+f
+348 651 m
+349 651 l
+350 650 l
+350 649 l
+349 649 l
+348 650 l
+f
+349 650 2 -1 re
+f
+350 650 3 -1 re
+f
+352 650 3 -1 re
+f
+354 650 m
+355 650 l
+357 648 l
+357 647 l
+356 647 l
+354 649 l
+f
+356 648 m
+357 648 l
+358 646 l
+358 645 l
+357 645 l
+356 647 l
+f
+357 646 1 -2 re
+f
+357 645 1 -3 re
+f
+357 643 1 -3 re
+f
+357 641 1 -2 re
+f
+357 640 m
+358 640 l
+360 638 l
+360 637 l
+359 637 l
+357 639 l
+f
+359 638 1 -3 re
+f
+359 636 1 -3 re
+f
+359 634 m
+360 634 l
+360 633 l
+358 631 l
+357 631 l
+357 632 l
+f
+357 632 m
+358 632 l
+358 631 l
+357 630 l
+356 630 l
+356 631 l
+f
+356 631 m
+357 631 l
+357 630 l
+355 630 l
+355 631 l
+f
+355 631 m
+356 631 l
+356 630 l
+354 628 l
+353 628 l
+353 629 l
+f
+351 630 m
+352 630 l
+354 629 l
+354 628 l
+353 628 l
+351 629 l
+f
+349 631 m
+350 631 l
+352 630 l
+352 629 l
+351 629 l
+349 630 l
+f
+349 631 m
+350 631 l
+350 630 l
+349 628 l
+348 628 l
+348 629 l
+f
+348 629 m
+349 629 l
+349 628 l
+348 627 l
+347 627 l
+347 628 l
+f
+347 628 m
+348 628 l
+348 627 l
+346 625 l
+345 625 l
+345 626 l
+f
+345 626 m
+346 626 l
+346 625 l
+343 625 l
+343 626 l
+f
+343 626 m
+344 626 l
+344 625 l
+340 625 l
+340 626 l
+f
+340 626 m
+341 626 l
+341 625 l
+338 625 l
+338 626 l
+f
+336 628 m
+337 628 l
+339 626 l
+339 625 l
+338 625 l
+336 627 l
+f
+334 629 m
+335 629 l
+337 628 l
+337 627 l
+336 627 l
+334 628 l
+f
+334 629 m
+335 629 l
+335 628 l
+334 627 l
+333 627 l
+333 628 l
+f
+333 628 m
+334 628 l
+334 627 l
+331 627 l
+331 628 l
+f
+331 628 m
+332 628 l
+332 627 l
+330 627 l
+330 628 l
+f
+330 628 m
+331 628 l
+331 627 l
+329 627 l
+329 628 l
+f
+327 629 m
+328 629 l
+330 628 l
+330 627 l
+329 627 l
+327 628 l
+f
+326 631 m
+327 631 l
+328 629 l
+328 628 l
+327 628 l
+326 630 l
+f
+326 631 m
+327 631 l
+327 630 l
+325 630 l
+325 631 l
+f
+325 631 m
+326 631 l
+326 630 l
+322 630 l
+322 631 l
+f
+321 632 m
+322 632 l
+323 631 l
+323 630 l
+322 630 l
+321 631 l
+f
+319 633 m
+320 633 l
+322 632 l
+322 631 l
+321 631 l
+319 632 l
+f
+319 635 1 -3 re
+f
+318 637 m
+319 637 l
+320 635 l
+320 634 l
+319 634 l
+318 636 l
+f
+318 637 m
+319 638 l
+320 638 l
+320 637 l
+319 636 l
+318 636 l
+f
+319 638 m
+320 640 l
+321 640 l
+321 639 l
+320 637 l
+319 637 l
+f
+319 641 m
+320 641 l
+321 640 l
+321 639 l
+320 639 l
+319 640 l
+f
+318 642 m
+319 642 l
+320 641 l
+320 640 l
+319 640 l
+318 641 l
+f
+318 643 1 -2 re
+f
+318 643 m
+319 645 l
+320 645 l
+320 644 l
+319 642 l
+318 642 l
+f
+319 645 m
+320 647 l
+321 647 l
+321 646 l
+320 644 l
+319 644 l
+f
+320 647 m
+322 648 l
+323 648 l
+323 647 l
+321 646 l
+320 646 l
+f
+322 648 m
+324 649 l
+325 649 l
+325 648 l
+323 647 l
+322 647 l
+f
+324 649 2 -1 re
+f
+325 649 m
+326 650 l
+327 650 l
+327 649 l
+326 648 l
+325 648 l
+f
+326 650 m
+327 651 l
+328 651 l
+328 650 l
+327 649 l
+326 649 l
+f
+327 651 m
+328 652 l
+329 652 l
+329 651 l
+328 650 l
+327 650 l
+f
+328 652 m
+329 653 l
+330 653 l
+330 652 l
+329 651 l
+328 651 l
+f
+329 653 m
+331 654 l
+332 654 l
+332 653 l
+330 652 l
+329 652 l
+f
+331 654 m
+332 654 l
+333 653 l
+333 652 l
+332 652 l
+331 653 l
+f
+332 653 3 -1 re
+f
+1 g
+374 704 m
+379 704 l
+380 703 l
+380 702 l
+380 703 l
+381 703 l
+381 702 l
+382 702 l
+383 701 l
+383 700 l
+382 700 l
+383 699 l
+383 696 l
+382 696 l
+381 695 l
+380 696 l
+380 695 l
+379 695 l
+378 694 l
+375 694 l
+375 695 l
+372 695 l
+371 696 l
+369 696 l
+369 702 l
+371 702 l
+371 703 l
+372 703 l
+372 704 l
+374 704 l
+f*
+0.298 0.737 1 rg
+374 705 m
+375 705 l
+376 704 l
+376 703 l
+375 703 l
+374 704 l
+f
+375 704 1 -1 re
+f
+375 705 1 -2 re
+f
+375 705 2 -1 re
+f
+376 705 2 -1 re
+f
+377 705 2 -1 re
+f
+378 705 1 -1 re
+f
+378 705 m
+379 705 l
+380 704 l
+380 703 l
+379 703 l
+378 704 l
+f
+379 704 1 -1 re
+f
+379 704 1 -2 re
+f
+379 703 2 -1 re
+f
+380 703 1 -1 re
+f
+380 703 2 -1 re
+f
+381 703 2 -1 re
+f
+382 703 1 -2 re
+f
+382 702 1 -2 re
+f
+382 701 1 -1 re
+f
+382 701 1 -2 re
+f
+382 700 1 -2 re
+f
+382 699 2 -1 re
+f
+383 699 1 -2 re
+f
+383 698 1 -1 re
+f
+383 698 m
+384 698 l
+384 697 l
+383 696 l
+382 696 l
+382 697 l
+f
+382 697 1 -1 re
+f
+382 697 m
+383 697 l
+383 696 l
+382 695 l
+381 695 l
+381 696 l
+f
+381 696 1 -1 re
+f
+381 696 m
+382 696 l
+382 695 l
+380 695 l
+380 696 l
+f
+380 696 m
+381 696 l
+381 695 l
+379 695 l
+379 696 l
+f
+379 696 1 -1 re
+f
+379 696 m
+380 696 l
+380 695 l
+379 694 l
+378 694 l
+378 695 l
+f
+378 695 1 -1 re
+f
+378 695 m
+379 695 l
+379 694 l
+378 693 l
+377 693 l
+377 694 l
+f
+377 694 m
+378 694 l
+378 693 l
+376 693 l
+376 694 l
+f
+375 695 m
+376 695 l
+377 694 l
+377 693 l
+376 693 l
+375 694 l
+f
+375 695 1 -1 re
+f
+374 696 m
+375 696 l
+376 695 l
+376 694 l
+375 694 l
+374 695 l
+f
+374 696 m
+375 696 l
+375 695 l
+373 695 l
+373 696 l
+f
+373 696 1 -2 re
+f
+373 695 m
+374 695 l
+374 694 l
+372 694 l
+372 695 l
+f
+372 696 1 -2 re
+f
+372 696 m
+373 696 l
+373 695 l
+371 695 l
+371 696 l
+f
+371 696 1 -1 re
+f
+371 696 m
+372 696 l
+372 695 l
+370 695 l
+370 696 l
+f
+370 696 1 -1 re
+f
+369 697 m
+370 697 l
+371 696 l
+371 695 l
+370 695 l
+369 696 l
+f
+369 697 m
+370 697 l
+370 696 l
+368 696 l
+368 697 l
+f
+368 697 m
+368 698 l
+369 698 l
+369 696 l
+368 696 l
+f
+368 698 1 -1 re
+f
+368 698 m
+368 699 l
+369 699 l
+369 697 l
+368 697 l
+f
+368 699 2 -1 re
+f
+368 700 m
+369 700 l
+370 699 l
+370 698 l
+369 698 l
+368 699 l
+f
+368 700 1 -1 re
+f
+368 700 m
+368 701 l
+369 701 l
+369 699 l
+368 699 l
+f
+368 701 m
+368 702 l
+369 702 l
+369 700 l
+368 700 l
+f
+368 702 2 -1 re
+f
+369 703 1 -2 re
+f
+369 703 2 -1 re
+f
+370 703 1 -1 re
+f
+370 703 2 -1 re
+f
+371 703 m
+371 704 l
+372 704 l
+372 702 l
+371 702 l
+f
+371 704 2 -1 re
+f
+372 705 1 -2 re
+f
+372 705 1 -1 re
+f
+372 705 2 -1 re
+f
+373 705 2 -1 re
+f
+1 g
+351 701 m
+354 701 l
+355 702 l
+357 702 l
+358 701 l
+359 701 l
+359 700 l
+360 699 l
+360 700 l
+361 700 l
+362 699 l
+363 699 l
+364 698 l
+364 696 l
+363 695 l
+365 693 l
+365 691 l
+363 689 l
+360 689 l
+358 687 l
+357 687 l
+356 686 l
+354 686 l
+353 687 l
+352 687 l
+351 688 l
+349 687 l
+348 688 l
+348 689 l
+345 689 l
+344 690 l
+343 690 l
+343 698 l
+345 699 l
+346 699 l
+348 701 l
+349 701 l
+349 702 l
+350 701 l
+351 701 l
+f*
+0.298 0.737 1 rg
+351 702 m
+352 702 l
+353 701 l
+353 700 l
+352 700 l
+351 701 l
+f
+352 701 1 -1 re
+f
+352 701 2 -1 re
+f
+353 701 m
+353 702 l
+354 702 l
+354 700 l
+353 700 l
+f
+353 702 2 -1 re
+f
+354 702 2 -1 re
+f
+355 702 2 -1 re
+f
+356 702 2 -1 re
+f
+357 702 m
+358 702 l
+359 701 l
+359 700 l
+358 700 l
+357 701 l
+f
+358 701 1 -2 re
+f
+358 700 2 -1 re
+f
+359 700 2 -1 re
+f
+360 700 2 -1 re
+f
+361 700 2 -1 re
+f
+362 700 m
+363 700 l
+364 699 l
+364 698 l
+363 698 l
+362 699 l
+f
+363 699 1 -2 re
+f
+363 698 m
+364 698 l
+365 697 l
+365 696 l
+364 696 l
+363 697 l
+f
+364 697 m
+365 697 l
+365 696 l
+364 695 l
+363 695 l
+363 696 l
+f
+363 696 1 -1 re
+f
+363 696 m
+364 696 l
+365 694 l
+365 693 l
+364 693 l
+363 695 l
+f
+364 694 1 -1 re
+f
+364 694 1 -2 re
+f
+364 693 1 -3 re
+f
+364 691 1 -2 re
+f
+364 690 m
+365 690 l
+365 689 l
+363 689 l
+363 690 l
+f
+363 690 m
+364 690 l
+364 689 l
+363 688 l
+362 688 l
+362 689 l
+f
+362 689 m
+363 689 l
+363 688 l
+361 688 l
+361 689 l
+f
+361 689 m
+362 689 l
+362 688 l
+360 688 l
+360 689 l
+f
+360 689 m
+361 689 l
+361 688 l
+359 688 l
+359 689 l
+f
+359 689 m
+360 689 l
+360 688 l
+358 688 l
+358 689 l
+f
+358 689 1 -2 re
+f
+358 688 m
+359 688 l
+359 687 l
+357 686 l
+356 686 l
+356 687 l
+f
+356 687 m
+357 687 l
+357 686 l
+355 686 l
+355 687 l
+f
+355 687 m
+356 687 l
+356 686 l
+354 686 l
+354 687 l
+f
+354 687 m
+355 687 l
+355 686 l
+353 686 l
+353 687 l
+f
+352 688 m
+353 688 l
+354 687 l
+354 686 l
+353 686 l
+352 687 l
+f
+352 688 m
+353 688 l
+353 687 l
+351 687 l
+351 688 l
+f
+351 688 m
+352 688 l
+352 687 l
+350 687 l
+350 688 l
+f
+350 688 m
+351 688 l
+351 687 l
+349 687 l
+349 688 l
+f
+349 688 m
+350 688 l
+350 687 l
+348 687 l
+348 688 l
+f
+348 688 1 -1 re
+f
+347 689 m
+348 689 l
+349 688 l
+349 687 l
+348 687 l
+347 688 l
+f
+346 690 m
+347 690 l
+348 689 l
+348 688 l
+347 688 l
+346 689 l
+f
+346 690 1 -1 re
+f
+346 690 m
+347 690 l
+347 689 l
+344 689 l
+344 690 l
+f
+344 690 m
+345 690 l
+345 689 l
+343 689 l
+343 690 l
+f
+343 691 1 -2 re
+f
+343 691 m
+344 691 l
+344 690 l
+342 690 l
+342 691 l
+f
+342 693 1 -3 re
+f
+342 693 m
+343 694 l
+344 694 l
+344 693 l
+343 692 l
+342 692 l
+f
+343 694 1 -1 re
+f
+343 695 1 -2 re
+f
+342 696 m
+343 696 l
+344 695 l
+344 694 l
+343 694 l
+342 695 l
+f
+342 697 1 -2 re
+f
+342 698 1 -2 re
+f
+342 698 2 -1 re
+f
+343 698 m
+344 699 l
+345 699 l
+345 698 l
+344 697 l
+343 697 l
+f
+344 699 2 -1 re
+f
+345 699 2 -1 re
+f
+346 700 1 -2 re
+f
+346 700 m
+347 701 l
+348 701 l
+348 700 l
+347 699 l
+346 699 l
+f
+347 701 m
+347 702 l
+348 702 l
+348 700 l
+347 700 l
+f
+347 702 2 -1 re
+f
+348 702 2 -1 re
+f
+349 702 1 -1 re
+f
+349 702 3 -1 re
+f
+1 g
+303 696 m
+305 696 l
+306 697 l
+307 697 l
+308 696 l
+309 696 l
+309 695 l
+312 695 l
+312 691 l
+313 690 l
+313 689 l
+311 687 l
+309 687 l
+308 686 l
+307 686 l
+307 685 l
+306 685 l
+304 686 l
+303 687 l
+303 686 l
+301 686 l
+300 687 l
+298 687 l
+298 688 l
+297 688 l
+297 694 l
+298 695 l
+300 695 l
+300 696 l
+301 696 l
+302 697 l
+302 696 l
+303 696 l
+f*
+0.298 0.737 1 rg
+302 697 2 -1 re
+f
+303 697 2 -1 re
+f
+304 697 1 -1 re
+f
+304 697 2 -1 re
+f
+305 697 2 -1 re
+f
+306 697 2 -1 re
+f
+307 697 1 -1 re
+f
+307 697 2 -1 re
+f
+308 697 1 -2 re
+f
+308 696 1 -1 re
+f
+308 696 2 -1 re
+f
+309 696 2 -1 re
+f
+310 696 1 -1 re
+f
+310 696 m
+311 696 l
+312 695 l
+312 694 l
+311 694 l
+310 695 l
+f
+311 695 m
+312 695 l
+313 694 l
+313 693 l
+312 693 l
+311 694 l
+f
+312 694 1 -2 re
+f
+312 693 1 -1 re
+f
+312 693 m
+313 693 l
+313 692 l
+312 691 l
+311 691 l
+311 692 l
+f
+311 692 2 -1 re
+f
+312 692 m
+313 692 l
+314 691 l
+314 690 l
+313 690 l
+312 691 l
+f
+313 691 1 -2 re
+f
+313 690 1 -2 re
+f
+313 689 m
+314 689 l
+314 688 l
+312 688 l
+312 689 l
+f
+312 689 m
+313 689 l
+313 688 l
+312 687 l
+311 687 l
+311 688 l
+f
+311 688 1 -1 re
+f
+311 688 m
+312 688 l
+312 687 l
+310 687 l
+310 688 l
+f
+310 688 m
+311 688 l
+311 687 l
+309 687 l
+309 688 l
+f
+309 688 m
+310 688 l
+310 687 l
+308 687 l
+308 688 l
+f
+308 688 1 -2 re
+f
+308 687 1 -1 re
+f
+308 687 m
+309 687 l
+309 686 l
+308 685 l
+307 685 l
+307 686 l
+f
+307 686 m
+308 686 l
+308 685 l
+306 685 l
+306 686 l
+f
+306 686 m
+307 686 l
+307 685 l
+305 685 l
+305 686 l
+f
+305 686 m
+306 686 l
+306 685 l
+304 685 l
+304 686 l
+f
+303 687 m
+304 687 l
+305 686 l
+305 685 l
+304 685 l
+303 686 l
+f
+303 687 1 -1 re
+f
+303 687 m
+304 687 l
+304 686 l
+302 686 l
+302 687 l
+f
+302 687 m
+303 687 l
+303 686 l
+301 686 l
+301 687 l
+f
+301 687 1 -1 re
+f
+301 687 m
+302 687 l
+302 686 l
+300 686 l
+300 687 l
+f
+300 688 1 -2 re
+f
+300 688 m
+301 688 l
+301 687 l
+299 687 l
+299 688 l
+f
+299 688 1 -1 re
+f
+299 688 m
+300 688 l
+300 687 l
+298 687 l
+298 688 l
+f
+298 688 m
+299 688 l
+299 687 l
+297 687 l
+297 688 l
+f
+296 689 m
+297 689 l
+298 688 l
+298 687 l
+297 687 l
+296 688 l
+f
+296 689 1 -1 re
+f
+296 689 m
+296 690 l
+297 690 l
+297 688 l
+296 688 l
+f
+296 690 m
+296 691 l
+297 691 l
+297 689 l
+296 689 l
+f
+296 691 m
+297 692 l
+298 692 l
+298 691 l
+297 690 l
+296 690 l
+f
+297 692 m
+298 692 l
+298 691 l
+296 691 l
+296 692 l
+f
+296 692 m
+296 693 l
+297 693 l
+297 691 l
+296 691 l
+f
+296 693 1 -1 re
+f
+296 693 m
+296 694 l
+297 694 l
+297 692 l
+296 692 l
+f
+296 694 2 -1 re
+f
+297 694 m
+298 695 l
+299 695 l
+299 694 l
+298 693 l
+297 693 l
+f
+298 695 1 -1 re
+f
+298 695 2 -1 re
+f
+299 695 m
+299 696 l
+300 696 l
+300 694 l
+299 694 l
+f
+299 696 2 -1 re
+f
+300 697 1 -2 re
+f
+300 697 2 -1 re
+f
+301 697 1 -1 re
+f
+301 697 2 -1 re
+f
+302 697 1 -1 re
+f
+1 g
+297 717 m
+299 717 l
+300 718 l
+303 718 l
+303 717 l
+304 717 l
+304 716 l
+305 715 l
+306 716 l
+307 716 l
+308 715 l
+309 715 l
+309 714 l
+310 713 l
+309 712 l
+309 711 l
+310 710 l
+310 706 l
+309 705 l
+305 705 l
+303 703 l
+301 702 l
+300 702 l
+298 704 l
+294 704 l
+293 705 l
+290 705 l
+288 707 l
+288 708 l
+289 709 l
+289 711 l
+288 711 l
+288 713 l
+290 715 l
+292 715 l
+292 716 l
+294 718 l
+295 718 l
+297 717 l
+f*
+0.298 0.737 1 rg
+296 718 m
+297 718 l
+298 717 l
+298 716 l
+297 716 l
+296 717 l
+f
+297 717 2 -1 re
+f
+298 717 1 -1 re
+f
+298 717 m
+299 718 l
+300 718 l
+300 717 l
+299 716 l
+298 716 l
+f
+299 718 2 -1 re
+f
+300 718 2 -1 re
+f
+301 718 2 -1 re
+f
+302 718 2 -1 re
+f
+303 718 1 -2 re
+f
+303 717 2 -1 re
+f
+304 717 m
+305 717 l
+306 716 l
+306 715 l
+305 715 l
+304 716 l
+f
+305 716 1 -1 re
+f
+305 716 2 -1 re
+f
+306 716 2 -1 re
+f
+307 716 m
+308 716 l
+309 715 l
+309 714 l
+308 714 l
+307 715 l
+f
+308 715 2 -1 re
+f
+309 715 1 -3 re
+f
+309 713 1 -2 re
+f
+309 712 m
+310 712 l
+310 711 l
+308 711 l
+308 712 l
+f
+308 712 m
+309 712 l
+310 711 l
+310 710 l
+309 710 l
+308 711 l
+f
+309 711 m
+310 711 l
+311 710 l
+311 709 l
+310 709 l
+309 710 l
+f
+310 710 1 -2 re
+f
+310 709 1 -2 re
+f
+310 708 m
+311 708 l
+311 707 l
+310 706 l
+309 706 l
+309 707 l
+f
+309 707 m
+310 707 l
+310 706 l
+309 705 l
+308 705 l
+308 706 l
+f
+308 706 1 -1 re
+f
+308 706 m
+309 706 l
+309 705 l
+308 704 l
+307 704 l
+307 705 l
+f
+307 705 m
+308 705 l
+308 704 l
+305 704 l
+305 705 l
+f
+305 705 m
+305 706 l
+306 706 l
+306 704 l
+305 704 l
+f
+305 706 m
+306 706 l
+306 705 l
+305 704 l
+304 704 l
+304 705 l
+f
+304 705 m
+305 705 l
+305 704 l
+304 703 l
+303 703 l
+303 704 l
+f
+303 704 m
+304 704 l
+304 703 l
+303 702 l
+302 702 l
+302 703 l
+f
+302 703 m
+303 703 l
+303 702 l
+301 702 l
+301 703 l
+f
+301 703 m
+302 703 l
+302 702 l
+299 702 l
+299 703 l
+f
+299 703 m
+300 703 l
+300 702 l
+298 702 l
+298 703 l
+f
+297 704 m
+298 704 l
+299 703 l
+299 702 l
+298 702 l
+297 703 l
+f
+296 705 m
+297 705 l
+298 704 l
+298 703 l
+297 703 l
+296 704 l
+f
+296 705 1 -1 re
+f
+296 705 m
+297 705 l
+297 704 l
+295 703 l
+294 703 l
+294 704 l
+f
+294 704 1 -1 re
+f
+293 705 m
+294 705 l
+295 704 l
+295 703 l
+294 703 l
+293 704 l
+f
+293 705 1 -1 re
+f
+292 706 m
+293 706 l
+294 705 l
+294 704 l
+293 704 l
+292 705 l
+f
+292 706 m
+293 706 l
+293 705 l
+291 705 l
+291 706 l
+f
+291 706 m
+292 706 l
+292 705 l
+290 705 l
+290 706 l
+f
+290 706 m
+291 706 l
+291 705 l
+289 705 l
+289 706 l
+f
+288 707 m
+289 707 l
+290 706 l
+290 705 l
+289 705 l
+288 706 l
+f
+288 708 1 -2 re
+f
+288 709 1 -2 re
+f
+288 710 1 -2 re
+f
+288 711 1 -2 re
+f
+288 711 1 -1 re
+f
+288 712 1 -2 re
+f
+288 713 1 -2 re
+f
+288 714 1 -2 re
+f
+288 715 1 -2 re
+f
+288 715 3 -1 re
+f
+290 715 m
+291 716 l
+292 716 l
+292 715 l
+291 714 l
+290 714 l
+f
+291 716 1 -1 re
+f
+291 716 2 -1 re
+f
+292 717 1 -2 re
+f
+292 717 m
+293 718 l
+294 718 l
+294 717 l
+293 716 l
+292 716 l
+f
+293 718 2 -1 re
+f
+294 718 1 -1 re
+f
+294 718 2 -1 re
+f
+295 718 2 -1 re
+f
+1 g
+262 707 m
+264 706 l
+266 708 l
+268 708 l
+271 705 l
+273 705 l
+274 704 l
+275 704 l
+275 700 l
+276 699 l
+276 697 l
+273 694 l
+272 694 l
+271 695 l
+268 692 l
+264 692 l
+263 693 l
+259 693 l
+259 694 l
+258 695 l
+255 695 l
+254 696 l
+254 704 l
+256 704 l
+257 705 l
+258 705 l
+259 706 l
+259 707 l
+260 707 l
+260 708 l
+261 707 l
+262 707 l
+f*
+0.298 0.737 1 rg
+262 707 2 -1 re
+f
+263 707 2 -1 re
+f
+264 707 1 -1 re
+f
+264 707 m
+266 708 l
+267 708 l
+267 707 l
+265 706 l
+264 706 l
+f
+266 708 1 -1 re
+f
+266 708 2 -1 re
+f
+267 708 m
+268 708 l
+270 707 l
+270 706 l
+269 706 l
+267 707 l
+f
+269 707 1 -1 re
+f
+269 707 m
+270 707 l
+271 706 l
+271 705 l
+270 705 l
+269 706 l
+f
+270 706 1 -1 re
+f
+270 706 2 -1 re
+f
+271 706 2 -1 re
+f
+272 706 2 -1 re
+f
+273 706 m
+274 706 l
+275 705 l
+275 704 l
+274 704 l
+273 705 l
+f
+274 705 m
+275 705 l
+276 704 l
+276 703 l
+275 703 l
+274 704 l
+f
+275 704 1 -2 re
+f
+275 703 1 -2 re
+f
+275 702 m
+276 702 l
+276 701 l
+275 700 l
+274 700 l
+274 701 l
+f
+274 701 m
+275 701 l
+276 700 l
+276 699 l
+275 699 l
+274 700 l
+f
+275 700 1 -2 re
+f
+275 699 1 -2 re
+f
+275 698 1 -2 re
+f
+275 697 1 -2 re
+f
+275 696 m
+276 696 l
+276 695 l
+275 694 l
+274 694 l
+274 695 l
+f
+274 695 m
+275 695 l
+275 694 l
+273 694 l
+273 695 l
+f
+273 695 m
+274 695 l
+274 694 l
+272 694 l
+272 695 l
+f
+272 695 m
+273 695 l
+273 694 l
+271 694 l
+271 695 l
+f
+271 695 m
+272 695 l
+272 694 l
+270 694 l
+270 695 l
+f
+270 695 1 -2 re
+f
+270 694 m
+271 694 l
+271 693 l
+269 693 l
+269 694 l
+f
+269 694 m
+270 694 l
+270 693 l
+269 692 l
+268 692 l
+268 693 l
+f
+268 693 m
+269 693 l
+269 692 l
+268 691 l
+267 691 l
+267 692 l
+f
+267 692 m
+268 692 l
+268 691 l
+265 691 l
+265 692 l
+f
+264 693 m
+265 693 l
+266 692 l
+266 691 l
+265 691 l
+264 692 l
+f
+263 694 m
+264 694 l
+265 693 l
+265 692 l
+264 692 l
+263 693 l
+f
+263 694 m
+264 694 l
+264 693 l
+262 693 l
+262 694 l
+f
+262 694 m
+263 694 l
+263 693 l
+261 693 l
+261 694 l
+f
+261 694 m
+262 694 l
+262 693 l
+260 693 l
+260 694 l
+f
+260 694 m
+261 694 l
+261 693 l
+259 693 l
+259 694 l
+f
+259 694 1 -1 re
+f
+258 695 m
+259 695 l
+260 694 l
+260 693 l
+259 693 l
+258 694 l
+f
+258 695 1 -1 re
+f
+258 695 m
+259 695 l
+259 694 l
+257 694 l
+257 695 l
+f
+257 695 m
+258 695 l
+258 694 l
+255 694 l
+255 695 l
+f
+255 696 1 -2 re
+f
+254 697 m
+255 697 l
+256 696 l
+256 695 l
+255 695 l
+254 696 l
+f
+254 697 m
+255 697 l
+255 696 l
+253 696 l
+253 697 l
+f
+253 698 1 -2 re
+f
+253 698 m
+254 699 l
+255 699 l
+255 698 l
+254 697 l
+253 697 l
+f
+254 700 1 -2 re
+f
+254 701 1 -2 re
+f
+253 702 m
+254 702 l
+255 701 l
+255 700 l
+254 700 l
+253 701 l
+f
+253 702 1 -1 re
+f
+253 703 1 -2 re
+f
+253 703 m
+254 704 l
+255 704 l
+255 703 l
+254 702 l
+253 702 l
+f
+254 704 m
+255 705 l
+256 705 l
+256 704 l
+255 703 l
+254 703 l
+f
+255 705 2 -1 re
+f
+256 705 2 -1 re
+f
+257 705 m
+257 706 l
+258 706 l
+258 704 l
+257 704 l
+f
+257 706 m
+258 707 l
+259 707 l
+259 706 l
+258 705 l
+257 705 l
+f
+258 707 1 -1 re
+f
+258 707 m
+259 708 l
+260 708 l
+260 707 l
+259 706 l
+258 706 l
+f
+259 708 2 -1 re
+f
+260 708 2 -1 re
+f
+261 708 m
+262 708 l
+263 707 l
+263 706 l
+262 706 l
+261 707 l
+f
+1 g
+329 710 m
+331 710 l
+332 711 l
+334 711 l
+335 710 l
+336 710 l
+336 709 l
+337 708 l
+337 709 l
+339 709 l
+339 708 l
+341 708 l
+341 703 l
+342 702 l
+342 700 l
+341 699 l
+341 698 l
+337 698 l
+336 697 l
+336 696 l
+334 696 l
+333 695 l
+332 695 l
+330 696 l
+329 697 l
+328 697 l
+327 696 l
+326 696 l
+325 697 l
+325 698 l
+322 698 l
+321 699 l
+320 699 l
+320 702 l
+321 703 l
+320 704 l
+320 706 l
+322 708 l
+324 708 l
+324 709 l
+325 709 l
+325 710 l
+326 710 l
+327 711 l
+327 710 l
+329 710 l
+f*
+0.298 0.737 1 rg
+328 711 m
+329 711 l
+330 710 l
+330 709 l
+329 709 l
+328 710 l
+f
+329 710 2 -1 re
+f
+330 710 m
+331 711 l
+332 711 l
+332 710 l
+331 709 l
+330 709 l
+f
+331 711 2 -1 re
+f
+332 711 1 -1 re
+f
+332 711 3 -1 re
+f
+334 711 2 -1 re
+f
+335 711 1 -2 re
+f
+335 710 m
+336 710 l
+337 709 l
+337 708 l
+336 708 l
+335 709 l
+f
+336 709 1 -1 re
+f
+336 709 2 -1 re
+f
+337 709 2 -1 re
+f
+338 709 2 -1 re
+f
+339 709 m
+340 709 l
+341 708 l
+341 707 l
+340 707 l
+339 708 l
+f
+340 708 m
+341 708 l
+342 707 l
+342 706 l
+341 706 l
+340 707 l
+f
+341 707 1 -2 re
+f
+341 706 1 -2 re
+f
+341 705 m
+342 705 l
+342 704 l
+340 704 l
+340 705 l
+f
+340 705 m
+341 705 l
+342 703 l
+342 702 l
+341 702 l
+340 704 l
+f
+341 703 1 -1 re
+f
+341 703 1 -2 re
+f
+341 702 1 -3 re
+f
+341 700 1 -2 re
+f
+341 699 m
+342 699 l
+342 698 l
+340 698 l
+340 699 l
+f
+340 699 m
+341 699 l
+341 698 l
+340 697 l
+339 697 l
+339 698 l
+f
+339 698 m
+340 698 l
+340 697 l
+338 697 l
+338 698 l
+f
+338 698 m
+339 698 l
+339 697 l
+337 697 l
+337 698 l
+f
+337 698 m
+338 698 l
+338 697 l
+336 697 l
+336 698 l
+f
+336 698 1 -1 re
+f
+336 698 m
+337 698 l
+337 697 l
+336 696 l
+335 696 l
+335 697 l
+f
+335 697 m
+336 697 l
+336 696 l
+335 695 l
+334 695 l
+334 696 l
+f
+334 696 m
+335 696 l
+335 695 l
+333 695 l
+333 696 l
+f
+333 696 m
+334 696 l
+334 695 l
+331 695 l
+331 696 l
+f
+331 696 m
+332 696 l
+332 695 l
+330 695 l
+330 696 l
+f
+329 697 m
+330 697 l
+331 696 l
+331 695 l
+330 695 l
+329 696 l
+f
+329 697 m
+330 697 l
+330 696 l
+328 696 l
+328 697 l
+f
+328 697 m
+329 697 l
+329 696 l
+327 696 l
+327 697 l
+f
+327 697 m
+328 697 l
+328 696 l
+326 696 l
+326 697 l
+f
+326 697 1 -1 re
+f
+326 697 m
+327 697 l
+327 696 l
+325 696 l
+325 697 l
+f
+324 698 m
+325 698 l
+326 697 l
+326 696 l
+325 696 l
+324 697 l
+f
+324 699 1 -2 re
+f
+324 699 m
+325 699 l
+325 698 l
+323 698 l
+323 699 l
+f
+323 699 m
+324 699 l
+324 698 l
+321 698 l
+321 699 l
+f
+321 699 1 -1 re
+f
+320 700 m
+321 700 l
+322 699 l
+322 698 l
+321 698 l
+320 699 l
+f
+320 700 m
+321 700 l
+321 699 l
+319 699 l
+319 700 l
+f
+319 702 1 -3 re
+f
+319 702 m
+320 703 l
+321 703 l
+321 702 l
+320 701 l
+319 701 l
+f
+320 703 1 -1 re
+f
+320 703 m
+320 704 l
+321 704 l
+321 702 l
+320 702 l
+f
+319 705 m
+320 705 l
+321 704 l
+321 703 l
+320 703 l
+319 704 l
+f
+319 706 1 -2 re
+f
+319 707 1 -2 re
+f
+319 707 2 -1 re
+f
+320 707 m
+321 708 l
+322 708 l
+322 707 l
+321 706 l
+320 706 l
+f
+321 708 2 -1 re
+f
+322 708 2 -1 re
+f
+323 708 m
+323 709 l
+324 709 l
+324 707 l
+323 707 l
+f
+323 709 m
+324 710 l
+325 710 l
+325 709 l
+324 708 l
+323 708 l
+f
+324 710 m
+325 711 l
+326 711 l
+326 710 l
+325 709 l
+324 709 l
+f
+325 711 1 -1 re
+f
+325 711 2 -1 re
+f
+326 711 2 -1 re
+f
+327 711 2 -1 re
+f
+BT
+8.633 0 0 8.794 377 716 Tm
+0 0 0 rg
+(C)Tj
+0.03 0 TD
+(C)Tj
+0 0.03 TD
+(C)Tj
+-0.03 0 TD
+(C)Tj
+0.6814 -0.03 TD
+(o)Tj
+0.03 0 TD
+(o)Tj
+0 0.03 TD
+(o)Tj
+-0.03 0 TD
+(o)Tj
+0.636 -0.03 TD
+(m)Tj
+0.03 0 TD
+(m)Tj
+0 0.03 TD
+(m)Tj
+-0.03 0 TD
+(m)Tj
+0.924 -0.03 TD
+(p)Tj
+0.03 0 TD
+(p)Tj
+0 0.03 TD
+(p)Tj
+-0.03 0 TD
+(p)Tj
+0.6321 -0.03 TD
+(o)Tj
+0.03 0 TD
+(o)Tj
+0 0.03 TD
+(o)Tj
+-0.03 0 TD
+(o)Tj
+0.636 -0.03 TD
+(n)Tj
+0.03 0 TD
+(n)Tj
+0 0.03 TD
+(n)Tj
+-0.03 0 TD
+(n)Tj
+0.6135 -0.03 TD
+(e)Tj
+0.03 0 TD
+(e)Tj
+0 0.03 TD
+(e)Tj
+-0.03 0 TD
+(e)Tj
+0.6057 -0.03 TD
+(n)Tj
+0.03 0 TD
+(n)Tj
+0 0.03 TD
+(n)Tj
+-0.03 0 TD
+(n)Tj
+0.6135 -0.03 TD
+(t)Tj
+0.03 0 TD
+(t)Tj
+0 0.03 TD
+(t)Tj
+-0.03 0 TD
+(t)Tj
+0.4734 -0.03 TD
+( )Tj
+0.03 0 TD
+( )Tj
+0 0.03 TD
+( )Tj
+-0.03 0 TD
+( )Tj
+0.3635 -0.03 TD
+(S)Tj
+0.03 0 TD
+(S)Tj
+0 0.03 TD
+(S)Tj
+-0.03 0 TD
+(S)Tj
+0.636 -0.03 TD
+(t)Tj
+0.03 0 TD
+(t)Tj
+0 0.03 TD
+(t)Tj
+-0.03 0 TD
+(t)Tj
+0.4734 -0.03 TD
+(o)Tj
+0.03 0 TD
+(o)Tj
+0 0.03 TD
+(o)Tj
+-0.03 0 TD
+(o)Tj
+0.636 -0.03 TD
+(r)Tj
+0.03 0 TD
+(r)Tj
+0 0.03 TD
+(r)Tj
+-0.03 0 TD
+(r)Tj
+0.4162 -0.03 TD
+(a)Tj
+0.03 0 TD
+(a)Tj
+0 0.03 TD
+(a)Tj
+-0.03 0 TD
+(a)Tj
+0.5832 -0.03 TD
+(g)Tj
+0.03 0 TD
+(g)Tj
+0 0.03 TD
+(g)Tj
+-0.03 0 TD
+(g)Tj
+0.6399 -0.03 TD
+(e)Tj
+0.03 0 TD
+(e)Tj
+0 0.03 TD
+(e)Tj
+-0.03 0 TD
+(e)Tj
+-8.0578 -5.7154 TD
+(P)Tj
+0.03 0 TD
+(P)Tj
+0 0.03 TD
+(P)Tj
+-0.03 0 TD
+(P)Tj
+0.6135 -0.03 TD
+(r)Tj
+0.03 0 TD
+(r)Tj
+0 0.03 TD
+(r)Tj
+-0.03 0 TD
+(r)Tj
+0.4162 -0.03 TD
+(o)Tj
+0.03 0 TD
+(o)Tj
+0 0.03 TD
+(o)Tj
+-0.03 0 TD
+(o)Tj
+0.636 -0.03 TD
+(c)Tj
+0.03 0 TD
+(c)Tj
+0 0.03 TD
+(c)Tj
+-0.03 0 TD
+(c)Tj
+0.5754 -0.03 TD
+(e)Tj
+0.03 0 TD
+(e)Tj
+0 0.03 TD
+(e)Tj
+-0.03 0 TD
+(e)Tj
+0.6057 -0.03 TD
+(s)Tj
+0.03 0 TD
+(s)Tj
+0 0.03 TD
+(s)Tj
+-0.03 0 TD
+(s)Tj
+0.5393 -0.03 TD
+(s)Tj
+0.03 0 TD
+(s)Tj
+0 0.03 TD
+(s)Tj
+-0.03 0 TD
+(s)Tj
+0.5393 -0.03 TD
+-0.205 Tc
+(ii)Tj
+0.03 0.03 TD
+0 Tc
+(i)Tj
+-0.03 0 TD
+(i)Tj
+0.2649 -0.03 TD
+(n)Tj
+0.03 0 TD
+(n)Tj
+0 0.03 TD
+(n)Tj
+-0.03 0 TD
+(n)Tj
+0.6135 -0.03 TD
+(g)Tj
+0.03 0 TD
+(g)Tj
+0 0.03 TD
+(g)Tj
+-0.03 0 TD
+(g)Tj
+6.475 0 0 6.596 437 666 Tm
+( )Tj
+0.03 0 TD
+( )Tj
+0 0.03 TD
+( )Tj
+-0.03 0 TD
+( )Tj
+ET
+0.298 0.651 1 rg
+169 592 m
+169 582 l
+147 582 l
+147 560 l
+169 560 l
+169 549 l
+191 571 l
+169 592 l
+f*
+0 g
+169 593 1 -12 re
+f
+169 582 m
+170 582 l
+170 581 l
+147 581 l
+147 582 l
+f
+147 582 1 -23 re
+f
+147 560 23 -1 re
+f
+169 560 1 -12 re
+f
+169 549 m
+190 571 l
+191 571 l
+191 570 l
+170 548 l
+169 548 l
+f
+169 593 m
+170 593 l
+191 571 l
+191 570 l
+190 570 l
+169 592 l
+f
+0.298 0.651 1 rg
+470 590 m
+470 579 l
+449 579 l
+449 557 l
+470 557 l
+470 547 l
+492 568 l
+470 590 l
+f*
+0 g
+470 590 1 -12 re
+f
+470 579 m
+471 579 l
+471 578 l
+448 578 l
+448 579 l
+f
+448 579 1 -22 re
+f
+448 558 23 -1 re
+f
+470 558 1 -12 re
+f
+470 547 m
+492 569 l
+493 569 l
+493 568 l
+471 546 l
+470 546 l
+f
+470 590 m
+471 590 l
+493 569 l
+493 568 l
+492 568 l
+470 589 l
+f
+278 629 m
+275 623 l
+274 623 l
+272 625 l
+278 629 l
+f*
+252 595 m
+273 624 l
+274 624 l
+274 623 l
+253 594 l
+252 594 l
+f
+241 630 m
+240 624 l
+238 625 l
+237 625 l
+241 630 l
+f*
+224 591 m
+224 593 l
+225 592 l
+225 591 l
+224 591 l
+f*
+225 594 m
+225 596 l
+226 595 l
+226 594 l
+225 594 l
+f*
+226 598 m
+227 598 l
+227 597 l
+226 598 l
+f*
+227 600 m
+228 602 l
+229 601 l
+228 600 l
+227 600 l
+f*
+229 603 m
+229 605 l
+230 604 l
+229 603 l
+f*
+230 607 1 -1 re
+f*
+231 609 m
+232 611 l
+233 610 l
+232 609 l
+231 609 l
+f*
+233 613 1 -1 re
+f*
+234 615 m
+235 616 l
+235 615 l
+234 615 l
+f*
+235 618 m
+236 619 l
+237 619 l
+236 618 l
+235 618 l
+f*
+236 621 m
+237 622 l
+238 622 l
+237 621 l
+236 621 l
+f*
+238 625 1 -1 re
+f*
+335 627 m
+331 622 l
+330 623 l
+329 625 l
+335 627 l
+f*
+287 590 m
+288 590 l
+288 589 l
+287 590 l
+f*
+290 592 m
+291 593 l
+291 592 l
+290 591 l
+290 592 l
+f*
+292 594 m
+293 595 l
+294 594 l
+293 593 l
+292 594 l
+f*
+295 596 m
+296 597 l
+296 596 l
+295 595 l
+295 596 l
+f*
+298 598 m
+299 599 l
+299 598 l
+298 597 l
+298 598 l
+f*
+300 600 m
+301 601 l
+302 600 l
+301 599 l
+300 600 l
+f*
+303 602 m
+304 603 l
+304 602 l
+303 601 l
+303 602 l
+f*
+306 604 m
+306 605 l
+307 604 l
+306 604 l
+f*
+308 606 m
+309 607 l
+309 605 l
+308 606 l
+f*
+311 608 m
+312 609 l
+312 608 l
+311 608 l
+f*
+313 610 m
+314 611 l
+315 610 l
+313 610 l
+f*
+316 612 m
+317 613 l
+317 612 l
+316 612 l
+f*
+318 614 m
+320 615 l
+320 614 l
+318 614 l
+f*
+321 617 m
+323 617 l
+321 616 l
+321 617 l
+f*
+324 619 m
+325 620 l
+325 619 l
+324 618 l
+324 619 l
+f*
+326 621 m
+328 621 l
+327 620 l
+326 621 l
+f*
+329 623 m
+330 623 l
+329 622 l
+329 623 l
+f*
+359 594 m
+353 596 l
+353 597 l
+354 599 l
+359 594 l
+f*
+298 629 m
+299 629 l
+354 598 l
+354 597 l
+353 597 l
+298 628 l
+f
+386 596 m
+380 599 l
+382 601 l
+386 596 l
+f*
+348 628 m
+349 627 l
+347 627 l
+348 628 l
+f*
+350 626 m
+351 625 l
+351 624 l
+350 625 l
+350 626 l
+f*
+353 624 m
+354 623 l
+353 622 l
+353 624 l
+f*
+355 622 m
+356 621 l
+356 620 l
+355 621 l
+355 622 l
+f*
+358 620 m
+359 619 l
+359 618 l
+357 619 l
+358 620 l
+f*
+360 617 m
+361 617 l
+361 616 l
+360 617 l
+f*
+363 615 m
+364 614 l
+363 614 l
+363 615 l
+f*
+366 613 m
+367 612 l
+365 612 l
+366 613 l
+f*
+368 611 1 -1 re
+f*
+371 609 m
+372 608 l
+370 608 l
+371 609 l
+f*
+373 607 m
+374 606 l
+374 605 l
+373 606 l
+373 607 l
+f*
+376 605 m
+377 604 l
+376 603 l
+375 604 l
+376 605 l
+f*
+378 603 m
+379 602 l
+379 601 l
+378 602 l
+378 603 l
+f*
+381 601 m
+382 600 l
+381 599 l
+381 601 l
+f*
+0.298 0.651 1 rg
+248 654 1 -1 re
+f*
+249 657 1 -1 re
+f*
+250 659 m
+250 660 l
+252 660 l
+251 659 l
+250 659 l
+f*
+251 663 1 -1 re
+f*
+252 665 m
+252 667 l
+253 666 l
+253 665 l
+252 665 l
+f*
+253 669 m
+253 670 l
+255 669 l
+254 668 l
+253 669 l
+f*
+254 671 m
+254 673 l
+256 672 l
+255 671 l
+254 671 l
+f*
+255 675 m
+256 676 l
+257 676 l
+256 674 l
+255 675 l
+f*
+256 678 m
+257 679 l
+258 678 l
+258 677 l
+256 678 l
+f*
+257 681 m
+257 682 l
+259 682 l
+258 680 l
+257 681 l
+f*
+258 684 m
+259 685 l
+260 684 l
+259 683 l
+258 684 l
+f*
+259 687 m
+260 688 l
+261 688 l
+261 686 l
+259 687 l
+f*
+260 690 m
+261 691 l
+262 691 l
+262 690 l
+260 690 l
+f*
+262 693 m
+262 694 l
+263 693 l
+262 693 l
+f*
+286 657 m
+296 705 l
+297 705 l
+297 704 l
+287 656 l
+286 656 l
+f
+298 658 m
+325 697 l
+326 697 l
+326 696 l
+299 657 l
+298 657 l
+f
+332 696 m
+332 694 l
+331 694 l
+331 695 l
+332 696 l
+f*
+332 692 m
+333 691 l
+331 691 l
+331 692 l
+332 692 l
+f*
+332 689 1 -1 re
+f*
+333 686 1 -1 re
+f*
+335 683 m
+335 682 l
+334 682 l
+333 683 l
+335 683 l
+f*
+335 680 m
+336 679 l
+335 678 l
+334 680 l
+335 680 l
+f*
+336 677 m
+336 675 l
+335 675 l
+335 676 l
+336 677 l
+f*
+337 673 m
+337 673 l
+336 672 l
+336 673 l
+337 673 l
+f*
+338 671 m
+338 669 l
+337 669 l
+336 670 l
+338 671 l
+f*
+337 667 1 -1 re
+f*
+339 664 m
+339 663 l
+338 662 l
+338 664 l
+339 664 l
+f*
+340 661 m
+340 660 l
+339 659 l
+339 660 l
+340 661 l
+f*
+341 658 m
+341 657 l
+339 656 l
+339 657 l
+341 658 l
+f*
+341 655 m
+341 654 l
+340 653 l
+340 654 l
+341 655 l
+f*
+0.6 0.902 1 rg
+286 662 m
+289 661 l
+290 661 l
+292 662 l
+294 664 l
+298 664 l
+301 662 l
+302 661 l
+303 659 l
+304 658 l
+310 658 l
+313 656 l
+314 653 l
+314 647 l
+313 645 l
+314 642 l
+316 640 l
+316 634 l
+314 632 l
+313 630 l
+311 628 l
+309 627 l
+307 628 l
+304 628 l
+302 624 l
+299 622 l
+296 621 l
+293 621 l
+290 622 l
+286 626 l
+282 624 l
+280 625 l
+279 625 l
+277 627 l
+276 629 l
+271 629 l
+269 630 l
+267 632 l
+266 635 l
+266 638 l
+268 642 l
+266 646 l
+266 651 l
+268 654 l
+271 656 l
+274 656 l
+276 658 l
+277 661 l
+278 662 l
+280 663 l
+281 664 l
+283 663 l
+286 662 l
+f*
+0 0.627 1 rg
+285 663 m
+286 663 l
+289 662 l
+289 661 l
+288 661 l
+285 662 l
+f
+288 662 2 -1 re
+f
+289 662 1 -1 re
+f
+289 662 m
+291 663 l
+292 663 l
+292 662 l
+290 661 l
+289 661 l
+f
+291 663 m
+293 664 l
+294 664 l
+294 663 l
+292 662 l
+291 662 l
+f
+293 664 3 -1 re
+f
+295 664 4 -1 re
+f
+298 664 m
+299 664 l
+301 663 l
+301 662 l
+300 662 l
+298 663 l
+f
+300 663 m
+301 663 l
+303 662 l
+303 661 l
+302 661 l
+300 662 l
+f
+302 662 m
+303 662 l
+304 660 l
+304 659 l
+303 659 l
+302 661 l
+f
+303 660 m
+304 660 l
+305 658 l
+305 657 l
+304 657 l
+303 659 l
+f
+304 658 m
+306 659 l
+307 659 l
+307 658 l
+305 657 l
+304 657 l
+f
+306 659 3 -1 re
+f
+308 659 m
+309 659 l
+311 658 l
+311 657 l
+310 657 l
+308 658 l
+f
+310 658 m
+311 658 l
+313 656 l
+313 655 l
+312 655 l
+310 657 l
+f
+312 656 m
+313 656 l
+314 654 l
+314 653 l
+313 653 l
+312 655 l
+f
+313 654 m
+314 654 l
+315 651 l
+315 650 l
+314 650 l
+313 653 l
+f
+314 651 m
+315 651 l
+315 650 l
+314 647 l
+313 647 l
+313 648 l
+f
+313 648 1 -4 re
+f
+313 645 m
+314 645 l
+315 643 l
+315 642 l
+314 642 l
+313 644 l
+f
+314 643 m
+315 643 l
+316 641 l
+316 640 l
+315 640 l
+314 642 l
+f
+315 641 1 -4 re
+f
+315 638 1 -4 re
+f
+315 635 m
+316 635 l
+316 634 l
+315 631 l
+314 631 l
+314 632 l
+f
+314 632 m
+315 632 l
+315 631 l
+313 629 l
+312 629 l
+312 630 l
+f
+312 630 m
+313 630 l
+313 629 l
+312 628 l
+311 628 l
+311 629 l
+f
+311 629 m
+312 629 l
+312 628 l
+309 626 l
+308 626 l
+308 627 l
+f
+306 628 m
+307 628 l
+309 627 l
+309 626 l
+308 626 l
+306 627 l
+f
+304 629 m
+305 629 l
+307 628 l
+307 627 l
+306 627 l
+304 628 l
+f
+304 629 m
+305 629 l
+305 628 l
+304 626 l
+303 626 l
+303 627 l
+f
+303 627 m
+304 627 l
+304 626 l
+302 624 l
+301 624 l
+301 625 l
+f
+301 625 m
+302 625 l
+302 624 l
+299 622 l
+298 622 l
+298 623 l
+f
+298 623 m
+299 623 l
+299 622 l
+297 620 l
+296 620 l
+296 621 l
+f
+296 621 m
+297 621 l
+297 620 l
+292 620 l
+292 621 l
+f
+289 623 m
+290 623 l
+293 621 l
+293 620 l
+292 620 l
+289 622 l
+f
+288 625 m
+289 625 l
+290 623 l
+290 622 l
+289 622 l
+288 624 l
+f
+286 627 m
+287 627 l
+289 625 l
+289 624 l
+288 624 l
+286 626 l
+f
+286 627 m
+287 627 l
+287 626 l
+285 625 l
+284 625 l
+284 626 l
+f
+284 626 m
+285 626 l
+285 625 l
+282 624 l
+281 624 l
+281 625 l
+f
+281 625 m
+282 625 l
+282 624 l
+280 624 l
+280 625 l
+f
+278 626 m
+279 626 l
+281 625 l
+281 624 l
+280 624 l
+278 625 l
+f
+277 627 m
+278 627 l
+279 626 l
+279 625 l
+278 625 l
+277 626 l
+f
+275 630 m
+276 630 l
+278 627 l
+278 626 l
+277 626 l
+275 629 l
+f
+275 630 m
+276 630 l
+276 629 l
+273 629 l
+273 630 l
+f
+273 630 m
+274 630 l
+274 629 l
+271 629 l
+271 630 l
+f
+269 631 m
+270 631 l
+272 630 l
+272 629 l
+271 629 l
+269 630 l
+f
+267 633 m
+268 633 l
+270 631 l
+270 630 l
+269 630 l
+267 632 l
+f
+266 635 m
+267 635 l
+268 633 l
+268 632 l
+267 632 l
+266 634 l
+f
+265 638 m
+266 638 l
+267 635 l
+267 634 l
+266 634 l
+265 637 l
+f
+265 638 m
+267 641 l
+268 641 l
+268 640 l
+266 637 l
+265 637 l
+f
+267 641 m
+268 643 l
+269 643 l
+269 642 l
+268 640 l
+267 640 l
+f
+267 645 m
+268 645 l
+269 643 l
+269 642 l
+268 642 l
+267 644 l
+f
+265 647 m
+266 647 l
+268 645 l
+268 644 l
+267 644 l
+265 646 l
+f
+265 649 1 -3 re
+f
+265 649 m
+266 652 l
+267 652 l
+267 651 l
+266 648 l
+265 648 l
+f
+266 652 m
+268 654 l
+269 654 l
+269 653 l
+267 651 l
+266 651 l
+f
+268 654 m
+270 656 l
+271 656 l
+271 655 l
+269 653 l
+268 653 l
+f
+270 656 m
+272 657 l
+273 657 l
+273 656 l
+271 655 l
+270 655 l
+f
+272 657 3 -1 re
+f
+274 657 m
+275 659 l
+276 659 l
+276 658 l
+275 656 l
+274 656 l
+f
+275 659 m
+276 661 l
+277 661 l
+277 660 l
+276 658 l
+275 658 l
+f
+276 661 m
+277 663 l
+278 663 l
+278 662 l
+277 660 l
+276 660 l
+f
+277 663 m
+279 664 l
+280 664 l
+280 663 l
+278 662 l
+277 662 l
+f
+279 664 3 -1 re
+f
+281 664 2 -1 re
+f
+282 664 m
+283 664 l
+286 663 l
+286 662 l
+285 662 l
+282 663 l
+f
+BT
+6.475 0 0 6.596 276 649 Tm
+0 g
+(T)Tj
+0.03 0 TD
+(T)Tj
+0 0.03 TD
+(T)Tj
+-0.03 0 TD
+(T)Tj
+0.6701 -0.03 TD
+(r)Tj
+0.03 0 TD
+(r)Tj
+0 0.03 TD
+(r)Tj
+-0.03 0 TD
+(r)Tj
+0.4162 -0.03 TD
+(a)Tj
+0.03 0 TD
+(a)Tj
+0 0.03 TD
+(a)Tj
+-0.03 0 TD
+(a)Tj
+0.5832 -0.03 TD
+(n)Tj
+0.03 0 TD
+(n)Tj
+0 0.03 TD
+(n)Tj
+-0.03 0 TD
+(n)Tj
+0.6135 -0.03 TD
+(s)Tj
+0.03 0 TD
+(s)Tj
+0 0.03 TD
+(s)Tj
+-0.03 0 TD
+(s)Tj
+0.5393 -0.03 TD
+-0.205 Tc
+(ii)Tj
+0.03 0.03 TD
+0 Tc
+(i)Tj
+-0.03 0 TD
+(i)Tj
+0.2649 -0.03 TD
+(e)Tj
+0.03 0 TD
+(e)Tj
+0 0.03 TD
+(e)Tj
+-0.03 0 TD
+(e)Tj
+0.6057 -0.03 TD
+(n)Tj
+0.03 0 TD
+(n)Tj
+0 0.03 TD
+(n)Tj
+-0.03 0 TD
+(n)Tj
+0.6135 -0.03 TD
+(t)Tj
+0.03 0 TD
+(t)Tj
+0 0.03 TD
+(t)Tj
+-0.03 0 TD
+(t)Tj
+0.4734 -0.03 TD
+( )Tj
+0.03 0 TD
+( )Tj
+0 0.03 TD
+( )Tj
+-0.03 0 TD
+( )Tj
+-4.7798 -1.2429 TD
+(E)Tj
+0.03 0 TD
+(E)Tj
+0 0.03 TD
+(E)Tj
+-0.03 0 TD
+(E)Tj
+0.6057 -0.03 TD
+(x)Tj
+0.03 0 TD
+(x)Tj
+0 0.03 TD
+(x)Tj
+-0.03 0 TD
+(x)Tj
+0.5603 -0.03 TD
+(e)Tj
+0.03 0 TD
+(e)Tj
+0 0.03 TD
+(e)Tj
+-0.03 0 TD
+(e)Tj
+0.6057 -0.03 TD
+(c)Tj
+0.03 0 TD
+(c)Tj
+0 0.03 TD
+(c)Tj
+-0.03 0 TD
+(c)Tj
+0.5754 -0.03 TD
+(u)Tj
+0.03 0 TD
+(u)Tj
+0 0.03 TD
+(u)Tj
+-0.03 0 TD
+(u)Tj
+0.6135 -0.03 TD
+(t)Tj
+0.03 0 TD
+(t)Tj
+0 0.03 TD
+(t)Tj
+-0.03 0 TD
+(t)Tj
+0.4734 -0.03 TD
+-0.205 Tc
+(ii)Tj
+0.03 0.03 TD
+0 Tc
+(i)Tj
+-0.03 0 TD
+(i)Tj
+0.2649 -0.03 TD
+(o)Tj
+0.03 0 TD
+(o)Tj
+0 0.03 TD
+(o)Tj
+-0.03 0 TD
+(o)Tj
+0.636 -0.03 TD
+(n)Tj
+0.03 0 TD
+(n)Tj
+0 0.03 TD
+(n)Tj
+-0.03 0 TD
+(n)Tj
+-4.9525 -1.0913 TD
+(E)Tj
+0.03 0 TD
+(E)Tj
+0 0.03 TD
+(E)Tj
+-0.03 0 TD
+(E)Tj
+0.6057 -0.03 TD
+(n)Tj
+0.03 0 TD
+(n)Tj
+0 0.03 TD
+(n)Tj
+-0.03 0 TD
+(n)Tj
+0.6135 -0.03 TD
+(v)Tj
+0.03 0 TD
+(v)Tj
+0 0.03 TD
+(v)Tj
+-0.03 0 TD
+(v)Tj
+0.5945 -0.03 TD
+-0.205 Tc
+(ii)Tj
+0.03 0.03 TD
+0 Tc
+(i)Tj
+-0.03 0 TD
+(i)Tj
+0.2649 -0.03 TD
+(r)Tj
+0.03 0 TD
+(r)Tj
+0 0.03 TD
+(r)Tj
+-0.03 0 TD
+(r)Tj
+0.4162 -0.03 TD
+(o)Tj
+0.03 0 TD
+(o)Tj
+0 0.03 TD
+(o)Tj
+-0.03 0 TD
+(o)Tj
+0.636 -0.03 TD
+(n)Tj
+0.03 0 TD
+(n)Tj
+0 0.03 TD
+(n)Tj
+-0.03 0 TD
+(n)Tj
+0.6135 -0.03 TD
+(m)Tj
+0.03 0 TD
+(m)Tj
+0 0.03 TD
+(m)Tj
+-0.03 0 TD
+(m)Tj
+0.924 -0.03 TD
+(e)Tj
+0.03 0 TD
+(e)Tj
+0 0.03 TD
+(e)Tj
+-0.03 0 TD
+(e)Tj
+0.6057 -0.03 TD
+(n)Tj
+0.03 0 TD
+(n)Tj
+0 0.03 TD
+(n)Tj
+-0.03 0 TD
+(n)Tj
+0.6135 -0.03 TD
+(t)Tj
+0.03 0 TD
+(t)Tj
+0 0.03 TD
+(t)Tj
+-0.03 0 TD
+(t)Tj
+8.633 0 0 8.794 407 597 Tm
+0 0 0 rg
+(T)Tj
+0.03 0 TD
+(T)Tj
+0 0.03 TD
+(T)Tj
+-0.03 0 TD
+(T)Tj
+0.6701 -0.03 TD
+(r)Tj
+0.03 0 TD
+(r)Tj
+0 0.03 TD
+(r)Tj
+-0.03 0 TD
+(r)Tj
+0.4162 -0.03 TD
+(a)Tj
+0.03 0 TD
+(a)Tj
+0 0.03 TD
+(a)Tj
+-0.03 0 TD
+(a)Tj
+0.5832 -0.03 TD
+(n)Tj
+0.03 0 TD
+(n)Tj
+0 0.03 TD
+(n)Tj
+-0.03 0 TD
+(n)Tj
+0.6135 -0.03 TD
+(s)Tj
+0.03 0 TD
+(s)Tj
+0 0.03 TD
+(s)Tj
+-0.03 0 TD
+(s)Tj
+0.5393 -0.03 TD
+(m)Tj
+0.03 0 TD
+(m)Tj
+0 0.03 TD
+(m)Tj
+-0.03 0 TD
+(m)Tj
+0.924 -0.03 TD
+-0.205 Tc
+(ii)Tj
+0.03 0.03 TD
+0 Tc
+(i)Tj
+-0.03 0 TD
+(i)Tj
+0.2649 -0.03 TD
+(s)Tj
+0.03 0 TD
+(s)Tj
+0 0.03 TD
+(s)Tj
+-0.03 0 TD
+(s)Tj
+0.5393 -0.03 TD
+(s)Tj
+0.03 0 TD
+(s)Tj
+0 0.03 TD
+(s)Tj
+-0.03 0 TD
+(s)Tj
+0.5393 -0.03 TD
+-0.205 Tc
+(ii)Tj
+0.03 0.03 TD
+0 Tc
+(i)Tj
+-0.03 0 TD
+(i)Tj
+0.2649 -0.03 TD
+(o)Tj
+0.03 0 TD
+(o)Tj
+0 0.03 TD
+(o)Tj
+-0.03 0 TD
+(o)Tj
+0.636 -0.03 TD
+(n)Tj
+0.03 0 TD
+(n)Tj
+0 0.03 TD
+(n)Tj
+-0.03 0 TD
+(n)Tj
+/F6 1 Tf
+10 0 0 10 236 514 Tm
+0.008 Tc
+0.076 Tw
+[(Figure 1.  Active Node Organization)]TJ
+-18.2 -2.2 TD
+0.029 Tc
+0.291 Tw
+(possibilities afforded by the integrated perspective,)Tj
+0 -1.1 TD
+0.03 Tc
+0.296 Tw
+(especially with respect to new ways of leveraging)Tj
+T*
+0.042 Tc
+0.422 Tw
+[(computation within the network.  It provides a)]TJ
+T*
+0.02 Tc
+0.204 Tw
+(programming language framework for thinking about)Tj
+T*
+0.009 Tc
+0.089 Tw
+(networks \320 a framework that could enable the synthesis)Tj
+T*
+0.048 Tc
+0.477 Tw
+(of recent results in the areas of programming)Tj
+T*
+0.008 Tc
+0.084 Tw
+(environments, operating systems and networks.)Tj
+1.4 -1.4 TD
+0.015 Tc
+0.145 Tw
+(In the following paragraphs we discuss some ways)Tj
+-1.4 -1.1 TD
+0.01 Tc
+0.097 Tw
+(in which active networks could be leveraged to support)Tj
+T*
+0.023 Tc
+0.236 Tw
+(a variety of traditional functions, such as IP packet)Tj
+T*
+0.018 Tc
+0.178 Tw
+(processing, connections, flows, routing protocols, etc.)Tj
+T*
+0.017 Tc
+0.171 Tw
+(These examples are meant to provide insight into the)Tj
+T*
+0.013 Tc
+0.126 Tw
+(\322flavor\323 of the networks we envision and establish the)Tj
+T*
+0.028 Tc
+0.276 Tw
+(groundwork for the discussion of the programming)Tj
+T*
+0.01 Tc
+0.097 Tw
+(model and implementation technologies which follows.)Tj
+1.4 -1.4 TD
+0.037 Tc
+0.374 Tw
+(In simple applications, a capsule\325s actions on)Tj
+-1.4 -1.1 TD
+0.044 Tc
+0.445 Tw
+(visiting a node are to compute its \322next hop\323)Tj
+T*
+0.03 Tc
+0.297 Tw
+(destination\(s\) and schedule zero or more \(possibly)Tj
+T*
+0.015 Tc
+0.152 Tw
+(modified\) copies of itself for transmission on selected)Tj
+T*
+0.014 Tc
+0.141 Tw
+[(links.  It will be necessary to provide mechanisms for)]TJ
+T*
+0.019 Tc
+0.185 Tw
+(determining and naming the links on which outgoing)Tj
+T*
+0.031 Tc
+0.314 Tw
+[(capsules are transmitted.  In the IP protocol, this)]TJ
+T*
+0.018 Tc
+0.178 Tw
+(mechanism is \322built-in\323 to every node and individual)Tj
+T*
+0.009 Tc
+0.092 Tw
+(packets need only carry their destination address \320 they)Tj
+T*
+0.01 Tc
+0.097 Tw
+[(need not have knowledge of the links they traverse.  In)]TJ
+T*
+0.013 Tc
+0.134 Tw
+(pure source routing schemes, each message carries the)Tj
+T*
+0.016 Tc
+0.163 Tw
+[(identities of all of the links it traverses.  We hope to)]TJ
+T*
+0.021 Tc
+0.206 Tw
+(develop an intermediate approach, in which capsules)Tj
+T*
+0.031 Tc
+0.308 Tw
+(can dynamically enumerate and evaluate the paths)Tj
+T*
+0.048 Tc
+0.476 Tw
+(available at a node, without requiring detailed)Tj
+T*
+0.01 Tc
+0.1 Tw
+(knowledge at the time the capsule is composed.)Tj
+1.4 -1.4 TD
+0.009 Tc
+0.092 Tw
+(An important question concerns the degree to which)Tj
+-1.4 -1.1 TD
+0.015 Tc
+0.151 Tw
+(a capsule program can access objects, such as routing)Tj
+T*
+0.05 Tc
+0.502 Tw
+(tables, that lie beyond the transient execution)Tj
+T*
+0.015 Tc
+0.148 Tw
+[(environment.  In a restricted approach, capsules could)]TJ
+T*
+0.036 Tc
+0.361 Tw
+[(be largely self-contained.  Although sufficient to)]TJ
+T*
+0.015 Tc
+0.145 Tw
+(implement some interesting programs, e.g., the above-)Tj
+T*
+0.03 Tc
+0.306 Tw
+[(mentioned source routing, this model is somewhat)]TJ
+T*
+0.007 Tc
+0.069 Tw
+[(confining.  In the following paragraphs we discuss three)]TJ
+27 42.7 TD
+0.035 Tc
+0.355 Tw
+(ways in which programs could reach beyond the)Tj
+0 -1.1 TD
+0.012 Tc
+0.119 Tw
+(capsule\325s transient environment:)Tj
+1.8 -1.3 TD
+0.112 Tw
+[(\245)-539(Foundation Components \320 universally available)]TJ
+0.9 -1.1 TD
+0.109 Tw
+(services implemented outside of the capsule.)Tj
+-0.9 -1.3 TD
+0.009 Tc
+0.093 Tw
+[(\245)-541(Active Storage \320 the ability to modify the state)]TJ
+0.9 -1.1 TD
+0.008 Tc
+0.085 Tw
+(that node storage is left in at the completion of)Tj
+T*
+0.015 Tc
+0.154 Tw
+(capsule execution.)Tj
+-0.9 -1.3 TD
+0.007 Tc
+0.073 Tw
+[(\245)-543(Extensibility \320 allowing programs to define new)]TJ
+0.9 -1.1 TD
+0.011 Tc
+0.114 Tw
+(classes and methods.)Tj
+/F8 1 Tf
+-2.7 -1.9 TD
+0.014 Tc
+0.139 Tw
+(Foundation Components)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.063 Tc
+0.633 Tw
+(Foundation components implement external)Tj
+-1.4 -1.1 TD
+0.017 Tc
+0.171 Tw
+(\322methods\323 that provide controlled access to resources)Tj
+T*
+0.028 Tc
+0.282 Tw
+[(outside of the transient execution environment.  A)]TJ
+T*
+0.019 Tc
+0.193 Tw
+(subset of these components will reflect the \322API\323 of)Tj
+T*
+0.022 Tc
+0.219 Tw
+(the node\325s run-time environment to the applications.)Tj
+T*
+0.024 Tc
+0.239 Tw
+(Other components provide a built-in class hierarchy)Tj
+T*
+0.019 Tc
+0.193 Tw
+(that serves as a base for the development of capsule)Tj
+T*
+-0.003 Tc
+(programs.)Tj
+1.4 -1.4 TD
+0.021 Tc
+0.212 Tw
+(Many capsules will require access to other node-)Tj
+-1.4 -1.1 TD
+0.033 Tc
+0.331 Tw
+(specific information and services, such as routing)Tj
+T*
+0.02 Tc
+0.195 Tw
+(tables and the state of the node\325s transmission links.)Tj
+T*
+0.018 Tc
+0.176 Tw
+(Using built-in components that provide access to this)Tj
+T*
+0.053 Tc
+0.534 Tw
+(information, one could design capsules whose)Tj
+T*
+0.531 Tw
+(evaluation performs similar processing to that)Tj
+T*
+0.009 Tc
+0.095 Tw
+[(performed on the header of an IP datagram.  Multi-cast)]TJ
+T*
+0.011 Tc
+0.106 Tw
+(and option processing instructions could be included in)Tj
+T*
+0.01 Tc
+0.103 Tw
+[(the capsules that require them.  Whereas the traditional)]TJ
+T*
+0.008 Tc
+0.083 Tw
+(IP approach calls for the code to be fixed and built into)Tj
+T*
+0.02 Tc
+0.2 Tw
+(the router, in the active case the program is flexible)Tj
+T*
+0.009 Tc
+0.087 Tw
+(and carried with the data.)Tj
+1.4 -1.4 TD
+0.057 Tc
+0.575 Tw
+(For migration purposes, we could develop)Tj
+-1.4 -1.1 TD
+0.021 Tc
+0.21 Tw
+(standardized components that implement the existing)Tj
+T*
+0.042 Tc
+0.418 Tw
+[(Internet protocol types.  A capsule carrying an)]TJ
+T*
+0.04 Tc
+0.403 Tw
+(embedded IPv4 datagram could contain a single)Tj
+T*
+0.019 Tc
+0.194 Tw
+(instruction of the form \322execute the IPv4 method on)Tj
+T*
+0.028 Tc
+0.279 Tw
+[(the remainder of the payload\323.  To put matters in)]TJ
+T*
+0.026 Tc
+0.265 Tw
+(perspective, we can think of existing routers as an)Tj
+ET
+endstream
+endobj
+17 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/F6 4 0 R
+/F8 5 0 R
+/F11 18 0 R
+>>
+/ExtGState <<
+/GS1 7 0 R
+>>
+>>
+endobj
+20 0 obj
+<<
+/Length 9694
+>>
+stream
+BT
+/F6 1 Tf
+10 0 0 10 54 720 Tm
+0 0 0 rg
+/GS1 gs
+0.02 Tc
+0.197 Tw
+(extremely restricted subset of active nodes, in which)Tj
+0 -1.1 TD
+0.009 Tc
+0.087 Tw
+(the capsule \322program\323 is carried in the IP protocol type)Tj
+T*
+0.019 Tc
+0.193 Tw
+[(field.  The instruction set is restricted to pre-defined)]TJ
+T*
+0.021 Tc
+0.214 Tw
+(methods that correspond to the known protocol type)Tj
+T*
+0.063 Tc
+0.627 Tw
+(field values and implement the standardized)Tj
+T*
+0.008 Tc
+0.08 Tw
+(functionality specified by the IETF.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.011 Tc
+0.11 Tw
+(Active Storage)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.021 Tc
+0.207 Tw
+(It would be advantageous if capsules could leave)Tj
+-1.4 -1.1 TD
+0.019 Tc
+0.193 Tw
+(information behind in a node\325s non-transient storage.)Tj
+T*
+0.033 Tc
+0.335 Tw
+(One might open a connection by arranging for a)Tj
+T*
+0.018 Tc
+0.185 Tw
+(capsule to be executed at each node along a specific)Tj
+T*
+0.013 Tc
+0.125 Tw
+(path, and having it leave a small amount of associated)Tj
+T*
+0.023 Tc
+0.233 Tw
+[(state in each node it traverses.  Subsequent packets)]TJ
+T*
+0.01 Tc
+0.096 Tw
+(following this path would include code that locates and)Tj
+T*
+0.013 Tc
+0.125 Tw
+(evaluates the connection state at each node.)Tj
+1.4 -1.4 TD
+0.01 Tc
+0.099 Tw
+(A similar approach could be used to realize \322flows\323)Tj
+-1.4 -1.1 TD
+0.035 Tc
+0.35 Tw
+([9], which are somewhat softer than connections.)Tj
+T*
+0.028 Tc
+0.277 Tw
+(Every capsule would include code that attempts to)Tj
+T*
+0.01 Tc
+0.102 Tw
+(locate and use its \322flow\323 state at the nodes it traverses.)Tj
+T*
+0.008 Tc
+0.08 Tw
+(However, flow capsules are somewhat more robust than)Tj
+T*
+0.014 Tc
+0.138 Tw
+(those used during connections in that the flow state is)Tj
+T*
+0.009 Tc
+0.092 Tw
+[(not essential to the capsule\325s successful execution.  If a)]TJ
+T*
+0.021 Tc
+0.216 Tw
+[(flow capsule encounters a node that has no relevant)]TJ
+T*
+0.011 Tc
+0.111 Tw
+(state information, it dynamically generates the required)Tj
+T*
+0.119 Tw
+(data, uses it for its own purposes, and leaves it behind)Tj
+T*
+0.023 Tc
+0.226 Tw
+[(for the convenience of later capsules.  The network)]TJ
+T*
+0.017 Tc
+0.173 Tw
+(nodes can treat flow states as \322soft state\323 values that)Tj
+T*
+0.009 Tc
+0.092 Tw
+[(are cached and can be disposed of if necessary.  In this)]TJ
+T*
+0.014 Tc
+0.138 Tw
+(respect, flows are less demanding than connections on)Tj
+T*
+0.015 Tc
+0.151 Tw
+[(the robustness of node storage.  Of course, our active)]TJ
+T*
+0.013 Tc
+0.132 Tw
+(connections and flows are considerably more powerful)Tj
+T*
+0.018 Tc
+0.176 Tw
+(than those of present day systems, in that the \322state\323)Tj
+T*
+0.009 Tc
+0.094 Tw
+(left behind is in the form of programs rather than static)Tj
+T*
+0.013 Tc
+0.126 Tw
+(table entries.)Tj
+1.4 -1.4 TD
+0.018 Tc
+0.178 Tw
+(Eventually, we hope to develop new schemes that)Tj
+-1.4 -1.1 TD
+0.03 Tc
+0.298 Tw
+[(go beyond traditional connections and flows.  For)]TJ
+T*
+0.012 Tc
+0.115 Tw
+(example, capsules could be programmed to rendezvous)Tj
+T*
+0.013 Tc
+0.13 Tw
+(at a node by arranging for the first arriving capsule to)Tj
+T*
+0.019 Tc
+0.186 Tw
+(set some state information and then \322sleep\323 until the)Tj
+T*
+0.017 Tc
+0.172 Tw
+[(remaining capsules have arrived.  The capsules could)]TJ
+T*
+0.019 Tc
+0.193 Tw
+(then engage in some joint computation, such as may)Tj
+T*
+0.012 Tc
+0.119 Tw
+(be used in sensor fusion applications or the pruning of)Tj
+T*
+0.121 Tw
+(multi-cast trees.)Tj
+1.4 -1.4 TD
+0.112 Tw
+(Finally, we note that capsules capable of modifying)Tj
+-1.4 -1.1 TD
+0.007 Tc
+0.073 Tw
+(the node\325s storage provide a uniform mechanism for the)Tj
+T*
+0.008 Tc
+0.084 Tw
+[(implementation of background node functions.  Routing)]TJ
+T*
+0.019 Tc
+0.194 Tw
+(protocols and table updates could be implemented in)Tj
+T*
+0.011 Tc
+0.115 Tw
+(capsules as could network management functions, such)Tj
+T*
+0.01 Tc
+0.103 Tw
+[(as those provided by SNMP.  Long-lived housekeeping)]TJ
+T*
+0.02 Tc
+0.206 Tw
+(functions could also be implemented in this manner,)Tj
+T*
+0.051 Tc
+0.51 Tw
+(though in their case the \322transient\323 execution)Tj
+T*
+0.008 Tc
+0.077 Tw
+(environment might survive until the node is reset.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.014 Tc
+0.144 Tw
+(Program Extensibility)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.015 Tc
+0.146 Tw
+(Unless programs are short relative to the data they)Tj
+-1.4 -1.1 TD
+0.023 Tc
+0.236 Tw
+(encapsulate, it will prove inefficient for them to be)Tj
+T*
+0.013 Tc
+0.135 Tw
+[(carried in individual messages.  Accordingly, it makes)]TJ
+T*
+0.05 Tc
+0.503 Tw
+(sense for the programming environment to be)Tj
+27 64.7 TD
+0.037 Tc
+0.375 Tw
+(extensible, so that capsules can \322plant\323 uniquely)Tj
+0 -1.1 TD
+0.015 Tc
+0.148 Tw
+(named classes and methods at nodes, for reference by)Tj
+T*
+0.038 Tc
+0.379 Tw
+[(other capsules and methods.  In this way, most)]TJ
+T*
+0.013 Tc
+0.13 Tw
+(capsules can be concise \320 possibly a single instruction)Tj
+T*
+0.008 Tc
+0.085 Tw
+(that invokes a user-specific method on the remainder of)Tj
+T*
+0.012 Tc
+0.125 Tw
+(the capsule contents.)Tj
+1.4 -1.4 TD
+0.036 Tc
+0.366 Tw
+(An interesting scheme would be to provide a)Tj
+-1.4 -1.1 TD
+0.031 Tc
+0.305 Tw
+[(mechanism that dynamically resolves references to)]TJ
+T*
+0.038 Tc
+0.385 Tw
+[(external methods.  Instead of capsules explicitly)]TJ
+T*
+0.019 Tc
+0.185 Tw
+(loading methods into the non-transient storage of the)Tj
+T*
+0.029 Tc
+0.295 Tw
+(node, the node could contain a \322cache\323 of known)Tj
+T*
+0.019 Tc
+0.187 Tw
+(external methods and be equipped with a mechanism)Tj
+T*
+0.016 Tc
+0.157 Tw
+(that allows it to locate and dynamically load methods)Tj
+T*
+0.018 Tc
+0.179 Tw
+(on demand.)Tj
+7 0 0 7 374.234 577 Tm
+0 Tc
+0 Tw
+(1)Tj
+10 0 0 10 379 574 Tm
+0.029 Tc
+0.29 Tw
+[(  Although such a \322demand\323 approach)]TJ
+-5.5 -1.1 TD
+0.014 Tc
+0.137 Tw
+(might suffer latency problems when a new application)Tj
+T*
+0.009 Tc
+0.088 Tw
+(is started, this could be offset by allowing capsules that)Tj
+T*
+0.011 Tc
+0.109 Tw
+(prime the cache when faults are anticipated.)Tj
+1.4 -1.4 TD
+0.056 Tc
+0.559 Tw
+(The distinction between the \322explicit\323 and)Tj
+-1.4 -1.1 TD
+0.025 Tc
+0.252 Tw
+(\322demand\323 loading schemes is closely related to the)Tj
+T*
+0.01 Tc
+0.105 Tw
+(broader distinction we have made between discrete and)Tj
+T*
+0.012 Tc
+0.123 Tw
+[(integrated approaches to active networks.  The explicit)]TJ
+T*
+0.02 Tc
+0.201 Tw
+(and discrete cases distinguish program loading as an)Tj
+T*
+0.012 Tc
+0.118 Tw
+(explicit activity that must be completed prior to usage.)Tj
+T*
+0.03 Tc
+0.296 Tw
+(In contrast, the demand and integrated cases offer)Tj
+T*
+0.016 Tc
+0.157 Tw
+(increased flexibility with respect to determination and)Tj
+T*
+0.014 Tc
+0.138 Tw
+[(timing.  Of course, this flexibility comes at some cost)]TJ
+T*
+0.035 Tc
+0.345 Tw
+(in terms of the sophistication of the mechanisms)Tj
+T*
+0.007 Tc
+0.072 Tw
+(required to support safe and efficient loading.)Tj
+/F8 1 Tf
+0 -2.1 TD
+0.014 Tc
+0.144 Tw
+(3.4 Towards an Interoperable Programming Model)Tj
+/F6 1 Tf
+1.4 -1.6 TD
+0.013 Tc
+0.135 Tw
+(To be of general utility, capsules require: mobility,)Tj
+-1.4 -1.1 TD
+0.008 Tc
+0.085 Tw
+(so that programs can be transmitted across the network;)Tj
+T*
+0.011 Tc
+0.111 Tw
+(and portability, so that they can be loaded into a range)Tj
+T*
+0.029 Tc
+0.285 Tw
+[(of platforms.  This suggests the development of a)]TJ
+T*
+0.012 Tc
+0.121 Tw
+(relatively small number of standardized models for the)Tj
+T*
+0.01 Tc
+0.1 Tw
+(programming of network nodes and the description and)Tj
+T*
+0.016 Tc
+0.161 Tw
+[(allocation of their resources.  Our objectives for such)]TJ
+T*
+0.009 Tc
+0.087 Tw
+(models are that they support:)Tj
+1.8 -1.3 TD
+[(\245)-541(Mobility \320 the ability to transfer capsules and)]TJ
+0.9 -1.1 TD
+0.088 Tw
+(execute them on a range of platforms that)Tj
+T*
+0.01 Tc
+0.095 Tw
+(leverage different underlying technologies.)Tj
+-0.9 -1.3 TD
+0.027 Tc
+[(\245)-523(Safety)]TJ
+/F8 1 Tf
+3.6198 0 TD
+0 Tc
+0 Tw
+( )Tj
+/F6 1 Tf
+0.2661 0 TD
+0.009 Tc
+0.092 Tw
+(\320 the ability to restrict the resources that)Tj
+-2.9859 -1.1 TD
+0.016 Tc
+0.159 Tw
+(capsules can access.)Tj
+-0.9 -1.3 TD
+0.009 Tc
+0.088 Tw
+[(\245)-541(Efficiency \320 enabling the above without)]TJ
+0.9 -1.1 TD
+0.092 Tw
+(compromising network performance, at least in)Tj
+T*
+0.01 Tc
+0.103 Tw
+(the most common cases.)Tj
+-1.3 -1.4 TD
+0.012 Tc
+0.117 Tw
+(Traditional packet networks achieve interoperability)Tj
+-1.4 -1.1 TD
+0.016 Tc
+0.161 Tw
+(by standardizing the syntax and semantics of packets.)Tj
+T*
+0.013 Tc
+0.128 Tw
+(For example, Internet routers all support the agreed IP)Tj
+T*
+0.026 Tc
+0.261 Tw
+(specifications; although router implementations may)Tj
+ET
+0 g
+1 i 
+324 142 143.24 -0.24 re
+f
+BT
+9 0 0 9 338 128 Tm
+0 0 0 rg
+0 Tc
+0 Tw
+(1)Tj
+0.5823 -0.3333 TD
+0.031 Tc
+0.306 Tw
+(An interesting approach to resolving cache \322faults\323)Tj
+-2.1378 -1.1111 TD
+0.008 Tc
+0.085 Tw
+(would be for a node to request the method from the node that)Tj
+T*
+0.021 Tc
+0.212 Tw
+(sent it the faulting capsule \320 forming a chain back to the)Tj
+T*
+0.027 Tc
+0.269 Tw
+(originator of the capsule who could be expected to take)Tj
+T*
+0.035 Tc
+0.352 Tw
+[(ultimate responsibility for resolving the reference.  Of)]TJ
+T*
+0.021 Tc
+0.215 Tw
+(course, the originator might do so by demand loading the)Tj
+T*
+0.006 Tc
+0.06 Tw
+(code from their software vendor.)Tj
+ET
+endstream
+endobj
+21 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/F6 4 0 R
+/F8 5 0 R
+>>
+/ExtGState <<
+/GS1 7 0 R
+>>
+>>
+endobj
+23 0 obj
+<<
+/Length 9040
+>>
+stream
+BT
+/F6 1 Tf
+10 0 0 10 54 720 Tm
+0 0 0 rg
+/GS1 gs
+0.015 Tc
+0.146 Tw
+(differ, they implement roughly \322equivalent\323 programs.)Tj
+0 -1.1 TD
+0.021 Tc
+0.213 Tw
+(In contrast, active nodes can execute many different)Tj
+T*
+0.046 Tc
+0.458 Tw
+(programs, i.e., they can perform very different)Tj
+T*
+0.026 Tc
+0.261 Tw
+(computations on the packets flowing through them.)Tj
+T*
+0.017 Tc
+0.171 Tw
+(Network interoperability is achieved at a higher level)Tj
+T*
+0.057 Tc
+0.568 Tw
+(of abstraction \320 instead of standardizing the)Tj
+T*
+0.064 Tc
+0.638 Tw
+(computation performed on every packet, we)Tj
+T*
+0.055 Tc
+0.548 Tw
+(standardize the computational model, i.e., the)Tj
+T*
+0.036 Tc
+0.358 Tw
+(instruction set and resources available to capsule)Tj
+T*
+-0.003 Tc
+(programs.)Tj
+1.4 -1.4 TD
+0.009 Tc
+0.095 Tw
+(We find it convenient to distinguish between: issues)Tj
+-1.4 -1.1 TD
+0.023 Tc
+0.227 Tw
+(surrounding the representation and evaluation of the)Tj
+T*
+0.053 Tc
+0.531 Tw
+(capsules themselves; and safe access to node)Tj
+T*
+0.008 Tc
+(resources.)Tj
+1.4 -1.4 TD
+0.024 Tc
+0.244 Tw
+(In section 4, we outline the functionality that is)Tj
+-1.4 -1.1 TD
+0.018 Tc
+0.181 Tw
+(required and discuss mechanisms that can be used to)Tj
+T*
+0.022 Tc
+0.22 Tw
+(support the safe and efficient execution of capsules.)Tj
+T*
+0.036 Tc
+0.361 Tw
+(We discuss how \322active technologies\323, developed)Tj
+T*
+0.01 Tc
+0.096 Tw
+(within the programming language and operating system)Tj
+T*
+0.031 Tc
+0.311 Tw
+(communities, can be used to prevent unauthorized)Tj
+T*
+0.018 Tc
+0.183 Tw
+(access to resources that lie beyond the boundaries of)Tj
+T*
+0.036 Tc
+0.36 Tw
+(the transient execution environment into which a)Tj
+T*
+0.008 Tc
+0.081 Tw
+(capsule is dropped.)Tj
+1.4 -1.4 TD
+0.032 Tc
+0.316 Tw
+(In section 5, we discuss resource management,)Tj
+-1.4 -1.1 TD
+0.023 Tc
+0.225 Tw
+(which is an important issue in active nodes \320 these)Tj
+T*
+0.014 Tc
+0.146 Tw
+[(nodes are components of the shared infrastructure and)]TJ
+T*
+0.026 Tc
+0.259 Tw
+(their users must be protected from each other to a)Tj
+T*
+0.023 Tc
+0.227 Tw
+(degree that is typically not required within personal)Tj
+T*
+0.02 Tc
+0.199 Tw
+[(computers or even group servers.  The programming)]TJ
+T*
+0.014 Tc
+0.137 Tw
+(model must deal with two issues associated with node)Tj
+T*
+0.022 Tc
+0.219 Tw
+(resources: interoperability and resource management.)Tj
+T*
+0.033 Tc
+0.334 Tw
+(The interoperability requirement is for a common)Tj
+T*
+0.015 Tc
+0.15 Tw
+[(model of the resources available at a node.  Resource)]TJ
+T*
+0.03 Tc
+0.3 Tw
+(management issues include resource allocation and)Tj
+T*
+0.013 Tc
+0.131 Tw
+(capsule authentication and authorization.)Tj
+/F8 1 Tf
+0 -2.3 TD
+0.007 Tc
+0.075 Tw
+[(4.  CAPSULE PROGRAMS \320 MOBILITY, SAFETY)]TJ
+0 -1.1 TD
+-0.003 Tc
+0 Tw
+(AND EFFICIENCY)Tj
+/F6 1 Tf
+1.4 -1.7 TD
+0.013 Tc
+0.134 Tw
+[(In this section we discuss:  the languages in which)]TJ
+-1.4 -1.1 TD
+0.016 Tc
+0.164 Tw
+(capsule programs are expressed; and mechanisms that)Tj
+T*
+0.024 Tc
+0.237 Tw
+[(can support their safe and efficient execution.  Our)]TJ
+T*
+0.012 Tc
+0.117 Tw
+(overall approach is to evaluate each capsule within the)Tj
+T*
+0.025 Tc
+0.252 Tw
+(context of a transient execution environment whose)Tj
+T*
+0.026 Tc
+0.26 Tw
+(lifetime is the interval during which the capsule is)Tj
+T*
+0.033 Tc
+0.329 Tw
+[(evaluated at a given node.  Safety properties are)]TJ
+T*
+0.044 Tc
+0.445 Tw
+(provided by restricting the actions that can be)Tj
+T*
+0.012 Tc
+0.126 Tw
+(performed and their scope, e.g., their access to storage)Tj
+T*
+0.007 Tc
+0.071 Tw
+(and other node resources.)Tj
+/F8 1 Tf
+0 -2.1 TD
+0.013 Tc
+0.126 Tw
+(4.1 Capsule Primitives)Tj
+/F6 1 Tf
+1.4 -1.6 TD
+0.03 Tc
+0.298 Tw
+(There is a limited set of primitive actions that)Tj
+-1.4 -1.1 TD
+0.026 Tc
+0.262 Tw
+(capsules can perform without straying beyond their)Tj
+T*
+0.029 Tc
+0.292 Tw
+[(transient environments.  These actions constitute a)]TJ
+T*
+0.026 Tc
+0.263 Tw
+(restricted programming language, or instruction set,)Tj
+T*
+0.009 Tc
+0.094 Tw
+(that can perform: arithmetic and branch operations; and)Tj
+T*
+0.029 Tc
+0.289 Tw
+(manipulate stack and heap storage of the transient)Tj
+T*
+0.009 Tc
+(environment.)Tj
+28.4 63.3 TD
+0.036 Tc
+0.364 Tw
+(The set of primitive actions will be extended)Tj
+-1.4 -1.1 TD
+0.025 Tc
+0.252 Tw
+(through the addition of external method invocation,)Tj
+T*
+0.046 Tc
+0.455 Tw
+(which provides access to resources beyond the)Tj
+T*
+0.009 Tc
+0.092 Tw
+[(transient environment.  Some of these external methods)]TJ
+T*
+0.016 Tc
+0.156 Tw
+(will leverage the same primitive actions and will also)Tj
+T*
+0.01 Tc
+0.099 Tw
+(be evaluated in a closed environment, i.e., with a sharp)Tj
+T*
+0.028 Tc
+0.28 Tw
+(distinction between their self-contained actions and)Tj
+T*
+0.016 Tc
+0.161 Tw
+[(their access to other methods.  Others will access the)]TJ
+T*
+0.018 Tc
+0.178 Tw
+(built-in \322API\323 of the node\325s run-time environment or)Tj
+T*
+0.038 Tc
+0.382 Tw
+[(embedded operating system.  The API of active)]TJ
+T*
+0.012 Tc
+0.12 Tw
+(network nodes will be distinguished by the availability)Tj
+T*
+0.057 Tc
+0.569 Tw
+(of methods that are tailored to the network)Tj
+T*
+0.014 Tc
+0.137 Tw
+(environment, such as the efficient copying of capsules)Tj
+T*
+0.04 Tc
+0.396 Tw
+(and sophisticated control over the scheduling of)Tj
+T*
+0.008 Tc
+0.085 Tw
+(transmission resources.)Tj
+1.4 -1.4 TD
+0.011 Tc
+0.112 Tw
+(For interoperability purposes all of the active nodes)Tj
+-1.4 -1.1 TD
+0.123 Tw
+(along a capsule\325s path should be capable of evaluating)Tj
+T*
+0.016 Tc
+0.163 Tw
+(the capsule\325s contents.)Tj
+7 0 0 7 421.243 530 Tm
+0 Tc
+0 Tw
+(2)Tj
+10 0 0 10 426 527 Tm
+0.021 Tc
+0.207 Tw
+[(  There are three well known)]TJ
+-10.2 -1.1 TD
+0.009 Tc
+0.089 Tw
+(ways of achieving this level of portability/mobility:)Tj
+1.8 -1.3 TD
+0.007 Tc
+0.074 Tw
+[(\245)-543(Express the programs in a high-level source)]TJ
+0.9 -1.1 TD
+0.01 Tc
+0.104 Tw
+(language that may be interpreted at the nodes;)Tj
+-0.9 -1.3 TD
+[(\245)-540(Adopt a platform independent intermediate)]TJ
+0.9 -1.1 TD
+0.012 Tc
+0.123 Tw
+(representation, typically a byte coded \322virtual\323)Tj
+T*
+0.114 Tw
+(instruction set;)Tj
+-0.9 -1.3 TD
+0.007 Tc
+0.073 Tw
+[(\245)-543(Express the programs in a platform-dependent)]TJ
+0.9 -1.1 TD
+0.008 Tc
+0.08 Tw
+(binary format and arrange for each capsule to)Tj
+T*
+0.006 Tc
+0.061 Tw
+(carry multiple encodings of its program \320 one for)Tj
+T*
+0.008 Tc
+0.082 Tw
+(each type of platform that it traverses.)Tj
+-1.3 -1.4 TD
+0.045 Tc
+0.45 Tw
+(We expect to leverage all three approaches.)Tj
+-1.4 -1.1 TD
+0.054 Tc
+0.541 Tw
+(Source encodings will prove useful for rapid)Tj
+T*
+0.037 Tc
+0.375 Tw
+[(prototyping.  An intermediate representation may)]TJ
+T*
+0.032 Tc
+0.32 Tw
+(provide a compact and relatively efficient way to)Tj
+T*
+0.021 Tc
+0.209 Tw
+[(express relatively short programs.  External methods)]TJ
+T*
+0.014 Tc
+0.136 Tw
+(could be similarly encoded or could be expressed in a)Tj
+T*
+0.024 Tc
+0.237 Tw
+[(machine dependent format.  We expect that heavily)]TJ
+T*
+0.015 Tc
+0.152 Tw
+(used components will be packaged in binary libraries,)Tj
+T*
+0.083 Tc
+0.829 Tw
+(especially \322bootstrap\323 libraries that allow)Tj
+T*
+0.017 Tc
+0.171 Tw
+(administrators to initialize newly installed or repaired)Tj
+T*
+0.002 Tc
+(platforms.)Tj
+/F8 1 Tf
+0 -2.1 TD
+0.011 Tc
+0.107 Tw
+(4.2 Safe and Efficient Execution)Tj
+/F6 1 Tf
+1.4 -1.6 TD
+0.033 Tc
+0.33 Tw
+(One of the reasons that we believe it will be)Tj
+-1.4 -1.1 TD
+0.01 Tc
+0.103 Tw
+(possible to realize active networks is the availability of)Tj
+T*
+0.018 Tc
+0.183 Tw
+(active technologies \320 mechanisms that allow users to)Tj
+T*
+0.035 Tc
+0.348 Tw
+(inject customized programs into shared resources.)Tj
+T*
+0.011 Tc
+0.113 Tw
+[(Active technologies are not new.  However, our use of)]TJ
+T*
+0.013 Tc
+0.125 Tw
+(active technologies within the network is novel \320 until)Tj
+T*
+0.017 Tc
+0.166 Tw
+(now the use of active technologies in networking has)Tj
+T*
+0.021 Tc
+0.208 Tw
+(been end-to-end \(e.g., shipping code from servers to)Tj
+T*
+0.014 Tc
+0.146 Tw
+[(clients or vice-versa\).  In the case of active networks,)]TJ
+T*
+0.037 Tc
+0.374 Tw
+(the shared resources in question are the routers,)Tj
+T*
+0.014 Tc
+0.146 Tw
+[(switches and servers that lie within the network.  Our)]TJ
+ET
+0 g
+1 i 
+324 112 143.24 -0.24 re
+f
+BT
+9 0 0 9 338 98 Tm
+0 0 0 rg
+0 Tc
+0 Tw
+(2)Tj
+0.5776 -0.3333 TD
+0.022 Tc
+0.225 Tw
+(At each hop, a capsule could translate itself into the)Tj
+-2.1332 -1.1111 TD
+0.012 Tc
+0.115 Tw
+(language that is understood by the \322next hop\323 node along its)Tj
+T*
+0.014 Tc
+0.136 Tw
+[(path.  However, this approach seems extreme \320 even by our)]TJ
+T*
+0.013 Tc
+(standards!)Tj
+ET
+endstream
+endobj
+24 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/F6 4 0 R
+/F8 5 0 R
+>>
+/ExtGState <<
+/GS1 7 0 R
+>>
+>>
+endobj
+26 0 obj
+<<
+/Length 9433
+>>
+stream
+BT
+/F6 1 Tf
+10 0 0 10 54 720 Tm
+0 0 0 rg
+/GS1 gs
+0.017 Tc
+0.168 Tw
+(work will leverage and extend the presently available)Tj
+0 -1.1 TD
+0.016 Tc
+(technologies.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.015 Tc
+0.147 Tw
+(Active Technologies \320 Background)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.031 Tc
+0.311 Tw
+(Active technologies have been emerging in the)Tj
+-1.4 -1.1 TD
+0.009 Tc
+0.091 Tw
+(fields of operating systems and programming languages)Tj
+T*
+0.013 Tc
+0.126 Tw
+[(for over ten years.  Early work tended to address only)]TJ
+T*
+0.014 Tc
+0.135 Tw
+(one of three important issues \320 mobility, efficiency )Tj
+ET
+0 0 0 RG
+0 J 0 j 0.5 w 10 M []0 d
+1 i 
+278.981 642 m
+288.036 642 l
+S
+BT
+10 0 0 10 278.981 643 Tm
+0.073 Tc
+(or)Tj
+-22.4981 -1.2 TD
+0.011 Tc
+0.106 Tw
+[(safety.  PostScript is an example of an early effort that)]TJ
+0 -1.1 TD
+0.022 Tc
+0.217 Tw
+[(stressed mobility over safety.  Applications generate)]TJ
+T*
+0.019 Tc
+0.195 Tw
+(mobile programs that are executed at printers, which)Tj
+T*
+0.007 Tc
+0.075 Tw
+(may be shared and distributed about a network.)Tj
+1.4 -1.4 TD
+0.053 Tc
+0.526 Tw
+(In the field of parallel processing, \322active)Tj
+-1.4 -1.1 TD
+0.01 Tc
+0.095 Tw
+(messages\323 [10, 11] stressed efficiency over mobility by)Tj
+T*
+0.017 Tc
+0.165 Tw
+(reducing the \322program\323 to a single instruction \320 each)Tj
+T*
+0.047 Tc
+0.474 Tw
+(message invokes an application-specific handler)Tj
+T*
+0.016 Tc
+0.165 Tw
+[(resident at the recipient.  The handler provides a low)]TJ
+T*
+0.064 Tc
+0.639 Tw
+(overhead mechanism for dispatching arriving)Tj
+T*
+0.045 Tc
+0.448 Tw
+(messages, so that they can be treated as self-)Tj
+T*
+0.041 Tc
+0.414 Tw
+[(scheduling computations.  These systems, which)]TJ
+T*
+0.025 Tc
+0.252 Tw
+(targeted communication internal to a single parallel)Tj
+T*
+0.021 Tc
+0.213 Tw
+(processor complex, did not address the safety issues)Tj
+T*
+0.008 Tc
+0.081 Tw
+(relevant to shared infrastructures.)Tj
+1.4 -1.4 TD
+0.026 Tc
+0.258 Tw
+(The advent of heterogeneous distributed systems)Tj
+-1.4 -1.1 TD
+0.041 Tc
+0.411 Tw
+(and internetworking has accelerated the pace of)Tj
+T*
+0.007 Tc
+0.065 Tw
+[(research.  The x-kernel [12] supports the composition of)]TJ
+T*
+0.07 Tw
+(protocol handlers by providing a regular architecture for)Tj
+T*
+0.013 Tc
+0.129 Tw
+(stacking them and by automating the dispatch process.)Tj
+T*
+0.026 Tc
+0.259 Tw
+(Other efforts [13-15] have focused on less friendly)Tj
+T*
+0.043 Tc
+0.429 Tw
+(environments by improving both the safety and)Tj
+T*
+0.023 Tc
+0.229 Tw
+(efficiency with which handlers can be implemented.)Tj
+T*
+0.037 Tc
+0.369 Tw
+(Most recently, there have been efforts to jointly)Tj
+T*
+0.046 Tc
+0.456 Tw
+(address all three issues \320 mobility, safety and)Tj
+T*
+0.467 Tw
+(efficiency \320 under the banners of configurable)Tj
+T*
+0.025 Tc
+0.255 Tw
+(operating systems, agents, mobile applets and other)Tj
+T*
+0.011 Tc
+0.106 Tw
+(schemes related to the World Wide Web.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.016 Tc
+0.162 Tw
+(Leveraging Active Technologies)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.038 Tc
+0.384 Tw
+(Active networks will adapt and extend active)Tj
+-1.4 -1.1 TD
+0.019 Tc
+0.191 Tw
+[(technologies for use within the network.  In general,)]TJ
+T*
+0.038 Tc
+0.381 Tw
+(these technologies provide for safe execution by)Tj
+T*
+0.029 Tc
+0.291 Tw
+(restricting the set of primitive actions available to)Tj
+T*
+0.013 Tc
+0.126 Tw
+(mobile programs and the scope of their operands, e.g.,)Tj
+T*
+0.036 Tc
+0.363 Tw
+[(their access to storage and other resources.  An)]TJ
+T*
+0.024 Tc
+0.243 Tw
+(interesting question is how to organize the closures)Tj
+T*
+0.007 Tc
+0.066 Tw
+[(which provide the basis for safe execution.  Our starting)]TJ
+T*
+0.01 Tc
+0.102 Tw
+(position is that the namespace of a capsule is restricted)Tj
+T*
+0.014 Tc
+0.137 Tw
+[(to the transient environment.  This containment policy)]TJ
+T*
+0.032 Tc
+0.323 Tw
+(may be relaxed by initializing the closure with a)Tj
+T*
+0.015 Tc
+0.153 Tw
+(default set of foundation components that all capsules)Tj
+T*
+0.023 Tc
+0.235 Tw
+[(are allowed to dispatch.  Any capsule that accesses)]TJ
+T*
+0.01 Tc
+0.098 Tw
+(methods outside of that space must first request that its)Tj
+T*
+0.037 Tc
+0.366 Tw
+(closure be extended by authenticating itself to a)Tj
+T*
+0.012 Tc
+0.125 Tw
+(mechanism that validates its authorization.)Tj
+1.4 -1.4 TD
+0.046 Tc
+0.455 Tw
+[(In the following paragraphs, we discuss the)]TJ
+-1.4 -1.1 TD
+0.456 Tw
+(available technologies in terms of the program)Tj
+T*
+0.048 Tc
+0.479 Tw
+(encoding approaches \320 source, intermediate, or)Tj
+T*
+0.019 Tc
+0.194 Tw
+(platform dependent binary \320 and then introduce \322on-)Tj
+27 63.7 TD
+0.014 Tc
+0.138 Tw
+(the-fly\323 compilation, a complementary technology that)Tj
+0 -1.1 TD
+0.007 Tc
+0.071 Tw
+(is also of interest.)Tj
+ET
+324 691 m
+378 691 l
+S
+BT
+10 0 0 10 324 692 Tm
+0.013 Tc
+0.132 Tw
+(Source Code)Tj
+1.4 -1.5 TD
+0.028 Tc
+0.281 Tw
+(Safe-Tcl [16] is an example of a language that)Tj
+-1.4 -1.1 TD
+0.034 Tc
+0.338 Tw
+(achieves safety through interpretation of a source)Tj
+T*
+0.016 Tc
+0.159 Tw
+[(program and closure of its namespace.  The safety of)]TJ
+T*
+0.017 Tc
+0.17 Tw
+(such a system derives from the restricted closure and)Tj
+T*
+0.022 Tc
+0.215 Tw
+(the correctness of the interpreter, which can prevent)Tj
+T*
+0.028 Tc
+0.283 Tw
+(programs from deliberately or accidentally straying)Tj
+T*
+0.033 Tc
+0.331 Tw
+[(beyond the transient execution environment.  The)]TJ
+T*
+0.016 Tc
+0.165 Tw
+(advantage of the Tcl-based approach is that programs)Tj
+T*
+0.036 Tc
+0.36 Tw
+(are human readable and simple programs can be)Tj
+T*
+0.011 Tc
+0.115 Tw
+[(composed quite quickly.  Furthermore, Tcl\325s character-)]TJ
+T*
+0.014 Tc
+0.136 Tw
+(based representation makes it easy to design programs)Tj
+T*
+0.026 Tc
+0.264 Tw
+[(that generate new source fragments.  The principal)]TJ
+T*
+0.057 Tc
+0.568 Tw
+(disadvantage is the overhead of source code)Tj
+T*
+0.011 Tc
+0.114 Tw
+(interpretation, which is compounded by Tcl\325s encoding)Tj
+T*
+0.009 Tc
+0.093 Tw
+[(of all data types as strings.  An additional disadvantage)]TJ
+T*
+0.037 Tc
+0.374 Tw
+(is the overall size of programs, which could be)Tj
+T*
+0.019 Tc
+0.194 Tw
+(reduced, albeit at the expense of readability, through)Tj
+T*
+0.007 Tc
+0.069 Tw
+(the use of compression.)Tj
+ET
+324 472 m
+402 472 l
+S
+BT
+10 0 0 10 324 473 Tm
+0.015 Tc
+0.149 Tw
+(Intermediate Code)Tj
+1.4 -1.5 TD
+0.018 Tc
+0.178 Tw
+(Java [17] achieves mobility through the use of an)Tj
+-1.4 -1.1 TD
+0.026 Tc
+0.257 Tw
+[(intermediate instruction set [18].  Traditionally, the)]TJ
+T*
+0.018 Tc
+0.178 Tw
+(safe execution of intermediate code has relied on the)Tj
+T*
+0.026 Tc
+0.258 Tw
+(careful interpretation of the intermediate instruction)Tj
+T*
+0.01 Tc
+0.105 Tw
+[(set.  One of Java\325s key contributions is the observation)]TJ
+T*
+0.025 Tc
+0.254 Tw
+(that a significant improvement in efficiency can be)Tj
+T*
+0.008 Tc
+0.085 Tw
+(achieved by off-loading some of the responsibility from)Tj
+T*
+0.018 Tc
+0.184 Tw
+[(the interpreter.  The instruction set, and its approved)]TJ
+T*
+0.029 Tc
+0.287 Tw
+(usage, are designed so as to reduce the degree of)Tj
+T*
+0.012 Tc
+0.125 Tw
+(operand validation that the interpreter must perform as)Tj
+T*
+0.009 Tc
+0.094 Tw
+[(each instruction is executed.  In part, this is enabled by)]TJ
+T*
+0.032 Tc
+0.324 Tw
+(the design of the instruction set, which precludes)Tj
+T*
+0.014 Tc
+0.138 Tw
+(certain cases that would normally have to be checked.)Tj
+T*
+0.028 Tc
+0.285 Tw
+(It is also enabled by the static inspection of code)Tj
+T*
+0.015 Tc
+0.151 Tw
+(before it is first executed, so that many of the checks)Tj
+T*
+0.033 Tc
+0.332 Tw
+(need only be performed once, typically when the)Tj
+T*
+0.005 Tc
+0.051 Tw
+(program is first loaded.)Tj
+ET
+324 264 m
+470 264 l
+S
+BT
+10 0 0 10 324 265 Tm
+0.013 Tc
+0.13 Tw
+(Platform-dependent \(Binary\) Code)Tj
+1.4 -1.5 TD
+0.031 Tc
+0.313 Tw
+(The most aggressive of the active technologies)Tj
+-1.4 -1.1 TD
+0.011 Tc
+0.115 Tw
+(provide for the execution of platform-dependent binary)Tj
+T*
+0.014 Tc
+0.143 Tw
+(programs that, for the most part, are directly executed)Tj
+T*
+0.019 Tc
+0.192 Tw
+[(by the underlying hardware.  To safely execute such)]TJ
+T*
+0.018 Tc
+0.18 Tw
+(program fragments, one must restrict their use of the)Tj
+T*
+0.031 Tc
+0.307 Tw
+[(instruction set and address space.  The traditional)]TJ
+T*
+0.016 Tc
+0.157 Tw
+(operating systems approach has been to rely on fairly)Tj
+T*
+0.042 Tc
+0.415 Tw
+(heavyweight mechanisms, such as processes and)Tj
+T*
+0.07 Tc
+0.703 Tw
+(hardware-supported address space protection.)Tj
+T*
+0.029 Tc
+0.292 Tw
+(However, there has recently been progress on two)Tj
+T*
+0.012 Tc
+0.117 Tw
+(lighter-weight approaches:)Tj
+1.8 -1.3 TD
+0.007 Tc
+0.065 Tw
+(\245 The SPIN project [14] relies on the properties of)Tj
+0.9 -1.1 TD
+0.008 Tc
+0.077 Tw
+(the Modula 3 language and a trustworthy)Tj
+T*
+0.083 Tw
+(compiler to generate programs that will not stray)Tj
+T*
+0.009 Tc
+0.086 Tw
+[(beyond a restricted environment.  When a)]TJ
+T*
+0.008 Tc
+0.079 Tw
+(program is presented for execution, the run-time)Tj
+T*
+0.01 Tc
+0.103 Tw
+(system verifies that the instruction sequence was)Tj
+ET
+endstream
+endobj
+27 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/F6 4 0 R
+/F8 5 0 R
+>>
+/ExtGState <<
+/GS1 7 0 R
+>>
+>>
+endobj
+29 0 obj
+<<
+/Length 9178
+>>
+stream
+BT
+/F6 1 Tf
+10 0 0 10 81 720 Tm
+0 0 0 rg
+/GS1 gs
+0.009 Tc
+0.091 Tw
+(generated by a trusted compiler and has not been)Tj
+0 -1.1 TD
+0.005 Tc
+(modified.)Tj
+-0.9 -1.3 TD
+0.008 Tc
+0.079 Tw
+(\245 The approach described in [19, 20] prescribes a)Tj
+0.9 -1.1 TD
+0.009 Tc
+0.091 Tw
+(set of rules that instruction sequences must)Tj
+T*
+0.008 Tc
+0.081 Tw
+(adhere to, such as restrictions on how address)Tj
+T*
+0.007 Tc
+0.073 Tw
+[(arithmetic is performed.  In conjunction with a)]TJ
+T*
+0.072 Tw
+(modicum of run-time support and a collection of)Tj
+T*
+0.012 Tc
+0.118 Tw
+(clever techniques, these rules define a)Tj
+T*
+0.008 Tc
+0.078 Tw
+(\322sandbox\323 within which the program can do)Tj
+T*
+0.083 Tw
+(what it likes, but that it may not escape from.)Tj
+T*
+0.007 Tc
+0.068 Tw
+(An important aspect of this work is that)Tj
+T*
+0.012 Tc
+0.117 Tw
+(conformance to the \322rules\323 can be statically)Tj
+T*
+0.009 Tc
+0.093 Tw
+(verified when an instruction sequence is)Tj
+T*
+0.008 Tc
+0.086 Tw
+(presented for execution.)Tj
+-1.3 -1.4 TD
+0.034 Tc
+0.335 Tw
+(In both cases, it is assumed that sophisticated)Tj
+-1.4 -1.1 TD
+0.022 Tc
+0.222 Tw
+(compiler technology will be used to generate \322safe\323)Tj
+T*
+0.047 Tc
+0.469 Tw
+[(code.  The distinction is whether the code is)]TJ
+T*
+0.021 Tc
+0.212 Tw
+(independently validated by the receiving platform or)Tj
+T*
+0.014 Tc
+0.142 Tw
+(whether the compilers and/or vendors of programs are)Tj
+T*
+0.015 Tc
+0.154 Tw
+(trusted and authorized to \322sign for\323 their code.)Tj
+7 0 0 7 258.188 509 Tm
+0 Tc
+0 Tw
+(3)Tj
+10 0 0 10 263 506 Tm
+0.023 Tc
+0.227 Tw
+[(  The)]TJ
+-20.9 -1.1 TD
+0.019 Tc
+0.189 Tw
+(former approach improves mobility, especially across)Tj
+T*
+0.027 Tc
+0.272 Tw
+[(administrative boundaries.  The latter approach not)]TJ
+T*
+0.017 Tc
+0.172 Tw
+(only saves the overhead of validation, but might also)Tj
+T*
+0.032 Tc
+0.326 Tw
+[(allow the compiler to generate code that is more)]TJ
+T*
+0.014 Tc
+0.142 Tw
+[(efficient.  In both cases, we would expect the directly)]TJ
+T*
+0.021 Tc
+0.207 Tw
+(executable binary code to out-perform an interpreted)Tj
+T*
+-0.003 Tc
+(format.)Tj
+ET
+0 0 0 RG
+0 J 0 j 0.5 w 10 M []0 d
+1 i 
+54 411 m
+151.001 411 l
+S
+BT
+10 0 0 10 54 412 Tm
+0.007 Tc
+0.075 Tw
+(On-the-fly Compilation)Tj
+1.4 -1.5 TD
+0.055 Tc
+0.547 Tw
+(Recent work [21] has enabled \322on-the-fly\323)Tj
+-1.4 -1.1 TD
+0.033 Tc
+0.329 Tw
+(compilation with a dialect of the C programming)Tj
+T*
+0.047 Tc
+0.468 Tw
+[(language.  This allows source programs to be)]TJ
+T*
+0.025 Tc
+0.252 Tw
+(automatically tailored, or even wholly generated, at)Tj
+T*
+0.03 Tc
+0.295 Tw
+[(run-time.  In conjunction with sandboxing, such a)]TJ
+T*
+0.018 Tc
+0.183 Tw
+(technology could allow active nodes to perform their)Tj
+T*
+0.025 Tc
+0.249 Tw
+(own source-binary translations on capsules they are)Tj
+T*
+0.007 Tc
+(processing.)Tj
+1.4 -1.4 TD
+0.035 Tc
+0.351 Tw
+(On-the-fly compilation technologies may prove)Tj
+-1.4 -1.1 TD
+0.013 Tc
+0.132 Tw
+[(crucial to the viability of our architecture.  Modern IP)]TJ
+T*
+0.011 Tc
+0.107 Tw
+(routers achieve reasonable performance through careful)Tj
+T*
+0.016 Tc
+0.166 Tw
+(tuning of their \322fast paths\323, typically by optimizing a)Tj
+T*
+0.022 Tc
+0.222 Tw
+(minimal instruction sequence that processes the vast)Tj
+T*
+0.014 Tc
+0.135 Tw
+(majority of the traffic and relegates the more complex)Tj
+T*
+0.013 Tc
+0.125 Tw
+[(\(and less frequently used\) cases to other modules.  An)]TJ
+T*
+0.012 Tc
+0.123 Tw
+(active node might achieve a similar performance boost)Tj
+T*
+0.014 Tc
+0.144 Tw
+(by monitoring its traffic and dynamically generating a)Tj
+T*
+0.012 Tc
+0.122 Tw
+(fast path program that streamlines the execution of the)Tj
+T*
+0.016 Tc
+0.162 Tw
+[(most common capsule programs.  Techniques such as)]TJ
+T*
+0.015 Tc
+0.149 Tw
+(scheduling by path \(found in Scout [22]\) may also be)Tj
+T*
+0.024 Tc
+(applicable.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.022 Tc
+(Discussion)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.038 Tc
+0.38 Tw
+(Variability in network applications and traffic)Tj
+-1.4 -1.1 TD
+0.042 Tc
+0.425 Tw
+(patterns suggests that there is no right answer.)Tj
+T*
+0.017 Tc
+0.166 Tw
+(Although the performance that can be gained through)Tj
+T*
+0.167 Tw
+(binary encodings is attractive, it comes at the cost of)Tj
+ET
+0 g
+54 92 143.24 -0.24 re
+f
+BT
+9 0 0 9 68 78 Tm
+0 0 0 rg
+0 Tc
+0 Tw
+(3)Tj
+0.529 -0.3333 TD
+0.011 Tc
+0.115 Tw
+(We assume the availability of appropriate authentication)Tj
+-2.0846 -1.1111 TD
+0.014 Tc
+0.142 Tw
+(and tamper-proof signature technology.)Tj
+10 0 0 10 324 720 Tm
+0.029 Tc
+0.29 Tw
+[(portability.  Furthermore, the instruction encodings)]TJ
+0 -1.1 TD
+0.043 Tc
+0.425 Tw
+[(associated with modern processors are far from)]TJ
+T*
+0.028 Tc
+0.284 Tw
+(compact \320 these schemes might give rise to much)Tj
+T*
+0.051 Tc
+0.511 Tw
+(larger capsules than an intermediate encoding,)Tj
+T*
+0.013 Tc
+0.13 Tw
+(suggesting a trade-off between transmission bandwidth)Tj
+T*
+0.019 Tc
+0.186 Tw
+[(and processing capacity.  Finally, node implementors)]TJ
+T*
+0.014 Tc
+0.138 Tw
+(designing for high risk environments, i.e., focusing on)Tj
+T*
+0.022 Tc
+0.22 Tw
+(safety, may prefer interpretation-driven schemes that)Tj
+T*
+0.01 Tc
+0.095 Tw
+(audit the execution of each instruction.)Tj
+1.4 -1.4 TD
+0.018 Tc
+0.181 Tw
+(Our plan is to adopt a Java-like instruction set as)Tj
+-1.4 -1.1 TD
+0.036 Tc
+0.362 Tw
+(the basis for ActiveNet interoperability and code)Tj
+T*
+0.013 Tc
+0.125 Tw
+[(mobility.  One of the benefits of the present IP packet)]TJ
+T*
+0.014 Tc
+0.137 Tw
+(format is that it enables an \322hourglass\323 architecture in)Tj
+T*
+0.016 Tc
+0.164 Tw
+[(which a variety of upper  layer protocols can operate)]TJ
+T*
+0.045 Tc
+0.446 Tw
+[(over a wide range of network substrates.  An)]TJ
+T*
+0.017 Tc
+0.169 Tw
+(intermediate instruction set will provide an analogous)Tj
+T*
+0.043 Tc
+0.429 Tw
+[(hourglass that facilitates mobility.  A range of)]TJ
+T*
+0.016 Tc
+0.158 Tw
+(programming languages and compilers can be used to)Tj
+T*
+0.018 Tc
+0.183 Tw
+(generate highly mobile intermediate code that can be)Tj
+T*
+0.007 Tc
+0.074 Tw
+(executed on a wide range of hardware platforms.)Tj
+1.4 -1.4 TD
+0.031 Tc
+0.307 Tw
+(Nonetheless, we believe that it will also prove)Tj
+-1.4 -1.1 TD
+0.034 Tc
+0.34 Tw
+(practical and attractive to provide extensions that)Tj
+T*
+0.014 Tc
+0.142 Tw
+(allow users and node implementors to leverage source)Tj
+T*
+0.009 Tc
+0.089 Tw
+[(and binary technologies.  The architectural trick will be)]TJ
+T*
+0.038 Tc
+0.385 Tw
+(to enable these technologies, while retaining the)Tj
+T*
+0.026 Tc
+0.264 Tw
+(intermediate instruction set as a fallback point that)Tj
+T*
+0.034 Tc
+0.339 Tw
+[(ensures interoperability.  We have considered the)]TJ
+T*
+0.009 Tc
+0.087 Tw
+(following extensions:)Tj
+1.8 -1.3 TD
+0.01 Tc
+0.096 Tw
+[(\245)-540(Allow programmers to optimistically leverage a)]TJ
+0.9 -1.1 TD
+0.104 Tw
+(source programming language, such as Safe-Tcl,)Tj
+T*
+0.008 Tc
+0.08 Tw
+(in the hope that it is supported at the nodes a)Tj
+T*
+[(capsule traverses.  A node that is not equipped)]TJ
+T*
+0.076 Tw
+(with the appropriate interpreter or translator)Tj
+T*
+0.007 Tc
+0.072 Tw
+(could either demand load one or forward the)Tj
+T*
+0.01 Tc
+0.101 Tw
+(capsule to some other node that can translate it)Tj
+T*
+0.012 Tc
+0.115 Tw
+(to the intermediate representation.)Tj
+-0.9 -1.3 TD
+0.009 Tc
+0.095 Tw
+[(\245)-541(Allow \322fat\323 capsules that carry binary encodings)]TJ
+0.9 -1.1 TD
+0.008 Tc
+0.079 Tw
+(\(for popular platforms\) alongside their)Tj
+T*
+0.014 Tc
+0.14 Tw
+(intermediate encodings.)Tj
+-0.9 -1.3 TD
+0.009 Tc
+0.091 Tw
+[(\245)-541(Have nodes track their use of external methods,)]TJ
+0.9 -1.1 TD
+0.007 Tc
+0.07 Tw
+[(identifying candidates for binary encoding.  A)]TJ
+T*
+0.008 Tc
+0.084 Tw
+(node could leverage on-the-fly technology to)Tj
+T*
+0.01 Tc
+0.097 Tw
+(translate such methods locally, or it could load)Tj
+T*
+0.008 Tc
+0.079 Tw
+(platform-specific versions from elsewhere on the)Tj
+T*
+-0.004 Tc
+(network.)Tj
+-0.9 -1.3 TD
+0.008 Tc
+[(\245)-542(The previous suggestion might be combined with)]TJ
+0.9 -1.1 TD
+0.075 Tw
+(demand loading. A node can identify its platform)Tj
+T*
+0.01 Tc
+0.101 Tw
+(type whenever it requests an external method,)Tj
+T*
+0.006 Tc
+0.057 Tw
+(affording the supplier the option of returning a)Tj
+T*
+0.008 Tc
+0.081 Tw
+(binary encoding should an appropriate one be)Tj
+T*
+0.015 Tc
+0.154 Tw
+(readily available.)Tj
+/F8 1 Tf
+-2.7 -2.1 TD
+0.019 Tc
+0.189 Tw
+(4.3 Summary)Tj
+/F6 1 Tf
+1.4 -1.6 TD
+0.02 Tc
+0.198 Tw
+(In this section, we have outlined our approach to)Tj
+-1.4 -1.1 TD
+0.01 Tc
+0.103 Tw
+[(the safe and efficient evaluation of capsules.  Although)]TJ
+T*
+0.042 Tc
+0.42 Tw
+(it is useful to distinguish between the program)Tj
+T*
+0.018 Tc
+0.176 Tw
+(representation and its implementation, we realize that)Tj
+T*
+0.011 Tc
+0.109 Tw
+[(the two will strongly influence each other.  The choice)]TJ
+ET
+endstream
+endobj
+30 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/F6 4 0 R
+/F8 5 0 R
+>>
+/ExtGState <<
+/GS1 7 0 R
+>>
+>>
+endobj
+32 0 obj
+<<
+/Length 9262
+>>
+stream
+BT
+/F6 1 Tf
+10 0 0 10 54 720 Tm
+0 0 0 rg
+/GS1 gs
+0.013 Tc
+0.131 Tw
+(of programming environment is going to preferentially)Tj
+0 -1.1 TD
+0.031 Tc
+0.307 Tw
+(favor certain implementation strategies, and at the)Tj
+T*
+0.038 Tc
+0.381 Tw
+(same time implementation strategies that lead to)Tj
+T*
+0.015 Tc
+0.15 Tw
+(efficiency or greater security \(or simply become more)Tj
+T*
+0.036 Tc
+0.364 Tw
+(popular\) are going to influence the programming)Tj
+T*
+0.009 Tc
+(environment.)Tj
+1.4 -1.4 TD
+0.035 Tc
+0.35 Tw
+(Having identified the requirement for common)Tj
+-1.4 -1.1 TD
+0.027 Tc
+0.272 Tw
+(programming models, we are not suggesting that a)Tj
+T*
+0.04 Tc
+0.401 Tw
+[(single model be immediately standardized.  The)]TJ
+T*
+0.022 Tc
+0.22 Tw
+(tensions between available programming models and)Tj
+T*
+0.221 Tw
+(implementation technologies can sort themselves out)Tj
+T*
+0.017 Tc
+0.165 Tw
+(in the research \322marketplace\323 as diverse experimental)Tj
+T*
+0.041 Tc
+0.411 Tw
+(systems are developed, fielded, and accepted or)Tj
+T*
+0.024 Tc
+0.246 Tw
+[(rejected by users.  For example, if the marketplace)]TJ
+T*
+0.013 Tc
+0.128 Tw
+(identifies two or three encodings as viable, then nodes)Tj
+T*
+0.134 Tw
+[(that concurrently support all of them will emerge.  As)]TJ
+T*
+0.012 Tc
+0.116 Tw
+(systems evolve to incorporate the best features of their)Tj
+T*
+0.039 Tc
+0.393 Tw
+(competitors, we expect that a few schemes will)Tj
+T*
+0.012 Tc
+0.126 Tw
+(become dominant.)Tj
+/F8 1 Tf
+0 -2.3 TD
+0.006 Tc
+0.062 Tw
+[(5.  NODE RESOURCES \320 INTEROPERABILITY)]TJ
+0 -1.1 TD
+0.002 Tc
+0.021 Tw
+(AND SAFETY)Tj
+/F6 1 Tf
+1.4 -1.7 TD
+0.008 Tc
+0.081 Tw
+(Active networks will provide the building blocks for)Tj
+-1.4 -1.1 TD
+0.033 Tc
+0.327 Tw
+(a shared information infrastructure that transcends)Tj
+T*
+0.036 Tc
+0.36 Tw
+[(many administrative domains.  Accordingly, their)]TJ
+T*
+0.02 Tc
+0.201 Tw
+(design must address a range of \322sharing\323 issues that)Tj
+T*
+0.012 Tc
+0.124 Tw
+(are often brushed over in systems that are used in less)Tj
+T*
+0.018 Tc
+0.175 Tw
+[(public environments.  We focus on two of the issues)]TJ
+T*
+0.185 Tw
+[(that must be addressed.  For interoperability, capsule)]TJ
+T*
+0.181 Tw
+(programmers must have a shared understanding as to)Tj
+T*
+0.034 Tc
+0.337 Tw
+(what the resources are and how they are named.)Tj
+T*
+0.037 Tc
+0.369 Tw
+(Secondly, mechanisms must be provided to limit)Tj
+T*
+0.01 Tc
+0.099 Tw
+(access to scarce or sensitive resources.)Tj
+7 0 0 7 217.33 361 Tm
+0 Tc
+0 Tw
+(4)Tj
+/F8 1 Tf
+10 0 0 10 54 337 Tm
+0.014 Tc
+0.14 Tw
+(5.1 Interoperability \320 Resource Specification)Tj
+/F6 1 Tf
+1.4 -1.6 TD
+0.011 Tc
+0.114 Tw
+(The complexity of a system in which every capsule)Tj
+-1.4 -1.1 TD
+0.018 Tc
+0.182 Tw
+(leverages a wide range of resources \320 each of which)Tj
+T*
+0.023 Tc
+0.235 Tw
+(must be named, have its attributes specified and be)Tj
+T*
+0.033 Tc
+0.331 Tw
+(carefully allocated \320 could explode quite quickly.)Tj
+T*
+0.068 Tc
+0.685 Tw
+(Fortunately, most capsules will not require)Tj
+T*
+0.05 Tc
+0.501 Tw
+[(sophisticated resource models.  We propose a)]TJ
+T*
+0.021 Tc
+0.206 Tw
+(relatively spartan approach employing a small set of)Tj
+T*
+0.034 Tc
+0.335 Tw
+(platform independent abstractions for the physical)Tj
+T*
+0.058 Tc
+0.575 Tw
+(resources of a node: transmission bandwidth,)Tj
+T*
+0.015 Tc
+0.153 Tw
+[(processing capacity, and transient storage.  Additional)]TJ
+T*
+0.013 Tc
+0.134 Tw
+(flexibility is provided through longer term storage and)Tj
+T*
+0.014 Tc
+0.145 Tw
+(logical resources, used by advanced applications, such)Tj
+T*
+0.063 Tc
+0.626 Tw
+(as topology discovery, routing, and network)Tj
+T*
+0.024 Tc
+(management.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.018 Tc
+0.177 Tw
+(Transmission Bandwidth)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.182 Tw
+(Link bandwidth is typically not considered by the)Tj
+-1.4 -1.1 TD
+0.058 Tc
+0.585 Tw
+(scheduling or resource allocation schemes of)Tj
+ET
+0 g
+1 i 
+54 112 143.24 -0.24 re
+f
+BT
+9 0 0 9 68 98 Tm
+0 0 0 rg
+0 Tc
+0 Tw
+(4)Tj
+0.6014 -0.3333 TD
+0.031 Tc
+0.314 Tw
+(There may be a further requirement to control the)Tj
+-2.1569 -1.1111 TD
+0.05 Tc
+0.503 Tw
+(scheduling of some resources, such as transmission)Tj
+T*
+0.023 Tc
+0.236 Tw
+[(bandwidth.  There may also be requirements for resource)]TJ
+T*
+0.013 Tc
+0.131 Tw
+(metering, accounting and/or auditing.)Tj
+10 0 0 10 324 720 Tm
+0.018 Tc
+0.183 Tw
+[(conventional operating systems.  The link abstraction)]TJ
+0 -1.1 TD
+0.014 Tc
+0.142 Tw
+(must encompass the units of bandwidth allocation and)Tj
+T*
+0.035 Tc
+0.354 Tw
+(may take account of the traffic patterns that are)Tj
+T*
+0.026 Tc
+0.255 Tw
+[(generated.  A detailed approach could draw on the)]TJ
+T*
+0.023 Tc
+0.227 Tw
+[(service model [23] activities of the IETF.  In some)]TJ
+T*
+0.017 Tc
+0.175 Tw
+(environments, simpler schemes may be possible, e.g.,)Tj
+T*
+0.016 Tc
+0.156 Tw
+(allowing each capsule program to consume a quantity)Tj
+T*
+0.02 Tc
+0.199 Tw
+(of transmission bandwidth that is proportional to the)Tj
+T*
+0.008 Tc
+0.084 Tw
+(size of the capsule it arrived in.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.009 Tc
+0.093 Tw
+(Instruction Execution \(CPU\))Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.05 Tc
+0.504 Tw
+(It is somewhat easier to abstract a node\325s)Tj
+-1.4 -1.1 TD
+0.011 Tc
+0.106 Tw
+(instruction processing resources \320 even multiprocessors)Tj
+T*
+0.018 Tc
+0.18 Tw
+(tend to be homogeneous and their aggregate capacity)Tj
+T*
+0.058 Tc
+0.584 Tw
+(is more or less established through industry)Tj
+T*
+0.022 Tc
+0.216 Tw
+[(benchmarks.  In many cases, it will be sufficient to)]TJ
+T*
+0.021 Tc
+0.214 Tw
+(assign every capsule a default allocation that guards)Tj
+T*
+0.014 Tc
+0.135 Tw
+(against runaway computations. However, the ability to)Tj
+T*
+0.142 Tw
+(trade computation against bandwidth may be useful to)Tj
+T*
+0.056 Tc
+0.561 Tw
+(encourage, for example, compression prior to)Tj
+T*
+0.006 Tc
+0.057 Tw
+(transmission on low bandwidth links.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.016 Tc
+0.156 Tw
+(Transient Storage)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.038 Tc
+0.375 Tw
+(The transient execution environment consumes)Tj
+-1.4 -1.1 TD
+0.017 Tc
+0.169 Tw
+[(short term storage, which might also be limited.  We)]TJ
+T*
+0.018 Tc
+0.179 Tw
+(tend to think of storage capacity along two axes: the)Tj
+T*
+0.038 Tc
+0.384 Tw
+(storage utilized during specific intervals and the)Tj
+T*
+[(duration of those intervals.  The former can be)]TJ
+T*
+0.016 Tc
+0.161 Tw
+(addressed by placing a default bound on the transient)Tj
+T*
+0.058 Tc
+0.579 Tw
+(storage that can be allocated during capsule)Tj
+T*
+0.032 Tc
+0.323 Tw
+[(evaluation.  The latter is somewhat trickier.  We)]TJ
+T*
+0.052 Tc
+0.52 Tw
+(expect that most capsules will complete their)Tj
+T*
+0.018 Tc
+0.182 Tw
+(execution quickly, i.e., in a few milliseconds or less.)Tj
+T*
+0.019 Tc
+0.189 Tw
+(However, some capsules may linger, especially those)Tj
+T*
+0.011 Tc
+0.114 Tw
+[(that must rendezvous with others.  This issue might be)]TJ
+T*
+0.027 Tc
+0.272 Tw
+(addressed by establishing a policy that permits the)Tj
+T*
+0.015 Tc
+0.155 Tw
+(\322garbage collection\323 of inactive capsules during times)Tj
+T*
+0.016 Tc
+0.156 Tw
+(of shortage and requires capsules that are deliberately)Tj
+T*
+0.022 Tc
+0.222 Tw
+(\322sleeping\323 to place themselves in hibernation within)Tj
+T*
+0.01 Tc
+0.096 Tw
+(longer term active storage.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.011 Tc
+0.11 Tw
+(Active Storage)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.015 Tc
+0.153 Tw
+(We have identified requirements for the storage of)Tj
+-1.4 -1.1 TD
+0.02 Tc
+0.203 Tw
+(components, such as external methods and data, that)Tj
+T*
+0.014 Tc
+0.137 Tw
+[(survive the execution of individual capsules.  We find)]TJ
+T*
+0.023 Tc
+0.235 Tw
+(it useful to distinguish between two types of active)Tj
+T*
+0.022 Tc
+0.221 Tw
+[(storage, soft and persistent.  Soft storage is used to)]TJ
+T*
+0.013 Tc
+0.131 Tw
+(cache objects, such as \322hints\323, \322flow state\323 or demand)Tj
+T*
+0.042 Tc
+0.422 Tw
+(loaded components, that do not survive the re-)Tj
+T*
+0.013 Tc
+0.125 Tw
+[(initialization of a node.  They can be deleted from the)]TJ
+T*
+0.017 Tc
+0.171 Tw
+(store without notice and their contents regenerated or)Tj
+T*
+0.022 Tc
+0.221 Tw
+[(reacquired if they are later needed.  Given that this)]TJ
+T*
+0.016 Tc
+0.157 Tw
+(space is easily reclaimed, limits on its allocation may)Tj
+T*
+0.04 Tc
+0.399 Tw
+(not be as important as the strategy that selects)Tj
+T*
+0.011 Tc
+0.115 Tw
+(\322victims\323 for reclamation)Tj
+7 0 0 7 431.349 129 Tm
+0 Tc
+0 Tw
+(5)Tj
+10 0 0 10 436 126 Tm
+0.012 Tc
+0.121 Tw
+[(.  Persistent storage provides)]TJ
+-11.2 -1.1 TD
+0.014 Tc
+0.144 Tw
+(a longer term abstraction for information that must be)Tj
+T*
+0.031 Tc
+0.307 Tw
+(reliably stored, such as logs that are intended for)Tj
+ET
+0 g
+324 92 143.24 -0.24 re
+f
+BT
+9 0 0 9 338 78 Tm
+0 0 0 rg
+0 Tc
+0 Tw
+(5)Tj
+0.5585 -0.3333 TD
+0.019 Tc
+0.193 Tw
+(Mechanisms such as those described in [24] might be)Tj
+-2.1141 -1.1111 TD
+0.008 Tc
+0.077 Tw
+(used to \322page\323 soft state to/from nearby nodes.)Tj
+ET
+endstream
+endobj
+33 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/F6 4 0 R
+/F8 5 0 R
+>>
+/ExtGState <<
+/GS1 7 0 R
+>>
+>>
+endobj
+35 0 obj
+<<
+/Length 9056
+>>
+stream
+BT
+/F6 1 Tf
+10 0 0 10 54 720 Tm
+0 0 0 rg
+/GS1 gs
+0.02 Tc
+0.195 Tw
+[(accounting and auditing purposes.  This storage may)]TJ
+0 -1.1 TD
+0.058 Tc
+0.579 Tw
+(also be used by applications that implement)Tj
+T*
+0.047 Tc
+0.47 Tw
+(asynchronous multi-cast services, such as news)Tj
+T*
+0.016 Tc
+0.16 Tw
+[(distribution groups.  Although this storage abstraction)]TJ
+T*
+0.056 Tc
+0.564 Tw
+(will be available at most nodes, it may be)Tj
+T*
+0.02 Tc
+0.203 Tw
+(implemented by accessing replicated storage services)Tj
+T*
+0.038 Tc
+0.375 Tw
+[(located elsewhere on the network.  We hope to)]TJ
+T*
+0.007 Tc
+0.071 Tw
+(leverage technologies such as [25] for this purpose.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.017 Tc
+0.174 Tw
+(Logical Resources)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.026 Tc
+0.257 Tw
+(Although there are a relatively small number of)Tj
+-1.4 -1.1 TD
+0.011 Tc
+0.109 Tw
+(physical resources, a node may support a large number)Tj
+T*
+0.026 Tc
+0.265 Tw
+[(of logical resources of many different types.  This)]TJ
+T*
+0.009 Tc
+0.088 Tw
+(suggests the need for a uniform \(not necessarily global\))Tj
+T*
+0.017 Tc
+0.175 Tw
+(mechanism for naming instances of logical resources,)Tj
+T*
+0.019 Tc
+0.188 Tw
+(including dynamically created resources, such as soft)Tj
+T*
+0.013 Tc
+0.128 Tw
+[(and persistently stored components.  Fortunately, there)]TJ
+T*
+0.037 Tc
+0.369 Tw
+(is an abundance of past work on object naming)Tj
+T*
+0.023 Tc
+(schemes.)Tj
+1.4 -1.4 TD
+0.015 Tc
+0.155 Tw
+(The class specifications of many logical resources,)Tj
+-1.4 -1.1 TD
+0.019 Tc
+0.185 Tw
+(such as application-specific external methods or flow)Tj
+T*
+0.013 Tc
+0.125 Tw
+(states, may be private in the sense that they need only)Tj
+T*
+0.039 Tc
+0.391 Tw
+(be known to capsules generated by the relevant)Tj
+T*
+0.381 Tw
+[(application.  However, there will be a need for)]TJ
+T*
+0.021 Tc
+0.207 Tw
+(interoperable class specifications for some resources,)Tj
+T*
+0.031 Tc
+0.313 Tw
+[(such as routing tables.  In this case, we hope to)]TJ
+T*
+0.028 Tc
+0.284 Tw
+(leverage existing notations, such as those used for)Tj
+T*
+0.052 Tc
+0.519 Tw
+(SNMP Management Information Bases \(MIBs\).)Tj
+T*
+0.026 Tc
+0.261 Tw
+(Where possible, we will leverage the existing MIB)Tj
+T*
+0.04 Tc
+0.405 Tw
+(specifications themselves, which should facilitate)Tj
+T*
+0.016 Tc
+0.161 Tw
+(interoperation between the ActiveNet and the existing)Tj
+T*
+0.005 Tc
+(Internet.)Tj
+/F8 1 Tf
+0 -2.1 TD
+0.012 Tc
+0.116 Tw
+(5.2 Resource Safety)Tj
+/F6 1 Tf
+1.4 -1.6 TD
+0.025 Tc
+0.255 Tw
+(The safe manipulation of node resources can be)Tj
+-1.4 -1.1 TD
+0.01 Tc
+0.102 Tw
+(partitioned into three types of activities:)Tj
+1.8 -1.3 TD
+0.1 Tw
+[(\245)-540(dynamic, yet safe, assignment of resources to)]TJ
+0.9 -1.1 TD
+0.015 Tc
+0.15 Tw
+(specific capsules.)Tj
+-0.9 -1.3 TD
+0.007 Tc
+0.07 Tw
+[(\245)-543(validation of user requests for resource)]TJ
+0.9 -1.1 TD
+0.012 Tc
+0.116 Tw
+(assignment, through authentication and)Tj
+T*
+0.008 Tc
+0.086 Tw
+(verification of their authorizations.)Tj
+-0.9 -1.3 TD
+0.011 Tc
+0.107 Tw
+[(\245)-539(automated delegation of resource authorizations.)]TJ
+/F8 1 Tf
+-1.8 -1.9 TD
+0.015 Tc
+0.156 Tw
+(Dynamic Assignment)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.032 Tc
+0.323 Tw
+(Recall that our overall plan is to leverage the)Tj
+-1.4 -1.1 TD
+0.027 Tc
+0.274 Tw
+(closure/addressability limitations enforced by active)Tj
+T*
+0.022 Tc
+0.222 Tw
+[(technologies.  Resources are always represented and)]TJ
+T*
+0.03 Tc
+0.3 Tw
+(accessed through external methods and the default)Tj
+T*
+0.024 Tc
+0.239 Tw
+(resources available to a capsule are included in the)Tj
+T*
+0.019 Tc
+0.187 Tw
+[(closure with which it is initiated.  There is a further)]TJ
+T*
+0.024 Tc
+0.238 Tw
+(requirement for a mechanism that supports dynamic)Tj
+T*
+0.029 Tc
+0.294 Tw
+[(resource allocation.  This can be accomplished by)]TJ
+T*
+0.012 Tc
+0.124 Tw
+(providing an external method that allows a program to)Tj
+T*
+0.009 Tc
+0.092 Tw
+(request the safe \322extension\323 of its closure.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.011 Tc
+(Validation)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.056 Tc
+0.564 Tw
+(The mechanism performing validation must)Tj
+-1.4 -1.1 TD
+0.04 Tc
+0.397 Tw
+(authenticate the capsule source, check that it is)Tj
+T*
+0.013 Tc
+0.134 Tw
+(authorized to access the resource and \(possibly\) verify)Tj
+27 65.1 TD
+0.016 Tc
+0.164 Tw
+(that the resource request has not been tampered with.)Tj
+0 -1.1 TD
+0.01 Tc
+0.103 Tw
+(This mechanism need only be used in conjunction with)Tj
+T*
+0.008 Tc
+0.077 Tw
+(requests for additional resources.)Tj
+1.4 -1.4 TD
+0.011 Tc
+0.105 Tw
+(We assume that cryptography will provide the basis)Tj
+-1.4 -1.1 TD
+0.034 Tc
+0.342 Tw
+(for the validation mechanism, but we may use a)Tj
+T*
+0.052 Tc
+0.525 Tw
+(combination of schemes to reduce per-capsule)Tj
+T*
+0.019 Tc
+0.191 Tw
+[(overheads.  For example, a public key scheme could)]TJ
+T*
+0.038 Tc
+0.375 Tw
+(be used to perform an initial authentication that)Tj
+T*
+0.02 Tc
+0.196 Tw
+(establishes \322soft state\323 that is then used by a lighter)Tj
+T*
+0.039 Tc
+0.393 Tw
+[(weight per-capsule signature algorithm.  We are)]TJ
+T*
+0.021 Tc
+0.21 Tw
+(particularly interested in recent work on inexpensive)Tj
+T*
+0.029 Tc
+0.287 Tw
+(techniques that provide less security for individual)Tj
+T*
+0.011 Tc
+0.106 Tw
+(messages, but defend against large scale attacks [26].)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.016 Tc
+(Delegation)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.019 Tc
+0.185 Tw
+(The preceding section assumed that the validation)Tj
+-1.4 -1.1 TD
+0.04 Tc
+0.396 Tw
+(mechanism has access to information concerning)Tj
+T*
+0.014 Tc
+0.139 Tw
+(authorizations, e.g., policy-initiated decisions as to the)Tj
+T*
+0.012 Tc
+0.122 Tw
+(resources that can be made accessible to specific users)Tj
+T*
+0.01 Tc
+0.104 Tw
+[(or applications.  We require a mechanism that supports)]TJ
+T*
+0.053 Tc
+0.534 Tw
+(the automated delegation of authorizations, in)Tj
+T*
+0.03 Tc
+0.3 Tw
+(accordance with a straightforward model that both)Tj
+T*
+0.031 Tc
+0.308 Tw
+(implementors and administrators can reason about.)Tj
+T*
+0.008 Tc
+0.085 Tw
+(This issue was previously considered within the context)Tj
+T*
+0.013 Tc
+0.131 Tw
+(of time-sharing systems [27, 28] but we are not aware)Tj
+T*
+0.027 Tc
+0.275 Tw
+(of work that addresses delegation in as complex a)Tj
+T*
+0.013 Tc
+0.132 Tw
+[(system as the ActiveNet.  Work on the cascading [29])]TJ
+T*
+0.009 Tc
+0.094 Tw
+(and logic [30] of authentication, which has some of the)Tj
+T*
+0.021 Tc
+0.213 Tw
+(delegation flavor we are looking for, may provide a)Tj
+T*
+0.005 Tc
+0.051 Tw
+(starting point for further research.)Tj
+1.4 -1.4 TD
+0.016 Tc
+0.159 Tw
+(Ultimately, this may be one of the most important)Tj
+-1.4 -1.1 TD
+0.013 Tc
+0.13 Tw
+[(\322open\323 questions with respect to active networks.  We)]TJ
+T*
+0.049 Tc
+0.495 Tw
+(envision an ActiveNet with as many or more)Tj
+T*
+0.02 Tc
+0.198 Tw
+(administrative domains as the Internet \(which is still)Tj
+T*
+0.016 Tc
+0.162 Tw
+(growing\), and administrators will be swamped if they)Tj
+T*
+0.038 Tc
+0.375 Tw
+(are expected to manually coordinate the detailed)Tj
+T*
+0.013 Tc
+0.135 Tw
+[(authorization information  This is another place where)]TJ
+T*
+0.03 Tc
+0.299 Tw
+(complexity, in this case administrative complexity,)Tj
+T*
+0.007 Tc
+0.074 Tw
+(could overwhelm the infrastructure.)Tj
+/F8 1 Tf
+0 -2.3 TD
+0.067 Tw
+[(6.  FROM INTERNET TO ACTIVENET)]TJ
+/F6 1 Tf
+1.4 -1.7 TD
+0.024 Tc
+0.243 Tw
+(We suggest that interested researchers pool their)Tj
+-1.4 -1.1 TD
+0.019 Tc
+0.189 Tw
+(talents in an effort to deploy a wide area ActiveNet.)Tj
+T*
+0.185 Tw
+(This experimental infrastructure could be overlaid on)Tj
+T*
+0.011 Tc
+0.109 Tw
+(existing substrates, such as the Internet and the VBNS,)Tj
+T*
+(obviating the need for dedicated transmission facilities.)Tj
+T*
+0.009 Tc
+0.085 Tw
+(Although most of the ActiveNet nodes could be located)Tj
+T*
+0.03 Tc
+0.305 Tw
+(at participating research sites, provision should be)Tj
+T*
+0.043 Tc
+0.43 Tw
+(made to locate nodes at strategic locations not)Tj
+T*
+0.019 Tc
+0.191 Tw
+(normally accessible to researchers, e.g., the NAPs of)Tj
+T*
+0.009 Tc
+0.092 Tw
+[(the Internet.  If a research ActiveNet proves successful,)]TJ
+T*
+0.014 Tc
+0.139 Tw
+(it could be extended to assume direct control over the)Tj
+T*
+0.007 Tc
+0.074 Tw
+(underlying transmission resources.)Tj
+1.4 -1.4 TD
+0.043 Tc
+0.435 Tw
+(In assembling a collection of nodes into an)Tj
+-1.4 -1.1 TD
+0.009 Tc
+0.088 Tw
+(ActiveNet it will be necessary to deal with many of the)Tj
+T*
+0.02 Tc
+0.205 Tw
+(issues that have been addressed in the design of the)Tj
+T*
+0.029 Tc
+0.289 Tw
+(current Internet \320 topology discovery, routing, etc.)Tj
+T*
+0.011 Tc
+0.113 Tw
+(Initially, we expect to adopt the techniques used in the)Tj
+T*
+0.013 Tc
+0.134 Tw
+[(Internet.  However, researchers should also investigate)]TJ
+ET
+endstream
+endobj
+36 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/F6 4 0 R
+/F8 5 0 R
+>>
+/ExtGState <<
+/GS1 7 0 R
+>>
+>>
+endobj
+38 0 obj
+<<
+/Length 9072
+>>
+stream
+BT
+/F6 1 Tf
+10 0 0 10 54 720 Tm
+0 0 0 rg
+/GS1 gs
+0.015 Tc
+0.152 Tw
+(new algorithms that leverage the availability of active)Tj
+0 -1.1 TD
+0.003 Tc
+(nodes.)Tj
+1.4 -1.4 TD
+0.016 Tc
+0.162 Tw
+(Eventually, it will be important to converge on an)Tj
+-1.4 -1.1 TD
+0.013 Tc
+0.125 Tw
+(interoperable programming model that will achieve for)Tj
+T*
+0.024 Tc
+0.245 Tw
+(active networks what IP standardization has for the)Tj
+T*
+0.015 Tc
+0.155 Tw
+[(Internet.  However, the connectivity available through)]TJ
+T*
+0.018 Tc
+0.181 Tw
+(existing substrates will makes it possible to deploy a)Tj
+T*
+0.045 Tc
+0.447 Tw
+(multiplicity of programming models in parallel,)Tj
+T*
+0.025 Tc
+0.246 Tw
+(affording the research community an opportunity to)Tj
+T*
+0.033 Tc
+0.335 Tw
+(explore alternative programming models and node)Tj
+T*
+0.019 Tc
+0.191 Tw
+[(implementations.  It will be particularly important to)]TJ
+T*
+0.046 Tc
+0.456 Tw
+(engage application developers and users in the)Tj
+T*
+0.018 Tc
+0.185 Tw
+(development of customized software components that)Tj
+T*
+0.013 Tc
+0.127 Tw
+(exercise this \322architecture of architectures\323.)Tj
+/F8 1 Tf
+0 -2.3 TD
+0.005 Tc
+0.049 Tw
+[(7.  ARCHITECTURAL CONSIDERATIONS)]TJ
+/F6 1 Tf
+1.4 -1.7 TD
+0.032 Tc
+0.317 Tw
+(Conventional network architectures separate the)Tj
+-1.4 -1.1 TD
+0.013 Tc
+0.131 Tw
+(upper \(end-to-end\) layers from the lower \(hop-by-hop\))Tj
+T*
+0.016 Tc
+0.161 Tw
+[(layers.  The network layer bridges these domains and)]TJ
+T*
+0.06 Tc
+0.595 Tw
+(enables interoperability by providing a fixed)Tj
+T*
+0.014 Tc
+0.137 Tw
+(application- and user- neutral service that supports the)Tj
+T*
+0.01 Tc
+0.102 Tw
+(exchange of opaque data between end systems.)Tj
+1.4 -1.4 TD
+0.017 Tc
+0.17 Tw
+(Active networks challenge this traditional thinking)Tj
+-1.4 -1.1 TD
+0.03 Tc
+0.296 Tw
+(in a number of ways: the computations performed)Tj
+T*
+0.024 Tc
+0.237 Tw
+(within the network can be dynamically varied; they)Tj
+T*
+0.011 Tc
+0.109 Tw
+(can be user- and application-specific; and the user data)Tj
+T*
+0.014 Tc
+0.14 Tw
+[(is accessible to them.  We realize that this break with)]TJ
+T*
+0.013 Tc
+0.133 Tw
+(tradition raises a number of important questions, some)Tj
+T*
+0.007 Tc
+0.065 Tw
+(of which are addressed in the following responsa.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.014 Tc
+0.135 Tw
+(How is interoperability achieved?)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.027 Tc
+0.269 Tw
+(The key to interoperability is the network layer)Tj
+-1.4 -1.1 TD
+0.008 Tc
+0.075 Tw
+(service, which is at the narrow point of the \322hourglass\323.)Tj
+T*
+0.028 Tc
+0.283 Tw
+(In the case of the Internet [9], there is a detailed)Tj
+T*
+0.025 Tc
+0.254 Tw
+(specification of the syntax and semantics of the IP)Tj
+T*
+0.251 Tw
+(protocol, which must be implemented by all of the)Tj
+T*
+[(routers and communicating end systems.  In effect,)]TJ
+T*
+0.01 Tc
+0.103 Tw
+(interoperability is supported by requiring that all of the)Tj
+T*
+0.041 Tc
+0.415 Tw
+(nodes perform \322equivalent\323 computations on the)Tj
+T*
+0.007 Tc
+0.065 Tw
+(packets flowing through them.)Tj
+1.4 -1.4 TD
+0.014 Tc
+0.14 Tw
+(In contrast, active nodes are capable of performing)Tj
+-1.4 -1.1 TD
+0.032 Tc
+0.326 Tw
+(many different computations \(i.e., executing many)Tj
+T*
+0.036 Tc
+0.356 Tw
+(different programs\) for different groups of users.)Tj
+T*
+0.019 Tc
+0.186 Tw
+(However, the nodes must all support an \322equivalent\323)Tj
+T*
+0.078 Tc
+0.782 Tw
+[(computation model.  Thus, network layer)]TJ
+T*
+0.046 Tc
+0.457 Tw
+(interoperability is based on an agreed program)Tj
+T*
+0.024 Tc
+0.244 Tw
+(encoding and computation environment instead of a)Tj
+T*
+0.01 Tc
+0.1 Tw
+(standardized packet format and fixed computation.)Tj
+1.4 -1.4 TD
+0.026 Tc
+0.259 Tw
+(Architecturally, we are bumping up the level of)Tj
+-1.4 -1.1 TD
+0.012 Tc
+0.121 Tw
+[(abstraction at which interoperability is realized.  There)]TJ
+T*
+0.11 Tw
+(is still an hourglass \320 but the abstraction at its thinnest)Tj
+T*
+0.009 Tc
+0.095 Tw
+(point has been made programmable.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.087 Tw
+(Isn\325t the trend towards less functionality in the)Tj
+0 -1.1 TD
+0.021 Tc
+(network?)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.03 Tc
+0.306 Tw
+[(The long term trend has actually been towards)]TJ
+-1.4 -1.1 TD
+0.021 Tc
+0.214 Tw
+[(increased computation within the network.  Whereas)]TJ
+T*
+0.017 Tc
+0.172 Tw
+(telephony circuit switches restrict computation to call)Tj
+27 64.6 TD
+0.019 Tc
+0.191 Tw
+(setup time, packet switches perform computations on)Tj
+0 -1.1 TD
+0.031 Tc
+0.31 Tw
+(the header of every packet flowing through them.)Tj
+T*
+0.027 Tc
+0.27 Tw
+(Active nodes extend the domain of computation to)Tj
+T*
+0.01 Tc
+0.099 Tw
+(include the user data.)Tj
+1.4 -1.4 TD
+0.013 Tc
+0.127 Tw
+(It is the \322intelligence\323 or control over the network-)Tj
+-1.4 -1.1 TD
+0.032 Tc
+0.322 Tw
+(based computation that has been migrating to the)Tj
+T*
+0.017 Tc
+0.174 Tw
+(edges, allowing users to exercise greater control over)Tj
+T*
+0.019 Tc
+0.195 Tw
+[(their networks.  Experience suggests that the two go)]TJ
+T*
+0.039 Tc
+0.386 Tw
+(hand in hand \320 increasing the flexibility of the)Tj
+T*
+0.013 Tc
+0.132 Tw
+(computation performed within the network enables the)Tj
+T*
+0.01 Tc
+0.105 Tw
+(deployment of even greater computational power at the)Tj
+T*
+0.015 Tc
+(edges.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.013 Tc
+0.127 Tw
+(What\325s the impact on the layered reference model?)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.129 Tw
+(There is presently a disconnect between what users)Tj
+-1.4 -1.1 TD
+0.054 Tc
+0.545 Tw
+(consider to be \322inside\323 the network and the)Tj
+T*
+0.061 Tc
+0.607 Tw
+(practitioner\325s perspective, which is somewhat)Tj
+T*
+0.019 Tc
+0.192 Tw
+(restricted. For example, web browsers allow users to)Tj
+T*
+0.188 Tw
+(interact with what they perceive to be \322the network\323)Tj
+T*
+0.009 Tc
+0.088 Tw
+(without distinguishing among the many routers, domain)Tj
+T*
+0.011 Tc
+0.113 Tw
+(name servers, and web servers that conspire to provide)Tj
+T*
+0.023 Tc
+0.23 Tw
+[(the service.  It may be time for practitioners to re-)]TJ
+T*
+0.014 Tc
+0.142 Tw
+(evaluate their abstractions and start thinking about the)Tj
+T*
+0.008 Tc
+0.078 Tw
+(network at a higher level.)Tj
+1.4 -1.4 TD
+0.025 Tc
+0.25 Tw
+(Current thinking concerning network architecture)Tj
+-1.4 -1.1 TD
+0.013 Tc
+0.133 Tw
+(has its roots in the layering of abstractions codified in)Tj
+T*
+0.019 Tc
+0.195 Tw
+[(the OSI Reference Model [31].  Although the model)]TJ
+T*
+0.009 Tc
+0.087 Tw
+(has proven quite useful it is showing cracks that should)Tj
+T*
+0.013 Tc
+0.13 Tw
+(be addressed:)Tj
+1.8 -1.3 TD
+0.009 Tc
+0.085 Tw
+[(\245)-541(Services at or below the network layer are)]TJ
+0.9 -1.1 TD
+0.008 Tc
+0.081 Tw
+(presumed to be user- and application- neutral.)Tj
+-0.9 -1.3 TD
+[(\245)-542(It deals poorly with upper layer services that are)]TJ
+0.9 -1.1 TD
+0.013 Tc
+0.128 Tw
+(physically interposed between communicating)Tj
+T*
+0.009 Tc
+0.092 Tw
+[(end points.  Application relays can model these)]TJ
+T*
+0.086 Tw
+(cases, but they are far from elegant.)Tj
+-0.9 -1.3 TD
+0.088 Tw
+[(\245)-541(It does not model the \322recursion\323 that occurs at)]TJ
+0.9 -1.1 TD
+0.007 Tc
+0.07 Tw
+(the network layer, i.e., the tunneling of networks)Tj
+T*
+0.008 Tc
+0.082 Tw
+(over each other.)Tj
+-0.9 -1.3 TD
+0.009 Tc
+0.091 Tw
+[(\245)-541(The upper layers, which have never been)]TJ
+0.9 -1.1 TD
+0.01 Tc
+0.101 Tw
+(particularly satisfactory, are of diminished)Tj
+T*
+0.013 Tc
+0.135 Tw
+(importance, given that active technologies)Tj
+T*
+0.011 Tc
+0.115 Tw
+(enable the exchange of modules that implement)Tj
+T*
+0.124 Tw
+(application-specific protocols.)Tj
+-1.3 -1.4 TD
+0.017 Tc
+0.172 Tw
+(We are not certain what form a new model might)Tj
+-1.4 -1.1 TD
+0.012 Tc
+0.116 Tw
+(take, but suggest that it will be more component-based)Tj
+T*
+0.034 Tc
+0.342 Tw
+[(than layered [32].  It might distinguish primitive)]TJ
+T*
+0.023 Tc
+0.229 Tw
+(functions, such as cell relaying and IP \322fast paths\323,)Tj
+T*
+0.014 Tc
+0.142 Tw
+(from computationally active functions, including those)Tj
+T*
+0.083 Tc
+0.825 Tw
+(that configure the fast path components.)Tj
+T*
+0.017 Tc
+0.175 Tw
+(Architecturally, these two types of components might)Tj
+T*
+0.009 Tc
+0.086 Tw
+(be viewed as peers rather than layered upon each other.)Tj
+T*
+0.033 Tc
+0.329 Tw
+(Such an architecture might also give rise to new)Tj
+T*
+0.042 Tc
+0.418 Tw
+(hardware activities, such as the development of)Tj
+T*
+0.021 Tc
+0.216 Tw
+(switching technology that \322caches\323 fast paths and is)Tj
+T*
+0.01 Tc
+0.101 Tw
+(highly responsive to active capsules.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.103 Tw
+(What about the end-to-end argument?)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.008 Tc
+0.083 Tw
+(The \322end-to-end argument\323 [33] concerns the design)Tj
+-1.4 -1.1 TD
+0.037 Tc
+0.367 Tw
+(of intermediaries, such as networks, that provide)Tj
+ET
+endstream
+endobj
+39 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/F6 4 0 R
+/F8 5 0 R
+>>
+/ExtGState <<
+/GS1 7 0 R
+>>
+>>
+endobj
+43 0 obj
+<<
+/Length 8990
+>>
+stream
+BT
+/F6 1 Tf
+10 0 0 10 54 720 Tm
+0 0 0 rg
+/GS1 gs
+0.017 Tc
+0.174 Tw
+(services that cannot be made perfectly reliable. Since)Tj
+0 -1.1 TD
+0.033 Tc
+0.326 Tw
+(users of these services must provide \322end-to-end\323)Tj
+T*
+0.328 Tw
+(mechanisms that cope with failures, designers are)Tj
+T*
+0.02 Tc
+0.195 Tw
+(counseled against over-engineering the intermediaries)Tj
+T*
+0.009 Tc
+0.085 Tw
+(by adding significantly to their complexity or overhead,)Tj
+T*
+0.091 Tw
+(i.e., by trying to make them \322almost\323 perfectly reliable.)Tj
+T*
+0.05 Tc
+0.496 Tw
+(Instead, the designer\325s objective should be an)Tj
+T*
+0.021 Tc
+0.21 Tw
+(\322acceptable\323 level of reliability that does not trigger)Tj
+T*
+0.213 Tw
+(excessive intervention by the end-to-end mechanism.)Tj
+T*
+0.029 Tc
+0.288 Tw
+(The designer is encouraged to strike a balance by)Tj
+T*
+0.062 Tc
+0.622 Tw
+(relying on end-to-end mechanisms to ensure)Tj
+T*
+0.021 Tc
+0.215 Tw
+(correctness, and by leveraging simple and optimistic)Tj
+T*
+0.072 Tc
+0.716 Tw
+(mechanisms to enhance performance, where)Tj
+T*
+0.009 Tc
+(appropriate.)Tj
+1.4 -1.4 TD
+0.01 Tc
+0.098 Tw
+(While locating computation within the network may)Tj
+-1.4 -1.1 TD
+0.022 Tc
+0.223 Tw
+(appear to contradict this guideline, we note that the)Tj
+T*
+0.01 Tc
+0.1 Tw
+(argument pertains to the placement of functionality \320 it)Tj
+T*
+0.017 Tc
+0.17 Tw
+(does not suggest that the choice of functions that are)Tj
+T*
+0.028 Tc
+0.277 Tw
+(appropriately located within the network cannot be)Tj
+T*
+0.009 Tc
+0.093 Tw
+[(application-specific.  If anything, active networks allow)]TJ
+T*
+0.037 Tc
+0.372 Tw
+(this guideline to be followed more carefully, by)Tj
+T*
+0.358 Tw
+(allowing applications to selectively determine the)Tj
+T*
+0.009 Tc
+0.093 Tw
+(partitioning of functionality between the end points and)Tj
+T*
+0.016 Tc
+(intermediaries.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.009 Tc
+0.091 Tw
+(Why hasn\325t this been done before? Why try now?)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.038 Tc
+0.382 Tw
+(The approach we are proposing synthesizes a)Tj
+-1.4 -1.1 TD
+0.011 Tc
+0.106 Tw
+(number of technologies: programmable node platforms,)Tj
+T*
+0.042 Tc
+0.424 Tw
+(component-based software engineering, and code)Tj
+T*
+0.014 Tc
+0.137 Tw
+[(mobility.  A few \322programmable\323 networks have been)]TJ
+T*
+0.011 Tc
+0.109 Tw
+(developed in the past, and suggestions for object-based)Tj
+T*
+0.022 Tc
+0.224 Tw
+(approaches to network implementation surface every)Tj
+T*
+0.034 Tc
+0.344 Tw
+[(few years.  However, the previous work has not)]TJ
+T*
+0.017 Tc
+0.165 Tw
+(leveraged code mobility within the network, let alone)Tj
+T*
+0.009 Tc
+0.091 Tw
+(within the context of each and every capsule or packet.)Tj
+1.4 -1.4 TD
+0.011 Tc
+0.113 Tw
+(A key enabler of our approach is the availability of)Tj
+-1.4 -1.1 TD
+0.028 Tc
+0.277 Tw
+(\322active technologies\323 that enable safe and efficient)Tj
+T*
+0.029 Tc
+0.294 Tw
+[(code mobility.  The absence of these technologies)]TJ
+T*
+0.009 Tc
+0.092 Tw
+(would have precluded similar projects in the past \320 and)Tj
+T*
+0.022 Tc
+0.217 Tw
+(their recent emergence underscores the timeliness of)Tj
+T*
+0.004 Tc
+0.036 Tw
+(the proposed effort.)Tj
+/F8 1 Tf
+0 -2.3 TD
+0.006 Tc
+0.064 Tw
+[(8.  CONCLUSIONS)]TJ
+/F6 1 Tf
+1.4 -1.7 TD
+0.021 Tc
+0.205 Tw
+[(In this paper we have described our vision of an)]TJ
+-1.4 -1.1 TD
+0.011 Tc
+0.109 Tw
+(active network architecture that can be programmed by)Tj
+T*
+0.042 Tc
+0.415 Tw
+[(its users.  We have also called for community)]TJ
+T*
+0.03 Tc
+0.298 Tw
+(participation in an effort to develop and deploy a)Tj
+T*
+0.014 Tc
+0.141 Tw
+[(research ActiveNet.  In the course of this presentation)]TJ
+T*
+0.022 Tc
+0.215 Tw
+[(we have raised a number of architectural issues and)]TJ
+T*
+0.009 Tc
+0.095 Tw
+(research questions that remain to be addressed.)Tj
+1.4 -1.4 TD
+0.013 Tc
+0.125 Tw
+(We expect that active networks will enable a range)Tj
+-1.4 -1.1 TD
+0.011 Tc
+0.113 Tw
+(of new applications in addition to the lead applications)Tj
+T*
+0.025 Tc
+0.247 Tw
+(that already rely on the interposition of customized)Tj
+T*
+0.011 Tc
+0.114 Tw
+[(computation within the network.  However, we believe)]TJ
+T*
+0.016 Tc
+0.158 Tw
+(that this work will also have broader implications, on)Tj
+T*
+0.014 Tc
+0.141 Tw
+(how we think about networks and their protocols; and)Tj
+T*
+0.007 Tc
+0.071 Tw
+(on the infrastructure innovation process.)Tj
+/F8 1 Tf
+27 63.2 TD
+0.013 Tc
+0.131 Tw
+(Programming the Network)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.059 Tc
+0.592 Tw
+(We are applying a programming language)Tj
+-1.4 -1.1 TD
+0.008 Tc
+0.077 Tw
+[(perspective to networks and their protocols.  In place of)]TJ
+T*
+0.025 Tc
+0.246 Tw
+(protocol \322stacks\323, we anticipate the development of)Tj
+T*
+0.052 Tc
+0.525 Tw
+(protocol components that can be tailored and)Tj
+T*
+0.028 Tc
+0.277 Tw
+(composed to perform application-specific functions.)Tj
+T*
+0.018 Tc
+0.178 Tw
+(These protocol components will leverage the tools of)Tj
+T*
+0.044 Tc
+0.446 Tw
+(the modern programming trade \320 encapsulation,)Tj
+T*
+0.039 Tc
+0.395 Tw
+[(polymorphism and inheritance.  Within our own)]TJ
+T*
+0.044 Tc
+0.444 Tw
+(research group, we are setting out to create a)Tj
+T*
+0.009 Tc
+0.092 Tw
+(\322Smalltalk of networking\323 and are interested not just in)Tj
+T*
+0.021 Tc
+0.213 Tw
+(the \322language\323 itself but also in the class hierarchy,)Tj
+T*
+0.008 Tc
+0.077 Tw
+(etc. that will develop around it.)Tj
+1.4 -1.4 TD
+0.016 Tc
+0.157 Tw
+(Our enthusiasm is tempered by the realization that)Tj
+-1.4 -1.1 TD
+0.062 Tc
+0.624 Tw
+(suggestions for object-oriented approaches to)Tj
+T*
+0.019 Tc
+0.19 Tw
+(networking surface every five to ten years, and have)Tj
+T*
+0.021 Tc
+0.208 Tw
+[(had little impact on mainstream research.  However,)]TJ
+T*
+0.019 Tc
+0.185 Tw
+(we believe that it is now time to make a large scale)Tj
+T*
+0.025 Tc
+0.25 Tw
+[(effort towards their realization.  The availability of)]TJ
+T*
+0.05 Tc
+0.499 Tw
+(active technologies and lead applications \320 in)Tj
+T*
+0.055 Tc
+0.555 Tw
+(conjunction with rising processing power and)Tj
+T*
+0.036 Tc
+0.366 Tw
+(bandwidth \320 presents opportunities that were not)Tj
+T*
+0.012 Tc
+0.124 Tw
+(previously available.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.015 Tc
+0.153 Tw
+(Infrastructure Innovation)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.152 Tw
+(As the Internet grows it is increasingly difficult to)Tj
+-1.4 -1.1 TD
+0.017 Tc
+0.167 Tw
+(maintain, let alone accelerate, the pace of innovation.)Tj
+T*
+0.025 Tc
+0.25 Tw
+(Today, after a concept is prototyped its large scale)Tj
+T*
+0.012 Tc
+0.121 Tw
+[(deployment takes about 8 years.  The process involves)]TJ
+T*
+0.029 Tc
+0.289 Tw
+(standardization, incorporation into vendor hardware)Tj
+T*
+0.031 Tc
+0.313 Tw
+[(platforms, user procurement and installation.  The)]TJ
+T*
+0.025 Tc
+0.246 Tw
+(present backlog within the IETF includes multicast,)Tj
+T*
+0.033 Tc
+0.334 Tw
+(authentication and mobility extensions, RSVP and)Tj
+T*
+-0.01 Tc
+(IPv6.)Tj
+1.4 -1.4 TD
+0.011 Tc
+0.109 Tw
+(Active networks will address the mismatch between)Tj
+-1.4 -1.1 TD
+0.02 Tc
+0.204 Tw
+(the rate at which user requirements can change, i.e.,)Tj
+T*
+0.199 Tw
+(overnight, and the pace at which physical assets can)Tj
+T*
+0.04 Tc
+0.404 Tw
+[(be deployed.  They will accelerate the pace of)]TJ
+T*
+0.023 Tc
+0.231 Tw
+(innovation by decoupling network services from the)Tj
+T*
+0.017 Tc
+0.166 Tw
+(underlying hardware and by allowing new services to)Tj
+T*
+0.013 Tc
+0.13 Tw
+[(be demand loaded into the infrastructure.  In the same)]TJ
+T*
+0.018 Tc
+0.176 Tw
+(way that IP enabled a range of upper layer protocols)Tj
+T*
+0.039 Tc
+0.393 Tw
+(and transmission substrates, active networks will)Tj
+T*
+0.011 Tc
+0.108 Tw
+(facilitate the development of new network services and)Tj
+T*
+0.005 Tc
+0.054 Tw
+(hardware platforms.)Tj
+1.4 -1.4 TD
+0.053 Tc
+0.535 Tw
+(Conventional network routers are based on)Tj
+-1.4 -1.1 TD
+0.02 Tc
+0.197 Tw
+(proprietary hardware platforms that are bundled with)Tj
+T*
+0.033 Tc
+0.326 Tw
+[(customized software.  Active networks present an)]TJ
+T*
+0.017 Tc
+0.167 Tw
+(opportunity to change the structure of the networking)Tj
+T*
+0.036 Tc
+0.358 Tw
+(industry, from a \322mainframe\323 mind-set, in which)Tj
+T*
+0.033 Tc
+0.329 Tw
+(hardware and software are bundled together, to a)Tj
+T*
+0.011 Tc
+0.111 Tw
+(\322virtualized\323 approach in which hardware and software)Tj
+T*
+0.015 Tc
+0.146 Tw
+[(innovation are decoupled [34].  A market for \322shrink-)]TJ
+T*
+0.022 Tc
+0.219 Tw
+(wrapped\323 network software will facilitate innovation)Tj
+T*
+0.011 Tc
+(by:)Tj
+1.8 -1.3 TD
+0.008 Tc
+0.081 Tw
+[(\245)-542(Allowing third parties to develop innovative)]TJ
+0.9 -1.1 TD
+0.076 Tw
+(software without customizing their products to a)Tj
+T*
+0.009 Tc
+0.092 Tw
+(specific platform.)Tj
+ET
+endstream
+endobj
+44 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/F6 4 0 R
+/F8 5 0 R
+>>
+/ExtGState <<
+/GS1 7 0 R
+>>
+>>
+endobj
+46 0 obj
+<<
+/Length 12575
+>>
+stream
+BT
+/F6 1 Tf
+10 0 0 10 72 718 Tm
+0 0 0 rg
+/GS1 gs
+0.008 Tc
+0.075 Tw
+[(\245)-542(Removing the software barrier to entry that)]TJ
+0.9 -1.1 TD
+0.083 Tw
+(discourages new players from fielding innovative)Tj
+T*
+0.004 Tc
+(hardware.)Tj
+-0.9 -1.3 TD
+0.01 Tc
+0.096 Tw
+[(\245)-540(Addressing the \322chicken and egg\323 problem)]TJ
+0.9 -1.1 TD
+0.009 Tc
+0.094 Tw
+(associated with new services \320 vendors are)Tj
+T*
+0.008 Tc
+0.083 Tw
+(hesitant to support services before they gain user)Tj
+T*
+0.011 Tc
+0.108 Tw
+(acceptance, yet the utility of many network)Tj
+T*
+0.01 Tc
+0.096 Tw
+(services is dependent on their widespread)Tj
+T*
+0.021 Tc
+(availability.)Tj
+-1.3 -1.4 TD
+0.016 Tc
+0.162 Tw
+[(Furthermore, the process will be user-driven.  The)]TJ
+-1.4 -1.1 TD
+0.012 Tc
+0.116 Tw
+(widespread availability of new services will depend on)Tj
+T*
+0.03 Tc
+0.3 Tw
+(their acceptance in the marketplace, without being)Tj
+T*
+0.038 Tc
+0.381 Tw
+(delayed by vendor consensus and standardization)Tj
+T*
+0.035 Tc
+0.354 Tw
+[(activities.  Similarly, hardware vendors will seek)]TJ
+T*
+0.012 Tc
+0.12 Tw
+(competitive advantage by optimizing their platforms to)Tj
+T*
+0.006 Tc
+0.064 Tw
+(suit changing workloads.)Tj
+/F8 1 Tf
+0 -1.9 TD
+0.046 Tc
+(Summary)Tj
+/F6 1 Tf
+1.4 -1.4 TD
+0.036 Tc
+0.355 Tw
+(Active networks appear to break many of the)Tj
+-1.4 -1.1 TD
+0.032 Tc
+0.325 Tw
+(architectural rules that conventional wisdom holds)Tj
+T*
+0.011 Tc
+0.107 Tw
+[(inviolate.  However, we believe that they build on past)]TJ
+T*
+0.116 Tw
+(successes with packet approaches, such as the Internet,)Tj
+T*
+0.018 Tc
+0.185 Tw
+(and at the same time relax a number of architectural)Tj
+T*
+0.034 Tc
+0.338 Tw
+(limitations that may now be artifacts of previous)Tj
+T*
+0.007 Tc
+0.074 Tw
+(generations of hardware and software technology.)Tj
+1.4 -1.4 TD
+0.047 Tc
+0.47 Tw
+(Passive network architectures that emphasize)Tj
+-1.4 -1.1 TD
+0.024 Tc
+0.243 Tw
+(packet-based end-to-end communication have served)Tj
+T*
+0.028 Tc
+0.282 Tw
+[(us well.  However, as our lead users demonstrate,)]TJ
+T*
+0.011 Tc
+0.108 Tw
+(computation within the network is already happening \320)Tj
+T*
+0.013 Tc
+0.127 Tw
+(and it would be unfortunate if network architects were)Tj
+T*
+0.027 Tc
+0.274 Tw
+[(the last to notice.  It is now time to explore new)]TJ
+T*
+0.03 Tc
+0.3 Tw
+(architectural models, such as active networks, that)Tj
+T*
+0.019 Tc
+0.195 Tw
+[(incorporate interposed computation.  We believe that)]TJ
+T*
+0.187 Tw
+(such efforts will enable new generations of networks)Tj
+T*
+0.029 Tc
+0.288 Tw
+(that are highly flexible and accelerate the pace of)Tj
+T*
+0.007 Tc
+0.068 Tw
+(infrastructure innovation.)Tj
+/F8 1 Tf
+9 0 0 9 54 303 Tm
+0.032 Tc
+(ACKNOWLEDGMENTS)Tj
+/F6 1 Tf
+10 0 0 10 68 286 Tm
+0.017 Tc
+0.174 Tw
+(The authors wish to thank: Jennifer Steiner Klein,)Tj
+-1.4 -1.1 TD
+0.009 Tc
+0.087 Tw
+(who assisted in the drafting and technical editing of the)Tj
+T*
+0.035 Tc
+0.352 Tw
+(manuscript; Rachel Bredemeier who assisted with)Tj
+T*
+0.025 Tc
+0.254 Tw
+(layout and the bibliography; and Sun Microsystems)Tj
+T*
+0.027 Tc
+0.269 Tw
+(Laboratories, who provided \322seed\323 funding for this)Tj
+T*
+0.012 Tc
+0.116 Tw
+[(project.  This work has been influenced by discussions)]TJ
+T*
+0.031 Tc
+0.308 Tw
+(with a number of researchers, especially: Deborah)Tj
+T*
+0.03 Tc
+0.297 Tw
+(Estrin, Henry Fuchs, Butler Lampson, Paul Leach,)Tj
+T*
+0.021 Tc
+0.213 Tw
+(Gary Minden, Herb Schorr, Scott Shenker and Dave)Tj
+T*
+0.018 Tc
+(Sincoskie.)Tj
+/F8 1 Tf
+0 -2.3 TD
+0 Tc
+0 Tw
+(R)Tj
+9 0 0 9 61.547 164 Tm
+0.034 Tc
+(EFERENCES)Tj
+/F6 1 Tf
+10 0 0 10 54 135 Tm
+0.007 Tc
+0.075 Tw
+[(1)57(.)-1093(Chankhuntod, A., P.B. Danzig, and C. Neerdaels. )]TJ
+/F10 1 Tf
+22.7633 0 TD
+0 Tc
+0 Tw
+(A)Tj
+-20.9633 -1.1 TD
+0.008 Tc
+0.083 Tw
+(Hierarchical Internet Object Cache)Tj
+/F6 1 Tf
+14.8339 0 TD
+0.002 Tc
+0.023 Tw
+(. in )Tj
+/F10 1 Tf
+1.5847 0 TD
+0.019 Tc
+(Proceedings)Tj
+-16.4186 -1.1 TD
+-0.009 Tc
+0 Tw
+(of 1996 USENIX)Tj
+/F6 1 Tf
+6.6001 0 TD
+-0.008 Tc
+(. 1996.)Tj
+-8.4001 -1.4 TD
+0.015 Tc
+0.155 Tw
+[(2)65(.)-1085(Blaze, M. and R. Alonso. )]TJ
+/F10 1 Tf
+13.3733 0 TD
+0.035 Tc
+0.346 Tw
+(Dynamic Hierarchical)Tj
+-11.5733 -1.1 TD
+0.007 Tc
+0.066 Tw
+(Caching in Large-Scale Distributed File Systems)Tj
+/F6 1 Tf
+20.283 0 TD
+0.003 Tc
+0.033 Tw
+(. in)Tj
+/F10 1 Tf
+-20.283 -1.1 TD
+0.01 Tc
+0.097 Tw
+(12th Intl. Conf. on Distributed Computing Systems)Tj
+/F6 1 Tf
+21.3389 0 TD
+0 Tc
+0 Tw
+(.)Tj
+-21.3389 -1.1 TD
+0.007 Tc
+0.07 Tw
+(1992. Yokohama, Japan.)Tj
+25.2 65.1 TD
+0.028 Tc
+0.282 Tw
+[(3)78(.)-1072(Gwertzman, J.S. and M. Seltzer. )]TJ
+/F10 1 Tf
+17.3317 0 TD
+0.029 Tc
+0.292 Tw
+(The Case for)Tj
+-15.5317 -1.1 TD
+0.016 Tc
+0.158 Tw
+(Geographical Push-Caching)Tj
+/F6 1 Tf
+12.0813 0 TD
+0.003 Tc
+0.029 Tw
+(. in )Tj
+/F10 1 Tf
+1.6015 0 TD
+0.01 Tc
+0.104 Tw
+(1995 Workshop on)Tj
+-13.6828 -1.1 TD
+0.001 Tc
+0.014 Tw
+(Hot Operating Systems)Tj
+/F6 1 Tf
+9.334 0 TD
+0.011 Tw
+(. 1995.)Tj
+-11.134 -1.4 TD
+0.035 Tc
+0.356 Tw
+[(4)85(.)-1065(Kleinrock, L. )]TJ
+/F10 1 Tf
+8.6174 0 TD
+0.058 Tc
+0.582 Tw
+(Nomadic Computing \(Keynote)Tj
+-6.8174 -1.1 TD
+0.044 Tc
+(Address\))Tj
+/F6 1 Tf
+3.9046 0 TD
+0.006 Tc
+0.06 Tw
+(. in )Tj
+/F10 1 Tf
+1.6783 0 TD
+0.017 Tc
+0.173 Tw
+(Int. Conf. on Mobile Computing and)Tj
+-5.5829 -1.1 TD
+(Networking)Tj
+/F6 1 Tf
+4.8357 0 TD
+0.006 Tc
+0.064 Tw
+(. 1995. Berkeley, CA.)Tj
+-6.6357 -1.4 TD
+0.052 Tc
+0.521 Tw
+[(5)102(.)-1048(Balakrishnan, H., )]TJ
+/F10 1 Tf
+11.0272 0 TD
+0.034 Tc
+0.341 Tw
+(et al.)Tj
+/F6 1 Tf
+2.5457 0 TD
+0 Tc
+0 Tw
+( )Tj
+/F10 1 Tf
+0.3182 0 TD
+0.082 Tc
+0.815 Tw
+(Improving TCP/IP)Tj
+-12.0911 -1.1 TD
+0.015 Tc
+0.15 Tw
+(Performance over Wireless Networks)Tj
+/F6 1 Tf
+15.9276 0 TD
+0.004 Tc
+0.039 Tw
+(. in )Tj
+/F10 1 Tf
+1.6257 0 TD
+0.013 Tc
+0.128 Tw
+(Int. Conf.)Tj
+-17.5533 -1.1 TD
+0.039 Tc
+0.391 Tw
+(on Mobile Computing and Networking)Tj
+/F6 1 Tf
+18.3359 0 TD
+0.032 Tc
+0.322 Tw
+(. 1995.)Tj
+-18.3359 -1.1 TD
+0.011 Tc
+0.115 Tw
+(Berkeley, CA.)Tj
+-1.8 -1.4 TD
+0.045 Tc
+0.449 Tw
+[(6)95(.)-1055(Amir, E., S. McCanne, and H. Zhang. )]TJ
+/F10 1 Tf
+21.9465 0 TD
+0.344 Tc
+(An)Tj
+-20.1465 -1.1 TD
+0.058 Tc
+0.58 Tw
+(Application Level Video Gateway)Tj
+/F6 1 Tf
+17.0078 0 TD
+0.016 Tc
+0.161 Tw
+(. in )Tj
+/F10 1 Tf
+1.9292 0 TD
+0.277 Tc
+(ACM)Tj
+-18.937 -1.1 TD
+0.008 Tc
+0.081 Tw
+(Multimedia \32495)Tj
+/F6 1 Tf
+6.3877 0 TD
+0.005 Tc
+0.052 Tw
+(. 1995. San Francisco, CA.)Tj
+-8.1877 -1.4 TD
+0.017 Tc
+0.172 Tw
+[(7)67(.)-1083(Le, M.T., F. Burghardt, and J. Rabaey. )]TJ
+/F10 1 Tf
+19.4223 0 TD
+0.06 Tc
+(Software)Tj
+-17.6223 -1.1 TD
+0.022 Tc
+0.224 Tw
+(Architecture of the Infopad System)Tj
+/F6 1 Tf
+15.5404 0 TD
+0.007 Tc
+0.073 Tw
+(. in )Tj
+/F10 1 Tf
+1.7099 0 TD
+0.066 Tc
+(Mobidata)Tj
+-17.2504 -1.1 TD
+0.03 Tc
+0.298 Tw
+(Workshop on Mobile and Wireless Information)Tj
+T*
+0.009 Tc
+(Systems)Tj
+/F6 1 Tf
+3.2322 0 TD
+0.004 Tc
+0.036 Tw
+(. 1994. New Brunswick, NJ.)Tj
+-5.0322 -1.4 TD
+0.046 Tc
+0.463 Tw
+[(8)96(.)-1054(Pasquale, J.C., )]TJ
+/F10 1 Tf
+9.5777 0 TD
+0.034 Tc
+0.341 Tw
+(et al.)Tj
+/F6 1 Tf
+2.5454 0 TD
+0 Tc
+0 Tw
+( )Tj
+/F10 1 Tf
+0.3182 0 TD
+0.059 Tc
+0.587 Tw
+(Filter Propagation in)Tj
+-10.6413 -1.1 TD
+0.018 Tc
+0.177 Tw
+(Dissemination Trees: Trading Off Bandwidth and)Tj
+T*
+(Processing in Continuous Media Networks)Tj
+/F6 1 Tf
+18.5669 0 TD
+0.005 Tc
+0.05 Tw
+(. in )Tj
+/F10 1 Tf
+1.6526 0 TD
+0.052 Tc
+(4th)Tj
+-20.2195 -1.1 TD
+0.012 Tc
+0.119 Tw
+[(Intl. Workshop on Network and Operating  System)]TJ
+T*
+-0.002 Tc
+0 Tw
+(Support for Digital Audio and Video)Tj
+/F6 1 Tf
+14.5652 0 TD
+(. 1993.)Tj
+-16.3652 -1.4 TD
+0.011 Tc
+0.11 Tw
+[(9)61(.)-1089(Clark, D.D. )]TJ
+/F10 1 Tf
+7.0663 0 TD
+0.013 Tc
+0.131 Tw
+(The Design Philosophy of the DARPA)Tj
+-5.2663 -1.1 TD
+0.022 Tc
+0.221 Tw
+(Internet Protocols)Tj
+/F6 1 Tf
+7.9238 0 TD
+0.005 Tc
+0.052 Tw
+(. in )Tj
+/F10 1 Tf
+1.6574 0 TD
+0.022 Tc
+0.224 Tw
+(ACM Sigcomm Symposium)Tj
+/F6 1 Tf
+11.7497 0 TD
+0 Tc
+0 Tw
+(.)Tj
+-21.3309 -1.1 TD
+0.003 Tc
+0.031 Tw
+(1988. Stanford, CA.)Tj
+-1.8 -1.4 TD
+0.043 Tc
+0.433 Tw
+[(1)68(0)68(.)-557(von Eicken, T., )]TJ
+/F10 1 Tf
+10.1793 0 TD
+0.039 Tc
+0.39 Tw
+(et al.)Tj
+/F6 1 Tf
+2.6234 0 TD
+0 Tc
+0 Tw
+( )Tj
+/F10 1 Tf
+0.3279 0 TD
+0.066 Tc
+0.66 Tw
+(Active Messages: A)Tj
+-11.3307 -1.1 TD
+0.034 Tc
+0.342 Tw
+(Mechanism for Integrated Communication and)Tj
+T*
+0.085 Tc
+(Computation)Tj
+/F6 1 Tf
+6.1631 0 TD
+0.011 Tc
+0.11 Tw
+(. in )Tj
+/F10 1 Tf
+1.803 0 TD
+0.031 Tc
+0.316 Tw
+[(19th Int. Symp. on Computer)]TJ
+-7.9661 -1.1 TD
+0.016 Tc
+(Architecture)Tj
+/F6 1 Tf
+5.1935 0 TD
+0.007 Tc
+0.067 Tw
+(. 1992. Gold Coast, Australia.)Tj
+-6.9935 -1.4 TD
+0.028 Tc
+0.278 Tw
+[(1)53(1)53(.)-572(Agarwal, A., )]TJ
+/F10 1 Tf
+8.1339 0 TD
+0.021 Tc
+0.212 Tw
+(et al.)Tj
+/F6 1 Tf
+2.3394 0 TD
+0 Tc
+0 Tw
+( )Tj
+/F10 1 Tf
+0.2924 0 TD
+0.035 Tc
+0.346 Tw
+(The MIT Alewife Machine:)Tj
+-8.9656 -1.1 TD
+0.004 Tc
+0.039 Tw
+(Architecture and Performance)Tj
+/F6 1 Tf
+12.4077 0 TD
+0.001 Tc
+0.009 Tw
+(. in )Tj
+/F10 1 Tf
+1.5515 0 TD
+0.002 Tc
+0.025 Tw
+(22nd Int. Symp. on)Tj
+-13.9592 -1.1 TD
+0.001 Tc
+0.013 Tw
+(Computer Architecture \(ISCA \32495\))Tj
+/F6 1 Tf
+13.9365 0 TD
+0.01 Tw
+(. 1995.)Tj
+-15.7365 -1.4 TD
+0.026 Tc
+0.261 Tw
+[(1)51(2)51(.)-574(O\325Malley, S.W. and L.L. Peterson, )]TJ
+/F10 1 Tf
+18.2425 0 TD
+0.038 Tc
+0.383 Tw
+(A Dynamic)Tj
+-16.4425 -1.1 TD
+0.052 Tc
+0.522 Tw
+(Network Architecture.)Tj
+/F6 1 Tf
+10.5057 0 TD
+0.028 Tc
+0.285 Tw
+[(  ACM Transactions on)]TJ
+-10.5057 -1.1 TD
+0.006 Tc
+0.057 Tw
+(Computer Systems, 1992. 10\(2\) p. 110-143.)Tj
+-1.8 -1.4 TD
+0.023 Tc
+0.23 Tw
+[(1)48(3)48(.)-577(Jones, M. )]TJ
+/F10 1 Tf
+6.6005 0 TD
+0.045 Tc
+0.447 Tw
+(Interposition Agents: Transparently)Tj
+-4.8005 -1.1 TD
+0.016 Tc
+0.158 Tw
+(Interposing User Code at the System Interface)Tj
+/F6 1 Tf
+20.2104 0 TD
+0.009 Tc
+0.088 Tw
+(. in)Tj
+/F10 1 Tf
+-20.2104 -1.1 TD
+0.011 Tc
+0.108 Tw
+(14th ACM Symp. on Operating Systems Principles)Tj
+/F6 1 Tf
+21.3377 0 TD
+0 Tc
+0 Tw
+(.)Tj
+-21.3377 -1.1 TD
+0.006 Tc
+0.059 Tw
+(1993. Asheville, NC.)Tj
+-1.8 -1.4 TD
+0.041 Tc
+0.41 Tw
+[(1)66(4)66(.)-559(Bershad, B., )]TJ
+/F10 1 Tf
+8.3472 0 TD
+0.033 Tc
+0.325 Tw
+(et al.)Tj
+/F6 1 Tf
+2.521 0 TD
+0 Tc
+0 Tw
+( )Tj
+/F10 1 Tf
+0.3151 0 TD
+0.057 Tc
+0.574 Tw
+(Extensibility, Safety and)Tj
+-9.3833 -1.1 TD
+0.008 Tc
+0.077 Tw
+(Performance in the SPIN Operating System)Tj
+/F6 1 Tf
+18.1648 0 TD
+0.002 Tc
+0.025 Tw
+(. in )Tj
+/F10 1 Tf
+1.5888 0 TD
+0.024 Tc
+(15th)Tj
+-19.7535 -1.1 TD
+0.002 Tc
+0.018 Tw
+(ACM Symp. on Operating Systems Principles)Tj
+/F6 1 Tf
+18.3274 0 TD
+0.015 Tw
+(. 1995.)Tj
+-20.1274 -1.4 TD
+0.019 Tc
+0.191 Tw
+[(1)44(5)44(.)-581(Engler, D.R., M.F. Kaashoek, and J. O\325Toole Jr.)]TJ
+/F10 1 Tf
+1.8 -1.1 TD
+0.187 Tw
+(Exokernel: An Operating System Architecture for)Tj
+T*
+0.025 Tc
+0.247 Tw
+(Application-Level Resource Management)Tj
+/F6 1 Tf
+18.0161 0 TD
+0.005 Tc
+0.052 Tw
+(. in )Tj
+/F10 1 Tf
+1.6576 0 TD
+0.05 Tc
+(15th)Tj
+-19.6737 -1.1 TD
+0.002 Tc
+0.018 Tw
+(ACM Symp. on Operating Systems Principles)Tj
+/F6 1 Tf
+18.3274 0 TD
+0.015 Tw
+(. 1995.)Tj
+-20.1274 -1.4 TD
+0.014 Tc
+0.141 Tw
+[(1)39(6)39(.)-586(Borenstein, N. )]TJ
+/F10 1 Tf
+8.3489 0 TD
+0.011 Tc
+0.112 Tw
+(Email with a Mind of its Own: The)Tj
+-6.5489 -1.1 TD
+0.038 Tc
+0.38 Tw
+(Safe-Tcl Language for Enabled Mail)Tj
+/F6 1 Tf
+17.534 0 TD
+0.012 Tc
+0.116 Tw
+(. in )Tj
+/F10 1 Tf
+1.8199 0 TD
+0.12 Tc
+(IFIP)Tj
+-19.3539 -1.1 TD
+0.012 Tc
+0.115 Tw
+(International Conference)Tj
+/F6 1 Tf
+10.5302 0 TD
+0.007 Tc
+0.073 Tw
+(. 1994. Barcelona, Spain.)Tj
+-12.3302 -1.4 TD
+0.014 Tc
+0.141 Tw
+[(1)39(7)39(.)-586(Gosling, J. and H. McGilton, )]TJ
+/F10 1 Tf
+14.7734 0 TD
+0.021 Tc
+0.205 Tw
+(The Java Language)Tj
+-12.9734 -1.1 TD
+0.07 Tc
+0.696 Tw
+(Environment: A White Paper,)Tj
+/F6 1 Tf
+15.8571 0 TD
+0.05 Tc
+0.496 Tw
+[( 1995, Sun)]TJ
+-15.8571 -1.1 TD
+0.012 Tc
+(Microsystems.)Tj
+-1.8 -1.4 TD
+0.035 Tc
+0.345 Tw
+[(1)60(8)60(.)-565(Gosling, J. )]TJ
+/F10 1 Tf
+7.461 0 TD
+0.06 Tc
+0.596 Tw
+(Java Intermediate Bytecodes)Tj
+/F6 1 Tf
+14.3535 0 TD
+0.024 Tc
+0.238 Tw
+(. in)Tj
+/F10 1 Tf
+-20.0145 -1.1 TD
+0.11 Tc
+1.096 Tw
+(SIGPLAN Workshop on Intermediate)Tj
+T*
+0.008 Tc
+0.075 Tw
+(Representations \(IR95\))Tj
+/F6 1 Tf
+9.5456 0 TD
+0.004 Tc
+0.043 Tw
+(. 1995. San Francisco, CA.)Tj
+ET
+endstream
+endobj
+47 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/F6 4 0 R
+/F8 5 0 R
+/F10 6 0 R
+>>
+/ExtGState <<
+/GS1 7 0 R
+>>
+>>
+endobj
+49 0 obj
+<<
+/Length 7105
+>>
+stream
+BT
+/F6 1 Tf
+10 0 0 10 54 717 Tm
+0 0 0 rg
+/GS1 gs
+0.017 Tc
+0.176 Tw
+[(1)42(9)42(.)-583(Wahbe, R., )]TJ
+/F10 1 Tf
+7.0915 0 TD
+0.014 Tc
+0.143 Tw
+(et al.)Tj
+/F6 1 Tf
+2.2285 0 TD
+0 Tc
+0 Tw
+( )Tj
+/F10 1 Tf
+0.2786 0 TD
+0.029 Tc
+0.289 Tw
+(Efficient Software-Based Fault)Tj
+-7.7986 -1.1 TD
+0.013 Tc
+(Isolation)Tj
+/F6 1 Tf
+3.6726 0 TD
+0.002 Tc
+0.02 Tw
+(. in )Tj
+/F10 1 Tf
+1.5781 0 TD
+0.006 Tc
+0.062 Tw
+(14th ACM Symp. on Operating Systems)Tj
+-5.2507 -1.1 TD
+0.013 Tc
+(Principles)Tj
+/F6 1 Tf
+4.2424 0 TD
+0.006 Tc
+0.056 Tw
+(. 1993. Asheville, NC.)Tj
+-6.0424 -1.4 TD
+0.008 Tc
+0.077 Tw
+[(2)33(0)33(.)-592(Colusa Software, )]TJ
+/F10 1 Tf
+9.222 0 TD
+0.009 Tc
+0.091 Tw
+(Omniware: A Universal Substrate)Tj
+-7.422 -1.1 TD
+0.007 Tc
+0.07 Tw
+(for Mobile Code,)Tj
+/F6 1 Tf
+7.1116 0 TD
+0.068 Tw
+[( 1995, Colusa Software.)]TJ
+-8.9116 -1.4 TD
+0.01 Tc
+0.096 Tw
+[(2)35(1)35(.)-590(Engler, D.R., W.C. Hsieh, and M.F. Kaashoek. )]TJ
+/F10 1 Tf
+21.9909 0 TD
+0.039 Tc
+(`C:)Tj
+-20.1909 -1.1 TD
+0.006 Tc
+0.055 Tw
+(A Language for High-Level, Efficient, and Machine-)Tj
+T*
+0.028 Tc
+0.281 Tw
+(Independent Dynamic Code Generation)Tj
+/F6 1 Tf
+17.794 0 TD
+0.007 Tc
+0.07 Tw
+(. in )Tj
+/F10 1 Tf
+1.7026 0 TD
+0.072 Tc
+(23rd)Tj
+-19.4967 -1.1 TD
+0.011 Tc
+0.115 Tw
+(Annual ACM Symp. on Principles of Programming)Tj
+T*
+0.003 Tc
+0.036 Tw
+(Languages \(to appear\))Tj
+/F6 1 Tf
+9.3092 0 TD
+0.026 Tw
+(. 1996. St. Petersburg, FL.)Tj
+-11.1092 -1.4 TD
+0.025 Tc
+0.251 Tw
+[(2)50(2)50(.)-575(Montz, A.B., )]TJ
+/F10 1 Tf
+8.1274 0 TD
+0.019 Tc
+0.188 Tw
+(et al.)Tj
+/F6 1 Tf
+2.3008 0 TD
+0.006 Tc
+(, )Tj
+/F10 1 Tf
+0.5752 0 TD
+0.038 Tc
+0.377 Tw
+(Scout: A Communications-)Tj
+-9.2035 -1.1 TD
+0.062 Tc
+0.619 Tw
+(Oriented Operating System,)Tj
+/F6 1 Tf
+14.0409 0 TD
+0.035 Tc
+0.348 Tw
+[( 1994, Dept. of)]TJ
+-14.0409 -1.1 TD
+0.009 Tc
+0.091 Tw
+(Computer Science, University of Arizona.)Tj
+-1.8 -1.4 TD
+[(2)34(3)34(.)-591(Shenker, S., D.D. Clark, and L. Zhang. )]TJ
+/F10 1 Tf
+18.6513 0 TD
+0.014 Tc
+0.14 Tw
+(Services or)Tj
+-16.8513 -1.1 TD
+0.023 Tc
+0.229 Tw
+(Infrastructure: Why we Need a Network Service)Tj
+T*
+0.115 Tc
+(Model)Tj
+/F6 1 Tf
+3.1292 0 TD
+0.014 Tc
+0.137 Tw
+(. in )Tj
+/F10 1 Tf
+1.8714 0 TD
+0.044 Tc
+0.435 Tw
+(1st Int\325l Workshop on Community)Tj
+-5.0006 -1.1 TD
+0.02 Tc
+(Networking)Tj
+/F6 1 Tf
+4.8656 0 TD
+0.007 Tc
+0.071 Tw
+(. 1994. San Francisco, CA.)Tj
+-6.6656 -1.4 TD
+0.031 Tc
+0.315 Tw
+[(2)56(4)56(.)-569(Anderson, T.E., )]TJ
+/F10 1 Tf
+9.5417 0 TD
+0.021 Tc
+0.214 Tw
+(et al.)Tj
+/F6 1 Tf
+2.3424 0 TD
+0.007 Tc
+(, )Tj
+/F10 1 Tf
+0.5856 0 TD
+0.026 Tc
+0.262 Tw
+(A Case for Networks of)Tj
+-10.6697 -1.1 TD
+(Workstations: NOW.)Tj
+/F6 1 Tf
+9.0645 0 TD
+0.012 Tc
+0.116 Tw
+[(  IEEE Micro, 1995. 15\(1\) p.)]TJ
+-9.0645 -1.1 TD
+-0.017 Tc
+(54-64.)Tj
+-1.8 -1.4 TD
+0.025 Tc
+0.246 Tw
+[(2)50(5)50(.)-575(Liskov, B., )]TJ
+/F10 1 Tf
+7.282 0 TD
+0.021 Tc
+0.21 Tw
+(et al.)Tj
+/F6 1 Tf
+2.3352 0 TD
+0 Tc
+0 Tw
+( )Tj
+/F10 1 Tf
+0.2919 0 TD
+0.028 Tc
+0.285 Tw
+(Safe and Efficient Sharing of)Tj
+-8.109 -1.1 TD
+0.013 Tc
+0.128 Tw
+(Persistent Objects in Thor)Tj
+/F6 1 Tf
+11.247 0 TD
+0.004 Tc
+0.042 Tw
+(. in )Tj
+/F10 1 Tf
+1.6323 0 TD
+0.018 Tc
+0.186 Tw
+(SIGMOD \32496)Tj
+/F6 1 Tf
+5.7848 0 TD
+0.012 Tc
+0.117 Tw
+(. 1996.)Tj
+-18.6642 -1.1 TD
+0.015 Tc
+0.148 Tw
+(Montreal, Canada.)Tj
+-1.8 -1.4 TD
+0.048 Tc
+0.478 Tw
+[(2)73(6)73(.)-552(Manasse, M.S. )]TJ
+/F10 1 Tf
+9.62 0 TD
+0.051 Tc
+0.512 Tw
+(The Millicent Protocols for)Tj
+-7.82 -1.1 TD
+0.013 Tc
+0.133 Tw
+(Electronic Commerce)Tj
+/F6 1 Tf
+9.1327 0 TD
+0.003 Tc
+0.027 Tw
+(. in )Tj
+/F10 1 Tf
+1.5952 0 TD
+0.009 Tc
+0.09 Tw
+(1st USENIX Workshop on)Tj
+-10.7279 -1.1 TD
+0.006 Tc
+0.061 Tw
+(Electronic Commerce)Tj
+/F6 1 Tf
+8.9248 0 TD
+0.003 Tc
+0.032 Tw
+(. 1995. New York, NY.)Tj
+-10.7248 -1.4 TD
+0.021 Tc
+0.21 Tw
+[(2)46(7)46(.)-579(Bell, D.E. and L.J. LaPadula, )]TJ
+/F10 1 Tf
+15.4519 0 TD
+0.041 Tc
+0.408 Tw
+(Secure Computer)Tj
+-13.6519 -1.1 TD
+0.068 Tc
+0.683 Tw
+(Systems: Unified Exposition and Multics)Tj
+T*
+0.01 Tc
+(Interpretation,)Tj
+/F6 1 Tf
+6.0174 0 TD
+0.005 Tc
+0.047 Tw
+[( 1976, MITRE Corp.)]TJ
+-7.8174 -1.4 TD
+0.011 Tc
+0.114 Tw
+[(2)36(8)36(.)-589(Wilkes, M.V. and R.M. Needham, )]TJ
+/F10 1 Tf
+16.7427 0 TD
+0.019 Tc
+0.185 Tw
+(The Cambridge)Tj
+-14.9427 -1.1 TD
+0.005 Tc
+0.052 Tw
+(CAP Computer and Its Operating System)Tj
+/F6 1 Tf
+16.9798 0 TD
+0.062 Tw
+(. Operating)Tj
+-16.9798 -1.1 TD
+0.007 Tc
+0.074 Tw
+(and Programming Systems Series, ed. P.J. Denning.)Tj
+T*
+0.004 Tc
+0.042 Tw
+(1979, New York City: North Holland.)Tj
+-1.8 -1.4 TD
+0.046 Tc
+0.458 Tw
+[(2)71(9)71(.)-554(Sollins, K.R. )]TJ
+/F10 1 Tf
+8.7752 0 TD
+0.088 Tc
+0.878 Tw
+(Cascaded Authentication)Tj
+/F6 1 Tf
+12.9809 0 TD
+0.028 Tc
+0.283 Tw
+(. in)Tj
+/F10 1 Tf
+-19.9562 -1.1 TD
+0.034 Tc
+0.338 Tw
+(Proceedings of the 1988 IEEE Symposium on)Tj
+T*
+0.006 Tc
+0.061 Tw
+(Security and Privacy)Tj
+/F6 1 Tf
+8.6287 0 TD
+0.05 Tw
+(. 1988. Oakland, CA.)Tj
+-10.4287 -1.4 TD
+0.01 Tc
+0.105 Tw
+[(3)35(0)35(.)-590(Burrows, M., M. Abadi, and R. Needham, )]TJ
+/F10 1 Tf
+20.0526 0 TD
+0.013 Tc
+0.131 Tw
+(A Logic)Tj
+-18.2526 -1.1 TD
+0.01 Tc
+0.098 Tw
+(of Authentication.)Tj
+/F6 1 Tf
+7.4417 0 TD
+0.007 Tc
+0.066 Tw
+[(  ACM Transactions on Computer)]TJ
+-7.4417 -1.1 TD
+0.005 Tc
+0.055 Tw
+(Systems, 1990. 8\(1\) p. 18-36.)Tj
+-1.8 -1.4 TD
+0.028 Tc
+[(3)53(1)53(.)-572(ISO, )]TJ
+/F10 1 Tf
+4.3338 0 TD
+0.042 Tc
+0.419 Tw
+(Information Processing Systems - Open)Tj
+-2.5338 -1.1 TD
+0.015 Tc
+0.155 Tw
+(Systems Interconnection - Basic Reference Model,)Tj
+/F6 1 Tf
+T*
+0.002 Tc
+0.021 Tw
+(1984, ISO.)Tj
+-1.8 -1.4 TD
+0.015 Tc
+0.152 Tw
+[(3)40(2)40(.)-585(Clark, D.D. and D.L. Tennenhouse. )]TJ
+/F10 1 Tf
+17.6007 0 TD
+0.039 Tc
+(Architectural)Tj
+-15.8007 -1.1 TD
+0.01 Tc
+0.098 Tw
+(Considerations for a New Generation of Protocols)Tj
+/F6 1 Tf
+21.3389 0 TD
+0 Tc
+0 Tw
+(.)Tj
+-21.3389 -1.1 TD
+(in )Tj
+/F10 1 Tf
+1.0344 0 TD
+0.002 Tc
+0.016 Tw
+(ACM Sigcomm Symposium)Tj
+/F6 1 Tf
+10.8993 0 TD
+0.001 Tc
+0.011 Tw
+(. 1990.)Tj
+-13.7337 -1.4 TD
+0.013 Tc
+0.125 Tw
+[(3)38(3)38(.)-587(Saltzer, J.H., D.P. Reed, and D.D. Clark, )]TJ
+/F10 1 Tf
+19.7866 0 TD
+0.047 Tc
+(End-To-)Tj
+-17.9866 -1.1 TD
+0.061 Tc
+0.613 Tw
+(End Arguments in System Design.)Tj
+/F6 1 Tf
+17.9332 0 TD
+0.037 Tc
+0.371 Tw
+[(  ACM)]TJ
+-17.9332 -1.1 TD
+0.016 Tc
+0.165 Tw
+(Transactions on Computer Systems, 1984. 2\(4\) p.)Tj
+T*
+-0.012 Tc
+(277-288.)Tj
+-1.8 -1.4 TD
+0.029 Tc
+0.291 Tw
+[(3)54(4)54(.)-571(Tennenhouse, D., )]TJ
+/F10 1 Tf
+10.1786 0 TD
+0.018 Tc
+0.184 Tw
+(et al.)Tj
+/F6 1 Tf
+2.2942 0 TD
+0.006 Tc
+(, )Tj
+/F10 1 Tf
+0.5736 0 TD
+0.041 Tc
+0.416 Tw
+[(Virtual Infrastructure:)]TJ
+-11.2464 -1.1 TD
+0.063 Tc
+0.631 Tw
+(Putting Information Infrastructure on the)Tj
+T*
+0.015 Tc
+0.148 Tw
+(Technology Curve.)Tj
+/F6 1 Tf
+8.0093 0 TD
+0.009 Tc
+0.088 Tw
+[(  Computer Networks and ISDN)]TJ
+-8.0093 -1.1 TD
+0.011 Tc
+0.111 Tw
+(Systems \(to appear\), 1996.)Tj
+ET
+endstream
+endobj
+50 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/F6 4 0 R
+/F10 6 0 R
+>>
+/ExtGState <<
+/GS1 7 0 R
+>>
+>>
+endobj
+51 0 obj
+<<
+/Type /Halftone
+/HalftoneType 1
+/HalftoneName (Default)
+/Frequency 60
+/Angle 45
+/SpotFunction /Round
+>>
+endobj
+7 0 obj
+<<
+/Type /ExtGState
+/SA false
+/OP false
+/HT /Default
+>>
+endobj
+52 0 obj
+<<
+/Type /FontDescriptor
+/Ascent 788
+/CapHeight 764
+/Descent -218
+/Flags 4
+/FontBBox [-280 -235 1280 939]
+/FontName /CNGIAE+Geneva
+/ItalicAngle 0
+/StemV 0
+/XHeight 557
+/FontFile2 53 0 R
+>>
+endobj
+53 0 obj
+<<
+/Filter /FlateDecode
+/Length 8298
+/Length1 12336
+>>
+stream
+Hâ|V}lS◊?˜æ˜l†1Â#_]˝ºWb NÈÍ"⁄πÜÿÜQ·≈,Æjfì¬%eÉ⁄H≥‘ŒÒ˛ô7¡ÊIù≠ù®Œ¥&¶EÃù–öï∂ô∂A™v#à©c¢´+µí´ñº˝Ós4Õ◊øwÔ=_˜‹sŒ}Ô#¢≈4Hm˚Ê„Óµ€«ˇë˚◊†Ü∫ìÒæKáÔ∑µ^!bÈÓ#˝Í©Ô'‡ΩO$ï˜ˆÌK∂ﬁ˙o"˘-Ã_›wÿﬁu\πF¥‰&Q˝_zÒû3ÔÎÿ´@«”Ç˝Îf"[
+Û˚zì˝GØı\«Î…´ÍéóÓ~Ì2—öD|E2~¥o¡c|/Ù_Äº˙T<ô¯Ù°ÎµCüI}áæ”øÒkÔ¸æ√âæ◊Ôäu-zóHi∞Ñà,vjê£‰ 2&Ä)—Oáå´ñ$—tû⁄ÁgP˝ÂË"ÈÙî¢<ïhú¢„Ùs
+Qé›À<T†	 ÇüÂ5‡z)j§®ñ¢téı[°ï£sÕ≠5Gcÿ(ê˙CÃF[hòäÜ–À`∂kºÃÃŸ(Úê}í?I'∞ ãläU§≤q6Fh+˝òNRëyX–»í}ç|ê<O+Taóç„∆U¨µ<%(	˚?Éy°sÙ&]°Iöb˜Ú¸si∑îù7l∆AX	C“¥-saÖ˚.+ÛOÚ"ˇ£Ïê3ra˙=C3"TÀn¯ø:O¡«St∫™G„Ù7ödù, XñùbgXÖ∑Ûá∏óø)ÂeªÏP\J÷íú.uF–Aö…C_á≠ÌÉùõºi©L≥1≤ã‹¡›ºÉ'§Ñ4,…ìJ»í∫ıﬁ4MGßáçÑë1&ë5ÖV¡ü(§~≥G]ß–2f¶~ª/¡Íy‰‰x9IbÖ
+}…à’≤eÃÕºlº>Ä=ˇàùd9ˆK6Ã
+ÏwÏ{¯D4N|!∑ÛfÓ¬ûÇ¸Ô¸“.iøÙ¥4Å6)U‰∞ïìrI˘â≈nM}ôΩıˆtr˙≤±Ãp?Öè6DÕK)àXw#r"'„hStû|O≥√óz∂öµ≥–¸l+±0ã∞'ÿn÷èàé∞WŸ(+°} %nÂK‡ãõØÂè¬üoÛ~¥ÁxéÛ”ºƒ/¢U$Z ôNHI¥¥a¥7§qx|C*√kB^\Ún˘7ÚîbSJ-•LXp~,!K-k…[Jñä’mÕX÷íu Z©'ÊOÙ⁄ºsS=;É@ÜÚÏ-ˆOÓótöÂË]f],œáhÄ◊IÁ¯	zôÍg´ ∑ÚEﬁUzùΩ-O“,&Ö+{Üíœ8„kÂhh=[Cgp˙æ`nKQ±Ag9øÅ2¡~ÖÍlaÉæµ˜w∏€€Z[÷¨^Âj^yüˆUßÍ∏˜+˜456‘◊≠XælÈ›KÏµw-^¥∞fÅÕjQdâ3jh¡ò™7«tπY€ºπMÃµ8ÒyÑòÆÇº]FWc¶òzª§í{ÔêÙU%}síÃÆ>Bè¥µ™M’/˘5uî=±Ω„˙µà™dé∑öcπŸú,∆ƒÈÑÜ®Ôı´:ã©=x§7à˘aoÃá¿◊¥µ“·M∞PX÷©3~¢∑ùêËçö?†7h~ì'≠ƒ{Ùm€ª˛&ß3“÷™≥ŒnmèN⁄FΩ∂eF›¥¨[;uK'L´˚≈hH=€z!ùµ”ûXÀ¢≠'˛dó.≈#bâ%-zùÊ◊Îûπ^ﬂ÷: ^⁄Ÿ•/Ëe¥≥kåç¡≥É~íi)êN?/ƒ7A|ì)ÆÛï¡x"D∞Ü6Wß11ãgDºÍ›p@x-vP›KBJÏÄ™/–6jΩÈ1Ñæ1≠”écŒBc£oÔ¿∆ÄöﬁŸ•9ıGõ¥H‹œŸeîﬁql§¡ß6‹Œik´ˆa'"7÷∂°mÉËv÷?[Ì?¸~ï˛ÁMπ?\Eˇÿéπ‡1·àˆ∏Æ´›*Ë“‡ˇ:ÒH¨£t˜:à·a“~Ñ$ñ∂Ø°UV⁄55˝!õ⁄G7oßƒg(ñïˆœHEŒÁÍ¸Ÿ±ﬁ“¢ØYÉ‘#M	dÆyM¬Ém≠GÙ&≠œÆÍMmÎÇVdΩ¡v:EÊÜF}¥}p{WuÆ“û¶˘‹-ù«Á¬,gyXpg9sÍ1E˘[∑àÂ∫≠yÓ_k_±4–ª^g+˛;aÚI∞m4MîØ∏U∫ı˚Ø©0Ô«jd¬;?ûüAíä†ï0yÅìV/˙	¬óäÚRñ
+@J∆◊º–
+íÕ‰‰πAÎW¬LÙ $ÅÒôyNÿ≤B^@ÿòÖú°K„	r(uîU<Upêíò'0OQñï)+ï…•Ñ@œSwë¨Ç^ô¢®<€OÇ7âµÒï6Ì√¶5K!˜ †6Cÿ«·≥ÿ”å^π»ç°$dR∏cDÂ	 GQ…Aay∆>õÇˇ#]sluU˝¿zB>%t$¯//≈
+ÇóíSTgÒbm/y‰,˙$ıK9º_+àiénÃ˙h¬cÆ9∑'36¬ßˇÖ®)ö6eîg0Á|ª¬Øy¿:^4Ûz^@.	}B.bü»≥ Ó|a3N∏«ﬂ¨e\™~zÁÁÿ"çKÿO?÷Û‚NB˛‹≤ıí'/Ø–:–íV±·OÜä¢ˆLõnQ7Ã.∆Xœ+„´Ñl^˙ 4öã÷µ)j≠@ﬂΩ®çÇ¿ù5f∆πßâ[%Ã√<k"$è#GÄÿø∆?Y’Ø0ÎﬁaÊb¶`e£àæ$∆ÊﬁÀ⁄?õØYà˙@ú<@¨é9°
+@v¶˜»yc˘öu+j«Ã'ÍD‘àíΩd÷oùπë”	3gÊ:íá^¬¿”8Ø‡(∞EÏSúQª‚‹ò∂≈Ÿu¡jg∂7Îº»3hFæ+¿0Æƒ∏‚[‘AºCÍê;e€;˚ÔíÍÛ]Û9h>˝ÊSf˚3‚N«õÀ!q◊Øò6Æ3˛æª≥Ôlc˚ll0$Ê|låçÊÑ·+Ö¢Öí&adÄ‚î4q6–XÖBH®J”hî iS´YÈÚg§J¥NK¥LGçÚál´"çJõ¢©ICª)ë≤h…Ên⁄ÿü∂≥ŸwgöÏO4Ì‰˜~ÁÔ˝¸~üÔ}ﬂ{ﬂ	I¯CB ‹W‡"\ÜK§êp)kΩô∫n»æIó–tª∞ïHaõ[ùœ!ä°[ï‡DèCx ©¸ÙFáì~~ôòOH%≥p·GfNæ”‰l∆◊≤m∞9a$:¨>/2:æ
+ÑˆÑ/àïÑ/Ñ–ñDW[âƒ ∫jÕZ-	ﬂ„heâ«—
+	ÒI¥í∑≈«Ñ_O&HâI4ãbí:ó.˙íp<!Ãe«Nä*ñí¬¯§
+cìI$ÑøÕ
+˚ƒı¬7≤Ï]8»¸◊ù¬qLxJ1œ
+Õ‚A°1;Q}PÖuìI˙∑	°*k,Ò€¨PÜï™øp„NeP^/¥Ÿt6]¸-6˛<ﬂ¡∆;Ÿx5_À∆+ÿx)w±Ò"÷∆Y9û3q9úû„8-«pç∂‰Ú-πB9UlòïZFÈıûßîû"Í°CG·´ÿãs¯¿aèc´ÔÂó^…à8"÷:K¯âÜGt]+Ω˜·ÂxxÕõ/‚„ˆ{˚+¨g—‹‹ä÷∏jç+÷∏ju8ß&ö[€ßŒ:;¶ Õ≤≥£yj¨’µ≠}´¸È∆Ü9|˝@Ëhü£À`¶qãbßÀ∞Üj∆•Sy®2É<‚Q yö[DPx∏Î‹ Ú<Yû	ÖÁS yl-ëTûƒ÷™<Fùo:ËilòˆxTéC&Aït»ˇ ôê#*'_&ì*g2_ÂLÌP)¢àîAQ•¿5"™Æ©”–ê„ÕrL£üsL£ˇ≈©{$«˚ˇ\±zØw∆?ÓV ≈.wc[◊‘·¨ã_|∆ÂöO¨‘ëR◊3;ø¶‡éÿ‘Ñ;÷0v7∏¶˝›èÓVÜ˝ÓÜi“›¯ÂˆÈn9÷êÀ˛F˜éÜéô¿PM”øiç=–™zƒdC d5äV†È√M p@—jR¥ö≠ÄPµª[ÎIÛÊˆié‘ˇèß—è◊ﬁΩ{‘‚I©°Ë^Ã
+#±I÷±Z'0'M%·¥ú´÷Y¨ì&Ö:ç÷IAá;O’å∏u	#|„RmK∫v#ˇWH§ñO◊¶ïÆ _ë-"›õñ®≈âÃ8ØÂ'>[≠§òo˘#`MAìπx?5Bﬁ 4E‚¥Pt4•d!]®Å2eC
+MoB±ª˘ªñpe"µá4-ïﬁCCÔV˘!öÔÜÍ€	∫˛ºœd Qú˝û6ÇÔçœ…]ÜzU—G
+™V‡˙ÙGË#ÃnX?l6ˇÇª¢Áπ":™W∑€€ãzÏ=y=E=¬ =¿òÃ#éë’&Îë¸∫Æ8Î¥∫‹q◊8Ex?OÒ≈Ö>A:—w=ö‚ØGkS)I•#È;äC§/
+’võ	‹.b·â('∏C¡JpSﬁZ®	1ï,Õ|êÖæ∂x‡B”K—èÔ›ˇ˝ÈQÿ®ﬂvπN¬	8ì?Ó–Î√›°ÃhÊWô≈Ã¯»ñÏäiÍp≈ÙƒNv…≈„Qn‘4n∑jΩúÕKQ9%zé˜-hÛíÚ–Û–’4∫äé¢üU˛«Â":óìL∆cïå:æriÏÃlN5±hl’ÄW6XB¥⁄"∫´›F1b)∫o)…G·Ü‚3G3◊3.¸˛Õ=›7Óﬁ”Úg3g>˚]Ê{ÁÜ¿∞∞ Óq≈Ùô©Aü§^.£¥Kiºo≤WXäe	SîÆÑpÏ∑ÈÌDz#£SùŒQúÆEØóÓ®n[√æhZyƒËè]\iG1∆¢TKzÜ∫©ÂœeÚO§Œ≠Ë‘”ë:Y-∞Á4ß4ÛZ£Q=4 ∞¢¶ˇ\≈©ı@	u“˜N¶7ÆdÛuıŸ»†ºû6,‘nf∑f∑v/≥W3h466Îä9√à—π^\VfªX:ílûçHx»Äù_ëè:R+§‘ur0Vç«§„+¿ `gÊåƒ¢Õ≠XY!\›%ŒÏ6"∫C’ÆöP◊¢0ı∑˜æöπëYº2
+9g«ﬁªØÂc?=∏ò˘‡ƒœ„C«î›ã˘Ú2fcÄ|*_±ÎÙ5¶†{]i#ªAÿ‡⁄Joe⁄ÿN°”e,3óÒR©T&ïÔ§w2=∫˝≥÷gscﬁXElm?›œÏsìq_’]’ˇC˚IEæ∆1¬oå3	ÆaNÇY#|_Ç∑å0"¡ò$4B∑∂JÑF8&Åd§4E“—h·
+Nú(Ç¢:Gæ•M]•ŒÑBﬂîﬁt@‹éÌú/Ñ5A—gŸN˘’¸ı‘ííå©•h4öäb¿DÔ(,÷0~à≈öé˛Á’ß&l4Û5O…À`©‰ÉJ*¨y≤Vk∑Å y˘yjZWB®waˆç·ôññÔl˛ÓôMüÄÓœWæ¯‹ó^µaﬂ+OﬂiyÚ˘èﬁ9o¢˙É±„/Ï~Lñ≈ÜóNÔö˙”€˚ıziÉ¯˙”rﬂÜ∫ÚùΩΩ/Ï˝∞Øırü≤fµ±,Òø£°0P«$°"¡J∏WÃö	ºä,ºù÷qæwó¢}w“KJ†‡vãÒR"îÚ•ˇ»‹Nˇ]”Ú‰ß/ctˆ.ﬂf8fàπ!∑ÏÜ<C~ÖÆL⁄†´◊◊{:t1OL⁄üøﬂ—ÔÈóî@ñÜÀØ=Â8U0Ôò/ò_5ø∫pù~ùßSﬂÈ9¶ˇâSÎÁ÷ñ∫srºº=	Úæ≠ê%zoõ∆@Â∏˚âP‘_\XïÎ…˚B©GÊÄÁÄ+Wáõ‘„"⁄◊ÇãÑF˙^ãGF*I•,J®É%¨Fª´lÕ*ß…¨eÀ•5⁄≤^≠±QúWtæyÔÃæf_≥≥Øô±=ª~Øk≥gÕÓ$Öò 6ÅÇKRB1	Ñ“∑ÊiWNÀ≥T%@ %ä
+-Q„&$∏Å,-ê(©i°AëÒ(“-"Dx›;3k'™˙ß^iÙ≠∆˛‰{Ó9ÁûõP0Wÿ°†H¥î©P0gƒ≠ hÔn4à?∞¥©Òî—îxjLâ6à˝2;óAuÜ$_@$“Ïa]m•à	—UøùˆÃÔë=Ù¯¶«V˛∏Ìô’´ﬁùœ(çÀ¸Br~UÀÆôﬂ∫øÛ˛}€~yP˜Æ[‹˙›	n◊‰û⁄˝zæ•È˘v|ås‚öŸïSÀÁ=∑»ú8∆k†Ù)W®ÎÃu˛ä„&5ƒÒ7,F9è9»Õ¡û–üŸ„‹%ˆ,Gèg=-’Œ†ñàJÛ^M÷pwHï¥,LIQˇ®÷ k0«´1`Øö0™&b$8wîíf§Êwx$Úpä±ëÊs‰	”∆áΩ OE∆x™+åß˙∏…sSDÛ—áª?œÜ¯œªØ8J¨ËÿrÏÿñéßêÃMyn:òæ˘P√Ù≠≥9n¸¸”W?>=º·ÖÕtÊÖÈ˚©æ ˚V-ùÒ◊»TF»x≥˛îºYÍ'˚©~¿ñ,öV4hªÎ$U= Üuó®±§◊≈bò®∫Çã™,/˚Bòèêß·(	>*
+iY;≤Kj—bµ~Ì=¯¥µA˛h4Dn*'ãL°`ƒÊ‰¥à-î¿ÇNxÑ˘hìbbÿ<ª±áfvÍnw@–¸1M‹æ4ÚxÜa\∆[_L°Y£„
+Mì∞b§E~n0 äSNhÊ·1@Ö1#êf±=ókX˙”÷Ωﬂq˚¬§u”˚ü›–˜ ∆πªß–-_º~bÈLu3Úı°Èe”€Û;é›˙É;'óû-`ZÏ
+b*vN‘Ü˝@È!ª}› O‘ÉéãÃE~Ä‡y
+F‚‚Í*u◊+ıÜz√Ω—^ı5à9Œ&V
+zÑbWHBó•Ç«CÀ@=?/4.®·„\°bœFìyE≈GP˝°—‰kæ5x’¿u T⁄8pÕ›X0T‡°LåÑ£aúPA˘∞–J ≈‡£*~Û≤~¿ﬁ%'ê ¡3ih∏¢‹‚‰óîLSRµ∏à‘ÇÀr'÷Âˇâ¥O÷ü˛—›Oéøºz≈`>oJœúˆÉ¿Ã…{FìÔ"µ>ı˜ød˝m¡}ËgÅñÌMÛ’d3†>àJÙiJçﬂÿ(ÊlC‰#¡àT)V+%:]2&â◊†å=SRì‹T⁄SﬁgÎKûß>L~JÒdÖı*"¨sqù≈D\Â':ÇΩ¨J%∏ÿ,üÀY\$ªBﬂp¡à“¬„ ¥,≠”∏Iåx€nAåΩ5–f¿;h˘‡¿µ¨±ku¢RV/i´à{‚ä∆∆+…≤&{ã(aÉS9U–
+±V ƒMÅÙmô¢IÈç∑óÿ„iJ„ã”»Ó∞;¸∂:â$™Jì’8ºEÿ»€mF7⁄4´c<ıuµ1U'∏≠¡7’ùÊ∑a´ıƒˆÜ7÷æì\yvÎí_œÃ˝¸‚éMÁøü{qı„€9“µ°o“ÓG∂æzΩ£5ΩÑ|Z◊∫ª<ˇ“Ö'flk‹ìÁN‹˚'ÙèCΩ|™ÎøNãqpÎ’'ø„G;¸øÚﬂ¥˝K"eiâ–)lˆ“/¥™≥^â%˝ò«ºù,„ƒ8ßlÔ‚ëÃ#>îïêD`r≤ïî∂´µ√ña¨,m`∞µ€ƒ=~·∂y8Mà{l.πyTÀ$,(∆.†ºi «àil¥X1¨N»‡÷‹)L‚:¡,õsπÙÚŒ…KÃœï~o“ågÁ“-É-ÛÊTÕ>pd∞ˇ·ŒµMèˆæXHì®π∞ãÈzΩëπÕ°	Œ&ä!!V&* ¡ˆ¶Z[ Scc3l]P’ƒEÆA$ÄØ∑!;z¡ìÑTù¨'G∂›ŸGÕ:z‘¬.M`Uz.éÇª(‹Dä§Óπ◊Ä™p'Ñ(Œ®˛‘∫Öﬁä*GSı«åÉq≤Q…ã»—X¨*R≠äe"Ÿh&∂áﬁ√4GDâòèÛÒ>áœÈé∫c%\1_‚(v*Q%Vœ’Òıé:gM¥&ñïõlM‹,€,.éì-ç⁄I2\™bˆh@âw≤·N∑õepZUî@ „*·ﬂ˜z}~YA•økíπ∂∆R›Ÿ4RUÖ—¸∑UR«Ì`„s¥F7|LË‹Ü≈Y°Q¥àë¥iMä;„Qç”J‚!ATê+bO`ÕV§ ﬁÙÜ‰àπD1Wà
++§4VÀ“¢P¢åbJÅBeË2¡îè¶êf dø≈ ÒÎD˙
+ßØö8q›¸™ÜÂO?∞`OÎ—dk∫uÀÃ\≈∑Îßno%€˙Õ©¨ò›˛ÿº™π˚ﬂ|_ˆv˚ÿ≈Ø<?¯ëq˜‰kªFî}±7ÙfÃê◊õ˛wM≠—ù¬f–ŸorXg^ø”‘NÉ“\ 5ácXl®Ìøâ≠Õò–Ä.úΩeMx1·ˇ®9ˇˇ–‹ 	†9≤Ì¯◊$gÕ◊5P?¸Bœˆ8∑∏∑¯zg„‰qˆw	è|èΩƒŸª$4ñı®4cW1ﬁ•u¡∏IòÑ¸Zñ@‘|Íﬁ±iî‹<`˙∫Yd9º+ÅDÉP`‡‰•‡‰‰ÄBn÷ì@>“sOZ3ÉUi∆3a,(ÖLÅ/;ü?ÖRÁœ°T˛‘πùáÔ‹u¯∞å êÜJPl|ÚÁÛÏΩÒ÷…7Næu√ñû|π*5“Ÿ}˙ƒA◊5˛¨¸åDyÏ¶ÌﬂN2¨ã.ËxTcΩ$ÎíCD1h9ƒ29C⁄4;JB
+>Ë7‰23è’6çÙª—Jd∆;0“ÏØ$2#å!#ñ!#åô±lt"ïπ(#sçñ ®‘F©˚2µYâlòèﬂá≥+!ñº∏¡î…ÂÓ[“Û`◊˚Ov±i˝w˜Ôÿ–wl’ú›SÛ-¥Îƒ¬ïõÛ◊{áÚØB"CO˛á˝™èm™ä‚Áﬁ˚æ˚∫∂Ø›÷é@◊¬÷±·æÅ∆⁄9ÿ`∞çè
+)ì‡ìâc‡@Q∑ â¿H@¢Åƒtç87ÉââF@çÑÖÄFi‚@åÆÛº∑«g¯äâ˛Â9yΩÁˆ6∑Ôú{œ9øﬂ "[zj0cêOºvhï1ûâÃ∆¿a”ÏØñË»–2A≠R´÷îa!…
+<±Y8f%äDm
+XçÏ!JP!JÇ¶ó' '≤xZY”ÓÀ~È∂ køà,6,øBÉ¬feŒk16^ímºu<#⁄oœ "ΩôÒ±∆ï—Û!˝Ÿµ°q©èó’ıp·ûŸ≤ü%v¸ÑUúg°Gôp:¥√‚‡“¸Å‚‰‚ üjMçIµïàUbUrU†*•F\)Æ⁄"nzTåqú)¥E›‚ß◊‘?¸Ù¢zŸOøÙì„~ÚézÿO∑´dã⁄‚ßk’&?≠Süˆ”9~2/éüÚC¸#á©íÕG‚¢C|öX5¢ºoî%6…ù'%çLfìÏaI∂<öÃ$ôû¨Ïí€Ó+7ÔRHÏﬂ:Ä“IQXLL
+FÑn…r“ù∞3«d6πy¢éiäh&ìóbµ≈Ú·Ùk2∫¢sYÛä◊∑V_˘˛Ù©oé_æ†aU˘¸yEõä˝è]8∑˘√z‡&W7L[ú6‘ï2„„ñìáóp\^(<1∑(¡„$zF‘N‹{vÊõ’€åm!_É’eu®ƒ¬´™juÛ)¸ÁWè≥«%c’î„¨ÁªúeSÑ8≥x∞ü¡J{ØUÛ™‚ûı2yN&’2©îâÅ—›û“å¡¯÷í(Â}ÿ…˙Æô≠∫¸ó NÌΩ•C8)v–/d(9àO|±>á⁄X·¶…Kﬁù€’’IJ¢ùÈã&ç›ª€WµØç∂)zΩµˇ˜Ì+∆Ë=¢kd<ÜXÿö‡çØµØ≤7€±+8$'r6p8YåU)é$0/•^<–Ñ`<â«a—Ô∫'.~€Ìp•ﬂ@`l18[¡ùUBïÌv9&lä#∞,ò5AsÒ¢kÇãwåÁ41ˆnvãÑy–4a*cû74ï¥ûÌ|ı©Y€ÊÍHËÛyÛ“€àLª˚7_≠]ÿ∂}å«>Xè>
+~®DÖ)¬∂ü˝∆û7∏®õèR`M·B)†π\.øÉºEwqª¯É‰ =ƒ‚]î1Øå¬1÷A>	y¥RÅQ‹C‡9éR"ÿ9%<tæÉú˚@Ìƒ#Jd\ªoÖû˛˙‹Â}◊zµ¸∞ﬁ-\¢Âoî“õ“‹¸:{7ZÓ4›» ƒ<_ˆëô‰ÚC4ˇ$©%ÀéEGq·ø∂≥˙?Ëgá»âËóéá∆ÂÚ„-Tõ5≤…Xö√r∏°@,îï&zå?jâ¡7d
+ONñ@‰dà@˜eåVJpÖ)äWìeNécÇ"ÀQÅ(DÃ´‘;£ïÂ	ÍÖMµîÚ»)≥?ÙÍ›°ºw_Âªo /„s#üû∂q]˜∆t7˙äÜ≈2ú3\6‹î…prΩã¥D∑ù&±ûàn#/üâ^¶£iJty≠ˇÁ˛Ú ‰=Ç.~D˝£ªîº}–ïv”_Ôßl€«%q_Ûç|£P&|!\◊U"HÎ•>yßºs£Õ‚∞4[ÆXÆ®œ¸ØˇûÇ.ÿnç—ÖÏÖ$‡#¿CÖ›9’ÓÒì‰@ »õìÄ1co_ù%•ì°lÍ4Ä È3fŒÇŸsÊ>Ò$Ã¯_ˇ7¬A~∫AgûR$1í)âLèTEFj"uëÜHSdı¿ Ä±Rå+≥peQdq§>“®Øÿ.‹KÕXﬂ[ÿ÷EÇZsV ”Ê–∂ö∂ÄVÇæ'„7	0m
+1Pd⁄øØ4mÌ:”–n.Æ(ùR4)≠¥fYM”¬˚O†*†¶‡¶ì ≠XÜO,Ñô8.ÜÁ°Ì∆¸Óü¨Ë^¶ÅìÒ›)ûéZâó»ß¯˛Dyxê8¥ÙŸçj©¶Í® îªCã®2!<Õ’n_â-ÙG3¬¯Ù'fl≠∂\Ï∫Ï?sÊe}<piÙπ˛Æ®W)[p*ﬂ8ﬂø ›o¬
+endstream
+endobj
+4 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/Name /F6
+/Encoding /MacRomanEncoding
+/BaseFont /Times-Roman
+>>
+endobj
+5 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/Name /F8
+/Encoding /MacRomanEncoding
+/BaseFont /Times-Bold
+>>
+endobj
+6 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/Name /F10
+/Encoding /MacRomanEncoding
+/BaseFont /Times-Italic
+>>
+endobj
+18 0 obj
+<<
+/Type /Font
+/Subtype /TrueType
+/Name /F11
+/FirstChar 9
+/LastChar 120
+/Widths [333 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 333 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 538 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 651 701 576 553 0 0 
+0 0 0 0 0 0 0 583 0 0 606 640 0 0 0 0 
+0 0 0 0 0 0 0 0 553 0 545 602 576 0 610 583 
+235 0 0 235 894 583 606 602 0 386 509 443 583 564 0 530 
+]
+/BaseFont /CNGIAE+Geneva
+/FontDescriptor 52 0 R
+>>
+endobj
+1 0 obj
+<<
+/Type /Page
+/Parent 8 0 R
+/Resources 3 0 R
+/Contents 2 0 R
+>>
+endobj
+9 0 obj
+<<
+/Type /Page
+/Parent 8 0 R
+/Resources 11 0 R
+/Contents 10 0 R
+>>
+endobj
+12 0 obj
+<<
+/Type /Page
+/Parent 8 0 R
+/Resources 14 0 R
+/Contents 13 0 R
+>>
+endobj
+15 0 obj
+<<
+/Type /Page
+/Parent 8 0 R
+/Resources 17 0 R
+/Contents 16 0 R
+>>
+endobj
+19 0 obj
+<<
+/Type /Page
+/Parent 8 0 R
+/Resources 21 0 R
+/Contents 20 0 R
+>>
+endobj
+22 0 obj
+<<
+/Type /Page
+/Parent 8 0 R
+/Resources 24 0 R
+/Contents 23 0 R
+>>
+endobj
+25 0 obj
+<<
+/Type /Page
+/Parent 8 0 R
+/Resources 27 0 R
+/Contents 26 0 R
+>>
+endobj
+28 0 obj
+<<
+/Type /Page
+/Parent 8 0 R
+/Resources 30 0 R
+/Contents 29 0 R
+>>
+endobj
+31 0 obj
+<<
+/Type /Page
+/Parent 8 0 R
+/Resources 33 0 R
+/Contents 32 0 R
+>>
+endobj
+34 0 obj
+<<
+/Type /Page
+/Parent 8 0 R
+/Resources 36 0 R
+/Contents 35 0 R
+>>
+endobj
+37 0 obj
+<<
+/Type /Page
+/Parent 41 0 R
+/Resources 39 0 R
+/Contents 38 0 R
+>>
+endobj
+42 0 obj
+<<
+/Type /Page
+/Parent 41 0 R
+/Resources 44 0 R
+/Contents 43 0 R
+>>
+endobj
+45 0 obj
+<<
+/Type /Page
+/Parent 41 0 R
+/Resources 47 0 R
+/Contents 46 0 R
+>>
+endobj
+48 0 obj
+<<
+/Type /Page
+/Parent 41 0 R
+/Resources 50 0 R
+/Contents 49 0 R
+>>
+endobj
+8 0 obj
+<<
+/Type /Pages
+/Kids [1 0 R 9 0 R 12 0 R 15 0 R 19 0 R 22 0 R 25 0 R 28 0 R 31 0 R 34 0 R]
+/Count 10
+/Parent 40 0 R
+>>
+endobj
+41 0 obj
+<<
+/Type /Pages
+/Kids [37 0 R 42 0 R 45 0 R 48 0 R]
+/Count 4
+/Parent 40 0 R
+>>
+endobj
+40 0 obj
+<<
+/Type /Pages
+/Kids [8 0 R 41 0 R ]
+/Count 14
+/MediaBox [0 0 612 792]
+>>
+endobj
+54 0 obj
+<<
+/Type /Catalog
+/Pages 40 0 R
+>>
+endobj
+55 0 obj
+<<
+/CreationDate (D:19990928124659)
+/Producer (\376\377\000A\000c\000r\000o\000b\000a\000t\000 \000D\000i\000s\000t\000i\000l\000l\000e\000r\000 \0003\000.\0000\0001\000 \000f\000o\000r\000 \000W\000i\000n\000d\000o\000w\000s)
+/Author (root)
+/Creator (PrintMonitor)
+/Title (ccr)
+>>
+endobj
+xref
+0 56
+0000000000 65535 f
+0000189633 00000 n
+0000000017 00000 n
+0000008293 00000 n
+0000188819 00000 n
+0000188938 00000 n
+0000189056 00000 n
+0000180125 00000 n
+0000190907 00000 n
+0000189721 00000 n
+0000008421 00000 n
+0000017646 00000 n
+0000189811 00000 n
+0000017763 00000 n
+0000027400 00000 n
+0000189902 00000 n
+0000027517 00000 n
+0000084683 00000 n
+0000189177 00000 n
+0000189993 00000 n
+0000084813 00000 n
+0000094566 00000 n
+0000190084 00000 n
+0000094683 00000 n
+0000103782 00000 n
+0000190175 00000 n
+0000103899 00000 n
+0000113391 00000 n
+0000190266 00000 n
+0000113508 00000 n
+0000122745 00000 n
+0000190357 00000 n
+0000122862 00000 n
+0000132183 00000 n
+0000190448 00000 n
+0000132300 00000 n
+0000141415 00000 n
+0000190539 00000 n
+0000141532 00000 n
+0000150663 00000 n
+0000191153 00000 n
+0000191050 00000 n
+0000190631 00000 n
+0000150780 00000 n
+0000159829 00000 n
+0000190723 00000 n
+0000159946 00000 n
+0000172581 00000 n
+0000190815 00000 n
+0000172710 00000 n
+0000179874 00000 n
+0000179992 00000 n
+0000180204 00000 n
+0000180424 00000 n
+0000191252 00000 n
+0000191309 00000 n
+trailer
+<<
+/Size 56
+/Root 54 0 R
+/Info 55 0 R
+/ID [<c22c01f0c215d5560508c0fa39844c4c><c22c01f0c215d5560508c0fa39844c4c>]
+>>
+startxref
+191616
+%%EOF

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Deepak Ravi">
+  <title>Make</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="reveal.js/css/reveal.css">
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="reveal.js/css/theme/black.css" id="theme">
+  <!-- Printing and PDF exports -->
+  <script>
+    var link = document.createElement( 'link' );
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = window.location.search.match( /print-pdf/gi ) ? 'reveal.js/css/print/pdf.css' : 'reveal.js/css/print/paper.css';
+    document.getElementsByTagName( 'head' )[0].appendChild( link );
+  </script>
+  <!--[if lt IE 9]>
+  <script src="reveal.js/lib/js/html5shiv.js"></script>
+  <![endif]-->
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section>
+  <h1 class="title">Make</h1>
+  <h2 class="author">Deepak Ravi</h2>
+</section>
+<section id="TOC">
+<ul>
+<li><a href="#/overview"><span class="toc-section-number">0.1</span> Overview</a></li>
+<li><a href="#/overview-1"><span class="toc-section-number">0.2</span> Overview</a></li>
+<li><a href="#/compilation"><span class="toc-section-number">0.3</span> Compilation</a></li>
+<li><a href="#/compilation-contd"><span class="toc-section-number">0.4</span> Compilation (contd)</a></li>
+<li><a href="#/compilation-contd-1"><span class="toc-section-number">0.5</span> Compilation (contd)</a></li>
+<li><a href="#/compilation-contd-2"><span class="toc-section-number">0.6</span> Compilation (contd)</a></li>
+<li><a href="#/compilation-contd-3"><span class="toc-section-number">0.7</span> Compilation (contd)</a></li>
+<li><a href="#/compilation-contd-4"><span class="toc-section-number">0.8</span> Compilation (contd)</a></li>
+<li><a href="#/make"><span class="toc-section-number">0.9</span> Make</a></li>
+<li><a href="#/make-1"><span class="toc-section-number">0.10</span> Make</a></li>
+<li><a href="#/make-2"><span class="toc-section-number">0.11</span> Make</a></li>
+<li><a href="#/make-3"><span class="toc-section-number">0.12</span> Make</a></li>
+<li><a href="#/make-4"><span class="toc-section-number">0.13</span> Make</a></li>
+<li><a href="#/make-5"><span class="toc-section-number">0.14</span> Make</a></li>
+<li><a href="#/make-6"><span class="toc-section-number">0.15</span> Make</a></li>
+<li><a href="#/make-7"><span class="toc-section-number">0.16</span> Make</a></li>
+<li><a href="#/make-8"><span class="toc-section-number">0.17</span> Make</a></li>
+<li><a href="#/make-9"><span class="toc-section-number">0.18</span> Make</a></li>
+<li><a href="#/make-10"><span class="toc-section-number">0.19</span> Make</a></li>
+<li><a href="#/make-11"><span class="toc-section-number">0.20</span> Make</a></li>
+<li><a href="#/make-12"><span class="toc-section-number">0.21</span> Make</a></li>
+</ul>
+</section>
+
+<section id="overview" class="slide level2">
+<h1><span class="header-section-number">0.1</span> Overview</h1>
+<ul>
+<li>Make
+<ul>
+<li>Lab: Write a simple makefile</li>
+</ul></li>
+</ul>
+</section>
+<section id="overview-1" class="slide level2">
+<h1><span class="header-section-number">0.2</span> Overview</h1>
+<ul>
+<li>Make
+<ul>
+<li>Working of make</li>
+<li>Problems when writing a Makefile</li>
+</ul></li>
+<li>Linux Kernel build
+<ul>
+<li>Modify the configuration options</li>
+<li>Add a new configuration option for your new driver</li>
+<li>Build your own driver and load/unload it</li>
+</ul></li>
+</ul>
+</section>
+<section id="compilation" class="slide level2">
+<h1><span class="header-section-number">0.3</span> Compilation</h1>
+<p><img src="graphviz-images/22cb89260d9cdb6453beaf7db82e9c2259ce938e.png" /></p>
+</section>
+<section id="compilation-contd" class="slide level2">
+<h1><span class="header-section-number">0.4</span> Compilation (contd)</h1>
+<p><img src="graphviz-images/552e9caa0e07ecd3e064f899335ce76266e63d59.png" /></p>
+</section>
+<section id="compilation-contd-1" class="slide level2">
+<h1><span class="header-section-number">0.5</span> Compilation (contd)</h1>
+<p><img src="graphviz-images/5fc92532fa64941eed392d907fb734f61562d93a.png" /></p>
+</section>
+<section id="compilation-contd-2" class="slide level2">
+<h1><span class="header-section-number">0.6</span> Compilation (contd)</h1>
+<p><img src="graphviz-images/5fc92532fa64941eed392d907fb734f61562d93a.png" /></p>
+<ul>
+<li>Issue?</li>
+</ul>
+</section>
+<section id="compilation-contd-3" class="slide level2">
+<h1><span class="header-section-number">0.7</span> Compilation (contd)</h1>
+<p><img src="graphviz-images/5fc92532fa64941eed392d907fb734f61562d93a.png" /></p>
+<ul>
+<li>Issue? Hint: What if I change only b.h?</li>
+</ul>
+</section>
+<section id="compilation-contd-4" class="slide level2">
+<h1><span class="header-section-number">0.8</span> Compilation (contd)</h1>
+<p><img src="graphviz-images/5fc92532fa64941eed392d907fb734f61562d93a.png" /></p>
+<ul>
+<li>Sol: We need a tool which takes dependency graph, and implements topological sort.</li>
+</ul>
+</section>
+<section id="make" class="slide level2">
+<h1><span class="header-section-number">0.9</span> Make</h1>
+<ul>
+<li>Takes dependency graph and commands to be executed in each edge</li>
+<li>Takes a target</li>
+<li>Then solve.</li>
+</ul>
+</section>
+<section id="make-1" class="slide level2">
+<h1><span class="header-section-number">0.10</span> Make</h1>
+<pre><code> target : dependency
+     shell command to execute 
+
+ a.o : a.cc
+     g++ -c a.cc -o a.o</code></pre>
+<ul>
+<li>Note: Shell commands needs to begin with a tab</li>
+</ul>
+</section>
+<section id="make-2" class="slide level2">
+<h1><span class="header-section-number">0.11</span> Make</h1>
+<pre><code>exe : a.o b.o c.o
+    g++ a.o b.o c.o -o exe
+
+a.o : a.cc a.h
+    g++ -c a.cc -o a.o
+b.o : b.cc b.h a.h
+    g++ -c b.cc -o b.o
+c.o : c.cc c.h
+    g++ -c c.cc -o c.o</code></pre>
+</section>
+<section id="make-3" class="slide level2">
+<h1><span class="header-section-number">0.12</span> Make</h1>
+<pre><code>exe : a.o b.o c.o
+    g++ a.o b.o c.o -o exe
+
+a.o : a.cc a.h
+    g++ -c a.cc -o a.o
+b.o : b.cc b.h a.h
+    g++ -c b.cc -o b.o
+c.o : c.cc c.h
+    g++ -c c.cc -o c.o</code></pre>
+<ul>
+<li>Issue?</li>
+</ul>
+</section>
+<section id="make-4" class="slide level2">
+<h1><span class="header-section-number">0.13</span> Make</h1>
+<pre><code>exe : a.o b.o c.o
+    g++ a.o b.o c.o -o exe
+
+a.o : a.cc a.h
+    g++ -c a.cc -o a.o
+b.o : b.cc b.h a.h
+    g++ -c b.cc -o b.o
+c.o : c.cc c.h
+    g++ -c c.cc -o c.o</code></pre>
+<ul>
+<li>Issue?
+<ul>
+<li>What if we wanted to add -O3 to compilation?</li>
+<li>What if I want to change g++ to g++-5</li>
+</ul></li>
+<li>Solution?</li>
+</ul>
+</section>
+<section id="make-5" class="slide level2">
+<h1><span class="header-section-number">0.14</span> Make</h1>
+<pre><code>CXX=g++
+CXXFLAGS=
+LD=g++
+
+exe : a.o b.o c.o
+    $(LD) a.o b.o c.o -o exe
+
+a.o : a.cc a.h
+    $(CXX) $(CXXFLAGS) -c a.cc -o a.o
+b.o : b.cc b.h a.h
+    $(CXX) $(CXXFLAGS) -c b.cc -o b.o
+c.o : c.cc c.h
+    $(CXX) $(CXXFLAGS) -c c.cc -o c.o</code></pre>
+<ul>
+<li>Issue?</li>
+</ul>
+</section>
+<section id="make-6" class="slide level2">
+<h1><span class="header-section-number">0.15</span> Make</h1>
+<pre><code>CXX=g++
+CXXFLAGS=
+LD=g++
+
+objects = a.o b.o c.o
+
+exe : $(objects)
+    $(LD) $(objects) -o exe
+
+a.o : a.cc a.h
+    $(CXX) $(CXXFLAGS) -c a.cc -o a.o
+b.o : b.cc b.h a.h
+    $(CXX) $(CXXFLAGS) -c b.cc -o b.o
+c.o : c.cc c.h
+    $(CXX) $(CXXFLAGS) -c c.cc -o c.o</code></pre>
+<ul>
+<li>Issue? Too many repetitions of same pattern!</li>
+<li>Solution?</li>
+</ul>
+</section>
+<section id="make-7" class="slide level2">
+<h1><span class="header-section-number">0.16</span> Make</h1>
+<pre><code>CXX=g++
+CXXFLAGS=
+LD=g++
+
+objects = a.o b.o c.o
+
+exe : $(objects)
+    $(LD) $(objects) -o exe
+
+%.o : %.cc
+    $(CXX) $(CXXFLAGS) -c $*.cc -o $*.o
+
+a.o : a.h
+b.o : b.h a.h
+c.o : c.h </code></pre>
+<ul>
+<li>Issue? automatic header file dependency generation
+<ul>
+<li>Use: g++ -MMD</li>
+</ul></li>
+</ul>
+</section>
+<section id="make-8" class="slide level2">
+<h1><span class="header-section-number">0.17</span> Make</h1>
+<pre><code>CXX=g++
+CXXFLAGS=
+LD=g++
+
+objects = a.o b.o c.o
+
+exe : $(objects)
+    $(LD) $(objects) -o exe
+
+%.o : %.cc
+    $(CXX) $(CXXFLAGS) -c $*.cc -o $*.o</code></pre>
+<ul>
+<li>Issue?</li>
+<li>What if we want to include c.o only if CONFIG_C_ENABLE=y ?</li>
+</ul>
+</section>
+<section id="make-9" class="slide level2">
+<h1><span class="header-section-number">0.18</span> Make</h1>
+<p>Hint:</p>
+<pre><code>objects-y =  a.o b.o
+objects-y += c.o
+
+objects=objects-y</code></pre>
+</section>
+<section id="make-10" class="slide level2">
+<h1><span class="header-section-number">0.19</span> Make</h1>
+<pre><code>CONFIG_C_ENABLE=y
+
+objects-y =  a.o b.o
+objects-$(CONFIG_C_ENABLE) += c.o
+
+objects=objects-y</code></pre>
+</section>
+<section id="make-11" class="slide level2">
+<h1><span class="header-section-number">0.20</span> Make</h1>
+<pre><code>include config
+
+objects-y =  a.o b.o
+objects-$(CONFIG_C_ENABLE) += c.o
+
+objects=objects-y</code></pre>
+<ul>
+<li>Issue? What if someone changed config?</li>
+</ul>
+</section>
+<section id="make-12" class="slide level2">
+<h1><span class="header-section-number">0.21</span> Make</h1>
+<pre><code> include config
+                                                                             
+ objects-y = a.o b.o
+ objects-$(CONFIG_C_ENABLE) += c.o 
+ objects = $(objects-y)
+                                                                             
+ exe : config $(objects)
+    $(LD) $(objects) -o exe
+                                                                             
+ %.o : %.cc  config
+    $(CXX) $(CXXFLAGS) -c $*.cc -o $*.o </code></pre>
+<ul>
+<li>Issue: User need to manually edit the file <em>config</em></li>
+</ul>
+</section>
+    </div>
+  </div>
+
+  <script src="reveal.js/lib/js/head.min.js"></script>
+  <script src="reveal.js/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true },
+          { src: 'reveal.js/plugin/notes/notes.js', async: true }
+        ]
+      });
+    </script>
+    </body>
+</html>

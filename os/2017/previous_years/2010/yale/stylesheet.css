@@ -1,0 +1,29 @@
+body { font-family:      Arial,helvetica,sans-serif;
+       color:            black;
+       background-color: white;
+     }
+
+ul,ol,dir,menu   { font-family:Arial,helvetica,sans-serif }
+
+dl   { font-family: Arial,helvetica,sans-serif
+     }
+
+p    { font-family: Arial,helvetica,sans-serif  }
+
+pre  { margin-left: 5%; 
+       font-family: "courier new",courier,monospace;
+     } 
+
+h1,h2,h3,h4  {color:  "darkblue";
+           font-family: Arial,helvetica,sans-serif;
+           font-weight: bold; 
+           margin-left: 0%;  }
+
+div.leftmarg {margin-left: 5%;
+        font-family: Arial,helvetica,sans-serif}
+
+a:active  {color: #0000ff; text-decoration: underline}
+a:visited {color: #800080; }
+
+.note    {color: orange;}
+.warning {color: red; font-weight: bold}

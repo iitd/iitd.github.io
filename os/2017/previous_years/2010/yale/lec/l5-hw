@@ -1,0 +1,103 @@
+
+<html>
+<head>
+<title>Homework: Interrupts and Exceptions in xv6</title>
+<link rel="stylesheet" href="../labs.css" type="text/css" />
+</head>
+<body>
+
+<h2><a href="..">CPSC 422/522: Operating Systems</a></h2>
+<hr>
+
+<h1>Homework: Interrupts and Exceptions in xv6</h1>
+
+
+
+<p>
+<b>Read</b>: xv6
+<code>trapasm.S</code>,
+<code>trap.c</code>,
+<code>syscall.c</code>,
+<code>initcode.S</code>,
+<code>usys.S</code>.
+Skim
+<code>vectors.pl</code>,
+<code>vectors.S</code>,
+<code>lapic.c</code>,
+<code>ioapic.c</code>,
+<code>picirq.c</code>.
+
+<p>
+<b>Hand-In Procedure</b>
+<p>
+You are to turn in this homework at the beginning of lecture.
+Please write up your answers to the exercises below and hand them in to a
+staff member at the beginning of the lecture.
+<p>
+
+<b>Introduction</b>
+
+<p>Try to understand xv6's
+<code>trapasm.S</code>,
+<code>trap.c</code>,
+<code>syscall.c</code>,
+<code>initcode.S</code>,
+<code>usys.S</code>.
+Skim
+<code>vectors.S</code>,
+<code>lapic.c</code>,
+<code>ioapic.c</code>,
+<code>picirq.c</code>.
+<p>
+The assigned chapter for today provides a commentary for these files, but you
+may find it useful to also consult:
+
+<p>Chapter 5 of <a href="../ref/ia32-3.pdf">Intel's system programming
+guide</a>.
+Be aware
+that terms such as exceptions, traps, interrupts, faults and aborts
+have no standard meaning.
+
+<div class="required">
+<p><span class="header">Turn in:</span>
+In xv6, set a breakpoint at the beginning of <code>syscall()</code> to
+catch the very first system call.  What values are on the stack at
+this point?  Turn in the output of <code>x/37x $esp</code> at that
+breakpoint with each value labeled as to what it is (e.g.,
+saved <code>%ebp</code> for <code>trap</code>,
+<code>trapframe.eip</code>, scratch space, etc.).
+</div>
+
+<!--
+<p>
+As in Homework 3, you may find it easier to examine the appropriate
+stack when QEMU is simulating only one CPU instead of two.  To d
+this, make a copy of Makefile called Makefile.uni, find the line that
+starts with <tt>QEMUOPTS</tt>, and change <tt>-smp 2</tt> to <tt>-smp
+1</tt>, and write out the file. Then run
+<pre>
+make -f Makefile.uni qemu-gdb
+</pre>
+-->
+
+<p>
+
+<b>This completes the homework.</b>
+
+
+
+<p><hr><p>
+<address>
+<a href="http://www.cs.yale.edu/people/ford.html">Bryan Ford</a>,
+<a href="http://www.cs.yale.edu/">Department of Computer Science</a>,
+<a href="http://www.yale.edu/">Yale University</a>
+</address> 
+
+
+<i>Based on MIT 6.828 materials
+	by Frans Kaashoek and others</i>
+
+
+</body>
+</html>
+

@@ -1,0 +1,73 @@
+TITLE: COL100 : Introduction to Computer Science : Schedule
+SEMESTER: Sem I, 2018-19
+Start: Jul 23, 2018
+Stop: Nov 15, 2018
+Schedule: Monday, Thursday
+HEADER: Links to notes etc. on future days are <i>tentative only</i>. They are here only to give you an idea what the future will bring.<br>Acknowledgements: Much of the course material has been adapted from Stanford's CS106A and Stanford's CS106B courses.
+
+HOLIDAY: Sep 03. Janmashtami
+HOLIDAY: Oct 15. Mid-semester break
+HOLIDAY: Oct 18. Mid-semester break
+
+SKIP: Aug 23. No Lecture. Minor1 Tests scheduled.
+SKIP: Oct 01. No Lecture. Minor2 Tests scheduled.
+SKIP: Oct 04. No Lecture. Minor2 Tests scheduled.
+SKIP: Nov 08. No Class day.
+EVENT: Sep 10. Return of Minor-1 scripts
+EVENT: Oct 22. Return of Minor-2 scripts
+
+==
+LEC: <a href=lec/intro.html>Introduction to Computers</a>
+==
+LEC: <a href=lec/intro_to_karel.html>Introduction to Karel</a>. Refers to <a href=references/karel-the-robot-learns-java.pdf>this document</a>.
+==
+LEC: <a href=lec/intro_to_cpp.html>Introduction to C++</a>
+==
+LEC: <a href=lec/intro_to_cpp2.html>Introduction to C++ continued</a>
+==
+LEC: <a href=lec/io_ite.html>I/O, if-then-else, logical ops, precedence rules</a>
+==
+LEC: <a href=lec/loops.html>Loops</a>
+==
+LEC: <a href=lec/loops2.html>Loops continued</a>
+==
+LEC: <a href=lec/scope_and_parameters.html>Scope and Parameters</a>
+==
+LEC: <a href=lec/parameters2.html>Parameters (continued)</a>
+==
+LEC: <a href=lec/call_by_reference.html>Function Parameters</a>
+==
+LEC: <a href=lec/strings.html>Functions and Strings</a>
+==
+LEC: <a href=lec/strings2.html>Strings continued</a>
+==
+LEC: <a href=lec/strings2.html>Strings continued 2</a>
+==
+LEC: <a href=lec/vectors.html>Vectors</a>
+==
+LEC: <a href=lec/grids_and_streams.html>Grids, streams</a>
+==
+LEC: <a href=lec/grids_and_streams.html>Streams (contd.)</a>
+==
+LEC: <a href=lec/file_io.html>File I/O</a>
+==
+LEC: <a href=lec/bigO.html>BigO</a>
+==
+LEC: <a href=lec/stacks.html>Stacks</a>, <a href=lec/queues.html>Queues</a>
+==
+LEC: <a href=lec/queues.html>Queues contd.</a>, <a href=lec/debugging.html>Debugging</a>
+==
+LEC: <a href=lec/sets.html>Sets</a>
+==
+LEC: <a href=lec/maps.html>Maps</a> (continued during Saturday class)
+==
+LEC: <a href=lec/recursion.html>Recursion</a>
+==
+LEC: <a href=lec/recursion.html>Recursion contd.</a>
+==
+LEC: <a href=lec/recursion.html>Recursion contd.</a>
+==
+LEC: <a href=lec/recursion.html>Recursion contd.</a>
+==
+LEC: <a href=lec/recursion.html>Tail recursion</a> and <a href=lec/exhaustive_search.html>Exhaustive search</a>
+==

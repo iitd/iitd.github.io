@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/~cs1080167/pintos-repo/!svn/ver/1/src/misc
+END
+bochs-2.2.6-page-fault-segv.patch
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/~cs1080167/pintos-repo/!svn/ver/1/src/misc/bochs-2.2.6-page-fault-segv.patch
+END
+bochs-2.2.6-solaris-link.patch
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/~cs1080167/pintos-repo/!svn/ver/1/src/misc/bochs-2.2.6-solaris-link.patch
+END
+bochs-2.2.6-gdbstub-ENN.patch
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/~cs1080167/pintos-repo/!svn/ver/1/src/misc/bochs-2.2.6-gdbstub-ENN.patch
+END
+bochs-2.2.6-triple-fault.patch
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/~cs1080167/pintos-repo/!svn/ver/1/src/misc/bochs-2.2.6-triple-fault.patch
+END
+gcc-3.3.6-cross-howto
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/~cs1080167/pintos-repo/!svn/ver/1/src/misc/gcc-3.3.6-cross-howto
+END
+bochs-2.2.6-build.sh
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/~cs1080167/pintos-repo/!svn/ver/1/src/misc/bochs-2.2.6-build.sh
+END
+bochs-2.2.6-paranoia.patch
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/~cs1080167/pintos-repo/!svn/ver/1/src/misc/bochs-2.2.6-paranoia.patch
+END
+bochs-2.2.6-solaris-tty.patch
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/~cs1080167/pintos-repo/!svn/ver/1/src/misc/bochs-2.2.6-solaris-tty.patch
+END
+bochs-2.2.6-ms-extensions.patch
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/~cs1080167/pintos-repo/!svn/ver/1/src/misc/bochs-2.2.6-ms-extensions.patch
+END
+bochs-2.2.6-big-endian.patch
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/~cs1080167/pintos-repo/!svn/ver/1/src/misc/bochs-2.2.6-big-endian.patch
+END
+bochs-2.2.6-jitter.patch
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/~cs1080167/pintos-repo/!svn/ver/1/src/misc/bochs-2.2.6-jitter.patch
+END
+gdb-macros
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/~cs1080167/pintos-repo/!svn/ver/1/src/misc/gdb-macros
+END

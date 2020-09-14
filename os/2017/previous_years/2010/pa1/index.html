@@ -1,0 +1,55 @@
+<html><head>
+<title>CSL373: Assignment 1 on Processes control</title>
+</head>
+<h1><font color=blue>CSL373: Assignment 1 on Process control and IPC</font></h1>
+<h2>Background reading</h2>
+
+<ol>
+<li> Read chapter 2 of <i> Unix Network Programming Volume 2: Interprocess Communications</i> by W. Richard 
+     Stevens
+</li>
+<li> Carefully read the following man pages: signal, ualarm, umask, sigprocmask,
+     gettimeofday, wait, exec, fork, pipe,open, ipc, clone, msgctcl, msgsnd,
+     msgrcf,rand, srand48.
+</li>
+<li> (optional) Read from the OS books the sections (bed time stories) that deal
+with: CPU scheduling, processes, threads, IPC.</li>
+</ol>
+
+<h2>Processes</h2>
+<ol>
+<li> Expand the <a href="http://www.cse.iitd.ernet.in/%7Esuban/csl373/turtle.ex">hare and turtle</a> process descriptions and implement IPC solutions  by
+defining cooperating processes.</li>
+<li> First use fork() and execve() to create the processes and develop
+complete applications using the following Linux IPC (message passing)
+mechanisms separately: (i) pipes (ii) FIFO files and (iii) message queues.</li>
+</ol>
+     
+<h2>Threads</h2>
+<ol>
+<li> Now, develop the same application (hare and turtle) using Linux
+pthreads (shared memory). </li>
+</ol>
+
+<h2>Tests</h2>
+<ul>
+  <li>
+  The current outcome of the race should be displayed after fixed intervals.
+  </li>
+  <li>
+  Try varying the speed and the sleeping time of the hare to see different
+  outcomes.
+  </li>
+</ul>
+
+<h2>Note:</h2>
+<ol>
+  <li> To be done individually.</li>
+  <li> The last date of submission of solutions using pipes, FIFOs and
+  message Qs (processes) is <b>Jan 16</b> (strict). 
+	<!--Click <a href="http://www.cse.iitd.ernet.in/cgi-bin/local/sbansal/csl373_a1/submit.cgi">here</a> to submit.<br>-->
+  The last date for the threads assignment is <b>Jan 23</b>.
+  </li></ol>
+
+<hr>
+</body></html>

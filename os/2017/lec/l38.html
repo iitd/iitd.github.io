@@ -1,0 +1,219 @@
+<title>L38</title>
+<html>
+<head>
+</head>
+<body>
+
+<h2>Case study: An example on non-linear effects of scheduling: "Receive livelocks in interrupt-driven kernel"</h2>
+<ul>
+	<li>Interrupt-driven kernel : triggers high-priority interrupt on every
+	receive event.
+	<li>Interrupt handler processes the received message (network packet) and
+	adds it to the desired queue for further processing (e.g., sending a reply).
+	Thus the interrupt handler acts as a producer for this queue.
+	<li>Another lower-priority thread consumes from the queue. However, the
+	lower priority thread can get interrupted if the network device generates
+	another interrupt for a received packet.
+	<li>If the rate of received packets is high, the lower-priority consumer
+	thread will never get to run, resulting in packets getting
+	dropped at the queue, and a total of zero throughput.
+	<li>Draw the curve between input packet rate and the throughput of the
+	kernel.
+	<li>Better to have polled the network device -- excess input rate would
+	cause a drop at the network device queue (no wasted work!)
+	<li>Result: Graceful saturation of throughput with increasing input network rate.
+	<li>Tradeoff between polling and interrupts
+	<ul>
+		<li>Interrupts provide lower latency, and less overhead at small input
+		rates. But behave poorly at high input rates. e.g., telephone calls
+		<li>Polling provides higher throughput at high input rates. But results
+		in very high latencies for low input rates. e.g., emails
+	</ul>
+</ul>
+
+<h1>Multi-processor coordination without locks</h1>
+
+<p>How to avoid using locks.  Even with scalable locks, their use can
+  be expensive.  Let's start with a simple data structure and try to
+  allow for concurrent access, so that we get a feel for the issues.
+
+<h2>Searchable stack using locks</h2>
+
+<pre>
+	struct element {
+	    int key;
+	    int value;
+	    struct element *next;
+	};
+
+	struct element *top;
+
+	void push(struct element *e) {
+	    e->next = top;
+	    top = e;
+	}
+
+	struct element *pop(void) {
+	    struct element *e = top;
+	    top = e->next;
+	    return e;
+	}
+
+	int search(int key) {
+	    struct element *e = top;
+	    while (e) {
+		if (e->key == key)
+		    return e->value;
+	        e = e->next;
+	    }
+	    return -1;
+	}
+</pre>
+
+<p>
+This is clearly not going to work on a concurrent system
+
+<p>
+global spinlock: performance
+    how many concurrent ops?  just one CPU at a time
+    bus interactions?  bounce cache line for both reads, writes
+
+<p>
+global read-write lock: performance
+<ul>
+		<li>how many concurrent ops?  theoretically, could do one per CPU
+		<li>bus interactions?  bounce cache line for both reads, writes
+		<li>draw timing diagram of CPU interactions
+		<li>we might be slower on two CPUs than on a single CPU!
+</ul>
+
+<p>
+is it going to get better if we allocate a read-write lock for each item?
+<ul>
+		<li>concurrency still possible
+		<li>but penalty even worse: N_{elem} cache line bounces for each search traversal
+</ul>
+
+<p>
+more scalable locking schemes
+<ul>
+		<li>example: brlock
+		<li>N cpus (or threads) would have N locks, one per CPU
+		<li>readers lock their CPU's lock, writers must lock each CPU's lock
+		<li>must use up N 64-byte cache lines, even though each lock is just a bit.. (why? because anything at a finer granularity will still cause cache bouncing)
+</ul>
+</pre>
+
+<h2>Avoiding locks</h2>
+
+<p>
+why do we want to avoid locks?
+<ul>
+		<li>performance
+		<li>complexity
+		<li>deadlock
+		<li>priority inversion
+</ul>
+
+<p>
+Recall compare-and-swap:
+<pre>
+	int cmpxchg(int *addr, int old, int new) {
+	    int was = *addr;
+	    if (was == old)
+		*addr = new;
+	    return was;
+	}
+</pre>
+
+<p>Usage:
+<pre>
+	void push(struct element *e) {
+    do {
+	    e->next = top;
+		} while (cmpxchg(&top, e->next, e) != e->next);
+	}
+
+	struct element *pop(void) {
+    do {
+	    struct element *e = top;
+		} while (cmpxchg(&top, e, e->next) != e);
+	  return e;
+	}
+</pre>
+What about search? Can be the same as in the non-concurrent case?
+
+<p>But before that:
+why is this better than not having locks?
+<ul>
+		<li>readers no longer generate spurious updates, which incurred performance hit
+		<li>not having to think about deadlock is great
+</ul>
+
+<p>
+problem 1: lock-free data structures require careful design, hw support
+<ul>
+		<li>suppose we want to remove arbitrary elements, not just the first one
+		<li>what could go wrong if we try to use the same cmpxchg?
+		<li>need DCAS (double-compare-and-swap) to implement remove properly
+    <ul>
+	    <li>must make sure neither previous nor next element changed
+    </ul>
+	  <li>x86 hardware doesn't have DCAS
+     <ul>
+		<li>can do some tricks because x86 provides 8-byte cmpxchg
+	  <li>only for sequential memory addresses
+	  <li>can potentially play tricks by staggering the 8 bytes across two pages
+	  <li>unlikely to win in performance once we start invalidating TLB entries
+    </ul>
+</ul>
+
+<p>
+problem 2: memory reuse
+<br>
+    when can we free a memory block, if other CPUs could be accessing it?
+	other CPU's search might be traversing any of the elements
+<ul>
+	<li>Solution: we could try bumping a refcount on each access, but that introduces cacheline bounces
+  <ul>
+	<li>and what about CPUs that are just about to bump the refcount?
+	</ul>
+</ul>
+
+<p>
+What if the memory is freed (and reused) while a search() thread is still
+holding a reference to it?
+
+<p>
+Worse, reusing a memory block can corrupt list
+<ul>
+	<li>stack contains three elements<br>
+	    top -&gt; A -&gt; B -&gt; C
+	<li>CPU 1 about to pop off the top of the stack,
+	    preempted just before cmpxchg(&amp;top, A, B)
+	<li>CPU 2 pops off A, B, frees both of them.
+	    top -&gt; C
+	<li>CPU 2 allocates another item (malloc reuses A) and pushes onto stack
+	    top -&gt; A -&gt; C
+	<li>CPU 1: cmpxchg succeeds, stack now looks like
+	    top -&gt; B -&gt; C
+	<li>This is not right: it should have looked as if two pops, one push and one pop
+  have occurred (i.e., three pops and one push to leave one element on the stack).
+  The problem occurred because A was reused and cmpxchg only relies on the address and
+  not on the logical element for disambiguation.
+</ul>
+Memory reuse should be prevented till one is sure that no thread could be holding
+a reference to it (in its stack or registers), i.e., free() should be prevented till
+the time any thread could be holding a reference to something that was just popped
+off.
+
+<p>But how do we know about when it is safe to reuse memory? Would waiting
+for a long time (say one hour) before freeing work? Well almost -- at least
+the probability that another thread could be holding a reference to such
+a location becomes smaller with time, and so the probability of a failure
+is very low. How does one decide how long to wait before reusing memory?
+If too small, can result in incorrect behaviour. If too large, cannot reuse
+memory for a long time, which can be a problem is the available memory is
+small.
+
+</body>

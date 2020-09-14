@@ -1,0 +1,349 @@
+Frequently asked questions, and answers by TAs, in previous years. Unless otherwise mentioned, the answers (and in some cases, the questions) are by Deepak Ravi.
+<h2>HoH Lab 1</h2>
+<ol>
+<li>
+<b>Question</b>: How to interpret <code>qemu.log</code>?
+<br><br>
+<b>Answer</b>: qemu.log is not the instruction trace. it is the instruction log coming from qemu's JIT/binary translation system. An output appears in qemu.log for the first time an instruction sequence is executed; subsequent executions of that instruction sequence are not emitted in qemu.log. You need to modify qemu's source code to get the real instruction trace. But for most bugs you're going to hit in this lab, you can rely on qemu.log.
+</li>
+<br><br>
+  <li>
+  <b>Question</b>: IO vs. MMIO.
+  I found that when using mmio, the output goes on the qemu window, whereas when using serial io functions, the output goes on the terminal which launched qemu. So, the output "Hello world" comes on qemu window and the output "Hello serial" comes on the linux terminal. 
+
+  Digging deeper, the mmio write functions just change the pointer value and call mfence, whereas the io write functions create an assembly statement using in/out. 
+
+  Why is there such a difference ? 
+  <br><br>
+
+  <b>Answer</b>:
+
+<pre>
+Because you're programming <strong>two</strong> different devices.
+ - using mmio, you were programming <em>vga device</em> which is connected to monior (In qemu, monitor is emulated as qemu window)
+ - using pmio, you were programming <em>uart/serial console</em> device, which is supposed to connect to a serial device. (In qemu, this serial port is connected to terminal)
+
+How did we connect the serial port of machine emulated by qemu to linux terminal?
+Look at the makefile:
+      qemu:: iso                                                                      
+             $(QEMU) $(QEMUFLAGS) $(QEMULOG) <strong>-serial stdio</strong> -serial null -cdrom $O/$(NAME).iso
+
+To understand PMIO: Let's look at 8086 design. a 16-bit processor where address spaces are small. 8086 processor has a pin for MEM/IO. If MEM(pin is set), the address request will go to memory, and if IO(pin is unset), the address request will goto 16-bit IO bus. In short, for 8086, there're two address spaces - one for memory and another for IO. Memory address are actually 20-bit wide(remember 8086's segmentation? (CS:IP)), and IO address are 16-bit wide. So, how to specify which address space to choose? Yes just provide two different set of instructions to users, and let the user explicitly mention whether it is memory or IO.  So to use IO bus, you need to use inX/outX instructions - they'll choose IO namespace by unsetting MEM/IO pin...
+
+Time's changed. we've 32/64 bit registers - memory address space is larger than physical RAM - so why not combine MEM/IO into one single address space, and use same instructions for them? Yes, but we need to change the behaviour slightly. 
+- caching: Let's introduce MTRR/PAT. Let's look at MTRR to determine whether we want request to be cached or not etc.
+- simulate inb vs inw. On cache miss, processor usually does a burst read to fetch entire cacheline from RAM. So, if you want inb/inw behaviour - we need to say, let's have two modes - In cached mode, behave normally (do burst read). In uncached mode, behave like inb/inw. if the instruction was trying to load a char. do read only 8-bit. - ie. dont do burst reads.
+So CPU doesn't need to know whether it is an IO or MEM - just support above behaviours. But at some point we need to demux it to mem or io.
+- have a north bridge/memory controller. Let it do demux....
+(Most modern devices uses MMIO. legacy devices like serial port, ps2 keyboards do use PMIO)
+
+Let's come back to your question.
+
+The MMIO functions (memory mapped input output ) are used to write to the region of devices which have memory mapped buffers (such as display vga buffer), while the IO functions are just designed to read/write to the input output ports of different devices.
+The serial output is written using the io functions because your qemu emulator and the terminal you start the qemu with are connected via a uart port, so anything you write to the port of the uart is displayed on the terminal.
+
+The IO functions are written using assembly because in x86 the IO ports are written using the inX and outX instructions (like inb, outb, inw, outw) and inline assembly is used to specify the compiler to specifically output these instructions only for the IO functions.
+The MMIO functions require just writing the memory so the function just assigns a value to a pointer. note that here the compiler will output the x86 mov instruction. The mfence instruction is used to ensure that the memory writes are synchronized up to the point of execution of this instruction and when the function exits, the buffer is surely updated.
+
+You can read more about mfence from here (<a href="http://x86.renejeschke.de/html/file_module_x86_id_170.html">http://x86.renejeschke.de/html/file_module_x86_id_170.html</a>)
+
+Also:
+ You don't need to manually write assembly instruction - mfence.   C++11 provide std::atomic_thread_fence(...) and std::atomic_signal_fence(...) functions defined in &lt;atomic&gt; headerfile. It's much much better than writing the assembly instruction - why? Because, it's portable and depending on the memory model, compiler will be able to optimize away those fences etc. 
+So, in util/io.h: it's equivalent to have:
+ std::atomic_thread_fence(std::memory_order_seq_cst) 
+instead of mfence instruction.
+(try disassembly - you should see compiler generating mfence)
+
+
+Thanks,
+Dushyant Behl (TA 2015)
+</pre>
+
+  </li>
+</ol>
+<h2>HoH Lab 2</h2>
+
+<ol>
+<li>
+  <b>Question</b>: teip was set to the label 1 (which points to the instructions "mov $0, %ebp; jmp *(%esp)". This means that after eip gets set to teip (with the ret instruction), ebp is set to 0 and then we jump to *(%esp). %esp is pointing to the top (least address) of the new stack which is f_start, or, the first instruction of the called function! Hence, we enter the called function (which is the long computational task in our case). Here, all the arguments are present at the exact offsets following gcc calling conventions.
+<br>
+    When we again call stack_saverestore, we again push the 3 registers, the instruction address of 1 and switch stacks. After we switch stacks we do "ret". But, at the top of the old stack lies the instruction address of 1. So, eip gets set to it. Then we pop the three registers %eax, %ecx and %ebp which had been pushed onto the stack. In this way, the registers are restored. Now, execution continues with the old stack.
+<br>
+    But, why are we saving only eax, ecx and ebp? Wont the other registers get trashed by the fiber function (after executing stack_saverestore)?
+  <br><br>
+  <b>Answer</b>: save_restore actually saves all the registers. See the use of the macro 'ALL_REGISTERS' (or something with similar name) at the end of the save_restore macro definition.
+</li>    
+<br><br>
+<li>
+<b>Question</b>: The use of the label convention in macro - "$1f" was particularly confusing and led me in drawing all kinds of stupid conclusions from the code. I had initially thought that "$" referred to constants. So, i had thought this was PC relative addressing and i entirely omitted the possibility of "$" referring to label addresses.
+<br><br>
+
+<b>Answer</b>: 
+Please read the manual to understand these operands 1f, 2f, 1b, 2b.
+Yes $ stands for constants aka immediate values. address of a label is constant. value pointed by the label is not.
+<br>
+The use of 1f, 1b, 2f,2b is the recommended way when we want to program labels in macro.
+
+</li>
+<br><br>
+<li>
+<b>Question</b>: I am not able to understand the below portion in saverestore for fiber.
+<pre>
+  :                                                                  \
+  :"a" (&from_stack), "c"  (&to_stack)                               \
+  :_ALL_REGISTERS, "memory"                                          \
+);                                
+</pre>
+<br>
+<b>Answer</b>: Read <a href=https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html>https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html</a>. 
+</li>
+<br><br>
+<li>
+<b>Question</b>: 
+Why are some registers explicitly stored in stack_saverestore using push instructions while others using ALL_REGISTERS?
+Why we didn't use only one of the approach?
+<br><br>
+<b>Answer</b>: 
+
+Only the compiler knows which registers are live at that point.
+
+So it's not optimal to manually save the registers - when you wanted to do non-preemptive context switch.
+
+You tell the gcc, which all registers will be clobbered. if they're live, gcc will save - otherwise gcc won't.
+
+ 
+
+So which approach is preferred?
+
+ 
+
+But here's the issue:You cannot mention stack pointer as clobbered. Where will compiler save if that's the case.
+
+Similarly, gcc doesn't allow you to mark ebp as clobbbered.
+
+ 
+
+If you compile an executable as PIC(Position Independent Code), then gcc won't allow you to mark %ebx as clobbered.
+
+(In multicore - this stack_saverestore manually saves and restore %ebx too)
+
+ 
+
+So in effect - we ended up in using both the approach.
+</li>
+<br><br>
+<li>
+<b>Question</b>: The assignment says, <i>You shall also take care of the data race, if any, between the ring0_preempt and fiber’s explicit yields</i>. Give some ideas? Do we have to implement locks?
+<br><br>
+<b>Answer</b>: No, you do not have to implement locks. If control is inside fiber's explicit yield, and ring0_preempt is called, then don't do preemption (you still need to call the C function given as arg).
+</li>
+<br><br>
+<li>
+<b>Question</b>: In the part of the problem, it is mentioned that: You need to write a part of trap handler - ring0_preempt - which should switch stack to ‘main_stack’.
+<p>
+Don't we need to pass main_stack as an argument to this handler in that case?
+<br><br>
+<b>Answer</b>: No, the main_stack is in core_t.
+
+And core_t instance is mapped to %gs.
+
+There're no global variable.  And the trap handlers are stateless.
+</li>
+<br><br>
+<li>
+<b>Question</b>: In the assignment it's written "You shall program one-shot LAPIC timer to raise an interrupt after a specified time". Where is this code supposed to be written?
+<br><br>
+<b>Answer</b>: You're already given the API to do so. You need to call the API at right place ...and reset the timer.. at the right place.
+</li>
+<br><br>
+<li>
+<b>Quiz Question</b>: Minimum number of GDT entries.
+<p>
+<pre>
+What's the minimum number of GDT entries we need:
+1. for kernel mode only.
+   a. with only read-only data
+   b. with read/write data
+
+2. for kernel+user mode.
+   a. with only read-only data
+   b. with read/write data
+
+3. for kernel+user mode+multicore.
+
+and why?
+                 
+Why did we have per_core entry in gdt? What are the alternate approaches?
+</pre>
+<br>
+<b>Answer 1</b>:
+<pre>
+If we have paging, then we can actually implement with just 1 entry which maps all the locations as valid and paging takes care of permissions for user/kernel/read/write/etc.
+
+If we want to use segmentation to control permissions, below would be my answer:
+
+1. Only kernel mode:
+   a. with ro data
+      Only 1 entry (the code and data both can be mapped onto a single entry since they will be read-only)
+
+    b. with rw data
+       2 entries - one for code (ro) and one for data (rw). (If we have ro data also, we can club it with code)
+
+2. for kernel+user mode.
+   a. with only read-only data
+      2 entries: One with kernel permissions and other with user permissions and mapping their individual sections.
+   b. with read/write data
+      4 entries: Two with kernel permissions (ro code, rw data) and other two with user permissions (ro code and rw data).
+</pre>
+<b>Answer 2</b>:
+<pre>
+Following could be the minimum number of GDT entries for the given scenarios. 
+
+1. Only kernel mode with ro and rw data
+=>  2 ( + 1 Null Descriptor ) 
+=>  1 , if paging is used to implement r/w permissions , ( + 1 Null Descriptor ) 
+2. For kernel + user mode :
+=>  4 ( kernel rw , kernel ro , user rw , user ro ) ( + 1 Null Descriptor ) 
+=>  2 , if paging is used to implement r/w permissions ( + 1 Null Descriptor ) 
+
+( We can't have just one entry for both user and kernel, for obvious reasons ) 
+
+3. For kernel + user + multicore CPU 
+[ No of entries for user + kernel ] + 1 for multicore ( + 1 Null Descriptor ) 
+
+Note : ro -> read only , rw -> read write 
+
+Some useful discussions : 
+http://stackoverflow.com/questions/3029064/segmentation-in-linux-segmentation-paging-are-redundant
+</pre>
+<br>
+<b>What is the correct answer? Is any of these correct?</b>
+</li>
+<br><br>
+<li>
+<b>Question</b>:  Unexpected interrupt getting generated! Please help. This interrupt keeps on getting generated infinitely after setting the timer.
+This issue happens quite randomly. Has anybody else faced this issue ?? If yes then please let me know :)
+<pre>
+inside isr user ring0: 00000006  esp=00c03f50
+</pre>
+<br>
+<b>Answer</b>: This corresponds to Invalid Opcode.
+You're jumping to invalid location. (not restoring the correct PC? or stack getting corrupted etc.. ).
+So look through the PC in qemu.log..
+Post relevant portions of qemu.log (remove your solution from the log), if you want more help.
+</li>
+<br><br>
+<li><b>Question</b>: Understanding 2.4.
+In the diagram (flow between fiber_stack and main_stack), it is written ring0_preempt (preemption: saves all registers).
+Which registers are we talking about here? All the seven registers %%eax,%%ecx etc..
+<br><br>
+<b>Answer</b>: yes, fpu/simd registers as well.
+</li>
+<br><br>
+<li>
+<b>Question</b>: How to reach the preempt_t structure?
+<br><br>
+<b>Answer</b>:
+<pre>
+struct preempt_t{
+ // insert your code here
+};
+You've to define the preempt_t structure.
+%gs:core_offset_preempt will give you the first 4 bytes of this structure.
+</pre>
+</li>
+<br><br>
+<li>
+<b>Question</b>: lapic not firing sometimes. Why is the lapic timer not giving intrupts if I run 2 fibres(without yields in both) at the same time . But after one of them ends, it starts working again?
+I am using a flag in preempt to avoid data race.
+Is it a bug or somthing wrong in my implementation? 
+<br><br>
+<b>Answer</b>:
+<pre>
+In general, interrupts are disabled when you enter an ISR. In this case, since we are jumping back to the main function within the handler itself, you need to enable interrupts in your main code once you return back from the preempt handler to be able to see interrupts again.
+
+With the above hint, you can also try to understand why it starts working when one of the fiber ends.
+
+Consider the situation with 2 fibers both of which not yield at anytime.
+
+start thread1
+ .
+ .
+timer intrupt
+ .
+ . (intrupts disabled)
+ .
+start thread2(before calling iret)
+ .......... keeps running (as intrupts are disabled).
+</pre>
+</li>
+<br><br>
+<li>
+<b>Question</b>: I am having a bit of an issue with the idea of setting some sort of a valid bit (before non-preemptive yield) and using that to avoid races with a preemptive yield. You said something of this sort in the help session. I think it requires us to pass the preempt_t structure to the fiber and 'trusting' it to set the bit. DO we actually trust a random fiber?
+
+<p>
+I preempt myself with an apology if I am nitpicking (:
+<br><br>
+<b>Answer</b>: (student answer) I had the same concern. But the idea is that "yield" should do the job of blocking interrupts. However, the given implementation of yield ie., stacksaverestore does not provide that. So consider it as modifying the yield instruction. 
+</li>
+</ol>
+<h2>HoH Lab 3</h2>
+<ol>
+<li>
+<b>Question</b>: What do we have to do exactly in the multicore part?
+<br><br>
+<b>Answer</b>: You need to implement message passing between the two cores by filling up the functions in labs/multicore.h file. Once done, the shell menu should start appearing again
+</li>
+<br><br>
+<li>
+<b>Question</b>: How to implement the SPSC queue?
+<br><br>
+<b>Answer</b>: Look at the lock-free SPSC queue implementation given on the second page at <a href=http://www.cse.iitd.ernet.in/~sbansal/os/ref/proving.pdf>http://www.cse.iitd.ernet.in/~sbansal/os/ref/proving.pdf</a>.
+</li>
+<br><br>
+<li>
+<b>Question</b>:  I am not sure what we have to do in 1.9. We have to implement a single-producer single consumer lock free circular queue using std:atomic. Going by the code in multicore.h, I can see some of the variables like w_deleted_count, w_deleting_count, w_cached_read_count etc. Can some one explain what exactly are these variables and what is their significance?
+<br><br>
+<b>Answer</b>: these variables can be used in the functions in the multicore file to implement message passing. The write, read and delete count functions can be used for message passing. the variables are related to that algorithm and need to be declared in the structure and used appropriately in the functions. we dont need to do anything specific for proving the invariants in the code.
+to add some more details, the w_ variables are to be used in write structure and similarly for others.
+<br><br>
+</li>
+<li>
+<b>Question</b>:
+<pre>
+1. What is the utility of the functions : 
+
+size_t delete_reservesize() ; 
+size_t read_reservesize();
+
+These functions are not being called anywhere in the code. 
+
+2. What is the utility of the render_flag ? Why is it set to false ? 
+
+In the following snippet : 
+
+ if(apps.render_flag && render_eq(apps.render_state, apps.rendertmp)){
+    apps.render_state=apps.rendertmp;
+    apps.render_flag = true;
+    goto norender;
+  }
+
+render_flag will never get set to true, as control never enters the block. 
+</pre>
+<br>
+<b>Answer</b>:
+<pre>
+I'll fix the render flag. Thanks.
+
+Reserve size function was there to extract parallelism.. 
+
+It's not part of this lab.
+</pre>
+</li>
+<br><br>
+<li>
+<b>Question</b>: Is it always necessary for the size of buffer to be a power of 2?
+<br><br>
+<b>Answer</b>: Proof provided in the comments of labs/multicore.h assumes this case.
+</li>
+</ol>

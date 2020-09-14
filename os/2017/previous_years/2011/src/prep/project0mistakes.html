@@ -1,0 +1,184 @@
+<html>
+    <head>
+	<title>Project 0 Mistakes</title>
+        <link rel="stylesheet" type="text/css" href="/~cs3204/spring2007/gback/css/vtdoopal.css" />
+    </head>
+<body>
+
+<h2>Project 0 Mistakes</h2>
+Any of these will sink your project.
+
+<ul>
+<li> <b>Ignoring compiler warnings.</b>
+You should not ignore compiler warnings.  The compiler is your friend.
+Example:
+<pre>
+if (old_length = length + 12){
+</pre> 
+uses an assignment (=) instead of (==), which is always true.
+The compiler warns.  You ignore the warning, your code does not work.
+An avoidable mistake.
+
+<p>
+<li> Assuming that there is always at least one element in the free list.
+     The free list can be empty if all memory is allocated.
+<p>
+
+<p>
+<li> Returning a pointer to the used memory_block <tt>blk</tt> from 
+	mem_alloc rather than a pointer <tt>blk-&gt;data</tt>
+	to the memory area the client can use.  The client will
+	overwrite your header immediately.
+
+<p>
+<li>Not initializing your mutex.  The mutex must be initialized, either
+statically via
+<pre>
+static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+</pre>
+or by calling pthread_mutex_init().
+
+<p>
+<li>Using <tt>sizeof(blk)</tt> instead of <tt>sizeof(*blk)</tt>
+	or <tt>sizeof(struct used_block)</tt>/<tt>sizeof(struct free_block)</tt>. 
+	The size used to store a pointer is 4, the size of a free block is 12.
+
+<p>
+<li>Coding
+<pre>
+        pthread_mutex_lock(&amp;lock);
+        return list_size(&amp;used_list);
+        pthread_mutex_unlock(&amp;lock);
+</pre>
+You don't unlock the mutex, ever.
+
+<p>
+<li>Coding
+<pre>
+        pthread_mutex_lock(&amp;lock);
+	if (*)
+		return NULL;
+        pthread_mutex_unlock(&amp;lock);
+</pre>
+You don't unlock if (*) is true.
+In general, you need to unlock the mutex on all paths leaving the function.
+
+<p><li>
+Using any list function, including <tt>list_empty</tt> and <tt>list_size</tt> outside the protection of a mutex.
+Note that both calls have to be protected, so this attempt is just as wrong:
+<pre>
+size_t mem_sizeof_free_list(void)
+{
+        pthread_mutex_lock(&amp;my_mutex);  // leave this function alone dangerous threads
+
+        if(!list_empty(&amp;free_list))
+        {
+                pthread_mutex_unlock(&amp;my_mutex);        // release the function
+                return list_size(&amp;free_list);           // take adantage of lists count
+        }
+        else
+        {
+                pthread_mutex_unlock(&amp;my_mutex);        // release the function
+                return 0;
+        }
+}
+</pre>
+The correct way to write this code is
+<pre>
+size_t mem_sizeof_free_list(void)
+{
+        pthread_mutex_lock(&amp;my_mutex);
+	size_t sz = list_size(&amp;free_list);
+        pthread_mutex_unlock(&amp;my_mutex);
+	return sz;
+}
+</pre>
+Note that 'sz' is declared as a local variable.  Local variable are not shared among
+threads.  Thus, we store the result of list_size() - which has to be inside lock/unlock -
+into a variable that is not shared and which can therefore be safely accessed after
+the unlock.
+
+</ul>
+
+<h2>Project 0 Near Misses</h2>
+
+These will not necessarily cause your program to malfunction,
+but have the potential to do so.
+
+<ul>
+<p>
+<li>Requiring that a free block accommodate length bytes plus an header.
+	You only need room for an additional header if you're splitting 
+	a block.  Consequently, your allocator rejects allocation
+	requests it could handle.
+
+<p>
+<li>Assigning anything to <tt>blk-&gt;data[0]</tt>.  data[0] is the first
+	byte in the area that the client will use.  Writing anything
+	there is pointless since the client will overwrite it.
+	Major code quality issue indicative of confusion.
+
+<p>
+<li>Hardwiring sizes (4, 8, or 12) instead of using sizeof().
+	Breaks your program if size of int or layout of memory_block
+	header changes.   Major code quality issue.
+
+</ul>
+
+<h2>Project 0 Minor Comments</h2>
+
+<ul>
+<p>
+<li>Coding past 80 columns.
+If you don't follow a self-imposed limit, you tend to
+nest code too deeply.
+Read <a href="http://kerneltrap.org/files/Jeremy/CodingStyle.txt">what Linus Torvalds has to say about that (Chapter 1, 2)</a>.  He prefers an 8-column
+indentation style, limited at 80.
+Pintos is written in GNU style, which your code should follow.
+The GNU style uses 4-column indentation (per nesting level), but also
+disallows coding past 80 columns. 
+<p>
+My advice is to heed the warning about nesting level (no more than 3),
+but because of today's larger screens, we will not grade you down if
+comments stretch past 80 columns.  (It's still hard to print such code, though.)
+
+<p>
+<li>Using a global variable <tt>int headersize = sizeof(struct memory_block)</tt>.  You should declare it <tt>const</tt> to allow the compiler to resolve its value at compile-time, rather than reading the value from memory repeatedly at run time.  Equally readable, but faster.  Very minor code quality issue.
+
+<p>
+<li>Using 
+<pre>
+list_insert(list_begin(&amp;list), &amp;blk-&gt;elem);
+</pre>
+Use <tt>list_push_front(&amp;list, &amp;blk-&gt;elem);</tt> instead.
+(Slightly slower, but a lot more readable.)
+Similarly, use <tt>list_push_back</tt> instead of <tt>list_insert(list_end(...), ...)</tt>.
+
+<p>
+<li>Prefixing an array constant with a &amp;.  That is, coding <tt>return &amp;blk-&gt;data;</tt>
+	instead of <tt>return blk-&gt;data;</tt>.  Both statements do the same thing, because
+	the compiler ignores a &amp; that precedes an array constant.  However, your
+	program will break if someone changes the array to a pointer - in addition, the
+	ampersand shows you don't fully understand the relationship between arrays and
+	pointers in C/C++.
+<p>
+<li>Accessing <tt>head</tt>, <tt>tail</tt>, <tt>next</tt>, and <tt>prev</tt>
+elements directly instead of using 
+<tt>list_begin()</tt>, 
+<tt>list_end()</tt>, 
+<tt>list_next()</tt>, 
+<tt>list_prev()</tt>. This breaks encapsulation: in C++, these would be
+private fields. C doesn't have "private", but that doesn't mean the rules
+change.  Major code quality issue: if the implementation of the list changes,
+your code breaks.
+
+<p>
+<li>Checking that list is not empty before calling
+	<tt>list_insert_ordered</tt> is not necessary.
+	That's the beauty of using separate list heads/tail elements.
+<p>
+</ul>
+
+<i>Version: $Id: project0mistakes.html,v 1.2 2009/01/15 16:04:34 cs3204 Exp $</i>
+</body>
+</html>

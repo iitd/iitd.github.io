@@ -1,0 +1,445 @@
+<html>
+<head>
+<title>L2</title>
+</head>
+<body>
+
+<h1>PC Architecture and Processor Setup</h1>
+
+<h2>Outline</h2>
+<ul>
+<li>PC architecture
+<li>x86 instruction set
+<li>GCC calling conventions
+</ul>
+
+<h2>PC architecture</h2>
+
+<ul>
+<li>A full PC has:
+  <ul>
+  <li>one or more x86 CPUs, each containing:
+	<ul>
+	<li>	integer registers (can you name them?) and execution unit
+	<li>	floating-point/vector registers and execution unit(s)
+	<li>	memory management unit (MMU)
+	<li>	multiprocessor/multicore: local interrupt controller (APIC)
+	</ul>
+  <li>memory
+  <li>disk (IDE, SCSI, USB)
+  <li>keyboard
+  <li>display
+  <li>other resources: BIOS ROM, clock, ...
+  </ul>
+
+<li>We will start with the original 16-bit 8086 CPU (1978)
+<li>CPU runs instructions:
+<pre>
+for(;;){
+	run next instruction
+}
+</pre>
+<li>Draw figure with common bus, I/O, and CPU. The CPU has registers, cache,
+etc.
+<li>Draw figure showing EIP and how it gets incremented automatically after
+executing each instruction.
+
+<li>Needs work space: registers
+	<ul>
+	<li>four 16-bit data registers: AX, BX, CX, DX
+	<li>each in two 8-bit halves, e.g. AH and AL
+	<li>very fast, very few
+	</ul>
+
+<li>More work space: memory
+	<ul>
+	<li>CPU sends out address on address lines (wires, one bit per wire)
+	<li>Data comes back on data lines
+	<li><i>or</i> data is written to data lines
+	</ul>
+
+<li>Add address registers: pointers into memory
+	<ul>
+	<li>SP - stack pointer
+	<li>BP - frame base pointer
+	<li>SI - source index
+	<li>DI - destination index
+	</ul>
+
+<li>Instructions are in memory too!
+	<ul>
+	<li>IP - instruction pointer (PC on PDP-11, everything else)
+	<li>increment after running each instruction
+	<li>can be modified by CALL, RET, JMP, conditional jumps
+	</ul>
+
+<li>Want conditional jumps
+	<ul>
+	<li>FLAGS - various condition codes
+		<ul>
+		<li>whether last arithmetic operation overflowed
+		<li> ... was positive/negative
+		<li> ... was [not] zero
+		<li> ... carry/borrow on add/subtract
+		<li> ... etc.
+		<li>whether interrupts are enabled
+		<li>direction of data copy instructions
+		</ul>
+	<li>JP, JN, J[N]Z, J[N]C, J[N]O ...
+	</ul>
+
+<li>Still not interesting - need I/O to interact with outside world
+	<ul>
+	<li>Original PC architecture: use dedicated <i>I/O space</i>
+		<ul>
+		<li>Works same as memory accesses but set I/O signal
+		<li>Only 1024 I/O addresses
+		<li>Accessed with special instructions (IN, OUT)
+		<li>Example: write a byte to line printer:
+<pre>
+#define DATA_PORT    0x378
+#define STATUS_PORT  0x379
+#define   BUSY 0x80
+#define CONTROL_PORT 0x37A
+#define   STROBE 0x01
+void
+lpt_putc(int c)
+{
+  /* wait for printer to consume previous byte */
+  while((inb(STATUS_PORT) & BUSY) == 0)
+    ;
+
+  /* put the byte on the parallel lines */
+  outb(DATA_PORT, c);
+
+  /* tell the printer to look at the data */
+  outb(CONTROL_PORT, STROBE);
+  outb(CONTROL_PORT, 0);
+}
+<pre>
+		</ul>
+
+	<li>Memory-Mapped I/O
+	<ul>
+	    <li>Use normal physical memory addresses
+		<ul>
+		<li>Gets around limited size of I/O address space
+		<li>No need for special instructions
+		<li>System controller routes to appropriate device
+		</ul>
+	    <li>Works like ``magic'' memory:
+		<ul>
+		<li>	<i>Addressed</i> and <i>accessed</i> like memory,
+			but ...
+		<li>	... does not <i>behave</i> like memory!
+		<li>	Reads and writes can have ``side effects''
+		<li>	Read results can change due to external events
+		</ul>
+	</ul>
+</ul>
+
+
+<li>What if we want to use more than 2^16 bytes of memory?
+	<ul>
+        <li>8086 has 20-bit physical addresses, can have 1 Meg RAM
+        <li>the extra four bits usually come from a 16-bit "segment register":
+	<li>CS - code segment, for fetches via IP
+	<li>SS - stack segment, for load/store via SP and BP
+	<li>DS - data segment, for load/store via other registers
+	<li>ES - another data segment, destination for string operations
+        <li>virtual to physical translation: pa = va + seg*16
+        <li>e.g. set CS = 4096 to execute starting at 65536
+        <li>tricky: can't use the 16-bit address of a stack variable as a pointer
+        <li>a <i>far pointer</i> includes full segment:offset (16 + 16 bits)
+        <li>tricky: pointer arithmetic and array indexing across segment boundaries
+	</ul>
+
+<li>But 8086's 16-bit addresses and data were still painfully small, so
+	80386 added support for 32-bit data and addresses (1985)
+  <ul>
+  <li>boots in 16-bit mode, bootasm.S switches to 32-bit mode
+  <li>registers are 32 bits wide, called EAX rather than AX
+  <li>operands and addresses that were 16-bit became 32-bit in 32-bit mode, e.g. ADD does 32-bit arithmetic
+  <li>prefixes 0x66/0x67 toggle between 16-bit and 32-bit operands and addresses: in 32-bit mode, MOVW is expressed as 0x66 MOVW
+  <li>the .code32 in bootasm.S tells assembler to generate 0x66 for e.g. MOVW
+  <li>80386 also changed segments and added paged memory...
+  </ul>
+
+
+<li>Example instruction encoding
+<pre>
+	b8 cd ab		<i>16-bit CPU,  AX <- 0xabcd</i>
+	b8 34 12 cd ab		<i>32-bit CPU, EAX <- 0xabcd1234</i>
+	66 b8 cd ab		<i>32-bit CPU,  AX <- 0xabcd</i>
+</pre>
+
+<li>...and even 32 bits eventually wasn't enough, so
+	AMD added support for 64-bit data addresses (1999)
+	<ul>
+	<li>	registers are 64 bits wide, called RAX, RBX, etc.
+	<li>	8 more general-purpose registers: R8 thru R15
+	<li>	boot: <i>still</i> go thru 16-bit and 32-bit modes on the way!
+	</ul>
+</ul>
+
+<h2>x86 Physical Memory Map</h2>
+
+<ul>
+<li>The physical address space mostly looks like ordinary RAM
+<li>Except some low-memory addresses actually refer to other things
+<li>Writes to VGA memory appear on the screen
+<li>Reset or power-on jumps to ROM at 0x000ffff0 (so must be ROM at top of BIOS)
+</ul>
+
+<pre>
++------------------+  <- 0xFFFFFFFF (4GB)
+|      32-bit      |
+|  memory mapped   |
+|     devices      |
+|                  |
+/\/\/\/\/\/\/\/\/\/\
+
+/\/\/\/\/\/\/\/\/\/\
+|                  |
+|      Unused      |
+|                  |
++------------------+  <- depends on amount of RAM
+|                  |
+|                  |
+| Extended Memory  |
+|                  |
+|                  |
++------------------+  <- 0x00100000 (1MB)
+|     BIOS ROM     |
++------------------+  <- 0x000F0000 (960KB)
+|  16-bit devices, |
+|  expansion ROMs  |
++------------------+  <- 0x000C0000 (768KB)
+|   VGA Display    |
++------------------+  <- 0x000A0000 (640KB)
+|                  |
+|    Low Memory    |
+|                  |
++------------------+  <- 0x00000000
+</pre>
+
+<h2>x86 Instruction Set</h2>
+
+<ul>
+	<li>Intel syntax: <tt>op dst, src</tt> (Intel manuals!)
+	<li>AT&amp;T (gcc/gas) syntax: <tt>op src, dst</tt> (labs, xv6)
+		<ul>
+		<li>uses b, w, l suffix on instructions to specify size of operands
+		</ul>
+	<li>Operands are registers, constant, memory via register, memory via constant
+	<li>	Examples:
+		<table cellspacing=5>
+		<tr><td><u>AT&amp;T syntax</u> <td><u>"C"-ish equivalent</u>
+		<tr><td>movl %eax, %edx <td>edx = eax; <td><i>register mode</i>
+		<tr><td>movl $0x123, %edx <td>edx = 0x123; <td><i>immediate</i>
+		<tr><td>movl 0x123, %edx <td>edx = *(int32_t*)0x123; <td><i>direct</i>
+		<tr><td>movl (%ebx), %edx <td>edx = *(int32_t*)ebx; <td><i>indirect</i>
+		<tr><td>movl 4(%ebx), %edx <td>edx = *(int32_t*)(ebx+4); <td><i>displaced</i>
+		</table>
+
+<li>Instruction classes
+	<ul>
+	<li>data movement: MOV, PUSH, POP, ...
+	<li>arithmetic: TEST, SHL, ADD, AND, ...
+	<li>i/o: IN, OUT, ...
+	<li>control: JMP, JZ, JNZ, CALL, RET
+	<li>string: REP MOVSB, ...
+	<li>system: IRET, INT
+	</ul>
+
+<li>Intel architecture manual Volume 2 is <i>the</i> reference
+
+</ul>
+
+<h2>gcc x86 calling conventions</h2>
+
+<ul>
+<li>x86 dictates that stack grows down:
+	<table cellspacing=5>
+	<tr><td><u>Example instruction</u> <td><u>What it does</u>
+	<tr><td>pushl %eax
+		<td>
+		subl $4, %esp <br>
+		movl %eax, (%esp) <br>
+	<tr><td>popl %eax
+		<td>
+		movl (%esp), %eax <br>
+		addl $4, %esp <br>
+	<tr><td>call 0x12345
+		<td>
+		pushl %eip <sup>(*)</sup> <br>
+		movl $0x12345, %eip <sup>(*)</sup> <br>
+	<tr><td>ret
+		<td>
+		popl %eip <sup>(*)</sup>
+	</table>
+	(*) <i>Not real instructions</i>
+
+<li>GCC dictates how the stack is used.
+	Contract between caller and callee on x86:
+	<ul>
+	<li>at entry to a function (i.e. just after call):
+		<ul>
+		<li>%eip points at first instruction of function
+		<li>%esp+4 points at first argument
+		<li>%esp points at return address
+		</ul>
+	<li>after ret instruction:
+		<ul>
+		<li>%eip contains return address
+		<li>%esp points at arguments pushed by caller
+		<li>called function may have trashed arguments
+		<li>%eax (and %edx, if return type is 64-bit) contains
+		    return value (or trash if function is <tt>void</tt>)
+		<li>%eax, %edx (above), and %ecx may be trashed
+		<li>%ebp, %ebx, %esi, %edi must contain contents from time of <tt>call</tt>
+		</ul>
+	<li>Terminology:
+		<ul>
+		<li>%eax, %ecx, %edx are "caller save" registers
+		<li>%ebp, %ebx, %esi, %edi are "callee save" registers
+		</ul>
+	</ul>
+
+<li>Functions can do anything that doesn't violate contract.
+	By convention, GCC does more:
+	<ul>
+	<li>each function has a stack frame marked by %ebp, %esp
+		<pre>
+		       +------------+   |
+		       | arg 2      |   \
+		       +------------+    &gt;- previous function's stack frame
+		       | arg 1      |   /
+		       +------------+   |
+		       | ret %eip   |   /
+		       +============+   
+		       | saved %ebp |   \
+		%ebp-&gt; +------------+   |
+		       |            |   |
+		       |   local    |   \
+		       | variables, |    &gt;- current function's stack frame
+		       |    etc.    |   /
+		       |            |   |
+		       |            |   |
+		%esp-&gt; +------------+   /
+		</pre>
+	<li>%esp can move to make stack frame bigger, smaller
+	<li>%ebp points at saved %ebp from previous function,
+		chain to walk stack
+	<li>function prologue:
+		<pre>
+			pushl %ebp
+			movl %esp, %ebp
+		</pre>
+		or
+		<pre>
+			enter $0, $0
+		</pre>
+		enter usually not used: 4 bytes vs 3 for pushl+movl,
+		not on hardware fast-path anymore
+	<li>function epilogue can easily find return EIP on stack:
+		<pre>
+			movl %ebp, %esp
+			popl %ebp
+		</pre>
+		or
+		<pre>
+			leave
+		</pre>
+		leave used often because it's 1 byte, vs 3 for movl+popl
+	</ul>
+
+<li>Big example:
+	<ul>
+	<li>C code
+		<pre>
+		int main(void) { return f(8)+1; }
+		int f(int x) { return g(x); }
+		int g(int x) { return x+3; }
+		</pre>
+	<li>assembler
+		<pre>
+		_main:
+					<i>prologue</i>
+			pushl %ebp
+			movl %esp, %ebp
+					<i>body</i>
+			pushl $8
+			call _f
+			addl $1, %eax
+					<i>epilogue</i>
+			movl %ebp, %esp
+			popl %ebp
+			ret
+		_f:
+					<i>prologue</i>
+			pushl %ebp
+			movl %esp, %ebp
+					<i>body</i>
+			pushl 8(%esp)
+			call _g
+					<i>epilogue</i>
+			movl %ebp, %esp
+			popl %ebp
+			ret
+
+		_g:
+					<i>prologue</i>
+			pushl %ebp
+			movl %esp, %ebp
+					<i>save %ebx</i>
+			pushl %ebx
+					<i>body</i>
+			movl 8(%ebp), %ebx
+			addl $3, %ebx
+			movl %ebx, %eax
+					<i>restore %ebx</i>
+			popl %ebx
+					<i>epilogue</i>
+			movl %ebp, %esp
+			popl %ebp
+			ret
+		</pre>
+	</ul>
+
+<li>Super-small <tt>_g</tt>:
+	<pre>
+		_g:
+			movl 4(%esp), %eax
+			addl $3, %eax
+			ret
+	</pre>
+
+<li>Shortest <tt>_f</tt>?
+
+<li>Compiling, linking, loading:
+	<ul>
+	<li>	<i>Preprocessor</i> takes C source code (ASCII text),
+		expands #include etc, produces C source code
+	<li>	<i>Compiler</i> takes C source code (ASCII text),
+		produces assembly language (also ASCII text)
+	<li>	<i>Assembler</i> takes assembly language (ASCII text),
+		produces <tt>.o</tt> file (binary, machine-readable!)
+	<li>	<i>Linker</i> takes multiple '<tt>.o</tt>'s,
+		produces a single <i>program image</i> (binary)
+	<li>	<i>Loader</i> loads the program image into memory
+		at run-time and starts it executing
+	</ul>
+</ul>
+
+
+<!--  LocalWords:  gcc BIOS CX DX BX SP BP SI DI RET JMP JP JN lpt putc int inb
+ -->
+<!--  LocalWords:  outb Meg va seg SS DS ES EAX MOVW op dst src ish movl eax JZ
+ -->
+<!--  LocalWords:  edx ebx MOV SHL JNZ REP MOVSB IRET pushl subl esp popl addl
+ -->
+<!--  LocalWords:  eip ret ecx ebp esi edi arg Bochs regs REG segregs Boch's
+ -->
+<!--  LocalWords:  mem reg EXT uint ext bios rom phys addr
+ -->

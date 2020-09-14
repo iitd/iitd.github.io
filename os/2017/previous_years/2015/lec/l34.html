@@ -1,0 +1,206 @@
+<title>L34</title>
+<html>
+<head>
+</head>
+<body>
+<h2>Crash Recovery</h2>
+
+<h3>Ordering Disk Writes</h3>
+Order disk writes to avoid dangling pointers on crash. Allow disk block leaks.
+On reboot after crash, optionally perform a global filesystem check (fsck) to
+identify inconsistencies (like space leaks).
+
+<ul>
+<li>e.g., create/append: initialize child block/file before adding pointer inside parent inode/dir
+<li>e.g., unlink/truncate: remove parent inode/dir's pointer before deallocating child block/file
+</ul>
+
+The fsck program can assume that inconsistencies will be limited to certain
+types (e.g., space leaks are possible but dangling pointers are not). If it
+finds an inconsistency (e.g., space leak), it will fix it. But,
+can we always avoid filesystem inconsistencies? Consider the following
+example:
+<pre>
+$ mv a/foo b/foo
+</pre>
+In this case, the pointer to <code>foo</code>'s inode needs to be removed
+from directory <code>a</code>, and added to directory <code>b</code>, involving
+two disk block writes. If we remove the pointer from directory <code>a</code>
+first, we risk losing the file <code>foo</code> on a crash. On the other
+hand, if we add the pointer to directory <code>b</code> first, we risk an
+inconsistency, where the same file <code>foo</code> appears in two
+directories (this may not be allowed depending on the filesystem semantics).
+
+<p>In this case, on a reboot after crash, the <code>fsck</code> program will
+notice the inconsistency, but will not know how to resolve it, i.e., should
+it remove the pointer from directory <code>a</code> or from directory <code>b</code>?
+At these points, the <code>fsck</code> program can ask the user to resolve
+this inconsistency by suggesting a choice.
+
+<p>Let's see how long does <code>fsck</code> take.
+A random read on disk takes about 10 milliseconds.
+Descending the directory hierarchy might involve a random read per inode.
+So maybe (n-inodes / 100) seconds?
+This can be made faster if all inodes (and dir blocks) are read sequentially (in
+one go), and then descend hierarchy in memory.
+
+<p>fsck takes around 10 minutes per 70GB disk w/ 2 million inodes. Clearly
+this performance is possible only by reading many inodes sequentially. The
+time taken by fsck is roughly linear in the size of the disk. As disks grew
+in size, the cost of running fsck started becoming impractical. We will
+next study a more modern method of ensuring crash recovery, called logging.
+
+<p>But before that, ordering of disk writes, as we have discussed it so
+far, would involve synchronous writes to disk.
+A write-back cache could potentially reorder the disk writes (i.e., writes
+to buffers in the cache may be in a different order from the actual
+writes to the disk). This may not be acceptable from a crash-recovery
+standpoint. On the other hand, a write-through buffer cache is
+unacceptable from a performance standpoint. (Recall that
+creating a file and writing a few bytes takes 8 writes, probably 80 ms,
+so can create only about a dozen small files per second. think about un-tar or rm *)
+
+<p>One solution is to maintain a dependency graph in memory for the buffer
+cache. The dependency graph indicates an ordering dependency between flushes
+of different blocks to disk. For example, for the command, <code>mv a/foo b/foo</code>,
+a dependency edge should be drawn from directory <code>b</code>'s block to
+directory <code>a</code>'s block, indicating that <code>b</code> should be
+flushed before <code>a</code>.
+
+<p>However, consider the following example, where the dependency graph
+can contain a cycle:
+<pre>
+$ mv a/foo b/foo
+$ mv b/bar a/bar
+</pre>
+The first command draws a dependency edge from <code>b</code> to <code>a</code>,
+while the second command draws a dependency edge from <code>a</code> to <code>b</code>.
+At this point, no matter which block is flushed first, there is a chance
+that one file may get lost (either foo or bar). The solution to this problem
+is to identify potential cycles in the dependency graph (at the time of making in-memory
+updates), and avoid them by flushing existing dirty buffers to disk.
+In this example, before the second command is executed, the OS should flush the
+blocks for directories <code>a</code> and <code>b</code> (thus
+eliminating the dependency edge between them) so that the addition
+of a new dependency edge does not cause a cycle.
+
+<h3>Logging</h3>
+Goals:
+<ul>
+	<li> Atomic system calls w.r.t. crashes
+	<li> Fast recovery (no hour-long fsck)
+	<li> Speed of write-back cache for normal operations
+</ul>
+The basic idea behind logging:
+<ul>
+	<li> You want atomicity: all of a system call's writes, or none. Let's call an atomic operation a "transaction".
+	<li> Record all writes the sys call *will* do in the log
+	<li> then record "done"
+	<li> then do the writes
+	<li>on crash+recovery:
+	<ul>
+		<li>if "done" in log, replay all writes in log
+		<li>if no "done", ignore log
+	</ul>
+  this is a WRITE-AHEAD LOG
+</ul>
+
+Simple logging (as in xv6):<br>
+[diagram: buffer cache, FS tree on disk, log on disk]
+<ul>
+	<li> FS has a log on disk
+	<li> syscall:
+	<pre>
+    begin_trans()
+      bp = bread()
+      bp->data[] = ...
+      log_write(bp)
+      more writes ...
+    commit_trans()
+  </pre>
+	<li>begin_trans:
+	<ul>
+		<li>need to indicate which group of writes must be atomic!
+		<li>lock -- xv6 allows only one transaction at a time
+	</ul>
+	<li>log_write:
+	<ul>
+		<li>record sector #
+		<li>append buffer content to log
+		<li>leave modified block in buffer cache (but do not write)
+	</ul>
+	<li>commit_trans():
+	<ul>
+		<li>record "done" and sector #s in log
+		<li>do the writes
+		<li>erase "done" from log
+	</ul>
+	<li>recovery:<br>
+	if log says "done":
+	<ul>
+		<li>copy blocks from log to real locations on disk
+		</ul>
+		</ul>
+
+What's wrong with xv6's logging?
+<ul>
+	<li>only one transaction at a time
+	<ul>
+		<li>two system calls might be modifying different parts of the FS
+	</ul>
+	<li>log traffic will be huge: every operation is many records
+	<li>logs whole blocks even if only a few bytes written
+	<li>eager write to log -- slow. As discussed, the log blocks and the commit record
+	needs to be written at <code>commit_trans()</code> time. This allows only 4-5
+	disk writes to get batched at a time. It would be much better if hundreds of
+	disk writes get batched together.
+	<li>eager write to real location -- slow. This can be easily fixed by asynchronously
+	applying the logged writes to the FS tree.
+	<li>Every block written twice
+  <!--trouble with operations that don't fit in the log
+	unlink might dirty many blocks while truncating file-->
+</ul>
+
+<p>Fixing xv6 Logging (as done in Linux ext3):
+<ul>
+	<li>Basic idea: Batch many (atomic) disk operations into a single transaction.
+	Each operation can involve multiple disk writes. Replace <code>begin_trans()</code>
+	and <code>commit_trans()</code> with <code>begin_atomic_op()</code> and
+	<code>commit_atomic_op()</code>. The commit of an atomic operation does not
+	cause a commit of the whole transaction.
+	<li>Have one transaction <em>open</em> at any time.
+	<li>Add all new disk operations to the currently open transaction.
+	<li><em>Close</em> the transaction at periodic intervals (e.g., 30 seconds).
+</ul>
+Closing a transaction:
+<ul>
+	<li>Open a new transaction: all future disk operations that start will get added to
+	the new transaction.
+	<li>Mark this transaction as closed. No new disk operations will be admitted to it.
+	<li>Wait for ongoing disk operations to complete, i.e., wait for them to call
+	<code>commit_atomic_op()</code>.
+	<li>Write descriptor and data blocks to the log
+	<li>Write the commit record
+	<li>Allow the blocks in log to be applied to the FS tree (but not forced). Typically,
+	done asynchronously with many in-flight I/Os to take best advantage of the disk
+	scheduler.
+</ul>
+In doing this, we alleviate many of the problems with xv6's logging:
+<ul>
+	<li>Many disk operations can simultaneously execute
+	<li>Writing the log will involve one (or two) large sequential writes, every few
+	seconds. So log traffic is significantly reduced.
+	<li>Even though whole blocks are logged, multiple writes to the same block
+	are absorbed in the buffer cache. For example, only the final value of the
+	block (at the end of the transaction) needs to be logged to the disk.
+	<li>The write to the log is still eager, but only at a coarse periodic
+	interval (e.g., few seconds). Also, the write can be completed in one
+	sequential write benefitting from batching many different disk operations.
+	<li>The logged blocks are applied to the FS tree asynchronously and lazily,
+	so the disk can efficient schedule these writes for maximum disk throughput.
+	<li>Even though every block is still written twice, we no longer pay the
+	price of a disk seek and rotational latency for each write. These writes
+	are fast as they are either a part of a large sequential write (in case of
+	log) or can be efficiently scheduled with many other in-flight I/Os (in
+	case of asynchronous writes to the FS tree).
+</ul>

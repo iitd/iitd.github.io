@@ -1,0 +1,230 @@
+<h4>Methods (or functions)</h4>
+We can make new commands (or <b>methods</b>). This lets us decompose our program into smaller pieces that are easier to understand.
+<pre>
+type name()
+{
+  statement1;
+  statement2;
+  ...
+}
+</pre>
+
+<p>Example:
+<pre>
+int printGreeting()
+{
+  cout << "Hello, world!" << endl;
+  cout << "I hope you had a great day.";
+  return 0;
+}
+
+int main()
+{
+  string name = readLine("Next name? ");
+  while (name != "")
+  {
+    printGreeting();
+    name = readLine("Next name? ");
+  }
+  return 0;
+}
+</pre>
+Introduce the <code>void</code> type. Replace return type of <code>printGreeting</code> with <code>void</code>.
+
+<p>Is the following code correct?
+<pre>
+void printGreeting()
+{
+  cout << "Hello " << name << endl;
+  cout << "I hope you had a great day.";
+}
+
+int main()
+{
+  string name = readLine("Next name? ");
+  while (name != "")
+  {
+    printGreeting();
+    name = readLine("Next name? ");
+  }
+  return 0;
+}
+</pre>
+No. Why? Because name is an undefined variable inside printGreeting.
+
+<p>Another example:
+<pre>
+void run()
+{
+  int x = 2;
+  printX();
+}
+
+void printX()
+{
+  cout << "X has value " << x << endl; //ERROR: "Undefined variable x"
+}
+</pre>
+
+<h4>Scope and Parameters</h4>
+<pre>
+int x = 5;
+if (someCondition()) {
+  int y = 5;
+}
+cout << x + y << endl; //Error: Undefined variable y
+</pre>
+Run through this program assuming that <code>someCondition</code> is true. Show how at closing braces, <code>y</code> becomes history.
+
+<p><em>When a program exits a code block, all variables declared inside that block go away!</em>
+
+<p>The <b>scope</b> of a variable refers to the section of code where a variable can be accessed:
+<ul>
+<li> Scope starts where the variable is declared.</li>
+<li> Scope ends at the termination of the code block in which the variable was declared.</li>
+<li>A <b>code block</b> is a chunk of code between <code>{ }</code> braces.</li>
+</ul>
+
+<p>Variables have a lifetime (called scope):
+<pre>
+int main()
+{
+  double v = 8; //comes to life here ...
+  if (condition) {
+    v = 4;  //still alive here ...
+    ... some code
+  }
+  ... some other code
+} //it goes away here (at the end of its code block)
+</pre>
+The code block representing the full body of the function is the <b>inner most</b> code block in which it was declared.
+
+Another example:
+<pre>
+int main()
+{
+  ... some code
+  if (condition) {
+    int w = 4;  //w is created here
+    ... some code
+  } //w goes away here (at the end of its code block)
+  ... some other code
+}
+</pre>
+Draw a box around the inner code block to show the <em>scope of <code>w</code></em>.
+
+<p>You <em>cannot</em> have two variables with the same name in the <em>same</em> scope.
+<pre>
+int main()
+{
+  ... some code
+  if (condition) {
+    int w = 4;  //w is created here
+    ... some code
+    int w = 4; //ERROR!
+  } //w goes away here (at the end of its code block)
+  ... some other code
+}
+</pre>
+<p>Another example: variables declared in the <code>for</code> construct are assumed to belong to the scope defined by the <code>for</code> loop's body.
+<pre>
+for (int i = 1; i <= 100; i++)
+{
+  int i = 2; //ERROR
+  cout << i << endl;
+}
+</pre>
+
+<p>You <em>can</em> have two variables with the same name in different scopes
+<pre>
+int main()
+{
+  for (int i = 0; i < 5; i++) { //i ok here
+    int w = 2;                  // w ok here
+  }
+  for (int i = 0; i < 2; i++) { //i ok here
+    int w = 3;                  // w ok here
+  }
+}
+</pre>
+
+
+<p>You <em>can</em> have two variables with the same name in nested scopes (variable shadowing)
+<pre>
+for (int i = 1; i <= 100; i++) {
+  while (...) {
+    int i = 5; //ERROR
+  }
+}
+</pre>
+
+<p>You <em>can</em> have two variables with the same name in different scopes
+<pre>
+void foo()
+{
+  int w = 3;
+  for (int i = 0; i < 5; i++) { //i ok here
+    int w = 4;                  // w ok here
+  }
+  for (int i = 0; i < 2; i++) { //i ok here
+    int w = 5;                  // w ok here
+  }
+}
+void bar()
+{
+  int w = 2;
+  foo();
+  cout << w << endl;
+}
+</pre>
+Show how execution proceeds and how <code>foo</code> scope gets activated when statements in <code>foo</code> are getting executed, 
+and how <code>bar</code>'s scope is restored when <code>foo</code> returns from execution.
+
+<h4>Revisiting sentinel loops</h4>
+<pre>
+#include &lt;iostream&gt;
+#include "simpio.h"
+using namespace std;
+int main() {
+  int sum = 0; //sum must be declared outside
+         //of the loop! Otherwise it
+         //will be redeclared many
+         //times
+  int num = getInteger("number? "); //num must
+  			    //be declared
+  			    //outside of
+  			    //the loop!
+  			    //Otherwise,
+  			    //the loop
+  			    //condition
+  			    //makes no sense.
+  while (num != -1)
+  {
+    sum += num;
+    num = getInteger("number? ");
+  }
+  cout << "Sum is " << sum << endl;
+  return 0;
+}
+</pre>
+
+<p>Another example: here, <code>num</code> goes out of scope at the end of each loop iteration. At that point, we have already used its 
+value and can discard it.
+<pre>
+int main() {
+  int sum = 0;
+  while (true)
+  {
+    int num = getInteger("Enter a number: ");
+    if (num == -1) {
+      break; //immediately exits loop
+    }
+    sum += num;
+  }
+  cout << "Sum is " << sum << endl;
+  return 0;
+}
+</pre>
+<b>Parameters </b> <p>
+Continued in the next lecture!
+

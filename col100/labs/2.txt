@@ -1,0 +1,14 @@
+1 2
+A
+RollNo Name
+1 Ram
+B
+RollNo CourseID
+1 COL100
+1 COL114
+Q
+X COL114
+Y CSL
+Z none
+Z all
+Z one

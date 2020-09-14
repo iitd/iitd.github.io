@@ -1,0 +1,586 @@
+<title>L7</title>
+<html>
+<head>
+</head>
+<body>
+
+<h1>Locking</h1>
+
+<p>Required reading: xv6 spinlock.c
+
+<!--
+<h2>Why locks?</h2>
+
+<p>Today's lecture will discuss how to implement
+locks, some practical aspects of using them, and then look at the
+implementation in xv6.
+
+<p>Locks help us write correct code for multiprocessors.  The point of
+a multiprocessor is to increase total performance by running different
+tasks concurrently on different CPUs, but concurrency can cause
+incorrect results if multiple tasks try to use the same variables at
+the same time.  Coordination techniques prevent concurrency in
+situations where the programmer has decided that serial execution is
+required for correctness.
+
+<p>
+Diagram: CPUs, bus, memory.
+
+<p>ide.c has a linked list.
+
+<p>List and insert example:
+<pre>
+struct List {
+  int data;
+  struct List *next;
+};
+
+List *list = 0;
+
+insert(int data) {
+  List *l = new List;
+  l->data = data;
+  l->next = list;  // A
+  list = l;        // B
+}
+</pre>
+
+<p>Whoever wrote this code probably believed it was correct, in the
+sense that if the list starts out correct, a call to insert() will
+yield a new list that has the old elements plus the new one.
+And if you call insert(), and then insert() again, the list should
+have two new elements.
+Most programmers write code that's only correct under <b>serial</b>
+execution - in this case, insert() is only correct if there is only
+one insert() executing at a time.
+
+<p>What could go wrong with concurrent calls to insert(), as might
+happen on a multiprocessor?
+Suppose two different processors both call <code>insert()</code>
+at the same time.
+If the two processors execute A and B interleaved, then we end up with an
+incorrect list.  To see that this is the case, draw out the list after
+the sequence A1 (statement A executed by processor 1), A2 (statement A
+executed by processor 2), B2, and B1.
+
+<p>This kind of error is called a race (the name probably originates
+in circuit design). The problem with
+races is that they are difficult to reproduce.  For example, if you
+put print statements in to debug the incorrect behavior, you might
+change the timing and the race might not happen anymore.
+
+<p>
+What's required for insert() to be correct if executed on multiple
+CPUs?  The overall property we want is that both new elements end up
+appearing in the list.  One way to achieve that is to somehow ensure
+that only one processor at a time is allowed to be executing
+inside <code>insert()</code>; let one of the simultaneous calls
+proceed, and force the other one to wait until the first has finished.
+Then two simultaneous executions will have the same result as two
+serial executions. Assuming <code>insert()</code> was correct when
+executed serially, it will then be correct on a multiprocessor too.
+
+<p>This happens whenever there are two independent computations
+on <em>shared state</em>. e.g., you edit <code>foo.c</code> using
+<code>vi</code> and compile it using <code>gcc</code>. As a matter
+of habit we save the source file and wait for the confirmation
+message before starting
+the compile job. If we did not wait for the save to finish and
+started compile simultaneously, what could happen?
+
+<p>Concurrency in real world: one computer, many jobs; one road,
+many cars; one classroom, many classes. Different solutions for
+each.
+
+<p>Another example: lost update.
+
+<p>Increment number of hits on a website in each thread.
+<code>hits</code> is a shared variable.
+<pre>
+hits++;
+</pre>
+This C statement may get compiled to multiple assemble statements:
+<pre>
+ld  register, [hits]
+add register, register, 1
+st  register, [hits]
+</pre>
+If two threads simultaneously execute this code, what are the possible
+values of <code>hits</code>?
+
+<p>More race condition fun:
+<pre>
+Thread a:
+i = 0;
+while (i < 10)
+    i = i + 1;
+print "A won!";
+</pre>
+<pre>
+Thread b:
+i = 0;
+while (i > -10)
+    i = i - 1;
+print "B won!";
+</pre>
+Who wins? Guaranteed someone wins?
+
+<p>Possible solutions:
+<ul>
+	<li>Do nothing: In some cases, this may be acceptable. For example,
+	 a website may not care if some updates to <code>hits</code> are lost,
+	 because this event is likely to be rare.
+	 But the same cannot be said for other examples. Even rare races can
+	 be menacing.</li>
+	 <li>Don't share, but duplicate state: Sometimes possible. For example,
+	 each thread could maintain a private <code>hits[i]</code> counter
+	 which can be summed up at the end of the day</li>
+	 <li>General solution? Prevent <em>bad</em> interleavings</li>
+</ul>
+-->
+<h2>The lock abstraction</h2>
+
+<p>We'd like a general tool to help programmers force serialization.
+There are a number of things we'd like to be able to express for
+lists:
+
+<ol>
+
+<li>It's not enough to serialize just calls to insert(); if there's
+also delete(), we want to prevent a delete() from running at the same
+time as an insert().
+
+<li>Serializing <i>all</i> calls to insert() is too much: it's
+enough to serialize just calls that refer to the same list.
+
+<li>We don't need to serialize all of insert(), just lines A and B.
+
+</ol>
+
+We're looking for an abstraction that gives the
+programmer this kind of control. The reason to allow concurrency
+when possible (items 2 and 3) is to increase performance.
+
+<p>
+While there are many coordination abstractions, locking is among the
+most common.  A lock is an object with two operations:
+acquire(L) and release(L). The lock has state: it is either locked
+or not locked. A call to acquire(L) waits until L is not locked,
+then changes its state to locked and returns. A call to release(L)
+marks L as not locked.
+So when you have a data structure on which
+operations should proceed one at a time (i.e. not be interleaved),
+associate a lock object L with the data structure and bracket the
+operations with acquire(L) and release(L).
+
+<pre>
+Lock list_lock;
+
+insert(int data){
+  List *l = new List;
+  l->data = data;
+
+  acquire(&list_lock);
+
+  l->next = list ; // A
+  list = l;        // B
+
+  release(&list_lock);
+}
+</pre>
+
+How can we implement acquire() and release()?
+Here is a version that <b>DOES NOT WORK</b>:
+
+<pre> 
+struct Lock {
+  int locked;
+}
+
+void broken_acquire(Lock *lock) {
+  while(1){
+    if(lock->locked == 0){ // C
+      lock->locked = 1;    // D
+      break;
+    }
+  }
+}
+
+void release (Lock *lock) {
+  lock->locked = 0;
+}
+</pre>
+
+What's the problem? Two acquire()s on the same lock on different CPUs
+might both execute line C, and then both execute D.  Then both will
+think they have acquired the lock.  This is the same kind of race we
+were trying to eliminate in insert().  But we have made a little
+progress: now we only need a way to prevent interleaving in one place
+(acquire()), not for many arbitrary complex sequences of code (e.g. A
+and B in insert()).
+
+<h2>Atomic instructions</h2>
+
+We're in luck: most CPUs provide "atomic instructions" that are
+equivalent to the combination of lines C and D
+and prevent interleaving from other CPUs.
+
+<p>For example, the x86 <tt>xchg %eax, addr</tt> instruction
+does the following:
+<ol>
+<li>freeze other CPUs' memory activity for address addr
+<li>temp := *addr
+<li>*addr := %eax
+<li>%eax = temp
+<li>un-freeze other memory activity
+</ol>
+
+<p>The CPUs and memory system cooperate to ensure
+that no other operations on this memory location occur
+between when <tt>xchg</tt> reads and when it writes.
+
+<p>
+We can use <tt>xchg</tt> to make a correct acquire() and release()
+(you can find the actual syntax in the xv6 source):
+
+<pre>
+int xchg(addr, value){
+  %eax = value
+  xchg %eax, (addr)
+}
+
+void acquire(Lock *lock){
+  while(1){
+    if(xchg(&lock->locked, 1) == 0)
+      break;
+  }
+}
+
+void release(Lock *lock){
+  lock->locked = 0;
+}
+</pre>
+
+<p>Why does this work?  If two CPUs execute <tt>xchg</tt> at the same
+time, the hardware ensures that one <tt>xchg</tt> does both its steps before the
+other one starts. So we can say "the first <tt>xchg</tt>" and "the second <tt>xchg</tt>".
+The first <tt>xchg</tt> will read a 0 and set lock->locked to 1 and the
+acquire() will return.  The second <tt>xchg</tt> will then see lock->locked as
+1, and the acquire will loop.
+
+<p>This style of lock is called a spin-lock, since acquire()
+stays in a loop while waiting for the lock.
+
+<p>insert() with these locks is only correct if each CPU carries
+out memory reads and writes in program order.
+For example, if the CPU were to
+execute insert() out of order so that it did the read at A before the
+acquire(), then insert() would be incorrect even with locks.
+Many modern processors execute memory operations out of order to increase
+performance!  So we
+may have to use special instructions to tell the CPU not to re-order
+memory operations past acquire()s and release()s.
+The compiler may also generate instructions in orders
+that don't correspond to the order of the source code lines,
+so we have to worry about that too.
+
+<p>Our <tt>xchg</tt>-based acquire() is inefficient when
+it has to wait because
+the continuous <tt>xchg</tt> instructions interfere with
+useful use of the memory system.
+In a later lecture we will see how to do better.
+
+<h2>Spinning vs blocking</h2>
+
+<p>Spin-locks are good when protecting short operations: increment a
+counter, search in i-node cache, allocate a free buffer. In these
+cases acquire() won't waste much CPU time spinning even if another
+CPU holds the lock.
+
+<p>Spin locks are not so great for code that has to wait for events
+that might take a long time. For example, it would not be good for the
+disk reading code to get a spin-lock on the disk hardware, start a
+read, wait for the disk to finish reading the data, and then release the
+lock.  The disk often takes 10s of milliseconds (millions of instructions)
+to complete an operation.
+Spinning wastes the CPU; if another process is waiting to
+execute, it would be better to run that process until the disk
+signals it is finished by causing an interrupt.
+
+<p>xv6 has sleep() and wakeup() primitives that are better for
+processes that need to wait for I/O.
+
+<h2>Lock granularity</h2>
+
+This lock abstraction gives the programmer lots of flexibility, since
+the programmer can associate lock objects with code or data in
+whatever way seems best.  For example, suppose you are implementing a
+file system that will be used in a multi-processor
+kernel like xv6.  The file system can have a single lock,
+or a lock per distinct file system (disk), or a lock per directory.
+How to decide?
+
+<p>
+There are two big questions to think about, correctness and
+performance. Worry about correctness first.  The easiest way to get
+correct locking is to have just a single lock, that every function
+grabs at the start and releases at the end.  A "big" lock requires
+relatively little thought to achieve correctness, since it prevents
+any concurrency within your software.  Even complicated operations,
+like rename() between directories, don't require special treatment.
+
+<p>
+The potential performance problem with a big lock is that only one
+CPU at a time can execute anywhere in your code. If your code is
+called a lot, this may reduce the performance of an expensive
+multiprocessor to that of a single CPU.
+Perhaps locking at smaller granularity would get
+higher performance through more concurrency. How to best reduce lock
+granularity is a bit of an art. You might inspect the file system code
+and notice that most operations use just one file or directory,
+leading you to have one lock per inode.  But then cross-directory
+operations, like path-name lookup and rename(), will need special
+attention to get the locking right.
+
+<h2>Locks and modularity</h2>
+
+<p>When designing a system we desire clean abstractions and good
+  modularity. We'd like a caller not to have to know how a callee
+  implements a particular function.  We'd like to hide locking
+  behavior in this way -- for example, it would be nice if 
+  the lock on each file-system inode was the private business of 
+  methods on inodes.
+
+<p>It turns out it's hard to use locks in a modular way. Two
+problems come up that require non-modular global knowledge:
+multi-module invariants and deadlock.
+
+<p>First, multi-module invariants. You could imagine the code
+implementing directories exporting various operations like
+<code>dir_lookup(d, name)</code>,
+<code>dir_add(d, name, inumber)</code>, and
+<code>dir_del(d, name)</code>.
+These directory operations would each acquire the lock on <code>d</code>,
+do their work, and release the lock.
+Then higher-level code could implement operations like 
+moving a file from one directory to another (one case of
+the UNIX <code>rename()</code> system call):
+
+<pre>
+move(olddir, oldname, newdir, newname){
+  inumber = dir_lookup(olddir, oldname)
+  dir_del(olddir, oldname)
+  dir_add(newdir, newname, inumber)
+}
+</pre>
+
+This code is pleasingly simple, but has a number of problems. One of
+them is that there's a period of time when the file is visible in
+neither directory.  Fixing that, sadly, seems to require that the
+directory locks <i>not</i> be hidden inside the <code>dir_</code>
+operations, thus:
+
+<pre>
+move(olddir, oldname, newdir, newname){
+  acquire(olddir.lock)
+  acquire(newdir.lock)
+  inumber = dir_lookup(olddir, oldname)
+  dir_del(olddir, oldname)
+  dir_add(newdir, newname, inumber)
+  release(newdir.lock)
+  release(olddir.lock)
+}
+</pre>
+
+<p>
+The above code is ugly in that it exposes the implementation of
+directories to <code>move()</code>, but (if all you have is locks)
+you have to do it this way.
+
+<p>The second big problem is deadlock. Notice that <code>move()</code>
+holds two locks. What would happen if one process called
+<code>move(dirA, ..., dir B, ...)</code> while another process called
+<code>move(dirB, ..., dir A, ...)</code>?
+
+<p>In an operating system the usual solution is to avoid deadlocks by
+establishing an order on all locks and making sure that every thread
+acquires its locks in that order.  For the file system the rule might
+be to lock the directory with the lowest inode first.
+Picking and obeying the order on <i>all</i> locks requires that modules
+make public their locking behavior, and requires them to know about
+other module's locking. This can be painful and error-prone.
+
+<p>Fine-grained locks usually make both of these problems worse.
+
+<h2>A slightly larger example</h2>
+
+Here's some code that maintains a pool of counters, allows callers to
+allocate a counter, to increment and read a counter, and to free the
+counter when done. How should we add locks?
+
+<pre>
+#define N 100
+struct counter {
+  int count;
+  int allocated;
+};
+struct counter counters[N];
+
+struct counter *
+alloc(){
+  struct counter *c;
+  
+  for(c = counters; c < &counters[N]; c++){
+    if(c->allocated == 0){
+      c->allocated = 1;
+      c->count = 0;
+      return c;
+    }
+  }
+  panic("out of counters");
+}
+
+void
+inc(struct counter *c){
+  c->count = c->count + 1;
+}
+
+int
+get(struct counter *c){
+  return c->count;
+}
+
+void
+dealloc(struct counter *c)
+{
+  c->allocated = 0;
+}
+
+</pre>
+
+<p>What might go wrong with this code on a multiprocessor? Is the code
+necessarily broken on a multiprocessor?
+
+<p>We could have a single "big" lock, acquire and release it at the
+start/end of each function. Would that be correct? Why might it have,
+or not have, good performance?
+
+<p>We could have finer-grained locks: one per counter. Would that
+likely lead to higher performance?
+
+<p>With per-counter locks, how would we lock in alloc()?
+
+<p>Does inc() need to acquire a lock? Are there circumstances where
+get() might not need to lock?
+
+<p>Does get() need to lock?
+
+<p>Does dealloc() need to lock?
+
+<h2>Some terms</h2>
+
+<p>Locks are a way to implement "mutual exclusion", which is the
+property that only one CPU at a time can be executing a certain piece
+of code.  This is also called "isolation atomicity".
+
+<p>The code between an acquire() and a release() is sometimes called a
+"critical section."
+
+<p>The more general idea of ensuring one thread waits for another when
+neccessary for correctness is called "coordination."  People have
+invented a huge number of coordination primitives; locks are just one
+example, which we use because they are simple. We'll see some more
+coordination primitives in a few lectures.
+
+<h2>Locking in xv6</h2>
+
+<p>xv6 runs on a multiprocessor and allows multiple CPUs to 
+execute concurrently inside the kernel. These usually correspond to system calls
+made by processes running on different CPUs.  There might also be
+interrupt handlers running at the same time as other kernel code. An
+interrupt can occur on any of the CPUs; both user-level processes and
+processes inside the kernel can be interrupted.  xv6 uses spin-locks
+to coordinate how these concurrent activities share data structures.
+
+<p>How do xv6 locks work? Let's look at acquire() in spinlock.c. [1350]
+<ul>
+<li>what does pushcli() do?
+<li>why does pushcli() count nested calls?
+<li>so why disable interrupts on the current processor?
+<li>holding() is true if the current CPU already holds the lock.
+why is it bad for a CPU to re-acquire a lock it already has?
+</ul>
+
+<p>And release():
+<ul>
+<li>1419: why not just lock->locked = 0?
+</ul>
+
+<p>Let's look at the IDE disk driver as an example of xv6's use of
+locks. Sheet 34.  The file system kernel code calls ide_rw() to read or write a
+block of data from/to the disk.  ide_rw() should return when the read
+or write has completed.  There may be multiple calls to ide_rw()
+outstanding because multiple processes may be reading files at the
+same time. The disk can only perform one operation at a time, so the
+IDE driver keeps a queue of requests that are waiting their turn.
+
+<p>The IDE driver has just one lock (ide_lock). This one lock helps
+enforce multiple invariants required for correct operation:
+
+<ul>
+<li> Only one thread should be inserting or deleting from ide_queue
+at a time.
+<li> Only one thread should be commanding the IDE hardware (via
+inb/outb instructions) at a time.
+<li> The disk hardware can only execute one read or write at a time.
+</ul>
+
+<p>The software (and hardware) for these activities was all designed for
+one-at-a-time use, which is why it needs locking.
+
+<p>What happens if two processes call ide_rw() at the same time
+from different CPUs? [3454]
+
+<p>ide_intr() deletes a request from ide_queue (line 3422).
+What happens if an IDE
+interrupt occurs when a process is adding a block to the queue?
+
+<p>Why does idestart() want the caller to hold the
+lock? Why doesn't it just acquire the lock itself?
+
+<p>recursive locks are a bad idea<br>
+ideintr should certainly not use that instead of disabling interrupts!
+
+<p>lock ordering<br>
+iderw: sleep acquires plock<br>
+never acquire plock and then ide_lock
+<!--
+<h2>Locking in JOS</h2>
+
+<p>JOS is meant to run on single-CPU machines. It doesn't have to
+worry about concurrent operations from other CPUs, but it does have to
+worry about interrupts. JOS takes a simple approach: it turns
+interrupts off for the entire time it is executing in the kernel. For
+the most part this means JOS kernel code doesn't have to do anything
+special in situations where xv6 would use locks.
+
+<p>JOS runs environments in user-mode with interrupts enabled, so at
+any point a timer interrupt may take the CPU away from an environment
+and switch to a different environment. This interleaves the two
+environments' instructions a bit like running them on two CPUs.  The
+library operating system has some data structures in memory that's
+shared among multiple environments (e.g. pipes), so it needs a way to
+coordinate access to that data.  In JOS we will use special-case
+solutions, as you will find out in lab 6.  For example, to implement
+pipes we will assume there is one reader and one writer.  The reader
+and writer never update each others' variables; they only read each
+others' variables.  Carefully programming using this rule we can avoid
+races.
+-->
+
+<!--  LocalWords:  spinlock atomicity struct int xchg eax addr un inode inodes
+ -->
+<!--  LocalWords:  olddir oldname newdir newname inumber dir del add
+ -->
+<!--  LocalWords:  pushcli IDE ide rw inb outb intr JOS alloc inc dealloc
+ -->

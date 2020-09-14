@@ -1,0 +1,2529 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>HoH: CSL373/CSL633 Labs</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; background-color: #dddddd; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { font-weight: bold; }
+code > span.dt { color: #800000; }
+code > span.dv { color: #0000ff; }
+code > span.bn { color: #0000ff; }
+code > span.fl { color: #800080; }
+code > span.ch { color: #ff00ff; }
+code > span.st { color: #dd0000; }
+code > span.co { color: #808080; font-style: italic; }
+code > span.al { color: #00ff00; font-weight: bold; }
+code > span.fu { color: #000080; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" href="../css/normalize.css">
+  <link rel="stylesheet" href="../css/skeleton.css">
+  <link rel="stylesheet" href="../css/pandoc.css">
+  <link rel="stylesheet" href="../css/solarized-light.css">
+  <link rel="stylesheet" href="index.less" type="text/less" media="screen" />
+  <script src="../js/less.min.js" type="text/javascript"></script>
+</head>
+<body>
+<header>
+<h1 class="title">HoH: CSL373/CSL633 Labs</h1>
+<h1 class="subtitle"><em>What’s the best way for learning OS? Create one!</em></h1>
+<h3 class="date">Jan 1, 2015</h3>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#setup">Setup</a></li>
+<li><a href="#primitives"><span class="toc-section-number">1</span> Primitives</a><ul>
+<li><a href="#mmio"><span class="toc-section-number">1.1</span> MMIO</a></li>
+<li><a href="#pmio"><span class="toc-section-number">1.2</span> PMIO</a></li>
+<li><a href="#abstract-mmiopmio"><span class="toc-section-number">1.3</span> Abstract mmio/pmio</a></li>
+<li><a href="#kshell"><span class="toc-section-number">1.4</span> kShell</a></li>
+<li><a href="#stackless-coroutine"><span class="toc-section-number">1.5</span> Stackless Coroutine</a></li>
+<li><a href="#fiber"><span class="toc-section-number">1.6</span> Fiber</a></li>
+<li><a href="#non-preemptive-scheduling"><span class="toc-section-number">1.7</span> Non-preemptive scheduling</a></li>
+<li><a href="#preemption-threads"><span class="toc-section-number">1.8</span> Preemption (threads)</a></li>
+<li><a href="#spsc-queue-execute-task-on-remote-core"><span class="toc-section-number">1.9</span> SPSC Queue: Execute task on remote core</a></li>
+<li><a href="#ring3"><span class="toc-section-number">1.10</span> Ring3</a></li>
+<li><a href="#ring3-preemption"><span class="toc-section-number">1.11</span> Ring3 Preemption</a></li>
+<li><a href="#upcallsignals"><span class="toc-section-number">1.12</span> Upcall/Signals</a></li>
+<li><a href="#downcallsystem-call"><span class="toc-section-number">1.13</span> Downcall/System call</a></li>
+<li><a href="#app-virtual-memory"><span class="toc-section-number">1.14</span> App: Virtual Memory</a></li>
+<li><a href="#app-shell-in-user-mode">App: Shell in user mode</a></li>
+</ul></li>
+<li><a href="#applications"><span class="toc-section-number">2</span> Applications</a><ul>
+<li><a href="#shell-in-ring-3-user-level-schedular"><span class="toc-section-number">2.1</span> Shell in Ring 3 : User level Schedular</a></li>
+<li><a href="#user-ipc-send_message"><span class="toc-section-number">2.2</span> User IPC: send_message</a></li>
+<li><a href="#file-system-server-in-user-mode"><span class="toc-section-number">2.3</span> File system server in user mode</a></li>
+<li><a href="#virtual-memory-in-user-mode"><span class="toc-section-number">2.4</span> Virtual memory in user mode</a></li>
+</ul></li>
+<li><a href="#hoh-kernel"><span class="toc-section-number">3</span> HoH Kernel</a><ul>
+<li><a href="#kernel-verification-of-users-long-computation-task-trust-by-verification"><span class="toc-section-number">3.1</span> kernel: Verification of User’s Long computation task( Trust by verification )</a></li>
+<li><a href="#uniform-schedular-tasks-coroutines-threads-user-pgm"><span class="toc-section-number">3.2</span> Uniform schedular : tasks, coroutines, threads, user pgm</a></li>
+<li><a href="#h-introduction-to-h"><span class="toc-section-number">3.3</span> H: Introduction to H</a></li>
+</ul></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</nav>
+<p>Also available in <a href="index.pdf">pdf</a>, <a href="index.slides.html">slides</a>. <a href="index.beamer.pdf">beamer</a>. <a href="index.tex">latex</a>.</p>
+<section id="introduction" class="level2 unnumbered">
+<h2>Introduction</h2>
+<section id="introduction-1" class="level4 unnumbered">
+<h4>Introduction</h4>
+<p>Hello! I’m Alice. I am your TA for this course.</p>
+<p>In this series, you will join forces with me, and together, we will build a <em>kernel from the scratch</em>. We both will be working on this kernel.</p>
+<p>I’ll do some coding in a branch, and ask you to implement some functionality. You can get my code by merging the branch with yours, and implement the functionality I asked. Once you implement it and commit the changes in your repository, I’ll again work on the kernel on some other branch..</p>
+</section>
+<section id="status-so-far---our-kernel-boots-into-c-code" class="level4 unnumbered">
+<h4>Status so far - our kernel boots into C code</h4>
+<p>So far, I have managed to write: <a href="http://wiki.osdev.org/Bare_bones">See osdev barebones</a></p>
+<ol type="1">
+<li>x86/boot.S : containing seven lines of 32-bit x86 assembly instructions to:
+<ul>
+<li><p>set the stack pointer,</p>
+<pre class="asm"><code>   movl  $tmpstack_bottom, %esp</code></pre></li>
+<li><p>clear flags,</p>
+<pre class="asm"><code>   pushl $0
+   popf</code></pre></li>
+<li><p>call the C function</p>
+<pre class="asm"><code>   call  core_boot</code></pre></li>
+<li><p>enter infinite loop</p>
+<pre class="asm"><code>   cli
+ loop:
+   hlt
+   jmp   loop</code></pre></li>
+</ul></li>
+<li><p>x86/main.cc : a C function which does nothing</p>
+<pre class="sourceCode c"><code class="sourceCode c"> <span class="kw">extern</span> <span class="st">&quot;C&quot;</span> <span class="dt">void</span> core_boot(){
+ }</code></pre></li>
+</ol>
+</section>
+<section id="make" class="level4 unnumbered">
+<h4>make</h4>
+<ul>
+<li><p>Syntax:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">bash</span>$ make <span class="kw">&lt;</span>target<span class="kw">&gt;</span> B=<span class="kw">&lt;</span>release/debug<span class="kw">&gt;</span>
+<span class="kw">where</span> target =
+  <span class="kw">iso</span>      : create boot cd
+  <span class="kw">exe</span>      : build kernel (default)
+  <span class="kw">qemu</span>     : run qemu
+  <span class="kw">qemu-gdb</span> : qemu with gdb</code></pre></li>
+<li>Usage: make iso / make qemu / make qemu-gdb B=debug</li>
+<li><p>Try ‘make qemu-direct’ and ‘make qemu-gdb-direct B=debug’ if you face any issues.</p></li>
+</ul>
+</section>
+<section id="on-boot" class="level4 unnumbered">
+<h4>On Boot</h4>
+<ul>
+<li>CPU sets cs:ip to 0xffff:0x0000 and starts executing code from this location(BIOS ROM is memory mapped at this location. When CPU tries to load the instruction from this location, cache and memory will be bypassed, and instructions will be directly loaded from ROM).</li>
+<li><em>CPU starts executing BIOS code directly from ROM.</em></li>
+<li>BIOS code initializes cache, RAM and other peripherals</li>
+<li>BIOS code installs its handlers by modifying Interrupt descriptor table(IDT) to provide services for bootloader</li>
+<li>BIOS loads the boot loader(grub2) code from the boot disk at 0x0000:0x7c00 and jump to it. Now, <em>CPU starts executing boot loader code(grub2)</em>.</li>
+<li>(specific to grub2): grub2 uses bios provided interrupt handlers to load it’s configuration file /boot/grub/grub2.cfg and gets the path of kernel to be loaded, and the kernel is multiboot standard compatible - and grub2 switches the CPU to 32 bit mode.</li>
+<li>Bootloader(grub2) loads initial part of kernel containing ELF header from the disk (using BIOS provided interrupt handlers) into RAM</li>
+<li>grub2 scans kernel’s initial part for ‘multiboot header’ to know the interface expected from the kernel - for ex: multiboot version.</li>
+<li>Bootloader reads the ELF header and loads each section of kernel from disk into corresponding address in RAM(as mentioned in ELF header)</li>
+<li>Bootloader jumps to the starting address mentioned in kernel’s ELF header(usually _start)</li>
+<li><em>CPU starts executing kernel code</em>(_start).</li>
+</ul>
+</section>
+<section id="analyzing-tracefile" class="level4 unnumbered">
+<h4>Analyzing tracefile</h4>
+<p>I’ve enabled qemu’s instruction tracing. So after executing ‘make qemu’, a trace file created named qemu.log in the current working directory.</p>
+<p>When looking at the tracefile(qemu.log), please skip the initial bios instructions</p>
+<pre class="qemutrace"><code>     ----------------
+     IN:
+     0xfffffff0:  ljmp   $0xf000,$0xe05b</code></pre>
+<p>and also skip the bootloader code,</p>
+<pre class="qemutrace"><code>     ----------------
+     IN:
+     0x00007c00:  call   0x7c03</code></pre>
+</section>
+<section id="our-kernels-instruction-trace" class="level4 unnumbered">
+<h4>Our kernel’s instruction trace</h4>
+<p>Towards the end you can see our kernel’s instruction trace. For example:</p>
+<pre class="qemutrace"><code>     ----------------
+     IN:
+     0x00100050:  mov    $0x104080,%esp
+     0x00100055:  push   $0x0
+     0x00100057:  popf
+     0x00100058:  call   0x1040a0
+     ----------------
+     IN: core_boot
+     0x001040a0:  repz ret
+     0x0010005d:  cli
+     0x0010005e:  hlt</code></pre>
+</section>
+<section id="boot-our-kernel-from-your-laptop" class="level4 unnumbered">
+<h4>Boot our kernel from your laptop</h4>
+<p>Optional: <a href="http://www.gnu.org/software/grub/manual/multiboot/multiboot.pdf">Multiboot specification</a> specifies the interface between boot loader(eg: grub) and the kernel. You can also boot our kernel from your laptop, by using any multiboot combatible boot loader.</p>
+<p>For example: On grub2, I press ‘c’ to enter command prompt, and type:</p>
+<pre class="grub2"><code>     (grub2) multiboot (hd0,msdos5)/home/alice/hohlabs/_tmp/hoh.exe
+     (grub2) boot</code></pre>
+</section>
+</section>
+<section id="setup" class="level2 unnumbered">
+<h2>Setup</h2>
+<p>So here’s what you should do:</p>
+<section id="tools" class="level4 unnumbered">
+<h4>Tools</h4>
+<p>Please ensure you have latest version of:</p>
+<ul>
+<li>qemu (package: qemu qemu-system)</li>
+<li>g++ (package: g++-multilib &gt;=4.7)</li>
+<li>git (package: git-all)</li>
+<li>grub2 (package: grub2 grub-pc-bin)</li>
+<li>boost library (package: libboost-all-dev)</li>
+<li>xorriso (to create iso image. Otherwise you’ll get a warning that )</li>
+<li>coreutils(for makefile)</li>
+</ul>
+<p>In debian/ubuntu, do:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">   <span class="kw">bash</span>$ sudo apt-get install qemu qemu-system g++-multilib git-all grub2 grub-pc-bin libboost-all-dev xorriso</code></pre>
+<p>You can see <a href="http://www.cse.iitd.ac.in/~sbansal/os/tools.html">tools</a> to know more about these tools.</p>
+</section>
+<section id="clone-the-repository" class="level4 unnumbered">
+<h4>Clone the repository</h4>
+<p>Since we both will work on this kernel, we need to have a version control system. We’ll use git as our version control system. Please clone the repository to your local directory</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">     <span class="kw">user@host</span>:~$ git clone ssh://<span class="kw">&lt;</span>user<span class="kw">&gt;</span>@palasi.cse.iitd.ac.in/misc/research/teaching/sbansal/csl373/hohlabs.git
+     <span class="kw">user@host</span>:~$ cd hohlabs
+     <span class="kw">user@host</span>:~/hohlabs$</code></pre>
+</section>
+<section id="procedure" class="level4 unnumbered">
+<h4>Procedure</h4>
+<p>For each parts, do</p>
+<ol type="1">
+<li><p>Please get the changes done by Alice by merging the corresponding branch to your master branch</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"> <span class="kw">user@host</span>:~/hohlabs$ git pull
+ <span class="kw">user@host</span>:~/hohlabs$ git merge origin/<span class="kw">&lt;</span>branch_name<span class="kw">&gt;</span></code></pre>
+<p>For example, to get first part, do:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"> <span class="kw">user@host</span>:~/hohlabs$ git pull
+ <span class="kw">user@host</span>:~/hohlabs$ git merge origin/vgatext</code></pre></li>
+<li><p><em>Modify the files under the directory “labs” only </em> to add the missing functionality. For example, for the first part, you should modify the function writechar in labs/vgatext.h</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"> <span class="kw">user@host</span>:~/hohlabs$ git pull
+ <span class="kw">user@host</span>:~/hohlabs$ vim labs/vgatext.h</code></pre>
+<p>Test your code by:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"> <span class="kw">user@host</span>:~/hohlabs$ make qemu</code></pre>
+<p>(Optional) To debug:</p>
+<ul>
+<li><p>From first terminal:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">user@host</span>:~/hohlabs$ make qemu B=debug</code></pre></li>
+<li><p>From another terminal:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">   <span class="kw">user@host</span>:~/hohlabs$ gdb</code></pre></li>
+</ul>
+<p>In gdb, you can set break point for example ’_start’</p>
+<pre class="gdb"><code>   (gdb) break _start
+   (gdb) ni
+   (gdb) continue</code></pre></li>
+<li><p>Commit your changes in your local repository</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">   <span class="kw">user@host</span>:~/hohlabs$ git add -p labs/
+   <span class="kw">user@host</span>:~/hohlabs$ git commit -m <span class="st">&quot;your log message&quot;</span>
+
+   <span class="co">#Advanced: git add labs/ ; git commit -m &quot;commit message&quot; ; git stash ; ....  now do pull/merge .... ; git stash pop;</span></code></pre></li>
+<li><p>Do submit your code so far. (resubmissions are allowed)</p></li>
+</ol>
+</section>
+<section id="submission" class="level4 unnumbered">
+<h4>Submission</h4>
+<ul>
+<li>To submit the assignment, from palasi:
+<ul>
+<li>make sure your changes are available in palasi. Skip this step, if you’re working in GCL.</li>
+<li><p>submit your changes in palasi using:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">   <span class="kw">user@palasi</span>:~/hohlabs$ os-submit-lab <span class="kw">&lt;</span>labid<span class="kw">&gt;</span></code></pre></li>
+</ul></li>
+<li>Can be submitted from palasi only.</li>
+<li>Resubmissions are allowed.</li>
+<li>For late penalty calculations, we only consider your submission using os-submit-lab ( It is possible to change git commit history and filesystem modification time)</li>
+<li>Make sure you check your submission is correct by using: os-get-submission</li>
+</ul>
+<hr />
+</section>
+</section>
+<section id="primitives" class="level1">
+<h1><span class="header-section-number">1</span> Primitives</h1>
+<section id="overview" class="level4 unnumbered">
+<h4>Overview</h4>
+<p>In this first part, we’ll look into basic primitives required for writing an OS.</p>
+<ul>
+<li>Evaluation:
+<ul>
+<li>Code component:
+<ul>
+<li><em>NOTHING : 0 </em> Not working</li>
+<li><em>PARTIAL : 1 </em> Partial/buggy - TA is able to find atleast one bug in your code</li>
+<li><em>TYPO : 1.5</em> Code is not clean</li>
+<li><em>CORRECT : 2 </em> Working code</li>
+</ul></li>
+<li>Viva component:
+<ul>
+<li><em>FLAGGED : 0 </em> Can not explain his/her own code</li>
+<li><em>JUST_IMPLEMENTED : 1 </em> can explain his/her own code but can’t explain Alice’s code</li>
+<li><em>KNOWS_WHY : 2 </em> can explain his/her own code + Alice’s code</li>
+</ul></li>
+<li><p>Marks for each part is computed by following equation: <br /><span class="math"><em>M</em><em>a</em><em>r</em><em>k</em><em>s</em> = (<em>W</em><sub><em>d</em></sub> * <em>D</em> + <em>W</em><sub><em>v</em></sub> * <em>V</em>)</span><br /></p></li>
+<li>For 1.1-1.3: <span class="math"><em>W</em><sub><em>d</em></sub> = 0.25</span> and <span class="math"><em>W</em><sub><em>v</em></sub> = 0.25</span></li>
+<li>For 1.4-1.7: <span class="math"><em>W</em><sub><em>d</em></sub> = 0.40</span> and <span class="math"><em>W</em><sub><em>v</em></sub> = 0.10</span></li>
+<li>For 1.8: <span class="math"><em>W</em><sub><em>d</em></sub> = 1.20</span> and <span class="math"><em>W</em><sub><em>v</em></sub> = 0.30</span></li>
+<li>For 1.9: <span class="math"><em>W</em><sub><em>d</em></sub> = 0.80</span> and <span class="math"><em>W</em><sub><em>v</em></sub> = 0.20</span></li>
+<li>For 1.10: <span class="math"><em>W</em><sub><em>d</em></sub> = 1.20</span> and <span class="math"><em>W</em><sub><em>v</em></sub> = 0.30</span></li>
+<li>For 1.10-1.13: <span class="math"><em>W</em><sub><em>d</em></sub> = 0.80</span> and <span class="math"><em>W</em><sub><em>v</em></sub> = 0.20</span></li>
+<li><p>For 1.14: <span class="math"><em>W</em><sub><em>d</em></sub> = 2.00</span> and <span class="math"><em>W</em><sub><em>v</em></sub> = 0.50</span></p></li>
+<li>During Viva: If you’re not able to explain why you wrote the code, we’ll award you zero for both code component and viva component of that part.
+<ul>
+<li>Note: Following explanation won’t be accepted:
+<ul>
+<li>You tried hit and trial and somehow it worked.</li>
+<li>You forgot the code</li>
+</ul></li>
+</ul></li>
+<li><p>During viva: If you’re not able to explain the code that you wrote yourself(what is the code doing) we will report you as a major copy case and demo won’t be taken for any of the parts.</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="mmio" class="level2">
+<h2><span class="header-section-number">1.1</span> MMIO</h2>
+<section id="mergerequest" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+<p>I’ve added few more code in origin/vgatext branch. Please merge it with your master branch</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">        <span class="kw">user@host</span>:~/hohlabs$ git pull
+        <span class="kw">user@host</span>:~/hohlabs$ git merge origin/vgatext</code></pre>
+</section>
+<section id="aim" class="level4 unnumbered">
+<h4>Aim</h4>
+<p>In this part, we’ll program a memory mapped device while enhancing our kernel by adding the functionality to display “Hello, world!”.</p>
+</section>
+<section id="information" class="level4 unnumbered">
+<h4>Information</h4>
+<p>In VGA text mode, 16 bit (2 bytes) of information is stored for each screen character and is stored in row-major order. First byte(MSB) is the ASCII code of the screen character and the next byte(LSB) encodes background(4 bit: msb) and foreground color(4 bit: lsb). Color: 0x0 corresponds to black pallete, 0x7 corresponds to white pallete, 0x1 corresponds to blue pallete.</p>
+</section>
+<section id="usage" class="level4 unnumbered">
+<h4>Usage</h4>
+<p>I’ve added few lines of C code in x86/main.cc:</p>
+<pre class="sourceCode c"><code class="sourceCode c">       <span class="kw">for</span>(i=<span class="dv">0</span>;i&lt;<span class="kw">sizeof</span> mesg;i++){
+         vgatext::writechar(i, mesg[i], bg_color, fg_color, vgatext_base_address);
+       }</code></pre>
+</section>
+<section id="define" class="level4 unnumbered">
+<h4>Define</h4>
+<p>You need to define the following functions in labs/vgatext.h</p>
+<pre class="sourceCode c"><code class="sourceCode c">        <span class="dt">void</span> writechar(<span class="dt">int</span> loc, <span class="dt">uint8_t</span> c, <span class="dt">uint8_t</span> bg, <span class="dt">uint8_t</span> fg, addr_t base);</code></pre>
+<p>Arguments of vgatext::writechar:</p>
+<ul>
+<li>loc: location of screen character to be written,</li>
+<li>c: ascii code of the character to be written(8 bit)</li>
+<li>bg: background color(4 bit)</li>
+<li>fg: foreground color(4 bit)</li>
+<li>base: the memory mapped address of the vga text buffer</li>
+</ul>
+</section>
+<section id="given" class="level4 unnumbered">
+<h4>Given</h4>
+<p>To help you with mmio, I also added util/io.h which has following functions:</p>
+<pre class="sourceCode c"><code class="sourceCode c">       mmio::read8(base,byte_offset)
+       mmio::write8(base,byte_offset,<span class="dv">8</span> bit value)
+       mmio::read16(base,byte_offset)
+       mmio::write16(base,byte_offset,<span class="dv">16</span> bit value)
+       mmio::read32(base,byte_offset)
+       mmio::write32(base,byte_offset,<span class="dv">32</span> bit value)</code></pre>
+</section>
+<section id="tip" class="level4 unnumbered">
+<h4>Tip</h4>
+<ul>
+<li>You might find mmio::write16/mmio::write8 useful for implementing vgatext::writechar.</li>
+<li>Note that both mmio::write8 and mmio::write16 takes byte offset as an argument.</li>
+<li>If you’re using mmio::write16, please take care of endianness - x86 is little endian.</li>
+<li>When using bit shift operations, we recommend you to use unsigned integer types</li>
+</ul>
+</section>
+<section id="turn-in" class="level4 unnumbered">
+<h4>Turn in</h4>
+<p>You’re required to implement vgatext::writechar() in labs/vgatext.h</p>
+</section>
+<section id="check" class="level4 unnumbered">
+<h4>Check</h4>
+<p>The kernel shall print ‘Hello, world!’ in the top left corner of the screen.</p>
+</section>
+<section id="note" class="level4 unnumbered">
+<h4>Note</h4>
+<ul>
+<li>Expected: 1-2 line of C++ code. If you find yourself adding more than 10 lines of code in this part, please raise an alarm. After 10 logical lines of code, each logical line of code you add, 10% of mark will be substracted.</li>
+<li>Optional: Boot our kernel from a PC/laptop instead of qemu.</li>
+</ul>
+</section>
+<section id="note-1" class="level4 unnumbered">
+<h4>Note</h4>
+<ul>
+<li><p>Endianness is a property of CPU - it’s about what should be the memory contents “when a CPU executes Write instruction to memory” or what is the value of register if we execute read instruction from memory.</p>
+<p>When we say: MSB: char(8 bits) and LSB: bgfg (8 bits) - it’s independent of endianness.</p>
+<p>It means: first byte should be char. and next byte is bgfg.</p>
+<p>It specifies what should be the memory contents after you execute the CPU instruction. And depending on the target CPU’s (in which your OS is written for) endianness, you need to figure out what value you should write.</p></li>
+</ul>
+</section>
+<section id="demo-tip" class="level4 unnumbered">
+<h4>Demo Tip</h4>
+<p>Be prepared to answer following viva questions:</p>
+<ul>
+<li>How to program with memory mapped devices?</li>
+<li>What happens between ‘programming from cpu’ to ‘device recieving the command/data’ (Refer: Computer Architecture course)</li>
+<li>How to boot your kernel into C/C++ code?</li>
+</ul>
+</section>
+</section>
+<section id="pmio" class="level2">
+<h2><span class="header-section-number">1.2</span> PMIO</h2>
+<section id="mergerequest-1" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+<p>Now it’s my turn. I’ve added few more code in origin/serial branch. Please merge it with your master branch</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">    <span class="kw">user@host</span>:~/hohlabs$ git pull
+    <span class="kw">user@host</span>:~/hohlabs$ git merge origin/serial</code></pre>
+</section>
+<section id="aim-1" class="level4 unnumbered">
+<h4>Aim</h4>
+<p>In this part, we’ll program an I/O mapped device while enhancing our kernel by adding debugging routines which will print debug messages to serial port.</p>
+</section>
+<section id="information-1" class="level4 unnumbered">
+<h4>Information</h4>
+<p>Serial port aka pc16550d uart(universal asynchronous receiver transmitter). In pc16550d uart,</p>
+<p>Registers:</p>
+<ul>
+<li>the “transmitter holding” register of size 8 bits(1 byte) is I/O mapped at zeroth offset, and</li>
+<li>the “line status” register of size 8 bits(1 byte) is I/O mapped at fifth offset.</li>
+</ul>
+<p>The line status register has several fields (in lsb order):</p>
+<pre class="mackerel"><code>    name=&quot;dr&quot;,           size=&quot;1 bit&quot;, description=&quot;Data ready&quot;
+    name=&quot;oe&quot;,           size=&quot;1 bit&quot;, description=&quot;Overrun error&quot;
+    name=&quot;pe&quot;,           size=&quot;1 bit&quot;, description=&quot;Parity error&quot;
+    name=&quot;fe&quot;,           size=&quot;1 bit&quot;, description=&quot;Framing error&quot;
+    name=&quot;bi&quot;,           size=&quot;1 bit&quot;, description=&quot;Break interrupt&quot;
+    name=&quot;thre&quot;,         size=&quot;1 bit&quot;, description=&quot;Transmitter holding register&quot;
+    name=&quot;temt&quot;,         size=&quot;1 bit&quot;, description=&quot;Transmitter empty&quot;
+    name=&quot;erfifo&quot;,       size=&quot;1 bit&quot;, description=&quot;Error in RCVR FIFO&quot;</code></pre>
+<p>Before one writes a character(data) to transmitter holding register, one need to ensure that “thre” bit ([5:5] from lsb: fifth bit indexed from zero) in the line status register is set.</p>
+</section>
+<section id="usage-1" class="level4 unnumbered">
+<h4>Usage</h4>
+<p>I’ve added hoh_debug macro in util/debug.h, which will convert the arguments into string and call serial::print for each character in the string. Usage:</p>
+<p>In x86/main.cc: I’ve added the following line.</p>
+<pre class="sourceCode c"><code class="sourceCode c">    hoh_debug(<span class="st">&quot;Hello, serial!&quot;</span>);</code></pre>
+<p>hoh_debug macro will expand to a call to serial::print()</p>
+<p>I also added serial::print function in util/debug.cc:</p>
+<pre class="sourceCode c"><code class="sourceCode c">    <span class="dt">void</span> serial::print(<span class="dt">char</span> c){
+       wait until serial::is_transmitter_ready(serial_portbase) is true
+       call serial::writechar(c,serial_portbase)
+    }</code></pre>
+<p>So, once you implement the required two functions, you’ll be able to see “Hello, serial!” in your terminal.</p>
+</section>
+<section id="define-1" class="level4 unnumbered">
+<h4>Define</h4>
+<p>You need to define the following functions in labs/serial.h</p>
+<pre class="sourceCode c"><code class="sourceCode c">    bool is_transmitter_ready(io_t baseport);
+    <span class="dt">void</span> writechar(<span class="dt">uint8_t</span> c, io_t baseport);</code></pre>
+</section>
+<section id="given-1" class="level4 unnumbered">
+<h4>Given</h4>
+<p>To help you with I/O(in and out asm), I had added following functions in util/io.h:</p>
+<pre class="sourceCode c"><code class="sourceCode c">    io::write8(baseport, offset, <span class="dv">8</span> bit value)
+    io::write16(baseport, offset, <span class="dv">16</span> bit value)
+    io::read8(baseport,offset)
+    io::read16(baseport,offset)</code></pre>
+</section>
+<section id="tip-1" class="level4 unnumbered">
+<h4>Tip</h4>
+<ul>
+<li>You may find: io::read8(baseport,offset) and io::write8(baseport, offset, value) defined in util/io.h useful.</li>
+<li>When using bit shift operations, we recommend you to use unsigned integer types</li>
+</ul>
+</section>
+<section id="turn-in-1" class="level4 unnumbered">
+<h4>Turn in</h4>
+<p>You’re required to implement serial::is_transmitter_ready() and serial::writechar() in labs/serial.h</p>
+</section>
+<section id="check-1" class="level4 unnumbered">
+<h4>Check</h4>
+<p>The kernel shall print ‘Hello, serial!’ in your terminal.</p>
+</section>
+<section id="note-2" class="level4 unnumbered">
+<h4>Note</h4>
+<ul>
+<li>Expected: 2-4 line of C++ code. If you find yourself adding more than 20 lines of code in this part, please raise an alarm. After 20 logical lines of code, each logical line of code you add, 5% of mark will be substracted.</li>
+</ul>
+</section>
+<section id="demo-tip-1" class="level4 unnumbered">
+<h4>Demo Tip</h4>
+<p>Be prepared to answer following viva questions:</p>
+<ul>
+<li>How to program with io mapped devices?</li>
+<li>What happens between ‘programming from cpu’ to ‘device recieving the command/data’ (Refer: Computer Architecture course)</li>
+</ul>
+</section>
+</section>
+<section id="abstract-mmiopmio" class="level2">
+<h2><span class="header-section-number">1.3</span> Abstract mmio/pmio</h2>
+<section id="mergerequest-2" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+<p>I’ve added few more code in origin/keyboard branch. Please merge it with your master branch</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">    <span class="kw">user@host</span>:~/hohlabs$ git pull
+    <span class="kw">user@host</span>:~/hohlabs$ git merge origin/keyboard</code></pre>
+</section>
+<section id="aim-2" class="level4 unnumbered">
+<h4>Aim</h4>
+<p>In this part, we’ll look at one way of abstracting out details of mmio::read8 vs io::read8 while enhance our kernel by adding a simple keyboard driver.</p>
+</section>
+<section id="information-2" class="level4 unnumbered">
+<h4>Information</h4>
+<p>In Keyboard(8042, name=lpc_kbd), there are two main registers</p>
+<ul>
+<li><p>status register: size=“8 bits” The status register has several fields</p>
+<pre class="mackerel"><code>    name=&quot;perr&quot;,     size=&quot;1 bit&quot;, description=&quot;Parity error&quot;
+    name=&quot;timeout&quot;,  size=&quot;1 bit&quot;, description=&quot;General timeout&quot;
+    name=&quot;aobf&quot;,     size=&quot;1 bit&quot;, description=&quot;Auxiliary device output buffer full&quot;
+    name=&quot;is&quot;,       size=&quot;1 bit&quot;, description=&quot;Inhibit switch&quot;
+    name=&quot;cd&quot;,       size=&quot;1 bit&quot;, description=&quot;Command/data&quot;
+    name=&quot;sf&quot;,       size=&quot;1 bit&quot;, description=&quot;System flag&quot;
+    name=&quot;ibf&quot;,      size=&quot;1 bit&quot;, description=&quot;Input buffer full&quot;
+    name=&quot;obf&quot;,      size=&quot;1 bit&quot;, description=&quot;Output buffer full&quot;</code></pre></li>
+<li><p>input register: size=“8 bits”</p></li>
+</ul>
+<p>Before reading “input” register value, we need to make sure that the input buffer(of size 1) has data. Data availability in input buffer is indicated by the “Output Buffer full” bit in “status” register(Keyboard’s output buffer to CPU). So, we need to make sure that “Output Buffer full” bit is set in the “status” register.</p>
+<p>To read value of register, use:</p>
+<pre class="sourceCode c"><code class="sourceCode c">    regiser_value = &lt;devicename&gt;_&lt;registername&gt;_rd(address of device info structure);</code></pre>
+<p>To extract value of a field from register value, use:</p>
+<pre class="sourceCode c"><code class="sourceCode c">    field_value = &lt;devicename&gt;_&lt;registername&gt;_&lt;fieldname&gt;_extract(register_value);</code></pre>
+<p>For example, generated/lpc_kbd.h contains following functions:</p>
+</section>
+<section id="usage-2" class="level4 unnumbered">
+<h4>Usage</h4>
+<pre class="sourceCode c"><code class="sourceCode c">    core_loop_step():
+        <span class="kw">if</span>(!has_key(dev)){
+          <span class="kw">return</span>;
+        }
+        input=get_key(dev);
+        hoh_debug(<span class="st">&quot;Got key: &quot;</span>&lt;&lt;input);
+
+    core_loop():
+        repeat core_loop_step</code></pre>
+</section>
+<section id="define-2" class="level4 unnumbered">
+<h4>Define</h4>
+<p>You need to define the following functions in labs/keyboard.h</p>
+<pre class="sourceCode c"><code class="sourceCode c">    bool has_key(lpc_kbd_t&amp; dev);
+    <span class="dt">uint8_t</span> get_key(lpc_kbd_t&amp; dev);</code></pre>
+</section>
+<section id="given-2" class="level4 unnumbered">
+<h4>Given</h4>
+<p>Following functions are defined in generated/lpc_kbd.h(generated from spec/lpc_kbd.spec using modified mackerel):</p>
+<pre class="sourceCode c"><code class="sourceCode c">    lpc_kbd_status_rd()           : <span class="kw">return</span> the value of <span class="st">&quot;status&quot;</span> <span class="dt">register</span>  of <span class="st">&quot;lpc_kbd&quot;</span> device
+    lpc_kbd_status_obf_extract()  : extract <span class="st">&quot;obf&quot;</span> field from <span class="st">&quot;status&quot;</span> <span class="dt">register</span>   of <span class="st">&quot;lpc_kbd&quot;</span> device
+    lpc_kbd_input_rd()            : <span class="kw">return</span> the value of <span class="st">&quot;input&quot;</span> <span class="dt">register</span> of <span class="st">&quot;lpc_kbd&quot;</span> device</code></pre>
+</section>
+<section id="tip-2" class="level4 unnumbered">
+<h4>Tip</h4>
+<p>Trivial.</p>
+</section>
+<section id="turn-in-2" class="level4 unnumbered">
+<h4>Turn in</h4>
+<p>You’re required to implement the required functions in labs/keyboard.h</p>
+</section>
+<section id="check-2" class="level4 unnumbered">
+<h4>Check</h4>
+<p>Kernel shall print scancode of each key pressed in your terminal(hoh_debug).</p>
+</section>
+<section id="note-3" class="level4 unnumbered">
+<h4>Note</h4>
+<ul>
+<li>Expected: 2-4 line of C++ code. If you find yourself adding more than 10 lines of code in this part, please raise an alarm. After 10 logical lines of code, each logical line of code you add, 10% of mark will be substracted.</li>
+</ul>
+</section>
+<section id="demo-tip-2" class="level4 unnumbered">
+<h4>Demo Tip</h4>
+<p>Be prepared to answer following viva questions:</p>
+<ul>
+<li>Is keyboard memory mapped(mmio::read8) or io mapped(io::read8)?</li>
+<li>What’s the offset of status register and input register from basemem/baseport?</li>
+<li>Which bits corresponds to obf field in status regiser? How to extract those bitfields from value of status register?</li>
+<li>Endianness?</li>
+<li>Is knowing answer to above questions necessary while using the given functions?</li>
+</ul>
+</section>
+<section id="credits" class="level4 unnumbered">
+<h4>Credits</h4>
+<p>Device interface functions in generated/lpc_kbd.h are generated by a modified version of mackerel.</p>
+</section>
+</section>
+<section id="kshell" class="level2">
+<h2><span class="header-section-number">1.4</span> kShell</h2>
+<section id="mergerequest-3" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+<p>I’ve added few more code in origin/shell branch. Please merge it with your master branch</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">    <span class="kw">user@host</span>:~/hohlabs$ git pull
+    <span class="kw">user@host</span>:~/hohlabs$ git merge origin/shell</code></pre>
+</section>
+<section id="aim-3" class="level4 unnumbered">
+<h4>Aim</h4>
+<p>In this part, we’ll look at one design approach while implementing a toy shell supporting builtin functions only.</p>
+<ul>
+<li>You need to implement the shell by implementing the given interfaces(in labs/shell.h and labs/shell.cc).</li>
+<li>You are <em>not</em> allowed to modify the interface and it’s usage in x86/main.cc.</li>
+<li>You are <em>not</em> allowed to use any global variables or static variables in your functions.</li>
+<li>To make sure we have a personalized UI for each student, exact user interface is open - So be creative!
+<ul>
+<li>While rendering, you may:
+<ul>
+<li>use menu based interface: with or without buttons, use: up/down arrows, or: (each builtin command could be a menu item).</li>
+<li>command based interface:</li>
+<li>a combination of above or invent a new one.</li>
+</ul></li>
+<li>While handling keyboard event, you may:
+<ul>
+<li>use up/down/left/right arrows, enter and esc keys to navigate, or:</li>
+<li>directly assign shortcuts to each menu, or</li>
+<li>a combination of above or invent a new one.</li>
+</ul></li>
+</ul></li>
+<li>Exact builtin commands/functionality that you need to support is open - Be creative! You may support multiple builtin commands, like:
+<ul>
+<li>computation tasks: factorial, fibnocci etc</li>
+<li>string commands like simple echo.</li>
+</ul></li>
+<li>You’re required to provide atleast two functionalities:
+<ul>
+<li>A status bar showing number of key presses so far. Whenever user pressed a key, number should be updated on the screen.</li>
+<li>one long computation task which will take atleast few seconds to compute.</li>
+</ul></li>
+</ul>
+</section>
+<section id="information-3" class="level4 unnumbered">
+<h4>Information</h4>
+<p>Reuses previous parts of this series to create a shell.</p>
+</section>
+<section id="usage-3" class="level4 unnumbered">
+<h4>Usage</h4>
+<pre class="sourceCode c"><code class="sourceCode c">   core_loop_step():
+       <span class="kw">if</span> user has pressed key, get the key and <span class="kw">do</span>:
+           shell_update(ro: key, rw: shell_state);
+
+       <span class="co">// execute shell for one time slot to do some computation, if required.</span>
+       shell_step(rw: shell_state);
+
+       <span class="co">// shellstate -&gt; renderstate: compute render state from shell state</span>
+       shell_render(ro: shell_state, wo: render_state);
+
+       <span class="kw">if</span> not render_eq(last renderstate and new renderstate):
+           render(ro: render_state, wo: vga text buffer);</code></pre>
+</section>
+<section id="define-3" class="level4 unnumbered">
+<h4>Define</h4>
+<p>You need to define the following structures in labs/shell.h</p>
+<pre class="sourceCode c"><code class="sourceCode c">    <span class="co">// state for shell</span>
+    <span class="kw">struct</span> shellstate_t{
+    };
+    <span class="co">// state required to render( for ex: intermediate results shouldnt be in render)</span>
+    <span class="kw">struct</span> renderstate_t{
+    };</code></pre>
+<p>You also need to define the following functions in labs/shell.cc</p>
+<pre class="sourceCode c"><code class="sourceCode c">    <span class="dt">void</span> shell_init(shellstate_t&amp; state);
+
+    <span class="co">// input: handle keyboard event</span>
+    <span class="dt">void</span> shell_update(<span class="dt">uint8_t</span> scankey, shellstate_t&amp; stateinout);
+
+    <span class="co">// computation: do one step of computation, if required</span>
+    <span class="dt">void</span> shell_step(shellstate_t&amp; stateinout);
+
+    <span class="co">// copy necessary information required to render the UI to renderstate</span>
+    <span class="dt">void</span> shell_render(<span class="dt">const</span> shellstate_t&amp; shell, renderstate_t&amp; render);
+
+    <span class="co">// output: how to render</span>
+    bool render_eq(<span class="dt">const</span> renderstate_t&amp; a, <span class="dt">const</span> renderstate_t&amp; b);
+    <span class="dt">void</span> render(<span class="dt">const</span> renderstate_t&amp; state, <span class="dt">int</span> w, <span class="dt">int</span> h, addr_t display_base);</code></pre>
+</section>
+<section id="given-3" class="level4 unnumbered">
+<h4>Given</h4>
+<p>NA.</p>
+<p>There’re several helper functions given in the labs/shell.cc. When you execute, you’ll be seeing a simple menu based interface. You may or may not use those functions. Please feel free to create your own interface.</p>
+</section>
+<section id="tip-3" class="level4 unnumbered">
+<h4>Tip</h4>
+<ul>
+<li><p>See the comments inside labs/shell.cc</p></li>
+<li>shell_step:
+<ul>
+<li>you may have to have a statemachine to know whether computation is in progress or not etc. (store the state in shellstate_t. pass the state to renderstate - if you want to enable/disable the menu item)</li>
+</ul></li>
+<li>Prefer iterative over recursive - stack size is limited to 4KB</li>
+<li>Use integer arithmetic instead of floats.</li>
+<li>Simplify render function by
+<ul>
+<li>classify all the elemnts into color and data
+<ul>
+<li>for ex: state could be color</li>
+</ul></li>
+<li>displaying all the elements marked as in renderstate_t everytime in the screen.</li>
+</ul></li>
+</ul>
+</section>
+<section id="turn-in-3" class="level4 unnumbered">
+<h4>Turn in</h4>
+<p>You’re required to define the structures in labs/shell.h and implement the required functions in shell.cc</p>
+</section>
+<section id="check-3" class="level4 unnumbered">
+<h4>Check</h4>
+<p>A simple shell with several builtin commands including a “long computation task” and a status bar showing the “number of key presses” so far.</p>
+</section>
+<section id="note-4" class="level4 unnumbered">
+<h4>Note</h4>
+<p>Have you noticed that:</p>
+<ul>
+<li>Select long computation task</li>
+<li>Press a key</li>
+<li>Status bar will get updated only after the long computation task is finished?</li>
+</ul>
+<p>ie. System latency to keyboard events is high - we’ll improve this in next part.</p>
+</section>
+<section id="demo-tip-3" class="level4 unnumbered">
+<h4>Demo tip</h4>
+<p>Be prepared to answer following viva questions:</p>
+<ul>
+<li>What are the advantages and disadvantages of this design? How to improve? What are other alternative approaches?</li>
+<li>What happens between you pressing a key in keyboard and it appearing on screen(if it appears).</li>
+</ul>
+</section>
+</section>
+<section id="stackless-coroutine" class="level2">
+<h2><span class="header-section-number">1.5</span> Stackless Coroutine</h2>
+<section id="mergerequest-4" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+<p>I’ve added few more code in origin/coroutine branch. Please merge it with your master branch</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">    <span class="kw">user@host</span>:~/hohlabs$ git pull
+    <span class="kw">user@host</span>:~/hohlabs$ git merge origin/coroutine</code></pre>
+</section>
+<section id="aim-4" class="level4 unnumbered">
+<h4>Aim</h4>
+<p>In this part, we’ll learn about “asymmetric-stackless coroutines” while enhancing our kernel to make it responsive to key presses while long computation task is running.</p>
+<ul>
+<li>You shall implement the long computation task as a stackless coroutine using the given APIs and add a new menu item/builtin command for the same.</li>
+<li>On key press, the status bar shall be updated with ‘the number of keys pressed so far’ while this long computation task is running(not after it finishes).</li>
+<li>If we select older menu item, shell still take seconds to respond to update status bar. If we select new menu item, shell will be updating status bar, while the computation is running.. Result of both the menu items should be same.</li>
+<li>Atmost one pending long computation task at any point in time.</li>
+<li>Only convert one long computation task to coroutine form(If your shell supports multiple long computation task).</li>
+</ul>
+</section>
+<section id="information-4" class="level4 unnumbered">
+<h4>Information</h4>
+<p>Coroutines are a generalization of coroutines which allows explicit suspend and resume operations(yield and call). Coroutines can be used for nonpremptive multitasking(fibers), event loop, and light weight pipes(producer consumer problem).</p>
+<p>Definition of coroutine from <a href="http://books.google.co.in/books?id=bIAxhJor1EYC&amp;printsec=frontcover">Coroutines: A Programming Methodology, a Language Design and an Implementation</a>(1980):</p>
+<pre><code>For the purposes of this thesis, the following will be regarded as
+the fundamental characteristics of a coroutine:
+(1) the values of data local to a coroutine persist between
+    successive occasions on which controls enters it (that is, between
+    successive calls), and
+(2) the execution of a coroutine is suspended as control leaves it,
+    only to carry on where it left off when control re-enters the
+    coroutine at some later stage.</code></pre>
+<p>Classification of coroutines from <a href="http://dl.acm.org/citation.cfm?id=1462167">Revisiting coroutines</a>(2009):</p>
+<ul>
+<li>Symmetric vs Asymmetric : whether coroutine can yield to other coroutines or it’s parent only.</li>
+<li>First class vs Constrained : First class object or not.</li>
+<li>Stackfulness vs Non-stackfulness: Can we call coroutine within another coroutine?</li>
+</ul>
+<p>There is a <a href="http://isocpp.org/files/papers/n3985.pdf">proposal</a> to support coroutines in C++. (Several languages like: C#, Perl, Python, Haskell, Erlang, Scheme, Factor supports coroutines.)</p>
+<p>See <a href="http://www.chiark.greenend.org.uk/~sgtatham/coroutines.html">Simon Thatham’s coroutine implementation</a> or <a href="http://www.boost.org/doc/libs/1_57_0/libs/coroutine/doc/html/index.html">boost coroutine’s Introduction &amp; Motivation</a> or <a href="http://dunkels.com/adam/pt/">Protothreads</a> for more details.</p>
+<p>Slides: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4287.pdf">Coroutines and Fibers</a></p>
+<p>Since we don’t have language support yet, Let’s first build a coroutine library first.</p>
+<ul>
+<li>We’ll store values of “data local to a coroutine between successive calls” in a structure, say f_t.</li>
+<li>We’ll store value of program counter from where the execution has to carry on in another structure - coroutine_t.</li>
+<li>coroutine_init() will initalize the program counter inside coroutine_t structure to zero.</li>
+<li>h_begin() will check the value of program counter, and if non-zero, will jump to that value.</li>
+<li>h_yield() stores the PC of next instruction to be executed in coroutine_t structure, and returns.</li>
+<li>h_end() resets the value of PC to zero.</li>
+</ul>
+<p>You’ll help me in implementing the long computation as a coroutine.</p>
+</section>
+<section id="define-4" class="level4 unnumbered">
+<h4>Define</h4>
+<p>You need to define the following structures in labs/coroutine.h</p>
+<pre class="sourceCode c"><code class="sourceCode c">   <span class="co">// state for your coroutine implementation:</span>
+   <span class="kw">struct</span> f_t{
+   };</code></pre>
+<p>You also need to define the following functions in labs/coroutine.cc</p>
+<pre class="sourceCode c"><code class="sourceCode c">   shell_step_coroutine(shellstate_t&amp;, coroutine_t&amp;, f_t&amp;);</code></pre>
+<p>You also need to enhance your shell implementation in labs/shell.h</p>
+<pre><code> update shellstate_t and renderstate_t structure: i
+   for handling coroutine state, and
+   new menu item for long computation task in coroutine form</code></pre>
+<p>You also need to enhance your shell implementation in labs/shell.cc</p>
+<pre><code> new menu item for long computation task</code></pre>
+</section>
+<section id="usage-4" class="level4 unnumbered">
+<h4>Usage</h4>
+<pre class="sourceCode c"><code class="sourceCode c">   core_loop_step():
+       <span class="kw">if</span> user has pressed key, get the key and <span class="kw">do</span>:
+           shell_update(ro: key, rw: shell_state);
+
+       <span class="co">// execute shell for one time slot to do some computation, if required.</span>
+       shell_step(rw: shell_state);
+
+       <span class="co">// execute shell for one time slot to do some computation based on coroutine, if required.</span>
+       shell_step_coroutine(rw: shell_state, f_coro, f_locals);
+
+       <span class="co">// shellstate -&gt; renderstate: compute render state from shell state</span>
+       shell_render(ro: shell_state, wo: render_state);
+
+       <span class="kw">if</span> not render_eq(last renderstate and new renderstate):
+           render(ro: render_state, wo: vga text buffer);</code></pre>
+</section>
+<section id="given-4" class="level4 unnumbered">
+<h4>Given</h4>
+<p>Following functions are defined in util/coroutine.h:</p>
+<pre class="sourceCode c"><code class="sourceCode c">    coroutine_t        : internal data structure to save the state of coroutine (where to <span class="kw">continue</span>)
+    coroutine_reset()  : initialize/reset coroutine_t
+
+    h_begin()          : begin coroutine ( jump to saved state )
+    h_yield()          : yield           ( save the state, and <span class="kw">return</span>)
+    h_end()            : end             ( infinitely call yield )</code></pre>
+</section>
+<section id="example-usage-of-coroutines" class="level4 unnumbered">
+<h4>Example usage of coroutines</h4>
+<pre class="sourceCode c"><code class="sourceCode c">    <span class="co">//</span>
+    <span class="co">// state of function f to be preserved across multiple calls.</span>
+    <span class="co">//</span>
+    <span class="kw">struct</span> f_t{
+     <span class="dt">int</span> i;
+     <span class="dt">int</span> j;
+    };
+
+    <span class="co">//</span>
+    <span class="co">// first time you call f(), it&#39;ll</span>
+    <span class="co">//   execute h_yield with value 1. (i=1 and j=1 at this point)</span>
+    <span class="co">//</span>
+    <span class="co">// next time you resume/call it, it&#39;ll continue execution from this point,</span>
+    <span class="co">// and  calls h_yield with value 2 (i=1 and j=2 at this point)</span>
+    <span class="co">//</span>
+    <span class="co">// In short, each time you resume/call f(), it&#39;ll return</span>
+    <span class="co">//</span>
+    <span class="co">//   1*1, 1*2, 1*3</span>
+    <span class="co">//   2*1, 2*2, 2*3</span>
+    <span class="co">//   3*1, 3*2, 3*3</span>
+    <span class="co">//</span>
+    <span class="co">//</span>
+    <span class="dt">void</span> f(coroutine_t* pf_coro,f_t* pf_locals,<span class="dt">int</span>* pret,bool* pdone){
+      coroutine_t&amp; f_coro = *pf_coro; <span class="co">// boilerplate: to ease the transition from existing code</span>
+      <span class="dt">int</span>&amp; ret            = *pret;
+      bool&amp; done          = *pdone;
+
+      <span class="dt">int</span>&amp; i              = pf_locals-&gt;i;
+      <span class="dt">int</span>&amp; j              = pf_locals-&gt;j;
+
+      h_begin(f_coro);
+
+      <span class="kw">for</span>(i=<span class="dv">1</span>;i&lt;=<span class="dv">3</span>;i++){
+        <span class="kw">for</span>(j=<span class="dv">1</span>;j&lt;=<span class="dv">3</span>;j++){
+          ret=i*j; done=false; h_yield(f_coro); <span class="co">// yield (i*j, false)</span>
+        }
+      }
+
+      ret=<span class="dv">0</span>; done=true; h_end(f_coro); <span class="co">// yield (0,true)</span>
+    }
+
+
+    <span class="co">// How to use use f()?</span>
+    coroutine_t f_coro;
+    coroutine_reset(f_coro);
+    f_t f_locals;
+
+    f(f_coro,f_locals,shell.f_ret,shell.f_done); <span class="co">//post cond: f_ret=1*1  f_done=false</span>
+    f(f_coro,f_locals,shell.f_ret,shell.f_done); <span class="co">//post cond: f_ret=1*2  f_done=false</span>
+    f(f_coro,f_locals,shell.f_ret,shell.f_done); <span class="co">//post cond: f_ret=1*3  f_done=false</span>
+    f(f_coro,f_locals,shell.f_ret,shell.f_done); <span class="co">//post cond: f_ret=2*1  f_done=false</span>
+    f(f_coro,f_locals,shell.f_ret,shell.f_done); <span class="co">//post cond: f_ret=2*2  f_done=false</span>
+    ...
+    f(f_coro,f_locals,shell.f_ret,shell.f_done); <span class="co">//post cond: f_ret=0    f_done=true</span></code></pre>
+</section>
+<section id="tip-4" class="level4 unnumbered">
+<h4>Tip</h4>
+<ul>
+<li>void f(T* px) === void f(T&amp; x)</li>
+<li>Stackless =&gt; No recursion!</li>
+</ul>
+</section>
+<section id="turn-in-4" class="level4 unnumbered">
+<h4>Turn in</h4>
+<ul>
+<li>You shall implement the long computation task as a stackless coroutine using the given APIs.</li>
+<li>Add a new menu item/builtin command for calling it.</li>
+</ul>
+</section>
+<section id="check-4" class="level4 unnumbered">
+<h4>Check</h4>
+<ul>
+<li>On key press, the status bar shall be updated with ‘the number of keys pressed so far’ while the long computation task is running(not after it finishes).</li>
+<li>Result of both the menu items should be same.</li>
+</ul>
+</section>
+<section id="note-5" class="level4 unnumbered">
+<h4>Note</h4>
+<ul>
+<li>You’re required to initialize the coroutine from shell_step_coroutine(). You may have a statemachine (DEAD,START,READY), and on state transition from DEAD-&gt;START, you may want to initialize the coroutine.</li>
+</ul>
+</section>
+<section id="note-6" class="level4 unnumbered">
+<h4>Note</h4>
+<ul>
+<li>Have you noticed that we need to save value of local variables in a structure and that stack is not preserved? In the next part, we’ll implement a stack for each coroutines, and let local variables stored on stack instead of new structure.</li>
+</ul>
+</section>
+</section>
+<section id="fiber" class="level2">
+<h2><span class="header-section-number">1.6</span> Fiber</h2>
+<section id="mergerequest-5" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+<p>I’ve added few more code in origin/fiber branch. Please merge it with your master branch</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">        <span class="kw">user@host</span>:~/hohlabs$ git pull
+        <span class="kw">user@host</span>:~/hohlabs$ git merge origin/fiber</code></pre>
+</section>
+<section id="aim-5" class="level4 unnumbered">
+<h4>Aim</h4>
+<p>In this part, we’ll learn about “fibers” while enhancing our kernel to make it responsive to key presses while long computation task is running.</p>
+<ul>
+<li>You shall implement the long computation task as a fiber using the given APIs and add a new menu item/builtin command for the same.</li>
+<li>On key press, the status bar shall be updated with ‘the number of keys pressed so far’ while this long computation task is running(not after it finishes).</li>
+<li>Result of all three menu items should be same.</li>
+<li>Atmost one pending long computation task at any point in time.</li>
+<li>Only convert one long computation task to fiber form(If your shell supports multiple long computation task).</li>
+</ul>
+</section>
+<section id="information-5" class="level4 unnumbered">
+<h4>Information</h4>
+</section>
+<section id="usage-5" class="level4 unnumbered">
+<h4>Usage</h4>
+<pre class="sourceCode c"><code class="sourceCode c">        core_loop_step():
+            <span class="kw">if</span> user has pressed key, get the key and <span class="kw">do</span>:
+                shell_update(ro: key, rw: shell_state);
+
+            <span class="co">// execute shell for one time slot to do some computation, if required.</span>
+            shell_step(rw: shell_state);
+
+            <span class="co">// execute shell for one time slot to do some computation, if required.</span>
+            shell_step_coroutine(rw: shell_state, rw: f_coro, rw: f_locals);
+
+            <span class="co">// execute shell for one time slot to do some computation based on fiber, if required.</span>
+            shell_step_fiber(rw: shell_state, rw: main_stack, rw: f_stack, rw: f_array, ro: f_arraysize);
+
+            <span class="co">// shellstate -&gt; renderstate: compute render state from shell state</span>
+            shell_render(ro: shell_state, wo: render_state);
+
+            <span class="kw">if</span> not render_eq(last renderstate and new renderstate):
+                render(ro: render_state, wo: vga text buffer);</code></pre>
+</section>
+<section id="define-5" class="level4 unnumbered">
+<h4>Define</h4>
+<p>You need to define the following functions in labs/fiber.cc</p>
+<pre class="sourceCode c"><code class="sourceCode c">   shell_step_fiber(shellstate_t&amp;, addr_t&amp; main_stack, addr_t&amp; f_stack, addr_t f_array, <span class="dt">uint32_t</span> f_arraysize);</code></pre>
+<p>You also need to enhance your shell implementation in labs/shell.h</p>
+<pre><code> update shellstate_t and renderstate_t structure:
+   for handling fiber state, and
+   new menu item for long computation task as fibers</code></pre>
+<p>You also need to enhance your shell implementation in labs/shell.cc</p>
+<pre><code> new menu item for long computation task</code></pre>
+</section>
+<section id="given-5" class="level4 unnumbered">
+<h4>Given</h4>
+<pre class="sourceCode c"><code class="sourceCode c">        stack_reset(f_stack,f_array,f_arraysize,f_start,f_args...) : resets the stack. use std::ref() from functional to pass references
+        stack_resetN(f_stack,f_array,f_arraysize,f_start,f_args...): resets the stack. <span class="kw">for</span> C/ older C++ compilers.
+        stack_saverestore(from_stack,to_stack)                     : saves the context to from_stack, restore the context from to_stack.</code></pre>
+</section>
+<section id="example-usage-of-fibers" class="level4 unnumbered">
+<h4>Example usage of fibers</h4>
+<pre class="sourceCode c"><code class="sourceCode c">
+        <span class="dt">void</span> f(addr_t* pmain_stack, addr_t* pf_stack, <span class="dt">int</span>* pret, bool* pdone){
+          addr_t&amp; main_stack = *pmain_stack; <span class="co">// boilerplate: to ease the transition from existing code</span>
+          addr_t&amp; f_stack    = *pf_stack;
+          <span class="dt">int</span>&amp; ret           = *pret;
+          bool&amp; done         = *pdone;
+
+          <span class="dt">int</span> i;
+          <span class="dt">int</span> j;
+
+          <span class="kw">for</span>(i=<span class="dv">1</span>;i&lt;=<span class="dv">3</span>;i++){
+            <span class="kw">for</span>(j=<span class="dv">1</span>;j&lt;=<span class="dv">3</span>;j++){
+              ret=i*j;done=false; stack_saverestore(f_stack,main_stack);
+            }
+          }
+          <span class="kw">for</span>(;;){
+            ret=<span class="dv">0</span>;done=true; stack_saverestore(f_stack,main_stack);
+          }
+        }
+
+        <span class="co">// How to use use f()?</span>
+        <span class="dt">uint8_t</span> f_array[F_STACKSIZE];
+        <span class="dt">const</span> size_t f_arraysize=F_STACKSIZE;
+
+        addr_t main_stack;
+        addr_t f_stack;
+
+        stack_reset4(f_stack, &amp;f_array, f_arraysize, &amp;f, &amp;main_stack, &amp;f_stack, &amp;shell.f_ret, &amp;shell.f_done);
+
+        stack_saverestore(main_stack,f_stack); <span class="co">//post cond: f_ret=1*1  f_done=false</span>
+        stack_saverestore(main_stack,f_stack); <span class="co">//post cond: f_ret=1*2  f_done=false</span>
+        stack_saverestore(main_stack,f_stack); <span class="co">//post cond: f_ret=1*3  f_done=false</span>
+        stack_saverestore(main_stack,f_stack); <span class="co">//post cond: f_ret=2*1  f_done=false</span>
+        stack_saverestore(main_stack,f_stack); <span class="co">//post cond: f_ret=2*2  f_done=false</span>
+        ...
+        stack_saverestore(main_stack,f_stack); <span class="co">//post cond: f_ret=0    f_done=true</span>
+</code></pre>
+</section>
+<section id="extra-information" class="level4 unnumbered">
+<h4>Extra information</h4>
+<pre class="sourceCode c"><code class="sourceCode c">
+        <span class="co">//</span>
+        <span class="co">// Switch stacks.</span>
+        <span class="co">//</span>
+        <span class="co">// Algo:</span>
+        <span class="co">//   1. Save _c&#39;s context to stack,</span>
+        <span class="co">//   2. push ip of _c&#39;s restore handler</span>
+        <span class="co">//   3. switch stacks</span>
+        <span class="co">//   4. execute ip of _n&#39;s restore handler to restore _n&#39;s context from stack.</span>
+        <span class="co">//</span>
+        <span class="co">//</span>
+        <span class="co">// stack layout:</span>
+        <span class="co">//  teip[-1:-32]: continuation to restore,</span>
+        <span class="co">//  Stack layout expected by teip:</span>
+        <span class="co">//     ebp[ -33: -64],</span>
+        <span class="co">//     ebx[ -65: -96],</span>
+        <span class="co">//     eax[ -97:-128],</span>
+        <span class="co">//     Stack layout expected by eip+4:</span>
+        <span class="co">//        Preserved.</span>
+
+        <span class="ot">#define stack_saverestore(from_stack,to_stack) do {                  \</span>
+<span class="ot">         asm volatile(                                                       \</span>
+<span class="ot">           &quot;  pushl %%eax      \n\t&quot;                                         \</span>
+<span class="ot">           &quot;  pushl %%ecx      \n\t&quot;                                         \</span>
+<span class="ot">           &quot;  pushl %%ebp      \n\t&quot;                                         \</span>
+<span class="ot">           &quot;  pushl $1f        \n\t&quot;                                         \</span>
+<span class="ot">           &quot;                   \n\t&quot;                                         \</span>
+<span class="ot">           &quot;  movl  %%esp,(%0) \n\t&quot;                                         \</span>
+<span class="ot">           &quot;  movl  (%1),%%esp \n\t&quot;                                         \</span>
+<span class="ot">           &quot;                   \n\t&quot;                                         \</span>
+<span class="ot">           &quot;  ret              \n\t&quot;                                         \</span>
+<span class="ot">           &quot;1:                 \n\t&quot;                                         \</span>
+<span class="ot">           &quot;  popl %%ebp       \n\t&quot;                                         \</span>
+<span class="ot">           &quot;  popl %%ecx       \n\t&quot;                                         \</span>
+<span class="ot">           &quot;  popl %%eax       \n\t&quot;                                         \</span>
+<span class="ot">          :                                                                  \</span>
+<span class="ot">          :&quot;a&quot; (&amp;from_stack), &quot;c&quot;  (&amp;to_stack)                               \</span>
+<span class="ot">          :_ALL_REGISTERS, &quot;memory&quot;                                          \</span>
+<span class="ot">         );                                                                  \</span>
+<span class="ot">        } while(false)</span>
+
+
+        <span class="co">//</span>
+        <span class="co">// Initializes stack.</span>
+        <span class="co">//</span>
+        <span class="co">// Algo:</span>
+        <span class="co">//   1. Push Ip of reset handler</span>
+        <span class="co">//         (which will reset ebp and jmp to actual eip etc)</span>
+        <span class="co">//</span>
+        <span class="co">// stack layout:</span>
+        <span class="co">//  teip[-1:-32]: continuation to restore(1f),</span>
+        <span class="co">//  Stack layout expected by teip:</span>
+        <span class="co">//     args passed in registers when calling eip (NONE),</span>
+        <span class="co">//     eip[-33:-64],</span>
+        <span class="co">//     args passed in stack when calling eip (NONE),</span>
+        <span class="co">//</span>
+        <span class="co">// initial values: teip=t_start; eip=f_start;</span>
+        <span class="co">//</span>
+
+        <span class="ot">#define stack_inithelper(_teip)  do{                                 \</span>
+<span class="ot">         asm volatile(                                                       \</span>
+<span class="ot">           &quot;  movl $1f,%0      \n\t&quot;                                         \</span>
+<span class="ot">           &quot;  jmp  2f          \n\t&quot;                                         \</span>
+<span class="ot">           &quot;1:                 \n\t&quot;                                         \</span>
+<span class="ot">           &quot;  movl $0, %%ebp   \n\t&quot;                                         \</span>
+<span class="ot">           &quot;  jmp *(%%esp)     \n\t&quot;                                         \</span>
+<span class="ot">           &quot;2:                 \n\t&quot;                                         \</span>
+<span class="ot">          :&quot;=m&quot; (_teip)                                                      \</span>
+<span class="ot">          :                                                                  \</span>
+<span class="ot">         );                                                                  \</span>
+<span class="ot">        }while(false)</span>
+
+</code></pre>
+</section>
+<section id="tip-5" class="level4 unnumbered">
+<h4>Tip</h4>
+<p>NA</p>
+</section>
+<section id="turn-in-5" class="level4 unnumbered">
+<h4>Turn in</h4>
+<ul>
+<li>You shall implement the long computation task as a fiber using the given APIs.</li>
+<li>Add a new menu item/builtin command for calling it.</li>
+</ul>
+</section>
+<section id="check-5" class="level4 unnumbered">
+<h4>Check</h4>
+<ul>
+<li>On key press, the status bar shall be updated with ‘the number of keys pressed so far’ while the long computation task is running(not after it finishes).</li>
+<li>Result of all the three menu items should be same.</li>
+</ul>
+</section>
+<section id="note-7" class="level4 unnumbered">
+<h4>Note</h4>
+<ul>
+<li>To achieve responsiveness, we’ve to add yield points explicitly. Sometimes, it may not be easy - can we trade efficiency and implment pre-emptive scheduling? Yes, But Pre-emption requires support for timers. To use timers, we need to have support for interrupts. which means we need to write interrupt handlers and program Interrupt Descriptor Tables(IDTs)</li>
+<li><p>Before we do so, let’s first implement support for multiple non-premptive threads.</p></li>
+<li><p>Syntax: <a href="https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html">GCC Extended Asm</a></p>
+<pre class="asm"><code> asm [volatile] ( AssemblerTemplate
+                  : OutputOperands
+                  [ : InputOperands
+                  [ : Clobbers ] ])</code></pre>
+<p>Label 1f means: the immediate label 1 in the forward direction.. and label 1b means the immediate label 1 in the backward direction.. And $1f means address of label 1 in the forward direction.</p>
+<p>In stack_inithelper macro, the _teip gets the address of label 1f.</p>
+<p>:“a”(value) inside input operands means : gcc will make sure %eax is not live at that point, and Move the value into “%eax” register</p>
+<p>:“c”(value) inside input operands means : gcc will make sure %eax is not live at that point, and Move the value into “%ecx” register</p>
+<p>if a register is mentioned in clobbered list - gcc will ensure that register is not live before calling asm statement. (all the integer registers which are not pushed in the macro are mentioned in _ALL_REGISTERS as clobbered. stack_saverestore is a macro - not a function so no calling convention is applied)</p></li>
+</ul>
+</section>
+<section id="demo-tip-4" class="level4 unnumbered">
+<h4>Demo Tip</h4>
+<ul>
+<li>On stack_savestore
+<ul>
+<li>stack_initN pushes variable number of arguments (stack_init0 pushes 2, stack_init1 pushes 3)</li>
+<li>and stack_saverestore pops fixed number of arguments.</li>
+<li>How is it possible?</li>
+<li>Why are we saving only eax, ecx and ebp? Won’t the other registers get trashed by the fiber function (after executing stack_saverestore)?</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="non-preemptive-scheduling" class="level2">
+<h2><span class="header-section-number">1.7</span> Non-preemptive scheduling</h2>
+<section id="mergerequest-6" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+<p>I’ve added few more code in origin/fiber_schedular branch. Please merge it with your master branch</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">        <span class="kw">user@host</span>:~/hohlabs$ git pull
+        <span class="kw">user@host</span>:~/hohlabs$ git merge origin/fiber_schedular</code></pre>
+</section>
+<section id="aim-6" class="level4 unnumbered">
+<h4>Aim</h4>
+<p>In this part, we’ll learn about non-preemptive sheduling while enhancing our shell to support mulitple pending long computation task.</p>
+<ul>
+<li>You shall support atleast two additional long computation tasks</li>
+<li>For these additional long computation tasks:
+<ul>
+<li>You shall support multiple pending long computation tasks</li>
+<li>Add menu item/builtin command for calling additonal tasks(Retain previous menu items).</li>
+<li>Same command/menu item may be entered multiple times</li>
+<li>Each command may be queued at max 3 times.</li>
+<li>Total number of fibers in progress shall be limited to minimum of (5 or stacks_size or arrays_size). Note: only additional long computation tasks are counted</li>
+</ul></li>
+</ul>
+</section>
+<section id="information-6" class="level4 unnumbered">
+<h4>Information</h4>
+<p>NA</p>
+</section>
+<section id="usage-6" class="level4 unnumbered">
+<h4>Usage</h4>
+<pre class="sourceCode c"><code class="sourceCode c">        core_loop_step():
+            <span class="kw">if</span> user has pressed key, get the key and <span class="kw">do</span>:
+                shell_update(ro: key, rw: shell_state);
+
+            <span class="co">// execute shell for one time slot to do some computation, if required.</span>
+            shell_step(rw: shell_state);
+
+            <span class="co">// execute shell for one time slot to do the computation based on coroutine, if required.</span>
+            shell_step_coroutine(rw: shell_state, rw: f_coro, rw: f_locals);
+
+            <span class="co">// execute shell for one time slot to do the computation based on fiber, if required.</span>
+            shell_step_fiber(rw: shell_state, rw: main_stack, rw: f_stack, rw: f_array, ro: f_arraysize);
+
+            <span class="co">// execute shell for one time slot for additional long computation tasks.</span>
+            shell_step_fiber_schedular(rw: shell_state, rw: stackptrs, ro: stackptrs_size, rw: arrays, ro: arrays_size);
+
+            <span class="co">// shellstate -&gt; renderstate: compute render state from shell state</span>
+            shell_render(ro: shell_state, wo: render_state);
+
+            <span class="kw">if</span> not render_eq(last renderstate and new renderstate):
+                render(ro: render_state, wo: vga text buffer);</code></pre>
+</section>
+<section id="define-6" class="level4 unnumbered">
+<h4>Define</h4>
+<p>You need to define the following functions in labs/fiber_schedular.cc</p>
+<pre class="sourceCode c"><code class="sourceCode c">   shell_step_fiber_schedular(shellstate_t&amp;, addr_t stacks[], <span class="dt">uint32_t</span> stacks_size, addr_t arrays, <span class="dt">uint32_t</span> arrays_size);</code></pre>
+<p>You also need to enhance your shell implementation in labs/shell.h</p>
+<pre><code> update shellstate_t and renderstate_t structure:
+   for handling schedular state, etc</code></pre>
+<p>You also need to enhance your shell implementation in labs/shell.cc</p>
+<pre><code> atleast two long computation tasks.
+ and ui changes.etc</code></pre>
+</section>
+<section id="given-6" class="level4 unnumbered">
+<h4>Given</h4>
+<p>NA</p>
+</section>
+<section id="tip-6" class="level4 unnumbered">
+<h4>Tip</h4>
+<pre class="tip"><code>     This is the goal: So far, we have the capability to run only one fiber. We need to support multiple fibers - Let&#39;s say:G and H with types:
+
+     1. G:: GArg -&gt; GResult
+     2. H.:: HArg -&gt; HResult
+
+     We also want to support multiple invocations of these fibers. (atmax 3).  Question also states about one more constraint - total number of instances for G and H should be &lt;= 5.
+
+     Now, we have to store 3*(GArg,GResult) and 3*(HArg,HResult) in shellstate_t..  just like we did it for f (we&#39;d stored args and result in shellstate for 1.5 and 1.6).
+
+     What should be a good data structure for storing these? Two common approaches are:
+
+     1. 3*(GArg,GResult) and 3*(HArg,HResult)
+     2. 5* Union of (GArg,GResult) and (HArg,HResult)
+
+     How to do scheduling?
+
+     Let&#39;s say, we have a circular buffer/linked list on top of array.
+
+     When someone wanted to start an instance(press enter), just check the resource limitations.  and change state, add into the queue.
+
+     and in each invocation of fiber_schedular... just pick one fiber(round robin), and execute.
+     ie. in next invocation - pick the next fiber and execute it.. so on.
+
+     This is just one way to implement.. You don&#39;t need to implement this way
+     - mentioned at the last day to help those students who&#39;re running out of
+       time.</code></pre>
+</section>
+<section id="turn-in-6" class="level4 unnumbered">
+<h4>Turn in</h4>
+<ul>
+<li>You shall support multiple pending long computation tasks</li>
+<li>Add few more menu item/builtin command for calling it.</li>
+</ul>
+</section>
+<section id="check-6" class="level4 unnumbered">
+<h4>Check</h4>
+</section>
+<section id="note-8" class="level4 unnumbered">
+<h4>Note</h4>
+</section>
+<section id="optional-design-check" class="level4 unnumbered">
+<h4>Optional Design check</h4>
+<p>To test how good is your design:</p>
+<ul>
+<li>commenting out shell_step_fiber:
+<ul>
+<li>is it equivalent to take fiber computation taking infinite amount of time</li>
+</ul></li>
+<li>commenting out shell_step_coroutine():
+<ul>
+<li>is it equivalent to take coroutine computation taking infinite amount of time</li>
+</ul></li>
+</ul>
+<p>etc.</p>
+</section>
+</section>
+<section id="preemption-threads" class="level2">
+<h2><span class="header-section-number">1.8</span> Preemption (threads)</h2>
+<section id="mergerequest-7" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+<p>I’ve added few more code in origin/preemption branch. Please merge it with your master branch</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">    <span class="kw">user@host</span>:~/hohlabs$ git pull
+    <span class="kw">user@host</span>:~/hohlabs$ git merge origin/preemption</code></pre>
+</section>
+<section id="aim-7" class="level4 unnumbered">
+<h4>Aim</h4>
+<p>In this part, we’ll learn about “preemption” while enhancing our kernel to make it responsive to key presses while long computation task is running.</p>
+<ul>
+<li>You shall enhance the fiber implementation by adding preemption.</li>
+<li>You need to write a part of trap handler - ring0_preempt - which should switch stack to ‘main_stack’
+<ul>
+<li>We would like to reuse shell_step_fiber_schedular to do the scheduling.</li>
+</ul></li>
+<li>You shall program one-shot LAPIC timer to raise an interrupt after a specified time.
+<ul>
+<li>For simplicity, we’ll go with dynamic timers</li>
+<li>If there’s no fibers running, there shouldn’t be any timers firing.</li>
+</ul></li>
+<li>You shall also take care of the data race, if any, between the ring0_preempt and fiber’s explicit yields</li>
+<li>Threads can be explicitly yielded using stack_saverestore(non preemptive context switch), or can be preempted by ring0_preempt from our timer’s trap handler.</li>
+<li>Floats and SIMDs(SSE) instructions are allowed in our kernel. ring0_preempt macro shall save and restore FPU/SIMD registers (context) as well during the context switch.</li>
+<li>Out of two additional fibers implemented during fiber_schedular:
+<ul>
+<li>One of the fiber should be running normally with non-preemptive yields (stack_saverestore) (This is to trigger race condition between yield and ring0_preempt) and</li>
+<li>another fiber shall be modified to execute without yields in between the computation (This is to check preemption is working or not)</li>
+</ul></li>
+<li>Those who havnt done fiber_schedular part can show preemption with fiber part
+<ul>
+<li>They need to show preemption with and without yields in the fibers.</li>
+</ul></li>
+</ul>
+<p>You also have to make following changes in the existing implementation:</p>
+<ul>
+<li>Fix the types of shell_step_fiber and shell_step_fiber_schedular functions in labs/fiber.{h,cc} and labs/fiber_schedular.{h,cc}
+<ul>
+<li>shell_step_fiber and shell_step_fiber_schedular are now passed extra arguments - timer device and a preempt_t structure.</li>
+<li>You’ve to modify types of these functions to fix the compiler/linker error</li>
+</ul></li>
+<li>Update shell_step_fiber_schedular to use main_stack.
+<ul>
+<li>shell_step_fiber_schedular is now passed main_stack as an argument</li>
+</ul></li>
+</ul>
+</section>
+<section id="information-7" class="level4 unnumbered">
+<h4>Information</h4>
+<ul>
+<li>Lecture videos:
+<ul>
+<li><a href="">Trap handlers</a></li>
+<li><a href="">Context switch</a></li>
+</ul></li>
+<li><p>FXSAVE and FXRSTOR assembly instructions: To save and restore FPU/SIMD registers To save/restore all these registers, Intel provided a single instruction FXSAVE/FXRSTOR.</p>
+<p>To know more about fxsave and fxrstor instruction, please read: <a href="http://www.cse.iitd.ac.in/~deepak/hohlabs/intel.pdf">Vol-1, Chapter 10, Section 5</a></p>
+<p>Note that memory address passed to fxsave and fxrstor must be 16 byte aligned. ie. must be a multiple of 16.</p></li>
+<li><p>Possible Control flow</p>
+<p>Make sure your ring0_prempt will be able to work with below scenario</p></li>
+</ul>
+<p><img src="images/89fb4cb77a4c4ab7b33f32c88bfaccb7b8715408.png" /></p>
+<ul>
+<li><p>FPU: eax,ecx, edx, ebx, esp, ebp, esi, edi are all integer registers.</p>
+<p>Let’s try to write a simple C functions which add two floats:</p>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">float</span> add(<span class="dt">float</span> a, <span class="dt">float</span> b){
+   <span class="kw">return</span> a+b;
+}</code></pre>
+<p>Which registers are they going to use, and which instructions? integers registers? addl instruction? No! What’s the format of floats? number is represented as (sign,mantisa,exponent). To know about it, please read about IEEE754 floating point representation/basic computer architecture course. That’s where legacy 8087 FPU comes into picture.</p>
+<p>It has 8 80-bit FPU registers: st(0),st(1), st(2)…st(7). ( 1 bit sign, 64 bit mantissa, 15 bit exponent) sizeof(double)=8. Floating point loads and stores will convert this 80-bit representation to 64 bit representation when it store to memory.. and viceversa. To know about FPU registers, please read: <a href="http://www.cse.iitd.ac.in/~deepak/lab1/intel.pdf">Vol-1, Chapter 8</a></p></li>
+<li><p>MMX/SIMD2: With one instruction, we want to add N pairs in parallel, which means we want registers than hold N ints (or N floats).</p>
+<p>x86 has mm0, mm1, mm2.. mm7 (which are SIMD2, ie. N=2 - it holds two floats). To know more about MMx registers, please read: <a href="http://www.cse.iitd.ac.in/~deepak/hohlabs/intel.pdf">Vol-1 Chapter 9</a></p></li>
+<li><p>SSE/SIMD4: It also introduced SIMD4(128 bit registers) xmm registers. xmm0, xmm1 … xmm7. To know more about xmm registers, please read: <a href="http://www.cse.iitd.ac.in/~deepak/hohlabs/intel.pdf">Vol-1 Chapter 10</a></p></li>
+<li><p>AVX/SIMD8 Intel also introduced (SIMD8) ymm registers in architectures like Sandybridge, Haswell etc. but since our gcl machines doesn’t support these - we won’t discuss it here.</p></li>
+<li><p>Overview of preemption handler’s control flow:</p></li>
+</ul>
+<p><img src="images/3a92be50adfe22414c4435e355e64cfe7d5cf7e1.png" /></p>
+</section>
+<section id="usage-7" class="level4 unnumbered">
+<h4>Usage</h4>
+<p>Read the code - to understand where ring0_prempt is getting called</p>
+</section>
+<section id="define-7" class="level4 unnumbered">
+<h4>Define</h4>
+<p>You need to define the following structures in labs/preempt.h</p>
+<pre class="sourceCode c"><code class="sourceCode c">   <span class="co">// preempt_t : State for your timer/preemption handler</span>
+   <span class="kw">struct</span> preempt_t{
+   };</code></pre>
+<p>You also need to define the following functions in labs/preempt.h</p>
+<pre class="sourceCode c"><code class="sourceCode c">   <span class="co">//</span>
+   <span class="co">// _name: label name</span>
+   <span class="co">// _f   : C function to be called</span>
+   <span class="co">//</span>
+   <span class="ot">#  define  _ring0_preempt(_name,_f)            \</span></code></pre>
+<p>You also need to modify labs/fiber.cc and labs/fiber_schedular.cc to set the timer and reset the timer</p>
+</section>
+<section id="given-7" class="level4 unnumbered">
+<h4>Given</h4>
+<ul>
+<li>lapic.reset_timer_count(N); to generate a timer interrupt after N timer ticks (N=0 to stop)
+<ul>
+<li><p>Both the shell_step_fiber and shell_step_fiber_sched are passed an dev_lapic_t object. which has a member function:</p>
+<pre class="sourceCode c"><code class="sourceCode c">reset_timer_count(<span class="dt">int</span> count).</code></pre>
+<p>LAPIC Timer unit will decrement this count every tick, and when it reaches zero, will fire a timer interrupt.</p>
+<p>To know more about LAPIC Timer: please read: <a href="http://www.cse.iitd.ac.in/~deepak/hohlabs/intel.pdf">Vol 3A, 10.5.4.</a></p></li>
+</ul></li>
+<li>Our kernel does not have any global variables, and our trap handler is stateless. So we map our state to %gs. ie. %gs:0 will point to zeroth byte of core_t structure. %gs:1 will point to first byte.. so on (Read the code for more info).</li>
+</ul>
+</section>
+<section id="tip-7" class="level4 unnumbered">
+<h4>Tip</h4>
+<ul>
+<li>Make sure you understand the stack_saverestore(util/fiber.h) function you used in 1.6 and 1.7 parts.</li>
+<li><p>%gs: See x86/main.h and x86/except.* on usage of %gs</p></li>
+<li><p>Outline of ring0_preempt:</p></li>
+</ul>
+<pre class="sourceCode c"><code class="sourceCode c">
+   <span class="ot">#define _ring0_preempt(_name,_f)</span>
+
+   _name:
+         call C function: _f
+
+         <span class="co">// begin</span>
+         <span class="kw">if</span> thread is already inside yield,
+           jmp iret_toring0
+
+         save the CPU state to core_t.preempt.foo
+         <span class="kw">switch</span> stack
+         restore CPU state from core_t.main_stack
+         <span class="co">// end</span>
+
+         jmp iret_toring0</code></pre>
+</section>
+<section id="turn-in-7" class="level4 unnumbered">
+<h4>Turn in</h4>
+</section>
+<section id="check-7" class="level4 unnumbered">
+<h4>Check</h4>
+<ul>
+<li>On key press, the status bar shall be updated with ‘the number of keys pressed so far’ while the long computation task is running(not after it finishes).</li>
+<li>Result of all the three menu items should be same.</li>
+<li>On demand timer ticks: No timer ticks if there’re no fibers running.</li>
+</ul>
+</section>
+<section id="note-9" class="level4 unnumbered">
+<h4>Note</h4>
+<p>NA</p>
+</section>
+</section>
+<section id="spsc-queue-execute-task-on-remote-core" class="level2">
+<h2><span class="header-section-number">1.9</span> SPSC Queue: Execute task on remote core</h2>
+<section id="mergerequest-8" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+<p>I’ve added few more code in origin/multicore branch. Please merge it with your master branch</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">    <span class="kw">user@host</span>:~/hohlabs$ git pull
+    <span class="kw">user@host</span>:~/hohlabs$ git merge origin/multicore</code></pre>
+</section>
+<section id="aim-8" class="level4 unnumbered">
+<h4>Aim</h4>
+<p>In this part, we’ll learn about multicore programming by implementing a SPSC queue and use it to send messages between two cores.</p>
+<ul>
+<li>I’ve modified the apps/labs.cc to execute the render() function in another core. The output of shell_render() - renderstate_t object - will be send to core #1 using the SPSQ queue. And core #1, will call the render() when it receives the renderstate_t object. Note: this means you won’t see shell untill you implement SPSC queue correctly.</li>
+<li>You’ll have to implement Leslie Lamport’s portable lock-free single-producer single-consumer bounded buffer algorithm, modified to suit the given template</li>
+<li>Size of buffer will always be a power of 2.</li>
+</ul>
+</section>
+<section id="information-8" class="level4 unnumbered">
+<h4>Information</h4>
+<ul>
+<li>Leslie Lamport’s <a href="proving.pdf">Proving the Correctness of Multiprocess Programs</a></li>
+<li>gcc atomic intrinsics</li>
+<li>C11/C++11 atomics</li>
+</ul>
+</section>
+<section id="usage-8" class="level4 unnumbered">
+<h4>Usage</h4>
+<ul>
+<li>Please read the code (apps/labs.cc) to see the usage.</li>
+</ul>
+</section>
+<section id="define-8" class="level4 unnumbered">
+<h4>Define</h4>
+<ul>
+<li>Shared data structure between producer and consumer</li>
+<li>This data structure is shared between producer and consumer</li>
+<li>We’ll reuse this data structure again when we implement user IPC. So you shouldn’t use any instructions like cli/sti.</li>
+<li>This shared data structure may be accessed from different address space. ie. Producer may access this shared data structure with a different virtual address than consumer. So you shouldn’t use any pointers inside this shared data structure.</li>
+</ul>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="kw">struct</span> channel_t{
+
+};</code></pre>
+<ul>
+<li>The producer</li>
+</ul>
+<pre class="sourceCode c"><code class="sourceCode c">
+<span class="kw">struct</span> writeport_t{
+
+
+  <span class="co">//</span>
+  <span class="co">// Writer</span>
+  <span class="co">//</span>
+
+
+  <span class="co">// no of entries available to write</span>
+  size_t write_reservesize();
+
+  <span class="co">// Can write &#39;n&#39; entries?</span>
+  bool write_canreserve(size_t n);
+
+  <span class="co">// Reserve &#39;n&#39; entries for write</span>
+  size_t write_reserve(size_t n);
+
+
+  <span class="co">//</span>
+  <span class="co">// Deleter</span>
+  <span class="co">//</span>
+
+
+  <span class="co">// No of entires available to delete</span>
+  size_t delete_reservesize();
+
+
+  <span class="co">// Can delete &#39;n&#39; entires?</span>
+  bool delete_canreserve(size_t n);
+
+
+  <span class="co">// Reserve &#39;n&#39; entires for deletion</span>
+  size_t delete_reserve(size_t n);
+
+
+
+  <span class="co">//</span>
+  <span class="co">// Synchronized operations</span>
+  <span class="co">//</span>
+  <span class="co">// Note: Feel free to implement these functions the way you want.</span>
+  <span class="co">//       You&#39;re not allowed to change the function prototype</span>
+  <span class="co">// PS:   Don&#39;t go by the function names.</span>
+  <span class="co">//</span>
+
+  <span class="co">// Read/Write shared memory data structure</span>
+  <span class="dt">void</span> write_sync(channel_t&amp; ch);
+
+  <span class="co">// Read/Write shared memory data structure</span>
+  <span class="dt">void</span> read_sync(channel_t&amp; ch);
+
+  <span class="co">// Update the state, if any.</span>
+  <span class="dt">void</span> delete_sync();
+
+
+};</code></pre>
+<ul>
+<li>Consumer</li>
+</ul>
+<pre class="sourceCode c"><code class="sourceCode c">
+<span class="kw">struct</span> readport_t{
+
+
+  <span class="co">//</span>
+  <span class="co">// Reader</span>
+  <span class="co">//</span>
+
+
+  <span class="co">// no of entries available to read</span>
+  size_t read_reservesize();
+
+  <span class="co">// Can Read &#39;n&#39; entires?</span>
+  bool read_canreserve(size_t n);
+
+  <span class="co">// Reserve &#39;n&#39; entires to be read</span>
+  size_t read_reserve(size_t n);
+
+
+
+  <span class="co">//</span>
+  <span class="co">// Synchronization operation</span>
+  <span class="co">//</span>
+  <span class="co">// Note: Feel free to implement these functions the way you want.</span>
+  <span class="co">//       You&#39;re not allowed to change the function prototype</span>
+  <span class="co">// PS:   Don&#39;t go by the function names.</span>
+
+  <span class="co">// Read/write shared memory data structure</span>
+  <span class="dt">void</span> read_sync(channel_t&amp; ch);
+
+  <span class="co">// Read/Write shared memory data structure</span>
+  <span class="dt">void</span> write_sync(channel_t&amp; ch);
+
+};</code></pre>
+</section>
+<section id="given-8" class="level4 unnumbered">
+<h4>Given</h4>
+<p>NA</p>
+</section>
+<section id="tip-8" class="level4 unnumbered">
+<h4>Tip</h4>
+<ul>
+<li>use <code>std::atomic&lt;T&gt;</code></li>
+<li>Note that shell_update may be called multiple times before shell_step or other functions will be called. If you’ve made a hack on lab 1.4(shell): like if you assumed that shell_step() will be called exactly after shell_step() and exactly the same number of times - it’s time to fix your shell.</li>
+</ul>
+<p>PS: shell_update() is your keyboard handler, on every key press it will be called. it’s independent of shell_step()</p>
+</section>
+<section id="turn-in-8" class="level4 unnumbered">
+<h4>Turn in</h4>
+</section>
+<section id="check-8" class="level4 unnumbered">
+<h4>Check</h4>
+<ul>
+<li>Shell will start to work once you implement render() correctly.</li>
+</ul>
+</section>
+<section id="note-10" class="level4 unnumbered">
+<h4>Note</h4>
+</section>
+</section>
+<section id="ring3" class="level2">
+<h2><span class="header-section-number">1.10</span> Ring3</h2>
+<section id="mergerequest-9" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+<p>I’ve added few more code in origin/ring3 branch. Please merge it with your master branch</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">    <span class="kw">user@host</span>:~/hohlabs$ git pull
+    <span class="kw">user@host</span>:~/hohlabs$ git merge origin/ring3</code></pre>
+</section>
+<section id="aim-9" class="level4 unnumbered">
+<h4>Aim</h4>
+<p>In this part, we’ll learn about ELF headers, page table handling and user mode switching while enhancing our kernel to load arbitary user program and execute it.</p>
+<ul>
+<li>You need to implement elf loader:
+<ul>
+<li>You shall only support Position Independent Executable.</li>
+<li>The entire program memory address space specified by the program shall be read only. You can safely ignore the flags in ELF and override with ‘WRITE’ flags in page table.</li>
+<li>The entire program memory address space shall fit into a single large page.</li>
+</ul></li>
+<li>The given file is already in memory. You don’t need to load the file from disk. You only need to:
+<ul>
+<li>allocate new memory for the process.</li>
+<li>copy the contents at right location</li>
+<li>setup the process’s state:
+<ul>
+<li>register values</li>
+<li>page table</li>
+<li>allocate memory for kernel &lt;-&gt; process communication.</li>
+<li>setup the emergency stack layout correctly.</li>
+</ul></li>
+</ul></li>
+<li>kernel interrupts if occurred when CPU is in ring3, traphandlers are executed with esp=main_stack_end. So no need to save esp when you switch to ring 3.</li>
+</ul>
+<p><img src="graphviz-images/35fb0c92f47d3e29205a5e8b6f7f0643059d4b17.png" alt="caption" /></p>
+<ul>
+<li>You need to load the program’s page table.</li>
+<li>We’ll implement exit system call later. We’ll verify correctness by looking at qemu’s instruction trace.</li>
+<li>Emergency Stack layout:
+<ul>
+<li><p>type of _start is:</p>
+<pre class="sourceCode c"><code class="sourceCode c">  <span class="dt">void</span> _start(<span class="dt">uint32_t</span> rank, <span class="dt">uint32_t</span> masterro, <span class="dt">uint32_t</span> masterrw, <span class="dt">uint32_t</span> sharedrw)</code></pre>
+<ul>
+<li>masterrw: address of page shared between kernel and user</li>
+<li>value of rank, masterro, sharedrw shall be zero.</li>
+</ul></li>
+<li>Emergency Stack:
+<ul>
+<li>0: rank</li>
+<li>4: masterro</li>
+<li>8: masterrw</li>
+<li>12: sharedrw</li>
+</ul></li>
+</ul></li>
+</ul>
+<p><img src="graphviz-images/f3006b44bfcfbb88aaffa02f09c92c6ec0ebc1e4.png" alt="caption" /></p>
+<ul>
+<li>Page table:
+<ul>
+<li>Identity mapped - please make sure pages you tried are identity mapped, and use page table only for protection.</li>
+</ul></li>
+</ul>
+</section>
+<section id="information-9" class="level4 unnumbered">
+<h4>Information</h4>
+<p>Please see lecture videos:</p>
+<ul>
+<li><a href="">ELF headers</a></li>
+<li><a href="">Page table</a></li>
+<li><a href="">First user program</a></li>
+</ul>
+</section>
+<section id="usage-9" class="level4 unnumbered">
+<h4>Usage</h4>
+</section>
+<section id="define-9" class="level4 unnumbered">
+<h4>Define</h4>
+<ul>
+<li>load the elf file contents from the range (from,fromsize) and initialize the process ‘proc’</li>
+<li>(from, fromsize) : ELF</li>
+<li>proc : process structure</li>
+<li>pool4M : a simple pool manager.</li>
+</ul>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> <span class="kw">inline</span> <span class="dt">void</span> elf_load(addr_t from, size_t fromsize, process_t&amp; proc, bitpool_t&amp; pool4M);</code></pre>
+<ul>
+<li>restore process’s state from proc.
+<ul>
+<li>you need to restore all the registers</li>
+<li>you need to switch to process’s page table.</li>
+<li>switch to user mode.</li>
+</ul></li>
+<li>This function shall not return. So you don’t need to save current stack pointer or local variables.</li>
+</ul>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> <span class="kw">inline</span> <span class="dt">void</span> ring3_step(preempt_t&amp; preempt, process_t&amp; proc, dev_lapic_t&amp; lapic);</code></pre>
+<ul>
+<li>This function shall be called after process is preempted.</li>
+</ul>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> <span class="kw">inline</span> <span class="dt">void</span> ring3_step_done(process_t&amp; proc, dev_lapic_t&amp; lapic);</code></pre>
+</section>
+<section id="given-9" class="level4 unnumbered">
+<h4>Given</h4>
+<ul>
+<li>See util/elf.h and util/ring3.h.</li>
+<li>user app to be executed in ring3 is already implemented for you.</li>
+</ul>
+</section>
+<section id="tip-9" class="level4 unnumbered">
+<h4>Tip</h4>
+</section>
+<section id="turn-in-9" class="level4 unnumbered">
+<h4>Turn in</h4>
+</section>
+<section id="check-9" class="level4 unnumbered">
+<h4>Check</h4>
+<ul>
+<li>You need to verify user program execution by looking at qemu.log</li>
+</ul>
+</section>
+<section id="note-11" class="level4 unnumbered">
+<h4>Note</h4>
+</section>
+</section>
+<section id="ring3-preemption" class="level2">
+<h2><span class="header-section-number">1.11</span> Ring3 Preemption</h2>
+<section id="mergerequest-10" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+<p>I’ve added few more code in origin/ring3 branch. Please merge it with your master branch</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">        <span class="kw">user@host</span>:~/hohlabs$ git pull
+        <span class="kw">user@host</span>:~/hohlabs$ git merge origin/ring3</code></pre>
+</section>
+<section id="aim-10" class="level4 unnumbered">
+<h4>Aim</h4>
+<p>In this part, we’ll learn about preempting user program while enhancing our kernel to make it responsive to key presses while long computation task is running in ring3/user mode.</p>
+<ul>
+<li>We’ll have single kernel stack for the all user processes.</li>
+<li>Note: On timer interrupt, hardware will automatically switch to main_stack. and ring3_preempt macro will eventually be called.</li>
+<li>You need to write a part of trap handler - ring3_preempt - which should:
+<ul>
+<li>save all register state to current running process’s state.</li>
+<li>intializes the kernel stack and registers to well known state and jump to core_loop (done for you).</li>
+</ul></li>
+<li>Floats and SIMDs(SSE) instructions are allowed in our kernel. ring3_preempt macro shall save FPU/SIMD registers (context) as well during the preemption.</li>
+<li>Note: kernel interrupts if occurred when CPU is in ring3, traphandlers are executed with esp=main_stack_end.</li>
+<li>Note: Please read the lecture videos to understand how hardware context switch works</li>
+<li>Note: Basic understanding of x86/except.{h,cc} is required - covered in detail during part 1.8.</li>
+</ul>
+</section>
+<section id="information-10" class="level4 unnumbered">
+<h4>Information</h4>
+<p>Please see following lecture videos: - <a href="">Process context switch</a></p>
+<ul>
+<li>When ring3_upcall, ring3_downcall, ring3_preempt, ring0_preempt is getting called: The stack layout is:</li>
+</ul>
+<p><img src="graphviz-images/4b94c712fc5d8fc832a722cc09de70139197fc2d.png" alt="caption" /></p>
+</section>
+<section id="usage-10" class="level4 unnumbered">
+<h4>Usage</h4>
+</section>
+<section id="define-10" class="level4 unnumbered">
+<h4>Define</h4>
+<p>In labs/ring3_preempt.h:</p>
+<pre class="sourceCode c"><code class="sourceCode c">   <span class="ot">#define _ring3_preempt(_name, _f)</span></code></pre>
+</section>
+<section id="given-10" class="level4 unnumbered">
+<h4>Given</h4>
+<p>NA</p>
+</section>
+<section id="tip-10" class="level4 unnumbered">
+<h4>Tip</h4>
+<p>NA</p>
+</section>
+<section id="turn-in-10" class="level4 unnumbered">
+<h4>Turn in</h4>
+</section>
+<section id="check-10" class="level4 unnumbered">
+<h4>Check</h4>
+<ul>
+<li>Responsive shell.</li>
+</ul>
+</section>
+<section id="note-12" class="level4 unnumbered">
+<h4>Note</h4>
+</section>
+</section>
+<section id="upcallsignals" class="level2">
+<h2><span class="header-section-number">1.12</span> Upcall/Signals</h2>
+<section id="mergerequest-11" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+<pre class="sourceCode bash"><code class="sourceCode bash">    <span class="kw">user@host</span>:~/hohlabs$ git pull
+    <span class="kw">user@host</span>:~/hohlabs$ git merge origin/ring3</code></pre>
+</section>
+<section id="aim-11" class="level4 unnumbered">
+<h4>Aim</h4>
+<p>In this part, we’ll learn about upcalls by letting the user process manage the exceptions(like INT3, page faults etc).</p>
+<ul>
+<li>Whenever exception occur, You need to:
+<ul>
+<li>allocate emergency stack at the end of the page shared between kernel and user</li>
+<li>setup the emergency stack layout correctly</li>
+<li>Set the esp to this allocated emergency stack</li>
+<li>Set the eip to proc.startip+4.</li>
+<li>all other register values including eflags shall remain unchanged</li>
+</ul></li>
+<li>user’s exception handler is located at _start+4. ie. (proc.startip+4).</li>
+<li>Emergency Stack layout:
+<ul>
+<li><p>type of (_start+4) is:</p>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">void</span> user_exception(<span class="dt">uint32_t</span> rank, <span class="dt">uint32_t</span> masterro, <span class="dt">uint32_t</span> masterrw, <span class="dt">uint32_t</span> sharedrw, <span class="dt">uint32_t</span> num, <span class="dt">uint32_t</span> errorcode, <span class="dt">uint32_t</span> oldesp, <span class="dt">uint32_t</span> old_eip, <span class="dt">uint32_t</span> cr2)</code></pre>
+<ul>
+<li>num: Exception number</li>
+<li>errorcode: errorcode pushed by exception handler, if any. otherwise zero.</li>
+</ul></li>
+<li>Emergency Stack:
+<ul>
+<li>0: rank</li>
+<li>4: masterro</li>
+<li>8: masterrw</li>
+<li>12: sharedrw</li>
+<li>16: num</li>
+<li>20: errorcode</li>
+<li>24: %old_esp</li>
+<li>28: %old_eip</li>
+<li>32: cr2</li>
+</ul></li>
+</ul></li>
+</ul>
+<p><img src="graphviz-images/d50928bd7002c13646279d8fab8054c249347161.png" alt="caption" /></p>
+</section>
+<section id="information-11" class="level4 unnumbered">
+<h4>Information</h4>
+<ul>
+<li>When ring3_upcall, ring3_downcall, ring3_preempt, ring0_preempt is getting called: The stack layout is:</li>
+</ul>
+<p><img src="graphviz-images/4b94c712fc5d8fc832a722cc09de70139197fc2d.png" alt="caption" /></p>
+</section>
+<section id="usage-11" class="level4 unnumbered">
+<h4>Usage</h4>
+</section>
+<section id="define-11" class="level4 unnumbered">
+<h4>Define</h4>
+<p>In labs/ring3_upcall.h:</p>
+<pre class="sourceCode c"><code class="sourceCode c">   <span class="ot">#define _ring3_upcall(_name, _f)</span></code></pre>
+</section>
+<section id="given-11" class="level4 unnumbered">
+<h4>Given</h4>
+<p>NA</p>
+</section>
+<section id="tip-11" class="level4 unnumbered">
+<h4>Tip</h4>
+<p>NA</p>
+</section>
+<section id="turn-in-11" class="level4 unnumbered">
+<h4>Turn in</h4>
+</section>
+<section id="check-11" class="level4 unnumbered">
+<h4>Check</h4>
+<p>Generate an int3 or a page fault yourself. and see if it is getting reported correctly. ie. Match the values in qemu.log and the ones printed by user_exception handler.</p>
+</section>
+<section id="note-13" class="level4 unnumbered">
+<h4>Note</h4>
+</section>
+</section>
+<section id="downcallsystem-call" class="level2">
+<h2><span class="header-section-number">1.13</span> Downcall/System call</h2>
+<section id="mergerequest-12" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+<pre class="sourceCode bash"><code class="sourceCode bash">    <span class="kw">user@host</span>:~/hohlabs$ git pull
+    <span class="kw">user@host</span>:~/hohlabs$ git merge origin/ring3</code></pre>
+</section>
+<section id="aim-12" class="level4 unnumbered">
+<h4>Aim</h4>
+<p>In this part, we’ll learn about downcalls/system calls by implementing following system calls: - You need to define the following function: system_call();</p>
+<ol start="0" type="1">
+<li><em>nop</em>: no-operation/do-nothing
+<ul>
+<li>do-nothing</li>
+<li><p>System call should <em>NOT</em> modify/write to the system call memory. (See Tip)</p>
+<pre class="sourceCode c"><code class="sourceCode c">nop()</code></pre></li>
+</ul></li>
+<li><em>done</em>: done/exit.
+<ul>
+<li><p>mark the process as done(proc-&gt;state=PROC_DONE). process shouldn’t be scheduled after this. So make sure, in your ring3_step, you ignore the process if proc-&gt;state==PROC_DONE.</p>
+<pre class="sourceCode c"><code class="sourceCode c">done/exit()</code></pre></li>
+</ul></li>
+<li><em>mmio_read</em>: read size bytes from the given address using mmio
+<ul>
+<li><p>call appropriate mmio::read<size> based on the value of size.</p>
+<pre class="sourceCode c"><code class="sourceCode c">mmio_read(size, addr_t) -&gt; value</code></pre></li>
+</ul></li>
+<li><em>mmio_write</em>: write size bytes to the given address using mmio
+<ul>
+<li><p>call appropriate mmio::write<size> based on the value of size.</p>
+<pre class="sourceCode c"><code class="sourceCode c">mmio_write(size, addr_t, value)</code></pre></li>
+</ul></li>
+<li><em>pmio_read</em>: read size bytes from the given port address using pmio
+<ul>
+<li><p>call appropriate io::read<size> based on the value of size.</p>
+<pre class="sourceCode c"><code class="sourceCode c">pmio_read(size, io_t) -&gt; value</code></pre></li>
+</ul></li>
+<li><em>pmio_write</em>: write size bytes to the given port address using pmio
+<ul>
+<li><p>call appropriate io::write<size> based on the value of size.</p>
+<pre class="sourceCode c"><code class="sourceCode c">pmio_write(size, io_t, value)</code></pre></li>
+</ul></li>
+<li><em>mmu_swapva</em>: swap the entry of the process’s page table.
+<ul>
+<li>make sure both va1 and va2 are in VA_RANGE.</li>
+<li>Note: VA_RANGE is defined as 2GB-3GB.</li>
+<li>Hint: use proc.mmu.swap(..);</li>
+<li><p>Make sure you swap the flags as well. For example: if va1 is not mapped into user page, and va2 is mapped, After swap: va1 is mapped into user page and va1 is not.</p>
+<pre class="sourceCode c"><code class="sourceCode c">mmu_swapva(va1,va2)</code></pre></li>
+</ul></li>
+<li><em>mmu_mapmmio</em>: grants access to the requested page.
+<ul>
+<li>maps the corresponding page into user space with (VA=PA)</li>
+<li>Note: nva should <em>NOT</em> be in VA_RANGE.</li>
+<li><p>Note: VA_RANGE is defined as 2GB-3GB.</p>
+<pre class="sourceCode c"><code class="sourceCode c">mmu_mapmmio(nva)</code></pre></li>
+</ul></li>
+<li><em>pmu_mappmio</em>: grants access to the requested io port.
+<ul>
+<li><p>for time being, set iopl flags to 3. ie. proc-&gt;iopl=3. and always make sure eflags = (eflags &amp; ~(3u&lt;&lt;12)) | (proc-&gt;iopl&lt;&lt;12);</p>
+<pre class="sourceCode c"><code class="sourceCode c">pmu_mappmio(io_t)</code></pre></li>
+</ul></li>
+<li><em>pool_alloc</em>: allocate a large page from pool4M and maps into user address space
+<ul>
+<li>returns 0, if a large page cannot be allocated from pool4M</li>
+<li>allocates a large page from the pool4M, and</li>
+<li>finds an entry in VA_RANGE which is not mapped into user space, maps the page into this unused address in VA_RANGE with user privileges. returns this new va.</li>
+<li>Note: Newly allocated page is already mapped into kernel address space with VA=PA, coz of identity page table(with permissions as Kernel only). Please don’t change this mapping.</li>
+<li>Note: VA_RANGE is defined as 2GB-3GB.</li>
+<li>Note: unused page in VA_RANGE is defined as: a page with kernel privileges.</li>
+<li>Note: after this page table is no longer identity mapped. So make sure you save and restore kernel’s page table.</li>
+<li><p>Note: This system call returns either 0 or a va within the range VA_RANGE.</p>
+<pre class="sourceCode c"><code class="sourceCode c">pool_alloc() -&gt; va</code></pre></li>
+</ul></li>
+</ol>
+<p>Note: No need to implement authorization. We haven’t implemented support for capabilities in this kernel yet. We’ll implement capabilities in IPC part only.</p>
+<p>User shall pass arguments through begin of page shared between user and kernel. Memory layout:</p>
+<ul>
+<li>0: reserved. must be zero.</li>
+<li>4: Syscall num. Zero indicates No syscall request pending.</li>
+<li>8: Syscall Arg1 / Syscall Ret1.</li>
+<li>12: Syscall Arg2 / Syscall Ret2.</li>
+<li>16: Syscall Arg3 / Syscall Ret3.</li>
+</ul>
+<p><img src="graphviz-images/47fc597a5f4ea59d064276c7b792ba3ec05d947f.png" alt="caption" /></p>
+<p>Kernel may execute system call asynchronously by reading the shared page. User can alternatively force the use of system call execution, by using INT 0x48.</p>
+<p>Note: Make sure In elf_load() you clears first 64 byte of proc.masterrw. esp. initialize proc.masterrw[0] as zero.</p>
+</section>
+<section id="information-12" class="level4 unnumbered">
+<h4>Information</h4>
+<p>NA</p>
+</section>
+<section id="usage-12" class="level4 unnumbered">
+<h4>Usage</h4>
+<pre class="sourceCode c"><code class="sourceCode c">
+
+<span class="dt">static</span> <span class="kw">inline</span> <span class="dt">void</span> xsyscall(<span class="dt">uint32_t</span>* systemcallmmio, <span class="dt">uint32_t</span> fnum, <span class="dt">uint32_t</span> arg1, <span class="dt">uint32_t</span> arg2, <span class="dt">uint32_t</span> arg3, <span class="dt">uint32_t</span>&amp; ret1, <span class="dt">uint32_t</span>&amp; ret2, <span class="dt">uint32_t</span>&amp; ret3){
+
+  systemcallmmio[<span class="dv">2</span>]=arg1;
+  systemcallmmio[<span class="dv">3</span>]=arg2;
+  systemcallmmio[<span class="dv">4</span>]=arg3;
+  systemcallmmio[<span class="dv">1</span>]=fnum; <span class="co">//write this field at the end.</span>
+
+  hoh_debug(<span class="st">&quot;Shell Before making system call&quot;</span>);
+  asm <span class="dt">volatile</span>(<span class="st">&quot;int $0x48&quot;</span>:::<span class="st">&quot;memory&quot;</span>);
+  hoh_debug(<span class="st">&quot;Shell After making system call&quot;</span>);
+
+  hoh_assert(systemcallmmio[<span class="dv">1</span>]==<span class="dv">0</span>,<span class="st">&quot;XXX&quot;</span>);
+  ret1=systemcallmmio[<span class="dv">2</span>];
+  ret2=systemcallmmio[<span class="dv">3</span>];
+  ret3=systemcallmmio[<span class="dv">4</span>];
+
+  hoh_debug(<span class="st">&quot;Syscall ret: &quot;</span>&lt;&lt;ret1&lt;&lt;<span class="st">&quot;,&quot;</span>&lt;&lt;ret2&lt;&lt;<span class="st">&quot;,&quot;</span>&lt;&lt;ret3);
+
+}
+
+
+
+
+  <span class="co">// call test_systemcall by:</span>
+
+  <span class="co">//swapva</span>
+  <span class="dt">uint32_t</span> ret1;
+  <span class="dt">uint32_t</span> ret2;
+  <span class="dt">uint32_t</span> ret3;
+  xsyscall(core.syscallmmio, <span class="bn">0x6</span>, xxx, yyy, <span class="dv">0</span>, ret1, ret2, ret3);
+
+
+  <span class="co">//pool_alloc</span>
+  <span class="dt">uint32_t</span> ret1;
+  <span class="dt">uint32_t</span> ret2;
+  <span class="dt">uint32_t</span> ret3;
+  xsyscall(systemcallmmio, <span class="bn">0x9</span>, <span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>, ret1,ret2,ret3);
+  hoh_debug(<span class="st">&quot;Allocated at: &quot;</span>&lt;&lt;ret1);
+</code></pre>
+</section>
+<section id="define-12" class="level4 unnumbered">
+<h4>Define</h4>
+</section>
+<section id="given-12" class="level4 unnumbered">
+<h4>Given</h4>
+<p>NA</p>
+</section>
+<section id="tip-12" class="level4 unnumbered">
+<h4>Tip</h4>
+<pre class="sourceCode c"><code class="sourceCode c">  <span class="dt">uint32_t</span>* systemcall_mmio = cast&lt;<span class="dt">uint32_t</span>*&gt;(proc.masterrw);
+  <span class="dt">uint32_t</span> fnum =systemcall_mmio[<span class="dv">1</span>];  <span class="co">//read fnum first.</span>
+
+  <span class="kw">if</span>(fnum==<span class="dv">0</span>){ <span class="co">//make sure you check fnum.</span>
+    <span class="kw">return</span>;
+  }
+
+  <span class="dt">uint32_t</span> farg1=systemcall_mmio[<span class="dv">2</span>];
+  <span class="dt">uint32_t</span> farg2=systemcall_mmio[<span class="dv">3</span>];
+  <span class="dt">uint32_t</span> farg3=systemcall_mmio[<span class="dv">4</span>];
+
+  <span class="dt">uint32_t</span> fret1=<span class="dv">0</span>;
+  <span class="dt">uint32_t</span> fret2=<span class="dv">0</span>;
+  <span class="dt">uint32_t</span> fret3=<span class="dv">0</span>;
+
+  <span class="kw">switch</span>(fnum){
+  <span class="kw">case</span> <span class="dv">0</span>: {
+          }<span class="kw">break</span>;
+  <span class="kw">case</span> <span class="dv">1</span>: {
+          }<span class="kw">break</span>;
+  <span class="kw">case</span> <span class="dv">2</span>: {
+          }<span class="kw">break</span>;
+  }
+
+
+  <span class="kw">if</span>(fnum!=<span class="dv">0</span>){
+    <span class="co">// do not modify the arguments if fnum is zero.</span>
+    systemcall_mmio[<span class="dv">2</span>]=fret1;
+    systemcall_mmio[<span class="dv">3</span>]=fret2;
+    systemcall_mmio[<span class="dv">4</span>]=fret3;
+    systemcall_mmio[<span class="dv">1</span>]=<span class="dv">0</span>; <span class="co">//modify this last.</span>
+  }
+
+</code></pre>
+</section>
+<section id="turn-in-12" class="level4 unnumbered">
+<h4>Turn in</h4>
+<ul>
+<li>Implement the given 10 system calls.</li>
+<li>Write test cases for these 10 system calls by modifying ring3/app1(We won’t check your test cases ie. No marks for test cases).</li>
+</ul>
+</section>
+<section id="check-12" class="level4 unnumbered">
+<h4>Check</h4>
+</section>
+<section id="note-14" class="level4 unnumbered">
+<h4>Note</h4>
+</section>
+</section>
+<section id="app-virtual-memory" class="level2">
+<h2><span class="header-section-number">1.14</span> App: Virtual Memory</h2>
+<section id="mergerequest-13" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+<pre class="sourceCode bash"><code class="sourceCode bash">    <span class="kw">user@host</span>:~/hohlabs$ git pull
+    <span class="kw">user@host</span>:~/hohlabs$ git merge origin/ring3</code></pre>
+</section>
+<section id="aim-13" class="level4 unnumbered">
+<h4>Aim</h4>
+<p>In this part, we’ll learn about virtual memory by emulating an array of <span class="math"><em>N</em><sub><em>v</em></sub></span> virtual pages using <span class="math"><em>N</em><sub><em>p</em></sub></span> physical pages.</p>
+<ul>
+<li><p><strong>Note: There is a change : <span class="math"><em>N</em><sub><em>v</em></sub> = 16</span> and <span class="math"><em>N</em><sub><em>p</em></sub> = 4</span> instead of <span class="math"><em>N</em><sub><em>v</em></sub> = 16</span> and <span class="math"><em>N</em><sub><em>p</em></sub> = 8</span>. Ie. you need to emulate 16 page array using 4 physical pages. not 8</strong></p></li>
+<li><p>Please read lecture videos on demand paging and page replacement policy.</p></li>
+<li>You need to emulate an array of size <span class="math"><em>N</em><sub><em>v</em></sub></span> pages, say varray. Starting address of varray shall be 2GB ie. 2u&lt;&lt;30.</li>
+<li><p><span class="math"><em>N</em><sub><em>v</em></sub> = 16</span> and <span class="math"><em>N</em><sub><em>p</em></sub> = 4</span></p></li>
+</ul>
+<p><img src="graphviz-images/2623b6fa1d58130a3904de5d38846fcc56312f9d.png" alt="caption" /></p>
+<ul>
+<li>by using exactly <span class="math"><em>N</em><sub><em>p</em></sub></span> physical pages.</li>
+</ul>
+<p><img src="graphviz-images/a0f1bdeb6728d1f45ef7706fb8ab2cf34b03ad49.png" alt="caption" /></p>
+<ul>
+<li>Note: Before allocating these <span class="math"><em>N</em><sub><em>p</em></sub></span> physical pages, none of elements in varray is mapped to user space.</li>
+</ul>
+<p><img src="graphviz-images/925fb07dd8a75351299f096096fd68d723c5a480.png" alt="caption" /></p>
+<ul>
+<li>You shall use pool_alloc system call to allocate a page. You shall make exactly N pool_alloc system calls in your app. Note: pool_alloc system call will always return value within VA_RANGE. Note: When you allocate pages, there is no guarantee that pool_alloc will return them in continous order.</li>
+</ul>
+<p><img src="graphviz-images/afbaf87825d4f41b0369cc3d97ea36d4719d0d00.png" alt="caption" /></p>
+<ul>
+<li>You need to swap the page table entries from user mode using: mmu_swapva system call. Note: mmu_swapva will only swap if the arguments are within VA_RANGE. For example, a valid mapping could be:</li>
+</ul>
+<p><img src="graphviz-images/d0b0d4aa89a691fbd2ceed7a05160c25c93500f4.png" alt="caption" /></p>
+<ul>
+<li>You need to test your emulation of this virtual array, varray, by:
+<ol type="1">
+<li>storing a 3D matrix of type <em>const uint32_t[8][8][8]</em> into this varray.
+<ul>
+<li><p>You need to define a function to_index which will map this 3D array into varray. ie</p>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="co">//access x,y,z of this 3D array by:</span>
+varray[to_index(x,y,z)]=f(x,y,z);
+<span class="co">//or:</span>
+hoh_assert(varray[to_index(x,y,z)] == f(x,y,z),<span class="st">&quot; Bug&quot;</span>);</code></pre></li>
+<li>You can map this matrix into any order - not necessarily be row-major order.</li>
+<li>You need to find a mapping ‘to_index’ that will minimize the number of page faults and cache misses.</li>
+</ul></li>
+<li>Write a function, ‘for_each’, which will:
+<ul>
+<li>traverse all the elements in this 3D array in some order(strided by 32),</li>
+<li>and print the sum of each element’s neighbourhood defined by chebyshev distance of <span class="math"><em>d</em> = 2<sup>6</sup></span>. See: sum_neighbours or weightedsum_neigbours in the usage.</li>
+<li>Note: For each point, sum_neighbours computes sum of elements in its neighbourhood within a Chebyshev distance of <span class="math"><em>d</em> = 2<sup>6</sup></span>. (See usage).</li>
+<li>You can traverse the matrix in any order - not necessarily be row-major.</li>
+<li>You need to find a traversal ‘for_each’ that will will minimize the number of page faults and cache misses. ```c</li>
+</ul></li>
+</ol></li>
+</ul>
+<p>for(uint32_t x = 0; x&lt;256; x+=32){ for(uint32_t y = 0; y&lt;256; y+=32){ for(uint32_t z = 0; z&lt;256; z+=32){ sum_neighbours(x,y,z,f_lut); } } }</p>
+<p>``` 3. You need to implement page replacement policy. You need to find a page replacement policy that will minimize the number of page faults and cache misses.</p>
+<ul>
+<li>Note: Both sum_neighbours and weightedsum_neighbours traverse its neighbourhood defined by chebyshev distance of <span class="math"><em>d</em> = 2<sup>6</sup></span>. Make sure you optimize all the three - to_index, for_each and page replacement policy based on this behaviour.</li>
+<li>You also need to print the number of page fault occurred in your app.</li>
+<li>You’re required to implement the code under ring3/app1 directory.</li>
+</ul>
+<p>Motivation for the application:</p>
+<ul>
+<li><p>Let’s say we’ve a long computation function</p>
+<pre class="sourceCode c"><code class="sourceCode c">  <span class="dt">uint32_t</span> f(<span class="dt">uint8_t</span> x, <span class="dt">uint8_t</span> y, <span class="dt">uint8_t</span> z);</code></pre></li>
+<li>Usage: Assume we want to call sum_neighbours and weightedsum_neigbours for each <span class="math"><em>x</em>, <em>y</em>, <em>z</em> ∈ [0..255]</span> (See usage)</li>
+<li><p>To reduce invocation of this function each time we need it. We precompute ‘f’ for all the possible inputs and store it in a lookup table/array. ie.</p>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="kw">for</span>(x=<span class="dv">0</span>;x&lt;=<span class="dv">255</span>;x++){
+ <span class="kw">for</span>(y=<span class="dv">0</span>;y&lt;=<span class="dv">255</span>;y++){
+  <span class="kw">for</span>(z=<span class="dv">0</span>;z&lt;=<span class="dv">255</span>;z++){
+    varray[to_index(x,y,z)] = f(x,y,z);
+  }
+ }
+}
+
+<span class="co">//then, we can replace f with f2 where</span>
+<span class="dt">uint32_t</span> f2(<span class="dt">uint8_t</span> x,<span class="dt">uint8_t</span> y,<span class="dt">uint8_t</span> z){
+  <span class="kw">return</span> varray[to_index(x,y,z)];
+}</code></pre></li>
+<li>To memoize the entire function, we require <span class="math">2<sup>8</sup> * 2<sup>8</sup> * 2<sup>8</sup> * <em>s</em><em>i</em><em>z</em><em>e</em><em>o</em><em>f</em>(<em>u</em><em>i</em><em>n</em><em>t</em>32<sub><em>t</em></sub>) = 64<em>M</em><em>B</em></span> ie. 16 large pages.</li>
+<li>But we have only 4 pages. ie. You can only allocate 4 large pages(call pool_alloc system call 4 times).</li>
+<li><p>To get f2 working, without any modifications: We will emulate the array ‘varray’ of 16 larges pages within VA_RANGE.</p>
+<pre class="sourceCode c"><code class="sourceCode c">addr_t varray = addr_t(<span class="dv">2</span>&lt;&lt;<span class="dv">30</span>); <span class="co">//2GB</span></code></pre></li>
+<li>We allocate 4 pages, make sure they’re mapped into this array and intializes the value. If the allocated page is not mapped within [varray,varray + 16*LARGE_PAGE_SIZE) then: use mmu_swap system call to swap with an unmapped page. (Note: To do this you need to maintain already mapped pages. (use a bit for each of 16 pages to mark if they’re being mapped or not)</li>
+<li>When f2 tries to access varray: if the page is <em>not</em> mapped, hardware will generate a page fault.</li>
+<li>On page-fault: We will swap this page with already initialized page. We will use per-process page replacement policy. And we’ll reinitialize the page data.</li>
+<li>You also need to print the number of page fault occurred in the system.</li>
+<li>Demo tip: What should be to_index(x,y,z) so that it will minimize number of page-faults</li>
+<li>Demo tip: We need to call f2(x,y,z) for all possible x,y and z. What should be the order in which we should call f(x,y,z) so that it will minimize number of page-faults</li>
+<li>Demo tip: What should be to_index(x,y,z) so that it will minimize number of cache-line misses and tlb misses</li>
+<li><p>Demo tip: We need to call f2(x,y,z) for all possible x,y and z. What should be the order in which we should call f(x,y,z) so that it will minimize number of cache-line misses and tlb misses</p></li>
+</ul>
+<p>Note: Please don’t publish the code even after your demo is done(Code is part of my PhD work).</p>
+</section>
+<section id="information-13" class="level4 unnumbered">
+<h4>Information</h4>
+</section>
+<section id="usage-13" class="level4 unnumbered">
+<h4>Usage</h4>
+<pre class="sourceCode c"><code class="sourceCode c">        <span class="co">//</span>
+        <span class="co">// Call sum_neighbours for each x&lt;-[0..255], y&lt;-[0..255], z&lt;-[0..255]</span>
+        <span class="co">//</span>
+        <span class="co">// You&#39;re allowed to change this implementation: </span>
+        <span class="co">// Note: d is defined to be 2^6. and cannot be changed</span>
+        <span class="dt">uint32_t</span> sum_neighbours(<span class="dt">uint8_t</span> x, <span class="dt">uint8_t</span> y, <span class="dt">uint8_t</span> z){
+           <span class="co">//computes sum of all the elements in the list defined by </span>
+           <span class="co">//       [f(x+i,y+j,z+k) | i&lt;-[-d, -(d-1),...,-1,0,1,...,(d-1),d], </span>
+           <span class="co">//                         j&lt;-[-d, -(d-1),...,-1,0,1,...,(d-1),d], </span>
+           <span class="co">//                         k&lt;-[-d, -(d-1),...,-1,0,1,...,(d-1),d]]</span>
+           <span class="co">//ie.  Note d=2^6</span>
+           size_t sum=<span class="dv">0</span>;
+            <span class="kw">for</span>(<span class="dt">int</span> i=-d; i&lt;d; i++){
+              <span class="kw">for</span>(<span class="dt">int</span> j=-d; j&lt;d; j++){
+                 <span class="kw">for</span>(<span class="dt">int</span> k=-d; k&lt;d; k++){
+                   sum += f2(x+i, y+j, z+k);
+                 }
+              }
+            }
+        }
+
+        <span class="co">//</span>
+        <span class="co">// Call weightedsum_neighbours for each x&lt;-[0..255], y&lt;-[0..255], z&lt;-[0..255]</span>
+        <span class="co">//</span>
+        <span class="co">// You&#39;re allowed to change this implementation: </span>
+        <span class="co">// Note: d is defined to be 2^6. and cannot be changed</span>
+        <span class="dt">uint32_t</span> weightedsum_neighbours(<span class="dt">uint8_t</span> x, <span class="dt">uint8_t</span> y, <span class="dt">uint8_t</span> z){
+           <span class="co">//computes sum of all the elements in the list defined by </span>
+           <span class="co">//       [f(x+i,y+j,z+k) | i&lt;-[-d, -(d-1),...,-1,0,1,...,(d-1),d], </span>
+           <span class="co">//                         j&lt;-[-d, -(d-1),...,-1,0,1,...,(d-1),d], </span>
+           <span class="co">//                         k&lt;-[-d, -(d-1),...,-1,0,1,...,(d-1),d]]</span>
+           <span class="co">//ie.  Note d=2^6</span>
+           size_t sum=<span class="dv">0</span>;
+            <span class="kw">for</span>(<span class="dt">int</span> i=-d; i&lt;d; i++){
+              <span class="kw">for</span>(<span class="dt">int</span> j=-d; j&lt;d; j++){
+                 <span class="kw">for</span>(<span class="dt">int</span> k=-d; k&lt;d; k++){
+                   sum += w(i,j,k,d) * f2(x+i, y+j, z+k);
+                 }
+              }
+            }
+        }
+
+        <span class="co">//</span>
+        <span class="co">// Call another traversal for each x&lt;-[0..255], y&lt;-[0..255], z&lt;-[0..255]</span>
+        <span class="co">//</span>
+        <span class="dt">void</span> for_aach(){
+          <span class="kw">for</span> each element in 3D array: 
+             print sum_neighbours(element);
+        }</code></pre>
+<p>Notation: [f(x) | x&lt;-[1..10]] as: list of all f(x) <em>such that</em> x <span class="math"> ∈ </span> [1..10]</p>
+<p>Notation: Read ‘|’ as <em>such that</em>. Read ‘&lt;-’ as <span class="math"> ∈ </span>.</p>
+</section>
+<section id="define-13" class="level4 unnumbered">
+<h4>Define</h4>
+</section>
+<section id="given-13" class="level4 unnumbered">
+<h4>Given</h4>
+</section>
+<section id="tip-13" class="level4 unnumbered">
+<h4>Tip</h4>
+</section>
+<section id="turn-in-13" class="level4 unnumbered">
+<h4>Turn in</h4>
+</section>
+<section id="check-13" class="level4 unnumbered">
+<h4>Check</h4>
+<ul>
+<li>for all x,y,z: hoh_assert(f2(x,y,z) == f(x,y,z), “XXX”);</li>
+<li>Number of pages allocated shall be 4.</li>
+</ul>
+</section>
+<section id="note-15" class="level4 unnumbered">
+<h4>Note</h4>
+</section>
+</section>
+<section id="app-shell-in-user-mode" class="level2 unnumbered">
+<h2>App: Shell in user mode</h2>
+<p>Hello! Alice here!</p>
+<p>Congrats on making it so far! It’s been a pleasure working with you.</p>
+<p>Hope you enjoyed it as well!</p>
+<p>Let’s try to summarize the plot:</p>
+<ul>
+<li>You wrote a shell in kernel mode.</li>
+<li>Then I split the shell into two and rendered the UI on another core.</li>
+<li>Now I’ve moved your shell into user mode.</li>
+<li>And then I’ll split the user shell into two and render the UI on another process.</li>
+</ul>
+<p>In short: - You’ve implemented kernel coroutines, kernel threads and a kernel thread scheduler. And implmented a kernel application - shell. - You also have implemented user coroutines, user threads and a user thread schedular. And implemented a user application - shell.</p>
+<hr />
+<p><em>Shell is already done for you!</em> Your shell which you implemented in part 1.4 is already moved to user mode as an application. So the role has been revereed - whatever you’ve done till parts 1.9 are now in user mode. And parts 1.10 - parts 1.13 are in kernel.</p>
+<hr />
+<section id="mergerequest-14" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+<pre class="sourceCode bash"><code class="sourceCode bash">    <span class="kw">user@host</span>:~/hohlabs$ git pull
+    <span class="kw">user@host</span>:~/hohlabs$ git merge origin/ring3_shell</code></pre>
+</section>
+<section id="aim-14" class="level4 unnumbered">
+<h4>Aim</h4>
+<p>Get User shell working</p>
+<hr />
+<p><strong>Please don’t make the source code public even after you finish this course</strong> - The code you been working on is part of my PhD. Give me few months - Once we publish our paper, we’ll release the entire code under AGPL3 licence(Current LICENSE doesn’t allow the code). Till then please don’t make the publish.</p>
+<p>Btw: alice at hohlabs dot in is a real id, and will be active soon.</p>
+<p>Wanted to do BTP/MTP/PhD with Sorav Bansal? Send your resume to sbansal at cse.</p>
+<hr />
+<hr />
+<p><em>End of lab one</em></p>
+<pre><code>Please make sure you submit the feedback form
+--
+Regards,
+Alice H
+Hoh labs</code></pre>
+<hr />
+</section>
+</section>
+</section>
+<section id="applications" class="level1">
+<h1><span class="header-section-number">2</span> Applications</h1>
+<section id="overview-1" class="level4 unnumbered">
+<h4>Overview</h4>
+<p>In this lab, we’ll use the components we implemented in previous lab to make a fully functional kernel.</p>
+<p>We’ll test our kernel by having two applications:</p>
+<ol type="1">
+<li>File system in RAM</li>
+<li>Virtual Memory</li>
+</ol>
+<ul>
+<li>Evaluation:
+<ul>
+<li>Code component:
+<ul>
+<li><em>NOTHING : 0 </em> Not working</li>
+<li><em>PARTIAL : 1 </em> Partial/buggy - TA is able to find atleast one bug in your code</li>
+<li><em>TYPO : 1.5</em> Code is not clean</li>
+<li><em>CORRECT : 2 </em> Working code</li>
+</ul></li>
+<li>Viva component:
+<ul>
+<li><em>FLAGGED : 0 </em> Can not explain his/her own code</li>
+<li><em>JUST_IMPLEMENTED : 1 </em> can explain his/her own code but can’t explain Alice’s code</li>
+<li><em>KNOWS_WHY : 2 </em> can explain his/her own code + Alice’s code</li>
+</ul></li>
+<li><p>Marks for each part is computed by following equation: <br /><span class="math"><em>M</em><em>a</em><em>r</em><em>k</em><em>s</em> = (<em>W</em><sub><em>d</em></sub> * <em>D</em> + <em>W</em><sub><em>v</em></sub> * <em>V</em>)</span><br /></p></li>
+<li><p>For 2.1-2.4: <br /><span class="math"><em>W</em><sub><em>d</em></sub> = 0.80</span><br /> and <br /><span class="math"><em>W</em><sub><em>v</em></sub> = 0.20</span><br /></p></li>
+</ul></li>
+</ul>
+</section>
+<section id="shell-in-ring-3-user-level-schedular" class="level2">
+<h2><span class="header-section-number">2.1</span> Shell in Ring 3 : User level Schedular</h2>
+<section id="mergerequest-15" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+</section>
+<section id="aim-15" class="level4 unnumbered">
+<h4>Aim</h4>
+</section>
+<section id="information-14" class="level4 unnumbered">
+<h4>Information</h4>
+</section>
+<section id="usage-14" class="level4 unnumbered">
+<h4>Usage</h4>
+</section>
+<section id="define-14" class="level4 unnumbered">
+<h4>Define</h4>
+</section>
+<section id="given-14" class="level4 unnumbered">
+<h4>Given</h4>
+</section>
+<section id="tip-14" class="level4 unnumbered">
+<h4>Tip</h4>
+</section>
+<section id="turn-in-14" class="level4 unnumbered">
+<h4>Turn in</h4>
+</section>
+<section id="check-14" class="level4 unnumbered">
+<h4>Check</h4>
+</section>
+<section id="note-16" class="level4 unnumbered">
+<h4>Note</h4>
+</section>
+</section>
+<section id="user-ipc-send_message" class="level2">
+<h2><span class="header-section-number">2.2</span> User IPC: send_message</h2>
+<section id="mergerequest-16" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+</section>
+<section id="aim-16" class="level4 unnumbered">
+<h4>Aim</h4>
+</section>
+<section id="information-15" class="level4 unnumbered">
+<h4>Information</h4>
+</section>
+<section id="usage-15" class="level4 unnumbered">
+<h4>Usage</h4>
+</section>
+<section id="define-15" class="level4 unnumbered">
+<h4>Define</h4>
+</section>
+<section id="given-15" class="level4 unnumbered">
+<h4>Given</h4>
+</section>
+<section id="tip-15" class="level4 unnumbered">
+<h4>Tip</h4>
+</section>
+<section id="turn-in-15" class="level4 unnumbered">
+<h4>Turn in</h4>
+</section>
+<section id="check-15" class="level4 unnumbered">
+<h4>Check</h4>
+</section>
+<section id="note-17" class="level4 unnumbered">
+<h4>Note</h4>
+</section>
+</section>
+<section id="file-system-server-in-user-mode" class="level2">
+<h2><span class="header-section-number">2.3</span> File system server in user mode</h2>
+<section id="mergerequest-17" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+</section>
+<section id="aim-17" class="level4 unnumbered">
+<h4>Aim</h4>
+</section>
+<section id="information-16" class="level4 unnumbered">
+<h4>Information</h4>
+</section>
+<section id="usage-16" class="level4 unnumbered">
+<h4>Usage</h4>
+</section>
+<section id="define-16" class="level4 unnumbered">
+<h4>Define</h4>
+</section>
+<section id="given-16" class="level4 unnumbered">
+<h4>Given</h4>
+</section>
+<section id="tip-16" class="level4 unnumbered">
+<h4>Tip</h4>
+</section>
+<section id="turn-in-16" class="level4 unnumbered">
+<h4>Turn in</h4>
+</section>
+<section id="check-16" class="level4 unnumbered">
+<h4>Check</h4>
+</section>
+<section id="note-18" class="level4 unnumbered">
+<h4>Note</h4>
+</section>
+</section>
+<section id="virtual-memory-in-user-mode" class="level2">
+<h2><span class="header-section-number">2.4</span> Virtual memory in user mode</h2>
+<section id="mergerequest-18" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+</section>
+<section id="aim-18" class="level4 unnumbered">
+<h4>Aim</h4>
+</section>
+<section id="information-17" class="level4 unnumbered">
+<h4>Information</h4>
+</section>
+<section id="usage-17" class="level4 unnumbered">
+<h4>Usage</h4>
+</section>
+<section id="define-17" class="level4 unnumbered">
+<h4>Define</h4>
+</section>
+<section id="given-17" class="level4 unnumbered">
+<h4>Given</h4>
+</section>
+<section id="tip-17" class="level4 unnumbered">
+<h4>Tip</h4>
+</section>
+<section id="turn-in-17" class="level4 unnumbered">
+<h4>Turn in</h4>
+</section>
+<section id="check-17" class="level4 unnumbered">
+<h4>Check</h4>
+</section>
+<section id="note-19" class="level4 unnumbered">
+<h4>Note</h4>
+<hr />
+<p><em>End of lab two</em></p>
+<pre><code>Please make sure you submit the feedback form
+--
+Regards,
+Alice H
+Hoh labs</code></pre>
+<hr />
+</section>
+</section>
+</section>
+<section id="hoh-kernel" class="level1">
+<h1><span class="header-section-number">3</span> HoH Kernel</h1>
+<section id="overview-2" class="level4 unnumbered">
+<h4>Overview</h4>
+<ul>
+<li>.</li>
+<li>.</li>
+</ul>
+</section>
+<section id="kernel-verification-of-users-long-computation-task-trust-by-verification" class="level2">
+<h2><span class="header-section-number">3.1</span> kernel: Verification of User’s Long computation task( Trust by verification )</h2>
+<section id="mergerequest-19" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+</section>
+<section id="aim-19" class="level4 unnumbered">
+<h4>Aim</h4>
+</section>
+<section id="information-18" class="level4 unnumbered">
+<h4>Information</h4>
+</section>
+<section id="usage-18" class="level4 unnumbered">
+<h4>Usage</h4>
+</section>
+<section id="define-18" class="level4 unnumbered">
+<h4>Define</h4>
+</section>
+<section id="given-18" class="level4 unnumbered">
+<h4>Given</h4>
+</section>
+<section id="tip-18" class="level4 unnumbered">
+<h4>Tip</h4>
+</section>
+<section id="turn-in-18" class="level4 unnumbered">
+<h4>Turn in</h4>
+</section>
+<section id="check-18" class="level4 unnumbered">
+<h4>Check</h4>
+</section>
+<section id="note-20" class="level4 unnumbered">
+<h4>Note</h4>
+</section>
+</section>
+<section id="uniform-schedular-tasks-coroutines-threads-user-pgm" class="level2">
+<h2><span class="header-section-number">3.2</span> Uniform schedular : tasks, coroutines, threads, user pgm</h2>
+<section id="mergerequest-20" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+</section>
+<section id="aim-20" class="level4 unnumbered">
+<h4>Aim</h4>
+</section>
+<section id="information-19" class="level4 unnumbered">
+<h4>Information</h4>
+</section>
+<section id="usage-19" class="level4 unnumbered">
+<h4>Usage</h4>
+</section>
+<section id="define-19" class="level4 unnumbered">
+<h4>Define</h4>
+</section>
+<section id="given-19" class="level4 unnumbered">
+<h4>Given</h4>
+</section>
+<section id="tip-19" class="level4 unnumbered">
+<h4>Tip</h4>
+</section>
+<section id="turn-in-19" class="level4 unnumbered">
+<h4>Turn in</h4>
+</section>
+<section id="check-19" class="level4 unnumbered">
+<h4>Check</h4>
+</section>
+<section id="note-21" class="level4 unnumbered">
+<h4>Note</h4>
+</section>
+</section>
+<section id="h-introduction-to-h" class="level2">
+<h2><span class="header-section-number">3.3</span> H: Introduction to H</h2>
+<section id="mergerequest-21" class="level4 unnumbered">
+<h4>MergeRequest</h4>
+</section>
+<section id="aim-21" class="level4 unnumbered">
+<h4>Aim</h4>
+</section>
+<section id="information-20" class="level4 unnumbered">
+<h4>Information</h4>
+</section>
+<section id="usage-20" class="level4 unnumbered">
+<h4>Usage</h4>
+</section>
+<section id="define-20" class="level4 unnumbered">
+<h4>Define</h4>
+</section>
+<section id="given-20" class="level4 unnumbered">
+<h4>Given</h4>
+</section>
+<section id="tip-20" class="level4 unnumbered">
+<h4>Tip</h4>
+</section>
+<section id="turn-in-20" class="level4 unnumbered">
+<h4>Turn in</h4>
+</section>
+<section id="check-20" class="level4 unnumbered">
+<h4>Check</h4>
+</section>
+<section id="note-22" class="level4 unnumbered">
+<h4>Note</h4>
+<hr />
+<p><em>End of lab three</em></p>
+<pre><code>Please make sure you submit the feedback form
+--
+Regards,
+Alice H
+Hoh labs</code></pre>
+<hr />
+</section>
+</section>
+</section>
+<section id="troubleshooting" class="level1 unnumbered">
+<h1>Troubleshooting</h1>
+<ul>
+<li><p>If your development environment is EFI, please make sure you have grub-pc-bin package installed.</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">     <span class="kw">bash</span>$ sudo apt-get install grub-pc-bin</code></pre></li>
+<li><p>If gdb fails to load hohlabs/.gdbinit, try adding the following line to ~/.gdbinit</p>
+<pre class="gdb"><code>     set auto-load safe-path /</code></pre></li>
+<li><p>If you don’t have palasi account, please submit your request at gcl</p></li>
+<li><p>makefile uses “ln -r” : assumes latest version of coreutils. If you’re using older versions of coreutils, in make/footer.mk: change</p>
+<pre><code>      @$(LN) -sfr $&lt; $O/$(NAME).exe</code></pre>
+<p>to</p>
+<pre><code>      @cd $O ; ln -sf $(NAME).$H.exe $(NAME).exe</code></pre></li>
+<li><p>grub-mkrescue issue: Please make sure you’ve xorriso package installed</p></li>
+<li><p>Following errors:</p>
+<pre><code>   &quot;File &#39;_tmp/hoh.iso&#39; too big (1234567 bytes). Max allowed: 1000000 bytes.&quot;
+   &quot;File &#39;qemu.log&#39; too big (1234567 bytes). Max allowed: 1000000 bytes.&quot;</code></pre>
+<p>Before you submit, do:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">      <span class="kw">user@palasi</span>:~/hohlabs$ make clean<span class="kw">;</span> <span class="kw">rm</span> -f _tmp/hoh.iso qemu.log</code></pre></li>
+</ul>
+</section>
+</body>
+</html>

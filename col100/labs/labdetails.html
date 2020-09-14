@@ -1,0 +1,58 @@
+
+<html>
+
+<head>
+<style>
+div {
+    width: 320px;
+    padding: 10px;
+    border: 5px solid gray;
+    margin: 0;
+    color: red;
+}
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js" type="text/javascript" charset="utf-8"></script> 
+</head>
+
+<body>
+
+<form action="lablog.php" method="post">
+
+<select name="Day">
+  <option value="None">--Select Day--</option>
+  <option value="Monday">Monday</option>
+  <option value="Tuesday">Tuesday</option>
+  <option value="Wednesday">Wednesday</option>
+  <option value="Thursday">Thursday</option>
+  <option value="Friday">Friday</option>
+  
+</select>
+<br><br>
+
+<select name="Session">
+  <option value="None">--Select Session--</option>
+  <option value="Ses1">Session-1(1pm-3pm)</option>
+  <option value="Ses2">Session-2(3pm-5pm)</option>
+  
+  
+</select>
+
+<br><br>
+
+
+<input type="date" name="Date">
+<br><br>
+<textarea name="TasksDone" rows="10" cols="50" placeholder="Enter Lab Tasks Done here..." wrap="hard"></textarea>
+<br><br>
+<textarea name="Issues" rows="10" cols="50" placeholder="Enter Lab Tasks Done here..." wrap="hard"></textarea>
+
+<br><br>
+<input type="submit" value="SUBMIT" name="SUBMIT">
+</form>
+
+
+</body>
+
+</head>
+
+

@@ -1,0 +1,75 @@
+
+<html>
+<head>
+<title>Homework: Processes, Interrupts, Exceptions, Context Switch</title>
+<link rel="stylesheet" href="../labs.css" type="text/css" />
+</head>
+<body>
+
+<h2><a href="..">Operating Systems</a></h2>
+<hr>
+
+<h1>Homework: Processes, Interrupts, Exceptions, Context Switch</h1>
+
+<p>
+<b>Hand-In Procedure</b>
+<p>
+You are to turn in this homework at the beginning of lecture.
+Please write up your answers to the exercises below and hand them in to a
+staff member at the beginning of the lecture. <b>Write your CSE login ID at
+	the top of your submission</b>
+<p>
+
+<h3>Assignment Part 3 (context switch)</h3>
+When one xv6 process switches to another, two calls to swtch()
+are involved: one from sched() to
+scheduler(), and one from scheduler() to sched(). Bugs Bunny
+suggests eliminating one of the calls: sched() could call
+a variant of scheduler() directly. The new code:
+<pre>
+// caller must hold proc_table_lock.
+void
+sched(void)
+{
+  scheduler2();
+}
+// caller must hold proc_table_lock.
+void
+scheduler2(void)
+{
+  struct proc *p;
+  struct proc *from = cp; // remember who we are
+  int i;
+  for(;;){
+    for(i = 0; i < NPROC; i++){
+      p = &proc[i];
+      if(p->state != RUNNABLE)
+        continue;
+      cp = p;
+      setupsegs(p);
+      p->state = RUNNING;
+      swtch(&from->context, &p->context);
+      // a return from swtch() means some other call to
+      // scheduler2() decided to run us.
+      cp = from;
+      setupsegs(cp);
+      return;
+    }
+    release(&proc_table_lock);
+    acquire(&proc_table_lock);
+  }
+}
+</pre>
+This new swtch()-less sched() works most of the time, but not always. What is likely to go wrong?
+
+<h3>Assignment Part 4 (fork)</h3>
+In the function <code>fork()</code>, why do we need to
+store <code>pid</code>
+in a temporary stack variable [2282]? 
+
+
+<p><hr><p>
+
+</body>
+</html>
+

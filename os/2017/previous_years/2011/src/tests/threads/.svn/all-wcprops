@@ -1,0 +1,359 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads
+END
+mlfqs-recent-1.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/mlfqs-recent-1.c
+END
+Rubric.alarm
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/Rubric.alarm
+END
+priority-fifo.c
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-fifo.c
+END
+priority-donate-multiple2.c
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-donate-multiple2.c
+END
+priority-sema.c
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-sema.c
+END
+alarm-negative.ck
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/alarm-negative.ck
+END
+priority-donate-chain.c
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-donate-chain.c
+END
+mlfqs-block.c
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/mlfqs-block.c
+END
+mlfqs-fair-2.ck
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/mlfqs-fair-2.ck
+END
+alarm-priority.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/alarm-priority.c
+END
+priority-donate-nest.ck
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-donate-nest.ck
+END
+priority-change.ck
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-change.ck
+END
+priority-donate-lower.c
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-donate-lower.c
+END
+priority-donate-one.ck
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-donate-one.ck
+END
+priority-donate-chain.ck
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-donate-chain.ck
+END
+mlfqs-load-avg.ck
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/mlfqs-load-avg.ck
+END
+alarm-priority.ck
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/alarm-priority.ck
+END
+alarm-single.ck
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/alarm-single.ck
+END
+mlfqs-nice-10.ck
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/mlfqs-nice-10.ck
+END
+priority-donate-sema.ck
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-donate-sema.ck
+END
+priority-donate-lower.ck
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-donate-lower.ck
+END
+mlfqs-fair-20.ck
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/mlfqs-fair-20.ck
+END
+priority-preempt.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-preempt.c
+END
+alarm-negative.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/alarm-negative.c
+END
+mlfqs-load-60.ck
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/mlfqs-load-60.ck
+END
+mlfqs-load-1.c
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/mlfqs-load-1.c
+END
+alarm-simultaneous.ck
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/alarm-simultaneous.ck
+END
+priority-donate-multiple.ck
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-donate-multiple.ck
+END
+alarm-wait.c
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/alarm-wait.c
+END
+alarm-multiple.ck
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/alarm-multiple.ck
+END
+priority-donate-nest.c
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-donate-nest.c
+END
+mlfqs-fair.c
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/mlfqs-fair.c
+END
+tests.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/tests.c
+END
+priority-change.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-change.c
+END
+priority-preempt.ck
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-preempt.ck
+END
+tests.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/tests.h
+END
+mlfqs-nice-2.ck
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/mlfqs-nice-2.ck
+END
+mlfqs-load-1.ck
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/mlfqs-load-1.ck
+END
+priority-donate-one.c
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-donate-one.c
+END
+mlfqs-recent-1.ck
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/mlfqs-recent-1.ck
+END
+alarm-zero.c
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/alarm-zero.c
+END
+mlfqs-load-avg.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/mlfqs-load-avg.c
+END
+priority-condvar.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-condvar.c
+END
+mlfqs.pm
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/mlfqs.pm
+END
+priority-donate-sema.c
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-donate-sema.c
+END
+priority-fifo.ck
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-fifo.ck
+END
+priority-donate-multiple2.ck
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-donate-multiple2.ck
+END
+priority-sema.ck
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-sema.ck
+END
+mlfqs-load-60.c
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/mlfqs-load-60.c
+END
+alarm-simultaneous.c
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/alarm-simultaneous.c
+END
+priority-donate-multiple.c
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-donate-multiple.c
+END
+alarm-zero.ck
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/alarm-zero.ck
+END
+mlfqs-block.ck
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/mlfqs-block.ck
+END
+Rubric.priority
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/Rubric.priority
+END
+alarm.pm
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/alarm.pm
+END
+Rubric.mlfqs
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/Rubric.mlfqs
+END
+priority-condvar.ck
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/priority-condvar.ck
+END
+Grading
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/Grading
+END
+Make.tests
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/threads/Make.tests
+END

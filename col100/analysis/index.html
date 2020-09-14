@@ -1,0 +1,259 @@
+<h1>Analysis of COL100 student grade data vis-a-vis prior CS exposure</h1>
+<p><b>Analysis reports prepared by Suban</b><ol>
+<li><a href=http://10.10.111.112/plots/CS/>http://10.10.111.112/plots/CS/</a>: this set of analyses seems to purport that prior CS exposure is positively correlated with COL100 grade, and so there may be a causal relation between the two.</li>
+<li><a href=http://10.10.111.112/plots/CS/COL100-semI-2018-2019/>http://10.10.111.112/plots/CS/COL100-semI-2018-2019/</a>: this set of results is for COL100 offering in the first semester of 2018-2019; however prior CS exposure data is not used in this analysis; not sure what to make of this.</li>
+<li>Some high-level curriculum analyses (I could not find their relevance to our current discussion on COL100):<ol type='a'><li>
+    The executive summary of the study conducted by Ravinder Kaur (commissioned by the Director): <a href=http://10.10.111.112/plots/execsummary.pdf>http://10.10.111.112/plots/execsummary.pdf</a></li>
+    <li>Data analysis part of the study: <a href=http://10.10.111.112/plots/quant.pdf>http://10.10.111.112/plots/quant.pdf</a></li><li><a href=http://10.10.111.112/plots/jee-regressions/>http://10.10.111.112/plots/jee-regressions/</a></li><li><a href=http://10.10.111.112/plots/regression/reg_log1.pdf>http://10.10.111.112/plots/regression/reg_log1.pdf</a></li></ol></li>
+</ol>
+<p><b>Purpose of the data analysis study</b><ol>
+<li>Is it true that prior CS exposure in Class XII presents a significant statistical advantage to students in COL100?  Because we do not have other data to conclusively differentiate causal relations from correlations, we intend to base our analysis on a comparative study of the correlations for COL100 and MTL100 grades; the premise is that if prior CS exposure is presenting an unfair advantage to students in COL100, the correlations should be specific to COL100.</li>
+<li>Any other insights to be drawn from the data.</li>
+</ol>
+<p><b>Method</b><ul>
+<li>We have prior CS exposure data for students who entered IITD in 2014, 2015, 2016, 2017, and 2018.</li>
+<li>We have grade data for COL100 and MTL100 in first and second semesters of 2014-2015, 2015-2016, 2016-2017, 2017-2018. For 2018-2019, we have grade data only for the first semester.</li>
+<li>We try and compare the grades of students with-prior-CS-exposure with the grades of students without-prior-CS-exposure in both COL100 and MTL100, to try and see if (1) a correlation exists between prior-CS-exposure and COL100 grades, and (2) whether the correlation is unique to COL100. If both (1) and (2) are true, this would be significant statistical evidence that COL100 grade is causally related to prior CS exposure.</li>
+<li>Just to be completely sure, we also tried to see the statistics after removing all students who received a D or less (E/F/W/NF) while computing percentages (see columns titled non-weak students). Mostly, the correlations remain largely similar, irrespective of whether we consider the weak students or not.</li>
+</ul>
+See some simple conclusions that can be drawn from this data at the end of the page<br>
+<h1><u>20142015</u></h1>
+<ul>
+<li>Total number of students admitted: 850</li>
+<li>Number of students with prior CS exposure in 20142015: 172</li>
+<li>Number of students without prior CS exposure in 20142015: 678</li>
+<li>Total number of students who took COL100 in 20142015: 867</li>
+<li>Total number of students who took MTL100 in 20142015: 876</li>
+</ul>
+<h2>COL100 in 20142015: <a href="http://www.cse.iitd.ac.in/~mansureh/COL100.htm">Semester 1 by Sanjiva Prasad and Amitabha Bagchi</a>, Semester 2 by Prem Kalra and Preeti Ranjan Panda</h2>
+<ul>
+<li>Total number of students with grade &gt;= C- (non-weak): 728</li>
+<li>Total number of students with grade &gt;= C- (non-weak) and with prior CS exposure: 158</li>
+<li>Total number of students with grade &gt;= C- (non-weak) and without prior CS exposure: 551</li>
+</ul>
+<table border="1">
+<tr bgcolor=yellow><th>Grade "<b>G</b>"</th><th>Number of students with prior CS exposure with grade "G"</th><th>Number of students without prior CS exposure with grade "G"</th><th>Number of students for whom prior-CS-exposure information was not available</th><th>Cumulative number of students (with grade &gt;= G) with prior CS exposure</th><th>Cumulative number of students (with grade &gt;= G) without prior CS exposure</th><th>Cumulative fraction of students with prior CS exposure and with grade &gt;= G, as a fraction of total number of students with prior CS exposure (%)</th><th>Cumulative fraction of students without CS exposure and with grade &gt;= G as fraction of total number of students without prior CS exposure (%)</th><th><b>Cumulative fraction of students with CS exposure and with grade &gt;= G as fraction of number of non-weak students (i.e. &gt;= C- grade in the course) with prior CS exposure (%)</b></th><th><b>Cumulative fraction of students without CS exposure and with grade &gt;= G as fraction of number of non-weak students (i.e. &gt;= C- grade in the course) without prior CS exposure (%)</b></th></tr>
+<tr><td>A</td><td>32</td><td>37</td><td>0</td><td>32</td><td>37</td><td>18.60</td><td>5.46</td><td><b>20.25</b></td><td><b>6.72</b></td></tr>
+<tr><td>A-</td><td>31</td><td>50</td><td>0</td><td>63</td><td>87</td><td>36.63</td><td>12.83</td><td><b>39.87</b></td><td><b>15.79</b></td></tr>
+<tr><td>B</td><td>46</td><td>118</td><td>1</td><td>109</td><td>205</td><td>63.37</td><td>30.24</td><td><b>68.99</b></td><td><b>37.21</b></td></tr>
+<tr><td>B-</td><td>32</td><td>176</td><td>6</td><td>141</td><td>381</td><td>81.98</td><td>56.19</td><td><b>89.24</b></td><td><b>69.15</b></td></tr>
+<tr><td>C</td><td>14</td><td>92</td><td>7</td><td>155</td><td>473</td><td>90.12</td><td>69.76</td><td><b>98.10</b></td><td><b>85.84</b></td></tr>
+<tr><td>C-</td><td>3</td><td>78</td><td>5</td><td>158</td><td>551</td><td>91.86</td><td>81.27</td><td><b>100.00</b></td><td><b>100.00</b></td></tr>
+<tr><td>D</td><td>4</td><td>72</td><td>9</td><td>162</td><td>623</td><td>94.19</td><td>91.89</td><td><b>102.53</b></td><td><b>113.07</b></td></tr>
+<tr><td>E</td><td>1</td><td>7</td><td>4</td><td>163</td><td>630</td><td>94.77</td><td>92.92</td><td><b>103.16</b></td><td><b>114.34</b></td></tr>
+<tr><td>F</td><td>4</td><td>14</td><td>14</td><td>167</td><td>644</td><td>97.09</td><td>94.99</td><td><b>105.70</b></td><td><b>116.88</b></td></tr>
+<tr><td>W</td><td>0</td><td>0</td><td>10</td><td>167</td><td>644</td><td>97.09</td><td>94.99</td><td><b>105.70</b></td><td><b>116.88</b></td></tr>
+</table>
+<h2>MTL100 in 20142015: Semester 1, Semester 2</h2>
+<ul>
+<li>Total number of students with grade &gt;= C- (non-weak): 616</li>
+<li>Total number of students with grade &gt;= C- (non-weak) and with prior CS exposure: 137</li>
+<li>Total number of students with grade &gt;= C- (non-weak) and without prior CS exposure: 472</li>
+</ul>
+<table border="1">
+<tr bgcolor=yellow><th>Grade "<b>G</b>"</th><th>Number of students with prior CS exposure with grade "G"</th><th>Number of students without prior CS exposure with grade "G"</th><th>Number of students for whom prior-CS-exposure information was not available</th><th>Cumulative number of students (with grade &gt;= G) with prior CS exposure</th><th>Cumulative number of students (with grade &gt;= G) without prior CS exposure</th><th>Cumulative fraction of students with prior CS exposure and with grade &gt;= G, as a fraction of total number of students with prior CS exposure (%)</th><th>Cumulative fraction of students without CS exposure and with grade &gt;= G as fraction of total number of students without prior CS exposure (%)</th><th><b>Cumulative fraction of students with CS exposure and with grade &gt;= G as fraction of number of non-weak students (i.e. &gt;= C- grade in the course) with prior CS exposure (%)</b></th><th><b>Cumulative fraction of students without CS exposure and with grade &gt;= G as fraction of number of non-weak students (i.e. &gt;= C- grade in the course) without prior CS exposure (%)</b></th></tr>
+<tr><td>A</td><td>32</td><td>34</td><td>0</td><td>32</td><td>34</td><td>18.60</td><td>5.01</td><td><b>23.36</b></td><td><b>7.20</b></td></tr>
+<tr><td>A-</td><td>25</td><td>56</td><td>0</td><td>57</td><td>90</td><td>33.14</td><td>13.27</td><td><b>41.61</b></td><td><b>19.07</b></td></tr>
+<tr><td>B</td><td>24</td><td>112</td><td>1</td><td>81</td><td>202</td><td>47.09</td><td>29.79</td><td><b>59.12</b></td><td><b>42.80</b></td></tr>
+<tr><td>B-</td><td>34</td><td>89</td><td>1</td><td>115</td><td>291</td><td>66.86</td><td>42.92</td><td><b>83.94</b></td><td><b>61.65</b></td></tr>
+<tr><td>C</td><td>9</td><td>113</td><td>0</td><td>124</td><td>404</td><td>72.09</td><td>59.59</td><td><b>90.51</b></td><td><b>85.59</b></td></tr>
+<tr><td>C-</td><td>13</td><td>68</td><td>4</td><td>137</td><td>472</td><td>79.65</td><td>69.62</td><td><b>100.00</b></td><td><b>100.00</b></td></tr>
+<tr><td>D</td><td>16</td><td>106</td><td>9</td><td>153</td><td>578</td><td>88.95</td><td>85.25</td><td><b>111.68</b></td><td><b>122.46</b></td></tr>
+<tr><td>E</td><td>6</td><td>42</td><td>5</td><td>159</td><td>620</td><td>92.44</td><td>91.45</td><td><b>116.06</b></td><td><b>131.36</b></td></tr>
+<tr><td>F</td><td>8</td><td>24</td><td>33</td><td>167</td><td>644</td><td>97.09</td><td>94.99</td><td><b>121.90</b></td><td><b>136.44</b></td></tr>
+<tr><td>W</td><td>0</td><td>0</td><td>11</td><td>167</td><td>644</td><td>97.09</td><td>94.99</td><td><b>121.90</b></td><td><b>136.44</b></td></tr>
+<tr><td>I</td><td>0</td><td>0</td><td>1</td><td>167</td><td>644</td><td>97.09</td><td>94.99</td><td><b>121.90</b></td><td><b>136.44</b></td></tr>
+</table>
+<h1><u>20152016</u></h1>
+<ul>
+<li>Total number of students admitted: 829</li>
+<li>Number of students with prior CS exposure in 20152016: 227</li>
+<li>Number of students without prior CS exposure in 20152016: 602</li>
+<li>Total number of students who took COL100 in 20152016: 908</li>
+<li>Total number of students who took MTL100 in 20152016: 949</li>
+</ul>
+<h2>COL100 in 20152016: Semester 1 by Smruti Ranjan Sarangi and K.K. Biswas, Semester 2 by Prem Kalra and Preeti Ranjan Panda</h2>
+<ul>
+<li>Total number of students with grade &gt;= C- (non-weak): 640</li>
+<li>Total number of students with grade &gt;= C- (non-weak) and with prior CS exposure: 216</li>
+<li>Total number of students with grade &gt;= C- (non-weak) and without prior CS exposure: 413</li>
+</ul>
+<table border="1">
+<tr bgcolor=yellow><th>Grade "<b>G</b>"</th><th>Number of students with prior CS exposure with grade "G"</th><th>Number of students without prior CS exposure with grade "G"</th><th>Number of students for whom prior-CS-exposure information was not available</th><th>Cumulative number of students (with grade &gt;= G) with prior CS exposure</th><th>Cumulative number of students (with grade &gt;= G) without prior CS exposure</th><th>Cumulative fraction of students with prior CS exposure and with grade &gt;= G, as a fraction of total number of students with prior CS exposure (%)</th><th>Cumulative fraction of students without CS exposure and with grade &gt;= G as fraction of total number of students without prior CS exposure (%)</th><th><b>Cumulative fraction of students with CS exposure and with grade &gt;= G as fraction of number of non-weak students (i.e. &gt;= C- grade in the course) with prior CS exposure (%)</b></th><th><b>Cumulative fraction of students without CS exposure and with grade &gt;= G as fraction of number of non-weak students (i.e. &gt;= C- grade in the course) without prior CS exposure (%)</b></th></tr>
+<tr><td>A</td><td>49</td><td>36</td><td>0</td><td>49</td><td>36</td><td>21.59</td><td>5.98</td><td><b>22.69</b></td><td><b>8.72</b></td></tr>
+<tr><td>A-</td><td>38</td><td>57</td><td>0</td><td>87</td><td>93</td><td>38.33</td><td>15.45</td><td><b>40.28</b></td><td><b>22.52</b></td></tr>
+<tr><td>B</td><td>34</td><td>74</td><td>1</td><td>121</td><td>167</td><td>53.30</td><td>27.74</td><td><b>56.02</b></td><td><b>40.44</b></td></tr>
+<tr><td>B-</td><td>55</td><td>99</td><td>3</td><td>176</td><td>266</td><td>77.53</td><td>44.19</td><td><b>81.48</b></td><td><b>64.41</b></td></tr>
+<tr><td>C</td><td>30</td><td>70</td><td>2</td><td>206</td><td>336</td><td>90.75</td><td>55.81</td><td><b>95.37</b></td><td><b>81.36</b></td></tr>
+<tr><td>C-</td><td>10</td><td>77</td><td>5</td><td>216</td><td>413</td><td>95.15</td><td>68.60</td><td><b>100.00</b></td><td><b>100.00</b></td></tr>
+<tr><td>D</td><td>4</td><td>113</td><td>14</td><td>220</td><td>526</td><td>96.92</td><td>87.38</td><td><b>101.85</b></td><td><b>127.36</b></td></tr>
+<tr><td>E</td><td>2</td><td>50</td><td>14</td><td>222</td><td>576</td><td>97.80</td><td>95.68</td><td><b>102.78</b></td><td><b>139.47</b></td></tr>
+<tr><td>F</td><td>5</td><td>25</td><td>37</td><td>227</td><td>601</td><td>100.00</td><td>99.83</td><td><b>105.09</b></td><td><b>145.52</b></td></tr>
+<tr><td>W</td><td>0</td><td>0</td><td>3</td><td>227</td><td>601</td><td>100.00</td><td>99.83</td><td><b>105.09</b></td><td><b>145.52</b></td></tr>
+<tr><td>NF</td><td>0</td><td>0</td><td>1</td><td>227</td><td>601</td><td>100.00</td><td>99.83</td><td><b>105.09</b></td><td><b>145.52</b></td></tr>
+</table>
+<h2>MTL100 in 20152016: Semester 1, Semester 2</h2>
+<ul>
+<li>Total number of students with grade &gt;= C- (non-weak): 715</li>
+<li>Total number of students with grade &gt;= C- (non-weak) and with prior CS exposure: 200</li>
+<li>Total number of students with grade &gt;= C- (non-weak) and without prior CS exposure: 504</li>
+</ul>
+<table border="1">
+<tr bgcolor=yellow><th>Grade "<b>G</b>"</th><th>Number of students with prior CS exposure with grade "G"</th><th>Number of students without prior CS exposure with grade "G"</th><th>Number of students for whom prior-CS-exposure information was not available</th><th>Cumulative number of students (with grade &gt;= G) with prior CS exposure</th><th>Cumulative number of students (with grade &gt;= G) without prior CS exposure</th><th>Cumulative fraction of students with prior CS exposure and with grade &gt;= G, as a fraction of total number of students with prior CS exposure (%)</th><th>Cumulative fraction of students without CS exposure and with grade &gt;= G as fraction of total number of students without prior CS exposure (%)</th><th><b>Cumulative fraction of students with CS exposure and with grade &gt;= G as fraction of number of non-weak students (i.e. &gt;= C- grade in the course) with prior CS exposure (%)</b></th><th><b>Cumulative fraction of students without CS exposure and with grade &gt;= G as fraction of number of non-weak students (i.e. &gt;= C- grade in the course) without prior CS exposure (%)</b></th></tr>
+<tr><td>A</td><td>39</td><td>52</td><td>0</td><td>39</td><td>52</td><td>17.18</td><td>8.64</td><td><b>19.50</b></td><td><b>10.32</b></td></tr>
+<tr><td>A-</td><td>43</td><td>50</td><td>1</td><td>82</td><td>102</td><td>36.12</td><td>16.94</td><td><b>41.00</b></td><td><b>20.24</b></td></tr>
+<tr><td>B</td><td>22</td><td>99</td><td>0</td><td>104</td><td>201</td><td>45.81</td><td>33.39</td><td><b>52.00</b></td><td><b>39.88</b></td></tr>
+<tr><td>B-</td><td>42</td><td>121</td><td>0</td><td>146</td><td>322</td><td>64.32</td><td>53.49</td><td><b>73.00</b></td><td><b>63.89</b></td></tr>
+<tr><td>C</td><td>34</td><td>113</td><td>5</td><td>180</td><td>435</td><td>79.30</td><td>72.26</td><td><b>90.00</b></td><td><b>86.31</b></td></tr>
+<tr><td>C-</td><td>20</td><td>69</td><td>5</td><td>200</td><td>504</td><td>88.11</td><td>83.72</td><td><b>100.00</b></td><td><b>100.00</b></td></tr>
+<tr><td>D</td><td>20</td><td>62</td><td>33</td><td>220</td><td>566</td><td>96.92</td><td>94.02</td><td><b>110.00</b></td><td><b>112.30</b></td></tr>
+<tr><td>E</td><td>1</td><td>19</td><td>17</td><td>221</td><td>585</td><td>97.36</td><td>97.18</td><td><b>110.50</b></td><td><b>116.07</b></td></tr>
+<tr><td>F</td><td>6</td><td>16</td><td>49</td><td>227</td><td>601</td><td>100.00</td><td>99.83</td><td><b>113.50</b></td><td><b>119.25</b></td></tr>
+<tr><td>W</td><td>0</td><td>0</td><td>11</td><td>227</td><td>601</td><td>100.00</td><td>99.83</td><td><b>113.50</b></td><td><b>119.25</b></td></tr>
+</table>
+<h1><u>20162017</u></h1>
+<ul>
+<li>Total number of students admitted: 851</li>
+<li>Number of students with prior CS exposure in 20162017: 212</li>
+<li>Number of students without prior CS exposure in 20162017: 639</li>
+<li>Total number of students who took COL100 in 20162017: 940</li>
+<li>Total number of students who took MTL100 in 20162017: 968</li>
+</ul>
+<h2>COL100 in 20162017: <a href="http://www.cse.iitd.ernet.in/~aseth/col100/col100.html">Semester 1 by Aaditeshwar Seth and Smruti Ranjan Sarangi</a>, Semester 2 by Huzur Saran and Subodh Kumar</h2>
+<ul>
+<li>Total number of students with grade &gt;= C- (non-weak): 641</li>
+<li>Total number of students with grade &gt;= C- (non-weak) and with prior CS exposure: 186</li>
+<li>Total number of students with grade &gt;= C- (non-weak) and without prior CS exposure: 424</li>
+</ul>
+<table border="1">
+<tr bgcolor=yellow><th>Grade "<b>G</b>"</th><th>Number of students with prior CS exposure with grade "G"</th><th>Number of students without prior CS exposure with grade "G"</th><th>Number of students for whom prior-CS-exposure information was not available</th><th>Cumulative number of students (with grade &gt;= G) with prior CS exposure</th><th>Cumulative number of students (with grade &gt;= G) without prior CS exposure</th><th>Cumulative fraction of students with prior CS exposure and with grade &gt;= G, as a fraction of total number of students with prior CS exposure (%)</th><th>Cumulative fraction of students without CS exposure and with grade &gt;= G as fraction of total number of students without prior CS exposure (%)</th><th><b>Cumulative fraction of students with CS exposure and with grade &gt;= G as fraction of number of non-weak students (i.e. &gt;= C- grade in the course) with prior CS exposure (%)</b></th><th><b>Cumulative fraction of students without CS exposure and with grade &gt;= G as fraction of number of non-weak students (i.e. &gt;= C- grade in the course) without prior CS exposure (%)</b></th></tr>
+<tr><td>A</td><td>20</td><td>51</td><td>0</td><td>20</td><td>51</td><td>9.43</td><td>7.98</td><td><b>10.75</b></td><td><b>12.03</b></td></tr>
+<tr><td>A-</td><td>18</td><td>61</td><td>1</td><td>38</td><td>112</td><td>17.92</td><td>17.53</td><td><b>20.43</b></td><td><b>26.42</b></td></tr>
+<tr><td>B</td><td>51</td><td>85</td><td>2</td><td>89</td><td>197</td><td>41.98</td><td>30.83</td><td><b>47.85</b></td><td><b>46.46</b></td></tr>
+<tr><td>B-</td><td>40</td><td>77</td><td>5</td><td>129</td><td>274</td><td>60.85</td><td>42.88</td><td><b>69.35</b></td><td><b>64.62</b></td></tr>
+<tr><td>C</td><td>35</td><td>75</td><td>8</td><td>164</td><td>349</td><td>77.36</td><td>54.62</td><td><b>88.17</b></td><td><b>82.31</b></td></tr>
+<tr><td>C-</td><td>22</td><td>75</td><td>15</td><td>186</td><td>424</td><td>87.74</td><td>66.35</td><td><b>100.00</b></td><td><b>100.00</b></td></tr>
+<tr><td>D</td><td>13</td><td>98</td><td>13</td><td>199</td><td>522</td><td>93.87</td><td>81.69</td><td><b>106.99</b></td><td><b>123.11</b></td></tr>
+<tr><td>E</td><td>6</td><td>50</td><td>10</td><td>205</td><td>572</td><td>96.70</td><td>89.51</td><td><b>110.22</b></td><td><b>134.91</b></td></tr>
+<tr><td>F</td><td>4</td><td>52</td><td>22</td><td>209</td><td>624</td><td>98.58</td><td>97.65</td><td><b>112.37</b></td><td><b>147.17</b></td></tr>
+<tr><td>W</td><td>3</td><td>15</td><td>13</td><td>212</td><td>639</td><td>100.00</td><td>100.00</td><td><b>113.98</b></td><td><b>150.71</b></td></tr>
+</table>
+<h2>MTL100 in 20162017: Semester 1, Semester 2</h2>
+<ul>
+<li>Total number of students with grade &gt;= C- (non-weak): 609</li>
+<li>Total number of students with grade &gt;= C- (non-weak) and with prior CS exposure: 183</li>
+<li>Total number of students with grade &gt;= C- (non-weak) and without prior CS exposure: 407</li>
+</ul>
+<table border="1">
+<tr bgcolor=yellow><th>Grade "<b>G</b>"</th><th>Number of students with prior CS exposure with grade "G"</th><th>Number of students without prior CS exposure with grade "G"</th><th>Number of students for whom prior-CS-exposure information was not available</th><th>Cumulative number of students (with grade &gt;= G) with prior CS exposure</th><th>Cumulative number of students (with grade &gt;= G) without prior CS exposure</th><th>Cumulative fraction of students with prior CS exposure and with grade &gt;= G, as a fraction of total number of students with prior CS exposure (%)</th><th>Cumulative fraction of students without CS exposure and with grade &gt;= G as fraction of total number of students without prior CS exposure (%)</th><th><b>Cumulative fraction of students with CS exposure and with grade &gt;= G as fraction of number of non-weak students (i.e. &gt;= C- grade in the course) with prior CS exposure (%)</b></th><th><b>Cumulative fraction of students without CS exposure and with grade &gt;= G as fraction of number of non-weak students (i.e. &gt;= C- grade in the course) without prior CS exposure (%)</b></th></tr>
+<tr><td>A</td><td>27</td><td>8</td><td>0</td><td>27</td><td>8</td><td>12.74</td><td>1.25</td><td><b>14.75</b></td><td><b>1.97</b></td></tr>
+<tr><td>A-</td><td>22</td><td>30</td><td>0</td><td>49</td><td>38</td><td>23.11</td><td>5.95</td><td><b>26.78</b></td><td><b>9.34</b></td></tr>
+<tr><td>B</td><td>49</td><td>88</td><td>0</td><td>98</td><td>126</td><td>46.23</td><td>19.72</td><td><b>53.55</b></td><td><b>30.96</b></td></tr>
+<tr><td>B-</td><td>50</td><td>114</td><td>1</td><td>148</td><td>240</td><td>69.81</td><td>37.56</td><td><b>80.87</b></td><td><b>58.97</b></td></tr>
+<tr><td>C</td><td>17</td><td>89</td><td>4</td><td>165</td><td>329</td><td>77.83</td><td>51.49</td><td><b>90.16</b></td><td><b>80.84</b></td></tr>
+<tr><td>C-</td><td>18</td><td>78</td><td>14</td><td>183</td><td>407</td><td>86.32</td><td>63.69</td><td><b>100.00</b></td><td><b>100.00</b></td></tr>
+<tr><td>D</td><td>17</td><td>104</td><td>22</td><td>200</td><td>511</td><td>94.34</td><td>79.97</td><td><b>109.29</b></td><td><b>125.55</b></td></tr>
+<tr><td>E</td><td>7</td><td>10</td><td>12</td><td>207</td><td>521</td><td>97.64</td><td>81.53</td><td><b>113.11</b></td><td><b>128.01</b></td></tr>
+<tr><td>F</td><td>4</td><td>115</td><td>58</td><td>211</td><td>636</td><td>99.53</td><td>99.53</td><td><b>115.30</b></td><td><b>156.27</b></td></tr>
+<tr><td>W</td><td>1</td><td>3</td><td>6</td><td>212</td><td>639</td><td>100.00</td><td>100.00</td><td><b>115.85</b></td><td><b>157.00</b></td></tr>
+</table>
+<h1><u>20172018</u></h1>
+<ul>
+<li>Total number of students admitted: 839</li>
+<li>Number of students with prior CS exposure in 20172018: 206</li>
+<li>Number of students without prior CS exposure in 20172018: 633</li>
+<li>Total number of students who took COL100 in 20172018: 931</li>
+<li>Total number of students who took MTL100 in 20172018: 928</li>
+</ul>
+<h2>COL100 in 20172018: <a href="http://www.cse.iitd.ernet.in/~akashdeep/col100/">Semester 1 by Vinay Ribeiro and Rahul Garg</a>, Semester 2 by Kolin Paul and Maya Ramanath</h2>
+<ul>
+<li>Total number of students with grade &gt;= C- (non-weak): 680</li>
+<li>Total number of students with grade &gt;= C- (non-weak) and with prior CS exposure: 195</li>
+<li>Total number of students with grade &gt;= C- (non-weak) and without prior CS exposure: 457</li>
+</ul>
+<table border="1">
+<tr bgcolor=yellow><th>Grade "<b>G</b>"</th><th>Number of students with prior CS exposure with grade "G"</th><th>Number of students without prior CS exposure with grade "G"</th><th>Number of students for whom prior-CS-exposure information was not available</th><th>Cumulative number of students (with grade &gt;= G) with prior CS exposure</th><th>Cumulative number of students (with grade &gt;= G) without prior CS exposure</th><th>Cumulative fraction of students with prior CS exposure and with grade &gt;= G, as a fraction of total number of students with prior CS exposure (%)</th><th>Cumulative fraction of students without CS exposure and with grade &gt;= G as fraction of total number of students without prior CS exposure (%)</th><th><b>Cumulative fraction of students with CS exposure and with grade &gt;= G as fraction of number of non-weak students (i.e. &gt;= C- grade in the course) with prior CS exposure (%)</b></th><th><b>Cumulative fraction of students without CS exposure and with grade &gt;= G as fraction of number of non-weak students (i.e. &gt;= C- grade in the course) without prior CS exposure (%)</b></th></tr>
+<tr><td>A</td><td>20</td><td>74</td><td>0</td><td>20</td><td>74</td><td>9.71</td><td>11.69</td><td><b>10.26</b></td><td><b>16.19</b></td></tr>
+<tr><td>A-</td><td>55</td><td>85</td><td>1</td><td>75</td><td>159</td><td>36.41</td><td>25.12</td><td><b>38.46</b></td><td><b>34.79</b></td></tr>
+<tr><td>B</td><td>53</td><td>82</td><td>3</td><td>128</td><td>241</td><td>62.14</td><td>38.07</td><td><b>65.64</b></td><td><b>52.74</b></td></tr>
+<tr><td>B-</td><td>38</td><td>81</td><td>2</td><td>166</td><td>322</td><td>80.58</td><td>50.87</td><td><b>85.13</b></td><td><b>70.46</b></td></tr>
+<tr><td>C</td><td>22</td><td>86</td><td>11</td><td>188</td><td>408</td><td>91.26</td><td>64.45</td><td><b>96.41</b></td><td><b>89.28</b></td></tr>
+<tr><td>C-</td><td>7</td><td>49</td><td>11</td><td>195</td><td>457</td><td>94.66</td><td>72.20</td><td><b>100.00</b></td><td><b>100.00</b></td></tr>
+<tr><td>D</td><td>7</td><td>88</td><td>28</td><td>202</td><td>545</td><td>98.06</td><td>86.10</td><td><b>103.59</b></td><td><b>119.26</b></td></tr>
+<tr><td>E</td><td>1</td><td>36</td><td>7</td><td>203</td><td>581</td><td>98.54</td><td>91.79</td><td><b>104.10</b></td><td><b>127.13</b></td></tr>
+<tr><td>F</td><td>2</td><td>48</td><td>25</td><td>205</td><td>629</td><td>99.51</td><td>99.37</td><td><b>105.13</b></td><td><b>137.64</b></td></tr>
+<tr><td>W</td><td>1</td><td>3</td><td>5</td><td>206</td><td>632</td><td>100.00</td><td>99.84</td><td><b>105.64</b></td><td><b>138.29</b></td></tr>
+</table>
+<h2>MTL100 in 20172018: Semester 1, Semester 2</h2>
+<ul>
+<li>Total number of students with grade &gt;= C- (non-weak): 719</li>
+<li>Total number of students with grade &gt;= C- (non-weak) and with prior CS exposure: 176</li>
+<li>Total number of students with grade &gt;= C- (non-weak) and without prior CS exposure: 519</li>
+</ul>
+<table border="1">
+<tr bgcolor=yellow><th>Grade "<b>G</b>"</th><th>Number of students with prior CS exposure with grade "G"</th><th>Number of students without prior CS exposure with grade "G"</th><th>Number of students for whom prior-CS-exposure information was not available</th><th>Cumulative number of students (with grade &gt;= G) with prior CS exposure</th><th>Cumulative number of students (with grade &gt;= G) without prior CS exposure</th><th>Cumulative fraction of students with prior CS exposure and with grade &gt;= G, as a fraction of total number of students with prior CS exposure (%)</th><th>Cumulative fraction of students without CS exposure and with grade &gt;= G as fraction of total number of students without prior CS exposure (%)</th><th><b>Cumulative fraction of students with CS exposure and with grade &gt;= G as fraction of number of non-weak students (i.e. &gt;= C- grade in the course) with prior CS exposure (%)</b></th><th><b>Cumulative fraction of students without CS exposure and with grade &gt;= G as fraction of number of non-weak students (i.e. &gt;= C- grade in the course) without prior CS exposure (%)</b></th></tr>
+<tr><td>A</td><td>44</td><td>76</td><td>0</td><td>44</td><td>76</td><td>21.36</td><td>12.01</td><td><b>25.00</b></td><td><b>14.64</b></td></tr>
+<tr><td>A-</td><td>34</td><td>76</td><td>0</td><td>78</td><td>152</td><td>37.86</td><td>24.01</td><td><b>44.32</b></td><td><b>29.29</b></td></tr>
+<tr><td>B</td><td>39</td><td>104</td><td>2</td><td>117</td><td>256</td><td>56.80</td><td>40.44</td><td><b>66.48</b></td><td><b>49.33</b></td></tr>
+<tr><td>B-</td><td>31</td><td>113</td><td>3</td><td>148</td><td>369</td><td>71.84</td><td>58.29</td><td><b>84.09</b></td><td><b>71.10</b></td></tr>
+<tr><td>C</td><td>23</td><td>93</td><td>10</td><td>171</td><td>462</td><td>83.01</td><td>72.99</td><td><b>97.16</b></td><td><b>89.02</b></td></tr>
+<tr><td>C-</td><td>5</td><td>57</td><td>9</td><td>176</td><td>519</td><td>85.44</td><td>81.99</td><td><b>100.00</b></td><td><b>100.00</b></td></tr>
+<tr><td>D</td><td>17</td><td>58</td><td>16</td><td>193</td><td>577</td><td>93.69</td><td>91.15</td><td><b>109.66</b></td><td><b>111.18</b></td></tr>
+<tr><td>E</td><td>6</td><td>21</td><td>11</td><td>199</td><td>598</td><td>96.60</td><td>94.47</td><td><b>113.07</b></td><td><b>115.22</b></td></tr>
+<tr><td>F</td><td>7</td><td>31</td><td>33</td><td>206</td><td>629</td><td>100.00</td><td>99.37</td><td><b>117.05</b></td><td><b>121.19</b></td></tr>
+<tr><td>W</td><td>0</td><td>3</td><td>6</td><td>206</td><td>632</td><td>100.00</td><td>99.84</td><td><b>117.05</b></td><td><b>121.77</b></td></tr>
+</table>
+<h1><u>20182019</u></h1>
+<ul>
+<li>Total number of students admitted: 898</li>
+<li>Number of students with prior CS exposure in 20182019: 248</li>
+<li>Number of students without prior CS exposure in 20182019: 650</li>
+<li>Total number of students who took COL100 in 20182019: 527</li>
+<li>Total number of students who took MTL100 in 20182019: 487</li>
+</ul>
+<h2>COL100 in 20182019: <a href="http://iitd-plos.github.io/col100">Semester 1 by Parag Singla and Sorav Bansal</a>, Semester 2</h2>
+<ul>
+<li>Total number of students with grade &gt;= C- (non-weak): 381</li>
+<li>Total number of students with grade &gt;= C- (non-weak) and with prior CS exposure: 0</li>
+<li>Total number of students with grade &gt;= C- (non-weak) and without prior CS exposure: 350</li>
+</ul>
+<table border="1">
+<tr bgcolor=yellow><th>Grade "<b>G</b>"</th><th>Number of students with prior CS exposure with grade "G"</th><th>Number of students without prior CS exposure with grade "G"</th><th>Number of students for whom prior-CS-exposure information was not available</th><th>Cumulative number of students (with grade &gt;= G) with prior CS exposure</th><th>Cumulative number of students (with grade &gt;= G) without prior CS exposure</th><th>Cumulative fraction of students with prior CS exposure and with grade &gt;= G, as a fraction of total number of students with prior CS exposure (%)</th><th>Cumulative fraction of students without CS exposure and with grade &gt;= G as fraction of total number of students without prior CS exposure (%)</th><th><b>Cumulative fraction of students with CS exposure and with grade &gt;= G as fraction of number of non-weak students (i.e. &gt;= C- grade in the course) with prior CS exposure (%)</b></th><th><b>Cumulative fraction of students without CS exposure and with grade &gt;= G as fraction of number of non-weak students (i.e. &gt;= C- grade in the course) without prior CS exposure (%)</b></th></tr>
+<tr><td>A</td><td>0</td><td>57</td><td>2</td><td>0</td><td>57</td><td>0.00</td><td>8.77</td><td><b>0.00</b></td><td><b>16.29</b></td></tr>
+<tr><td>A-</td><td>0</td><td>66</td><td>3</td><td>0</td><td>123</td><td>0.00</td><td>18.92</td><td><b>0.00</b></td><td><b>35.14</b></td></tr>
+<tr><td>B</td><td>0</td><td>74</td><td>3</td><td>0</td><td>197</td><td>0.00</td><td>30.31</td><td><b>0.00</b></td><td><b>56.29</b></td></tr>
+<tr><td>B-</td><td>0</td><td>73</td><td>5</td><td>0</td><td>270</td><td>0.00</td><td>41.54</td><td><b>0.00</b></td><td><b>77.14</b></td></tr>
+<tr><td>C</td><td>0</td><td>43</td><td>9</td><td>0</td><td>313</td><td>0.00</td><td>48.15</td><td><b>0.00</b></td><td><b>89.43</b></td></tr>
+<tr><td>C-</td><td>0</td><td>37</td><td>9</td><td>0</td><td>350</td><td>0.00</td><td>53.85</td><td><b>0.00</b></td><td><b>100.00</b></td></tr>
+<tr><td>D</td><td>1</td><td>51</td><td>20</td><td>1</td><td>401</td><td>0.40</td><td>61.69</td><td><b>0.00</b></td><td><b>114.57</b></td></tr>
+<tr><td>E</td><td>0</td><td>18</td><td>5</td><td>1</td><td>419</td><td>0.40</td><td>64.46</td><td><b>0.00</b></td><td><b>119.71</b></td></tr>
+<tr><td>F</td><td>0</td><td>31</td><td>15</td><td>1</td><td>450</td><td>0.40</td><td>69.23</td><td><b>0.00</b></td><td><b>128.57</b></td></tr>
+<tr><td>W</td><td>0</td><td>0</td><td>5</td><td>1</td><td>450</td><td>0.40</td><td>69.23</td><td><b>0.00</b></td><td><b>128.57</b></td></tr>
+</table>
+<h2>MTL100 in 20182019: Semester 1, Semester 2</h2>
+<ul>
+<li>Total number of students with grade &gt;= C- (non-weak): 424</li>
+<li>Total number of students with grade &gt;= C- (non-weak) and with prior CS exposure: 0</li>
+<li>Total number of students with grade &gt;= C- (non-weak) and without prior CS exposure: 417</li>
+</ul>
+<table border="1">
+<tr bgcolor=yellow><th>Grade "<b>G</b>"</th><th>Number of students with prior CS exposure with grade "G"</th><th>Number of students without prior CS exposure with grade "G"</th><th>Number of students for whom prior-CS-exposure information was not available</th><th>Cumulative number of students (with grade &gt;= G) with prior CS exposure</th><th>Cumulative number of students (with grade &gt;= G) without prior CS exposure</th><th>Cumulative fraction of students with prior CS exposure and with grade &gt;= G, as a fraction of total number of students with prior CS exposure (%)</th><th>Cumulative fraction of students without CS exposure and with grade &gt;= G as fraction of total number of students without prior CS exposure (%)</th><th><b>Cumulative fraction of students with CS exposure and with grade &gt;= G as fraction of number of non-weak students (i.e. &gt;= C- grade in the course) with prior CS exposure (%)</b></th><th><b>Cumulative fraction of students without CS exposure and with grade &gt;= G as fraction of number of non-weak students (i.e. &gt;= C- grade in the course) without prior CS exposure (%)</b></th></tr>
+<tr><td>A</td><td>0</td><td>127</td><td>0</td><td>0</td><td>127</td><td>0.00</td><td>19.54</td><td><b>0.00</b></td><td><b>30.46</b></td></tr>
+<tr><td>A-</td><td>0</td><td>65</td><td>0</td><td>0</td><td>192</td><td>0.00</td><td>29.54</td><td><b>0.00</b></td><td><b>46.04</b></td></tr>
+<tr><td>B</td><td>0</td><td>73</td><td>0</td><td>0</td><td>265</td><td>0.00</td><td>40.77</td><td><b>0.00</b></td><td><b>63.55</b></td></tr>
+<tr><td>B-</td><td>0</td><td>66</td><td>0</td><td>0</td><td>331</td><td>0.00</td><td>50.92</td><td><b>0.00</b></td><td><b>79.38</b></td></tr>
+<tr><td>C</td><td>0</td><td>45</td><td>0</td><td>0</td><td>376</td><td>0.00</td><td>57.85</td><td><b>0.00</b></td><td><b>90.17</b></td></tr>
+<tr><td>C-</td><td>0</td><td>41</td><td>7</td><td>0</td><td>417</td><td>0.00</td><td>64.15</td><td><b>0.00</b></td><td><b>100.00</b></td></tr>
+<tr><td>D</td><td>0</td><td>15</td><td>8</td><td>0</td><td>432</td><td>0.00</td><td>66.46</td><td><b>0.00</b></td><td><b>103.60</b></td></tr>
+<tr><td>E</td><td>0</td><td>8</td><td>4</td><td>0</td><td>440</td><td>0.00</td><td>67.69</td><td><b>0.00</b></td><td><b>105.52</b></td></tr>
+<tr><td>F</td><td>1</td><td>10</td><td>15</td><td>1</td><td>450</td><td>0.40</td><td>69.23</td><td><b>0.00</b></td><td><b>107.91</b></td></tr>
+<tr><td>W</td><td>0</td><td>0</td><td>2</td><td>1</td><td>450</td><td>0.40</td><td>69.23</td><td><b>0.00</b></td><td><b>107.91</b></td></tr>
+</table>
+<h3>Some simple conclusions to be drawn</h3><ol>
+<li>The percentage of students with prior CS exposure in a single batch is 20-28%, and this seems to be increasing gradually over the years.</li>
+<li>Since 2014-2015, all students with prior CS exposure do COL100 only in the second semester.</li>
+<li>While for some years (2014-2015 and 2015-2016), there is a strong correlation between prior-CS-exposure and COL100 grades, similar correlations (sometimes even stronger!) exist between prior-CS-exposure and MTL100 grades. Also, for other years, this correlation is quite weak (if at all), or is <i>negative</i> (2016-2017 and 2017-2018).<ul>
+<li>It seems hard to conclude from this data that COL100 grades are causally related to prior CS exposure. Even for 2014-2015 and 2015-2016 where the corelations are strong, the counter-reasoning is that while MTL100 syllabus has nothing to do with high-school CS syllabus, similar correlation still exists between prior CS exposure and MTL100 grades.  This probably suggests that there is perhaps some other socio-economic root cause that is causally related to both their Class XII subjects, and their performance in IIT curriculum.</li>
+<li>There seem to be large variations in the correlations across different years: e.g., in 2016-2017 and 2017-2018, the students <i>without</i> prior CS exposure actually seem to be doing <i>better</i> on A/A- grades than students with prior CS exposure!  This variation across different batches is surprising, and perhaps needs more investigation.</li>
+</ul></li>
+</ol>

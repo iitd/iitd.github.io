@@ -1,0 +1,69 @@
+<h2>Lab1 Grading Policy (PIOS)</h2>
+Total: 24 marks
+<ul>
+<li>
+All tests pass: 20 marks
+  <ul>
+	<li> If bad type checking (e.g., commented out Werror flag), deduct 2 marks
+	</li>
+	<li> Deduct 2 marks for wrong submission format
+	</li>
+</li>
+</ul>
+<li>
+Exercise 2: (2 marks)
+<pre>
+Stack initialization by kernel done is kern/enrty.s
+
+# Set the stack pointer
+Line 41:	movl	$(cpu_boot+4096),%esp
+Physical address of stack :0x107000
+Set breakpoint at start. Execute single instructions
+0x10001a <start+14>: mov    $0x107000,%esp
+The kernel reserves space for the stack by using kstackhi and kstacklo. 
+Since the stack grows downwards, the stack pointer is initialized to the top end (kstackhi) of the stack.
+</pre>
+</li>
+
+<li>
+Exercise 3: (2 marks)
+<pre>
+Breakpoint 2, debug_trace (ebp=<unknown type>, eips=0x106ed8 <cpu_boot+3800>)
+    at kern/debug.c:74
+74		for(i=0;i<DEBUG_TRACEFRAMES;i++)
+(gdb) bt
+#0  debug_trace (ebp=<unknown type>, eips=0x106ed8 <cpu_boot+3800>)
+    at kern/debug.c:74
+#1  0x00100534 in f3 (r=0, e=0x106ed8 <cpu_boot+3800>) at kern/debug.c:90
+#2  0x00100570 in f2 (r=0, e=0x106ed8 <cpu_boot+3800>) at kern/debug.c:91
+#3  0x001005a8 in f1 (r=0, e=0x106ed8 <cpu_boot+3800>) at kern/debug.c:92
+#4  0x001005e0 in debug_check () at kern/debug.c:103
+#5  0x001000ef in init () at kern/init.c:55
+#6  0x00100024 in start () at kern/entry.S:44
+
+Backtrack
+(gdb) x/8x $ebp
+0x106e74 <cpu_boot+3700>:	0x00106e98	0x00100534	0x00106e98	0x00106ed8
+0x106e84 <cpu_boot+3716>:	0x00000000	0x00000000	0x00000000	0x00106e98
+(gdb) x/8x 0x00106e98
+0x106e98 <cpu_boot+3736>:	0x00106ea8	0x00100570	0x00000000	0x00106ed8
+0x106ea8 <cpu_boot+3752>:	0x00106eb8	0x001005a8	0x00000000	0x00106ed8
+(gdb) x/8x 0x00106ea8
+0x106ea8 <cpu_boot+3752>:	0x00106eb8	0x001005a8	0x00000000	0x00106ed8
+0x106eb8 <cpu_boot+3768>:	0x00106f88	0x001005e0	0x00000000	0x00106ed8
+(gdb) x/8x 0x00106eb8
+0x106eb8 <cpu_boot+3768>:	0x00106f88	0x001005e0	0x00000000	0x00106ed8
+0x106ec8 <cpu_boot+3784>:	0x00000000	0x00000000	0x00000000	0x00000000
+(gdb) x/8x 0x00106f88
+0x106f88 <cpu_boot+3976>:	0x00106ff8	0x001000ef	0x001033b8	0x000004d2
+0x106f98 <cpu_boot+3992>:	0x00001a54	0x00000000	0x00000000	0x00000000
+(gdb) x/8x 0x00106ff8
+0x106ff8 <cpu_boot+4088>:	0x00000000	0x00100024	0x87a007ff	0x00000010
+0x107008:	0x00101b20	0x00101b26	0x00101b2c	0x00101b32
+(gdb) 
+
+Every function pushes 4 words onto the stack.
+These words are current function's base pointer,return address of previous functions that called it, argument 1 (r) and argument 2 (e) in order.
+
+</pre>
+</li>

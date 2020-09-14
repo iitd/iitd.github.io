@@ -1,0 +1,309 @@
+<html>
+<head>
+<title>Homework: locking, sleep/wakeup</title>
+<link rel="stylesheet" href="../labs.css" type="text/css" />
+</head>
+<body>
+
+<h2><a href="..">Operating Systems</a></h2>
+<hr>
+
+<h1>Homework: locking, memory hierarchy</h1>
+<!--<i>You do NOT need to turn in this homework. It is only for your practice.</i>-->
+
+<h3>Assignment Part 1 (locking)</h3>
+
+
+<p>
+<b>Read</b>: spinlock.c
+
+In this part of the assignment we will explore some of the interaction
+between interrupts and locking.
+<p>
+
+Make sure you understand what would happen if the kernel executed
+the following code snippet:
+<pre>
+  struct spinlock lk;
+  initlock(&amp;lk, "test lock");
+  acquire(&amp;lk);
+  acquire(&amp;lk);
+</pre>
+(Feel free to use QEMU to find out.  <code>acquire</code> is in <code>spinlock.c</code>.)
+<p>
+
+An <code>acquire</code> ensures interrupts are off
+on the local processor using the <code>cli</code> instruction
+(via <code>pushcli()</code>),
+and interrupts remain off until the <code>release</code>
+of the last lock held by that processor
+(at which point they are enabled using <code>sti</code>).
+<p>
+
+Let's see what happens if we turn on interrupts while
+holding the <code>ide</code> lock.
+In <code>iderw</code> in <code>ide.c</code>, add a call
+to <code>sti()</code> after the <code>acquire()</code>,
+and a call to <code>cli()</code> just before the <code>release()</code>.
+Rebuild the kernel and boot it in QEMU.
+Chances are the kernel will panic soon after boot; try booting QEMU a few times
+if it doesn't.
+<p>
+
+<div class="required">
+<p><span class="header">Turn in:</span>
+explain in a few sentences why the kernel panicked.
+You may find it useful to look up the stack trace
+(the sequence of <code>%eip</code> values printed by <code>panic</code>)
+in the <code>kernel.asm</code> listing.
+</p></div>
+
+Remove the <code>sti()</code> and <code>cli()</code> you added,
+rebuild the kernel, and make sure it works again.
+<p>
+
+Now let's see what happens if we turn on interrupts
+while holding the <code>file_table_lock</code>.
+This lock  protects the table of file descriptors,
+which the kernel modifies when an application opens or closes
+a file.
+In <code>filealloc()</code> in <code>file.c</code>, add
+a call to
+<code>sti()</code> after the call to <code>acquire()</code>,
+and a <code>cli()</code> just before <b>each</b> of the
+<code>release()</code>es.
+You will also need to add 
+<code>#include "x86.h"</code> at the top of the file after
+the other <code>#include</code> lines.
+Rebuild the kernel and boot it in QEMU.
+It will not panic.
+<p>
+
+<div class="required">
+<p><span class="header">Turn in:</span>
+explain in a few sentences why the kernel didn't panic.
+Why do <code>file_table_lock</code> and <code>ide_lock</code> have
+different behavior in this respect?
+<p>
+You do not need to understand anything about the details of the IDE hardware
+to answer this question, but you may find it helpful to look 
+at which functions acquire each lock, and then at when those
+functions get called.
+</p></div>
+
+<p>
+(There is a very small but non-zero chance that the kernel will panic
+with the extra <code>sti()</code> in <code>filealloc()</code>.
+If the kernel <i>does</i> panic, make doubly sure that
+you removed the <code>sti()</code> call from 
+<code>iderw</code>.  If it continues to panic and the
+only extra <code>sti()</code> is in <code>filealloc()</code>,
+then email the staff
+and think about buying a lottery ticket.)
+<p>
+
+<div class="required">
+<p><span class="header">Turn in:</span>
+Why does <code>release()</code> clear
+<code>lk-&gt;pcs[0]</code> and <code>lk-&gt;cpu</code>
+<i>before</i> clearing <code>lk-&gt;locked</code>?
+Why not wait until after? 
+</p></div>
+
+Now look at the <code>lock_acquire()</code> and <code>sema_down</code>
+functions in <code>pintos</code> source code.
+The <code>sema_down()</code> function in <code>pintos</code> first disables
+interrupts and
+then re-enables interrupts (or sets them to their original status)
+before returning. Whereas xv6 <code>acquire()</code> function keeps interrupts
+disabled. Also, <code>sema_down()</code> blocks the thread, while
+<code>acquire()</code> busy waits.
+
+<div class="required">
+<p><span class="header">Turn in:</span>
+Why does <code>sema_down()</code> need to disable (and re-enable) interrupts?
+Will this implementation work on a multiprocessor? If not, how will you
+change it so that it works on multiprocessors too? Provide code (or pseudo-code).
+</p></div>
+
+
+<h4>Uniprocessor Locking</h4>
+A uniprocessor OS does not require atomic instructions like
+<code>xchg</code> to implement locks (or other forms of
+synchronization). The concurrency on uni-processor systems
+is due to pre-emption of threads by the timer interrupt.
+Because the timer interrupt may pre-empt a thread at
+any point in program execution, instructions of two
+threads may interleave in any arbitrary order.
+<br><br>
+Synchronization primitives that work on multi-processor
+systems are guaranteed to work on uni-processor systems (reason
+it for yourself). On uniprocessor systems,
+it is also possible to implement critical
+sections by disabling interrupts.
+<br><br>
+Here are some (possibly incorrect) implementations
+of <code>lock()</code> and
+<code>unlock()</code> primitives using interrupt enable and
+disable mechanisms. Answer the associated questions.
+
+<pre>
+lock(L) {
+  cli();   //disable preemption
+  while (L==0) continue;
+  L = 0;
+  sti();   //enable preemption
+}
+
+unlock(L) {
+  L = 1;
+}
+</pre>
+Does this implementation of locks work on a uniprocessor? If not, why not?
+
+<pre>
+lock(L) {
+  int acquired = 0;
+  while (!acquired) {
+    cli();
+    if (L == 1) {
+        acquired = 1;
+        L = 0;
+    }
+    sti();
+   }
+}
+
+unlock(L) {
+  L = 1;
+}
+</pre>
+Does this implementation of locks work on a uniprocessor? If not, why not?
+
+<h3>Assignment Part 2 (sleep and wakeup)</h3>
+Here is a version of the code for a single-queue, multiple-consumer,
+mutiple-producer problem.
+<pre>
+struct pcq {
+    void *ptr;
+    struct spinlock lock;
+};
+
+void*
+pcqread(struct pcq *q)
+{
+    void *p;
+
+    acquire(&amp;q->lock);
+    while(q-&gt;ptr == 0)
+        sleep(q, &amp;q->lock);
+    p = q-&gt;ptr;
+    q-&gt;ptr = 0;
+    wakeup(q);  /* wake pcqwrite */
+    release(&amp;q->lock);
+    return p;
+}
+
+void
+pcqwrite(struct pcq *q, void *p)
+{
+    acquire(&amp;q->lock);
+    while(q-&gt;ptr != 0)
+        sleep(q, &amp;q->lock);
+    q-&gt;ptr = p;
+    wakeup(q);  /* wake pcqread */
+    release(&amp;q->lock);
+    return p;
+}
+</pre>
+<div class="required">
+<p><span class="header">Turn in:</span>
+Both producer (<code>pcqwrite</code>) and consumer (<code>pcqread</code>)
+are sleeping on the  same channel <code>q</code>. Is this correct? Why or
+why not? Should they sleep on different channels? For example, what happens
+if the producer calls
+<code>wakeup(q)</code>? Can some unrelated part of the code call wakeup
+a consumer thread?
+</p></div>
+
+<!--
+<h2>Assignment Part 3 (more synchronization)</h2>
+Read <a href=http://poorvi.cse.iitd.ernet.in/~sbansal/csl373/resources/kaashoek-concurrency.ps>Kaashoek's Concurrency Notes</a> (internal link only). Read
+them again, and understand
+the subtleties of synchronization primitives.<br><br>
+<em>Nothing to turn in for this part (but remember we can ask you questions in
+	the exams/surprise quizzes on this material).</em>
+
+<h2>Assignment Part 4 (I/O top)</h2>
+Study the <code>iotop</code> utility available on most Linux distributions. Run
+some I/O intensive applications and notice the disk throughput. Also, notice
+the time spent in waiting for "swap-in" and file I/O.
+<h2>Assignment Part 5 (Single consumer, single producer)</h2>
+Consider the following code for a single consumer, single producer problem:
+<pre>
+struct pcq {
+    void *ptr;
+    struct spinlock lock;
+};
+
+void*
+pcqread(struct pcq *q)
+{
+    void *p;
+
+    acquire(&amp;q->lock);
+    if (q-&gt;ptr == 0)
+        sleep(q, &amp;q->lock);
+    p = q-&gt;ptr;
+    q-&gt;ptr = 0;
+    wakeup(q);  /* wake pcqwrite */
+    release(&amp;q->lock);
+    return p;
+}
+
+void
+pcqwrite(struct pcq *q, void *p)
+{
+    acquire(&amp;q->lock);
+    if (q-&gt;ptr != 0)
+        sleep(q, &amp;q->lock);
+    q-&gt;ptr = p;
+    wakeup(q);  /* wake pcqread */
+    release(&amp;q->lock);
+    return p;
+}
+</pre>
+<div class="required">
+<p><span class="header">Turn in:</span>
+Is this code correct? (Notice that we have replaced <code>while</code> with
+</code>if</code> in both producer and consumer before sleeping). Would this
+code remain correct if <code>release(q->lock)</code> is moved before
+<code>wakeup(q)</code>? If yes, why? If not, what is the problem?
+</p></div>
+
+-->
+
+<!--
+<h2>Assignment Part 4 (memory hierarchy)</h2>
+<em>Warning: This part of the assignment is lengthy. Start early.</em><br><br>
+Exercise 5.2 of "Computer Architecture: A Quantitative
+Approach (Third Edition)" by
+J. Hennessy and D. Patterson. Implement the program, identify
+a machine (it can be your personal computer/laptop), and run the program
+on it. Then answer the questions using what you observe. Compare your
+observations with published numbers that you may find (from the Internet or
+your machine's manual)
+on that processor/machine model. Report the machine model and other
+published information on it too.<br><br>
+Here are the relevant scanned pages from the book: <a href="H&P-5.2-1.jpg">1</a>,
+<a href="H&P-5.2-2.jpg">2</a>, <a href="H&P-5.2-3.jpg">3</a>
+
+<br><br>
+
+<b>This completes the homework.</b>
+-->
+
+<p><hr><p>
+</body>
+</html>
+

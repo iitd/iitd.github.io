@@ -1,0 +1,418 @@
+<h2 id="practice-questions">Practice Questions</h2>
+<!-- added by sorav -->
+<ol style="list-style-type: decimal">
+<li><strong>Big_O notation, Time Complexity of a Program</strong>: In this question, we will learn about the time complexity of passing arguments by value and by reference:</li>
+</ol>
+<ul>
+<li>What is the time-complexity of the following program. Assume size of input queue is N</li>
+</ul>
+<pre><code>1  #include &lt;iostream&gt;
+2  using namespace std;
+3  int get_queue_length(Queue&lt;int&gt; const &amp;q)
+4  {
+5     return q.size();
+6  }
+7  int main()
+8  {
+9      cin &gt;&gt; n;   
+10     Queue&lt;int&gt; q;
+11     for (int i = 0; i &lt; n; i++) {
+12         q.enqueue(i);
+13     }
+14     while (!q.isEmpty()) {
+15         cout &lt;&lt; get_queue_length(q) &lt;&lt; endl;
+16         cout &lt;&lt; q.dequeue() &lt;&lt; endl;
+17     }
+18     return 0;
+19 }</code></pre>
+<ul>
+<li>Now what is the time complexity of the followng program (notice that the argument is now pass-by-value)</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dv">1</span>  <span class="er">#</span>include &lt;iostream&gt;
+<span class="dv">2</span>  <span class="kw">using</span> <span class="kw">namespace</span> std;
+<span class="dv">3</span>  <span class="dt">int</span> get_queue_length(Queue&lt;<span class="dt">int</span>&gt; q)
+<span class="dv">4</span>  {
+<span class="dv">5</span>     <span class="cf">return</span> q.size();
+<span class="dv">6</span>  }
+<span class="dv">7</span>  <span class="dt">int</span> main()
+<span class="dv">8</span>  {
+<span class="dv">9</span>      cin &gt;&gt; n;   
+<span class="dv">10</span>     Queue&lt;<span class="dt">int</span>&gt; q;
+<span class="dv">11</span>     <span class="cf">for</span> (<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; n; i++) {
+<span class="dv">12</span>         q.enqueue(i);
+<span class="dv">13</span>     }
+<span class="dv">14</span>     <span class="cf">while</span> (!q.isEmpty()) {
+<span class="dv">15</span>         cout &lt;&lt; get_queue_length(q) &lt;&lt; endl;
+<span class="dv">16</span>         cout &lt;&lt; q.dequeue() &lt;&lt; endl;
+<span class="dv">17</span>     }
+<span class="dv">18</span>     <span class="cf">return</span> <span class="dv">0</span>;
+<span class="dv">19</span> }</code></pre></div>
+<ul>
+<li>And finally, what is the time complexity of the following program (notice that the argument is copied in a local variable before passing-by-reference)</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dv">1</span>  <span class="er">#</span>include &lt;iostream&gt;
+<span class="dv">2</span>  <span class="kw">using</span> <span class="kw">namespace</span> std;
+<span class="dv">3</span>  <span class="dt">int</span> get_queue_length(Queue&lt;<span class="dt">int</span>&gt; <span class="at">const</span> &amp;q)
+<span class="dv">4</span>  {
+<span class="dv">5</span>     <span class="cf">return</span> q.size();
+<span class="dv">6</span>  }
+<span class="dv">7</span>  <span class="dt">int</span> main()
+<span class="dv">8</span>  {
+<span class="dv">9</span>      cin &gt;&gt; n;   
+<span class="dv">10</span>     Queue&lt;<span class="dt">int</span>&gt; q;
+<span class="dv">11</span>     <span class="cf">for</span> (<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; n; i++) {
+<span class="dv">12</span>         q.enqueue(i);
+<span class="dv">13</span>     }
+<span class="dv">14</span>     <span class="cf">while</span> (!q.isEmpty()) {
+<span class="dv">15</span>         Queue&lt;<span class="dt">int</span>&gt; q2 = q;
+<span class="dv">16</span>         cout &lt;&lt; get_queue_length(q2) &lt;&lt; endl;
+<span class="dv">17</span>         cout &lt;&lt; q.dequeue() &lt;&lt; endl;
+<span class="dv">18</span>     }
+<span class="dv">19</span>     <span class="cf">return</span> <span class="dv">0</span>;
+<span class="dv">20</span> }</code></pre></div>
+<!-- added by aman -->
+<ol start="4" style="list-style-type: decimal">
+<li><strong>Bitwise Operators</strong>: In this question we, will learn about some of the bitwise operators.</li>
+</ol>
+<ul>
+<li>&amp; : Binary AND operator</li>
+<li>| : Binary OR operator</li>
+<li>^ : Binary XOR operator</li>
+<li>&lt;&lt; : Binary Left shift operator</li>
+<li>&gt;&gt; : Binary Right shift operator</li>
+</ul>
+<p>Read More at <a href="https://www.geeksforgeeks.org/bitwise-operators-in-c-cpp/" class="uri">https://www.geeksforgeeks.org/bitwise-operators-in-c-cpp/</a></p>
+<p><strong>4.1</strong> Check if two numbers are equal without using arithmetic operators or comparison operators.</p>
+<p><strong>4.2</strong> Divide an integer by 2^k and return the integer quotient. Do not use any arithmetic operator, loops or pow function.</p>
+<p><code>cpp   int divide(int n, int k){     /* Do not use any arithmetic operators or loops or pow function */   }</code></p>
+<p><strong>4.3</strong> Find the kth bit of an integer. Return 1 if it is 1 and 0 otherwise. You should not use any loop, or arithmetic operators. Complete the function below. Bit counting is done from the least significant bit and starts from 0. For example, for n = 19, its binary representation is 10011 the second bit is 0 while the first bit is 1 and the zeroth bit is 1.</p>
+<p><code>cpp   int kthbit(int n, int k){     /* Do not use any loop or arithmetic operators */   }</code></p>
+<p><strong>4.4</strong> Find if the number is a power of two, without using any other function call or loop. Complete the if condition below</p>
+<p><code>cpp     int main(){       int n;       cin&gt;&gt;n;       if(/* ... */)         cout&lt;&lt;&quot;Number is power of 2&quot;&lt;&lt;endl;       else         cout&lt;&lt;&quot;Number is not a power of two&quot;&lt;&lt;endl;       return 0;     }</code></p>
+<p><br> <!-- added by Ankesh --> <strong>5. Analysing an algorithm.</strong></p>
+<p>Given below is a function/algorithm: <em>You'll enjoy foo!</em></p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">int</span> foo(<span class="dt">int</span> a,<span class="dt">int</span> b)
+{
+  <span class="dt">int</span> ans=<span class="dv">1</span>;
+  <span class="dt">int</span> temp=a;
+
+  <span class="cf">while</span>(b)
+  {
+    <span class="cf">if</span>(b&amp;<span class="dv">1</span>)
+      ans*=temp;
+    temp*=temp;
+    b/=<span class="dv">2</span>;
+  }
+
+  <span class="cf">return</span> ans;
+}</code></pre></div>
+<p><strong>5.1</strong> Predict the output for <strong>foo(3,5)</strong>.<br />
+<strong>5.2</strong> What is <strong>foo(a,b)</strong> computing for general a,b&gt;=0, both integers.<br />
+<strong>5.3</strong> What is time complexity of <strong>foo(a,b)</strong> for general a,b&gt;=0, both integers. You should report bigO complexity in terms of a and b.<br />
+<strong>5.4</strong> Can you point out a problem with this code?<br />
+(<strong>Spoiler:</strong> Will this code produce correct results for large a's and b's?)<br />
+<strong>5.5</strong> How can you handle negative b?(Note: You can change <strong>function declaration</strong> to double <strong>foo(int a,int b)</strong>)<br />
+<strong>5.6</strong> Will this logic/algorithm work if <strong>a</strong> were <strong>float</strong> instead of <strong>int</strong>.(Refer to code below)</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">double</span> foo(<span class="dt">double</span> a,<span class="dt">int</span> b)
+{
+  <span class="dt">double</span> ans=<span class="dv">1</span>;
+  <span class="dt">double</span> temp=a;
+
+  <span class="cf">while</span>(b)
+  {
+    <span class="cf">if</span>(b&amp;<span class="dv">1</span>)
+      ans*=temp;
+    temp*=temp;
+    b/=<span class="dv">2</span>;
+  }
+
+  <span class="cf">return</span> ans;
+}</code></pre></div>
+<p><em>By now, I know you are tired of this foo function - just 1 more to go :p</em></p>
+<p><strong>5.7</strong> This logic/algorithm won't work if <strong>b</strong> were <strong>float</strong> instead of <strong>int</strong>. Why?<br />
+<strong>5.8</strong> <strong>Tough, can be skipped-</strong> Can you suggest some way to handle floating b? This will create a general function for task identified in <strong>5.2</strong>.</p>
+<p><em>End of chapter foo :)</em></p>
+<!-- added by Sourabh -->
+<p><strong>6.Recursion</strong></p>
+<p>Recursion is a very powerful and an extremely useful tool. It is astonishing that with it's level of functionality,recursion is actually a very simple concept. Recursion formally defined as(source:<a href="https://en.wikipedia.org/wiki/Recursion">wiki/Recursion</a>)</p>
+<ul>
+<li>A class of objects or methods exhibit recursive behavior when they can be defined by two properties:</li>
+</ul>
+<ol style="list-style-type: decimal">
+<li>A simple base case (or cases)—a terminating scenario that does not use recursion to produce an answer.</li>
+<li>A set of rules that reduce all other cases toward the base case.</li>
+</ol>
+<p>Every recurive function has the following general format</p>
+<pre><code>recfunc(params):
+  if _BaseCondition_ :
+    return _corresponding BaseResult_
+
+  else :
+    solve _corresponding subproblems_
+    return result</code></pre>
+<p>Now lets work out a example.</p>
+<ul>
+<li><strong>GCD(a,b)</strong></li>
+<li>Base Condition: b=0 =&gt; GCD = a</li>
+<li>Recurrence relation: GCD(a,b) = GCD(b,a%b)</li>
+</ul>
+<pre><code>int gcd(int a,int b) {
+  int gcd_ab;
+
+  if(b==0) {
+    gcd_ab = a;
+  } else {
+    gcd_ab = gcd(b,a%b);
+  }
+
+  return gcd_ab;
+}</code></pre>
+<p>Try the following questions on your own. Identify the base condition and reccurence relation.</p>
+<ol style="list-style-type: decimal">
+<li><strong>Factorial</strong></li>
+</ol>
+<ul>
+<li>Factorial of a non-negtaive integer <strong>n</strong> is denoted by <strong>n!</strong> or <strong>fact(n)</strong> and is defined as the product of all positive integers &lt;= <strong>n</strong>.</li>
+</ul>
+<ol start="2" style="list-style-type: decimal">
+<li><strong>Fibonnaci</strong></li>
+</ol>
+<ul>
+<li>Fibonnaci sequence is a sequence of integers following the property that every number is the sum of two numbers preceding it.</li>
+</ul>
+<ol start="3" style="list-style-type: decimal">
+<li><strong>Tower of Hanoi</strong><br />
+</li>
+</ol>
+<ul>
+<li><p>The Tower of Hanoi is a mathematical game or puzzle. It consists of three rods and a number of disks of different sizes, which can slide onto any rod. The puzzle starts with the disks in a neat stack in ascending order of size on one rod, the smallest at the top, thus making a conical shape.(source:<a href="https://en.wikipedia.org/wiki/Tower_of_Hanoi">wiki/Tower_of_Hanoi</a>)</p></li>
+<li>The objective of the puzzle is to move the entire stack to another rod, obeying the following simple rules:
+<ol style="list-style-type: decimal">
+<li>Only one disk can be moved at a time.</li>
+<li>Each move consists of taking the upper disk from one of the stacks and placing it on top of another stack or on an empty rod.</li>
+<li>No disk may be placed on top of a smaller disk.</li>
+</ol></li>
+<li>The question is to print the sequence of moves which acheive the above objective for <strong>n</strong> disks and three towers named <strong>A,B,C</strong>. Every move should be in the format of <strong>move from T1 to T2</strong> where <strong>T1,T2</strong> are the names of the towers. All the disks are initially at Tower <strong>A</strong>. At the end of all the moves they should be at Tower <strong>B</strong>. Think of <strong>A</strong> as the starting tower, <strong>B</strong> as the final tower and <strong>C</strong> as the supporting tower.
+<ul>
+<li><strong>Hint1:</strong> Try identifying the simplest case which you can solve. Think in terms of number of disks.</li>
+<li><strong>Hint2:</strong> Observe the fact that if you had the solution for movement from <strong>A</strong> to <strong>B</strong>. The same solution is applicable for movement from <strong>A</strong> to <strong>C</strong> by simply swapping <strong>B</strong> and <strong>C</strong> in every move.</li>
+<li><strong>Hint3:</strong> What if you had the solution for <strong>n-1</strong> disks? Can you use that for the solution of n disks?</li>
+</ul></li>
+</ul>
+<!-- added by Parag -->
+<strong>7. Merge sorted vectors</strong> Write a function mergeSortedVecs(Vector&lt;Vector&lt;int&gt;&gt; vecs) which takes a Vector of Vectors as an argument, where each constitutent Vector is a Vector of integers in the sorted (ascending) order. For example, vecs could be a Vector of the form
+<pre>
+"{ {1,3,4,5}, {4,6,24,35},{34,100,101} }"
+</pre>
+. Note that vecs consists of three sorted Vectors of integers in this case. Your function should compute a single sorted (ascending) Vector of integers obtained by merging the constituent vectors. For example, in the above case, the return answer should be
+<pre>
+"{1,3,4,4,5,6,24,34,35,100,101}"
+</pre>
+<p>. Your merge function should take care of duplicates appropriately as shown in the example above (i.e., duplicate elements should be repeated as many times as in the original set of vectors). Write out the function to achieve this functionality. What is the time complexity of your function in terms of the sizes of the original Vectors?</p>
+<p>Note: This is a generalization of the merge function in Minor 2 where you were asked to merge two sorted vectors. This question can be somewhat on the harder side. So you may want to spend time thinking about it before you start implementing. You can also start with writing the pseudocode for a function which merges k given sorted vectors (for some value of k).</p>
+<!-- added by Parag -->
+<p><strong>8. Is this a prime?</strong></p>
+<p>We say a number (greater than equal to two) is prime if it is divisble only by itself and 1. Given a number n (n &gt;=2), write a program to check whether a number is prime or not. How much time does your program take? Can you now write an improved program which runs in time O(square_root_of(n)). For this question, you can assume that integer division takes constant time.</p>
+<!-- added by Parag -->
+<p><strong>9. Order Order</strong></p>
+Given a Vector of numbers, we say that numbers at positions i and j are out of ascending order if (1) i &lt; j and (2) v_i &gt; v_j. Here v_i and v_j denote the elements at positions i and j, respectively in the Vector. Write a function countOutOfOrder(Vector&lt;int&gt; v), which takes as argument a Vector v, and returns the count of the number of pairs which are out of ascending order. You can assume that all the elements in v are unique. What is the time complexity of your program? To take an example, if the vector is
+<pre>
+"{1,13,41,5,6}"
+</pre>
+<p>then the number of pairs which are out ascending order is 4.</p>
+<!-- added by Vaibhav -->
+<p><strong>10. Inverse of a Matrix</strong></p>
+<p>Given a Grid of floating point numbers, find its inverse. You need to implement the following function:</p>
+<pre><code>int computeInverse(Grid&lt;float&gt; &amp;inverse, Grid&lt;float&gt; &amp;input_grid) {
+  // input_grid is the input matrix
+  // inverse is the grid in which the inverse should be computed
+  // Return 0, if the inverse of the input_grid exists else return -1
+}</code></pre>
+<p>Take into consideration, the following points while solving this problem:</p>
+<ol style="list-style-type: decimal">
+<li>When does the inverse of an input grid exist and when does it not</li>
+</ol>
+<ul>
+<li>Will all grids have an inverse or do they need to be of a particular shape</li>
+<li>If yes, is it necessary that all the grids of that particular shape will have inverses, or something more is required</li>
+</ul>
+<ol start="2" style="list-style-type: decimal">
+<li>Consider the various algorithms which you have studied, to compute the inverse of a matrix</li>
+</ol>
+<ul>
+<li>Using <code>determinant</code> and <code>adjoint</code> of a matrix</li>
+<li>Using matrix transformations. In particular, read about <a href="https://en.wikipedia.org/wiki/Row_echelon_form">Row Echelon Form</a> of a matrix and how it is used to compute the inverse</li>
+</ul>
+<ol start="3" style="list-style-type: decimal">
+<li>What is the time complexity of each of the above methods</li>
+</ol>
+<!-- added by Saket -->
+<p><strong>11. Numbers are life</strong></p>
+<p><strong>11.1</strong> Given a number, can you find the sum of it's divisors? Complete the function below</p>
+<pre><code>int DivisorSum(int num) {
+  // num is the input number
+  // return an integer containing sum of divisors
+  // for example - if num = 6 return 1 + 2 + 3 + 6 = 12
+}</code></pre>
+<p><strong>11.2</strong> Now let's try to find prime factorization of an integer. If you have already implemented a function to check if a number is prime, then this is gonna be easy ! (isn't it?) Complete the function below</p>
+<pre><code>vector &lt;int&gt; PrimeFactorization(int num) {
+  // num is the input number
+  // return a vector containing prime factorization of the number
+  // for example - if num = 6 return [2,3]
+  // if num = 24 return [2,2,2,3], if num = 7 return [7]
+}</code></pre>
+<p><strong>11.3</strong> Well now, you know there exists a formula for finding sum of divisors using prime factorization of a number <a href="https://oeis.org/wiki/Sum_of_divisors_function#Formulae_for_the_sum_of_divisors_function">Read Here</a>. So why not modify our DivisorSum to use this formula ?</p>
+<pre><code>int DivisorSum(int num) {
+  vector &lt;int&gt; prime_fact = PrimeFactorization(num);
+  // now use this prime_fact and formula above to compute the sum of divisors
+}</code></pre>
+<!-- added by Sangnie -->
+<p><strong>12. Anagram Strings</strong></p>
+<p>Given 2 strings, report if they are anagrams of each other. You need to implement the following function:</p>
+<pre><code>bool isAnagram(string s1, string s2) {
+  // Return true, if s1 and s2 are anagrams of each other else return false
+}</code></pre>
+<p>A string is an anagram of another if it can be formed by rearranging the characters of the original string. For example, dog is an anagram of god, but not of cat. Head over to <a href="https://en.wikipedia.org/wiki/Anagram">Anagram</a> for more fun examples.</p>
+<p>Note: 1. Ignore case. &quot;Dog&quot; is a valid anagram of &quot;god&quot;. 2. Consider only strings containing characters from the English alphabet.</p>
+<!-- added by Anuj Dhawan -->
+<p><strong>13. Rotating vectors</strong></p>
+<p>Implement a function rotate(vector<int> &amp;vec, int d, int n) that rotates the vector vec of size n by d elements towards right. For example: Input vec = [1, 2, 3, 4, 5, 6, 7], d = 2, n =7, then output will be [6, 7, 1, 2, 3, 4, 5].</p>
+<p><strong>13.1</strong> [Easy] You can use a temporary array of size n.</p>
+<p><strong>13.2</strong> [Medium] Use constant space i.e O(1) space.</p>
+<!-- added by Anuj Dhawan -->
+<p><strong>14. Last Word</strong></p>
+<p>[Easy] Given a string s consists of upper/lower-case alphabets and empty space characters ' ', return the length of last word in the string.If the last word does not exist, return 0.</p>
+<p>Note: A word is defined as a character sequence consists of non-space characters only.</p>
+<p>Example:</p>
+<p>Input: &quot;Hello World&quot; Output: 5</p>
+<!-- added by abhishek -->
+<p><strong>13. [EASY] Common programming pattern: Iterate and delete</strong></p>
+<p>Deleting elements from a linear data structure (e.g. vector, string, list) while iterating is a common programming pattern. Unfortunately, it is very easy to get this seemily easy code wrong.</p>
+<p><em>13.1</em> Consider the following function. What is wrong with it?</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">/* delete every occurrence of char `c` from string `s`</span>
+<span class="co"> * return the modified string */</span>
+string deleteChar(string s, <span class="dt">char</span> c)
+{
+  <span class="dt">int</span> n = s.size();
+  <span class="cf">for</span> (<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; n; ++i) {
+    <span class="cf">if</span> (s.at(i) == c) {
+      <span class="co">/* `s.at(i)` return same value as `s[i]` if i is a valid index i.e. 0 &lt;= i &lt; s.size(),</span>
+<span class="co">        else, it throws the &quot;out_of_range&quot; exception */</span>
+      s.erase(i, <span class="dv">1</span>); <span class="co">// erase element at i</span>
+    }
+  }
+  <span class="cf">return</span> s;
+}</code></pre></div>
+<p><em>13.2</em> Let's say we came up with this &quot;fix&quot;:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">/* delete every occurrence of char `c` from string `s`</span>
+<span class="co"> * return the modified string */</span>
+string deleteCharV2(string s, <span class="dt">char</span> c)
+{
+  <span class="cf">for</span> (<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; s.size(); ++i) {
+    <span class="cf">if</span> (s.at(i) == c) {
+      s.erase(i, <span class="dv">1</span>); <span class="co">// erase element at i</span>
+    }
+  }
+  <span class="cf">return</span> s;
+}</code></pre></div>
+<p>Is this version correct?</p>
+<p><em>13.3</em> Here are two functions for solving the same problem. Which one do you prefer, which is more efficient? Give reasons for your choice.</p>
+<pre><code>|  **Solution 1**                                    |  **Solution 2**                                  |
+|----------------------------------------------------|--------------------------------------------------|
+|                                                    |                                                  |
+| string deleteCharV3(string&amp; s, char c)             | string deleteCharV4(const string&amp; s, char c)     |
+| {                                                  | {                                                |
+|   int i = 0;                                       |   string ret;                                    |
+|   while (i &lt; s.size()) {                           |   for (int i = 0; i &lt; s.size(); ++i) {           |
+|     if (s.at(i) == c)                              |     if (s.at(i) != c)                            |
+|       s.erase(i, 1); // erase element at i         |       ret += s.at(i); // copy i&#39;th char          |
+|     else i++;                                      |   }                                              |
+|   }                                                |   return ret;                                    |
+|   return s;                                        | }                                                |
+| }                                                  |                                                  |</code></pre>
+<p><small><em>Hint for 13.1:</em> Try running with input (&quot;HelloWorld&quot;, 'o')</small></p>
+<p><small><em>Hint for 13.2:</em> Try running with input (&quot;HelloWorld&quot;, 'l')</small></p>
+<!-- added by shailja -->
+<p><strong>14. [Easy] Scope: local and global variables</strong> <strong>14.1</strong> Is the program correct? If yes, what is the output of the given program? If not, what are the errors?</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">// usage of local variables  </span>
+<span class="dv">1</span> <span class="er">#</span>include&lt;iostream&gt; 
+<span class="dv">2</span> <span class="kw">using</span> <span class="kw">namespace</span> std; 
+<span class="dv">3</span>  
+<span class="dv">4</span> <span class="dt">void</span> func() 
+<span class="dv">5</span> {    
+<span class="dv">6</span> <span class="dt">int</span> age=<span class="dv">18</span>;     
+<span class="dv">7</span> } 
+<span class="dv">8</span>  
+<span class="dv">9</span> <span class="dt">int</span> main() 
+<span class="dv">10</span> { 
+<span class="dv">11</span>    cout&lt;&lt;<span class="st">&quot;Age is: &quot;</span>&lt;&lt;age; 
+<span class="dv">12</span>      
+<span class="dv">13</span>    <span class="cf">return</span> <span class="dv">0</span>; 
+<span class="dv">14</span> } </code></pre></div>
+<p><strong>14.2</strong> What is the output of the given program?</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dv">1</span> <span class="er">#</span>include&lt;iostream&gt; 
+<span class="dv">2</span> <span class="kw">using</span> <span class="kw">namespace</span> std; 
+<span class="dv">3</span>  
+<span class="dv">4</span> <span class="dt">void</span> func() 
+<span class="dv">5</span> {    
+<span class="dv">6</span>    <span class="dt">int</span> age=<span class="dv">18</span>;  
+<span class="dv">7</span>    cout&lt;&lt;age; 
+<span class="dv">8</span> } 
+<span class="dv">9</span>  
+<span class="dv">10</span> <span class="dt">int</span> main() 
+<span class="dv">11</span> { 
+<span class="dv">12</span>    cout&lt;&lt;<span class="st">&quot;Age is: &quot;</span>; 
+<span class="dv">13</span>    func(); 
+<span class="dv">14</span>      
+<span class="dv">15</span>    <span class="cf">return</span> <span class="dv">0</span>; 
+<span class="dv">16</span> } </code></pre></div>
+<p><strong>14.3</strong> What is the output of the given program?</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dv">1</span> <span class="co">// usage of global variables  </span>
+<span class="dv">2</span> <span class="er">#</span>include&lt;iostream&gt; 
+<span class="dv">3</span> <span class="kw">using</span> <span class="kw">namespace</span> std; 
+<span class="dv">4</span>  
+<span class="dv">5</span> <span class="co">// global variable </span>
+<span class="dv">6</span> <span class="dt">int</span> global = <span class="dv">5</span>; 
+<span class="dv">7</span>  
+<span class="dv">8</span> <span class="co">// global variable accessed from </span>
+<span class="dv">9</span> <span class="co">// within a function </span>
+<span class="dv">10</span> <span class="dt">void</span> display() 
+<span class="dv">11</span> { 
+<span class="dv">12</span>    cout&lt;&lt;global&lt;&lt;endl; 
+<span class="dv">13</span> } 
+<span class="dv">14</span>  
+<span class="dv">15</span> <span class="co">// main function </span>
+<span class="dv">16</span> <span class="dt">int</span> main() 
+<span class="dv">17</span> { 
+<span class="dv">18</span>     display(); 
+<span class="dv">19</span>      
+<span class="dv">20</span>     <span class="co">// changing value of global </span>
+<span class="dv">21</span>     <span class="co">// variable from main function </span>
+<span class="dv">22</span>     global = <span class="dv">10</span>; 
+<span class="dv">23</span>     display(); 
+<span class="dv">24</span> } </code></pre></div>
+<p><strong>14.4</strong> What if there exists a local variable with the same name as that of global variable inside a function?</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dv">1</span> <span class="co">// usage of local variables  </span>
+<span class="dv">2</span> <span class="co">// and global variables together </span>
+<span class="dv">3</span> <span class="er">#</span>include&lt;iostream&gt; 
+<span class="dv">4</span> <span class="kw">using</span> <span class="kw">namespace</span> std; 
+<span class="dv">5</span>  
+<span class="dv">6</span> <span class="co">// global variable </span>
+<span class="dv">7</span> <span class="dt">int</span> global = <span class="dv">5</span>; 
+<span class="dv">8</span>  
+<span class="dv">9</span> <span class="co">// main function </span>
+<span class="dv">10</span> <span class="dt">int</span> main() 
+<span class="dv">11</span> {    
+<span class="dv">12</span>     <span class="co">// local variable with same  </span>
+<span class="dv">13</span>     <span class="co">// name as that of global variable </span>
+<span class="dv">14</span>      
+<span class="dv">15</span>     <span class="dt">int</span> global = <span class="dv">2</span>; 
+<span class="dv">16</span>     cout &lt;&lt; global &lt;&lt; endl; 
+<span class="dv">17</span> } </code></pre></div>
+<!-- added by Sruti -->
+<p><strong>15. Custom Sort</strong> Given an array A[], write a function that segregates even and odd numbers. The functions should put all even numbers first, and then odd numbers. Example Input = {12, 34, 45, 9, 8, 90, 3} Output = {12, 34, 8, 90, 45, 9, 3}</p>
+<p>In the output, the order of numbers can be changed, i.e., in the above example, 34 can come before 12 and 3 can come before 9.</p>
+<!-- added by Shradha -->
+<p><strong>16. Longest Subarray With Maximum Sum</strong> We define subsequence as any subset of an array. We define a subarray as a contiguous subsequence in an array. Given an array arr[] containing n integers(can be either positive or negative). The problem is to find the length of the subarray having maximum sum. If there exists two or more subarrays with maximum sum then print the length of the longest subarray.</p>
+<p>Example: Input : arr[] = {5, -2, -1, 3, -4} Output : 4 There are two subarrays with maximum sum: First is {5} Second is {5, -2, -1, 3} Therefore longest one is of length 4.</p>
+<p>Try to do it in O(n).</p>

@@ -1,0 +1,96 @@
+<h2>Superoptimizer Project</h2>
+This page is intended to be an introduction to our ongoing superoptimizer
+project for prospective students looking to join our research team.
+
+<h3>Problem</h3>
+Today, compilers are overwhelmingly complex (GCC is over 14 million lines
+of code) and are rapidly increasing in their complexity. Yet they
+are quite weak and fragile in meeting modern computing needs:
+<ul>
+<li>With the saturation of Moore's law, modern hardware is fast becoming more
+complex and harder to program; examples include <a href=https://en.wikipedia.org/wiki/X86_instruction_listings>complex instruction sets</a>, multi-core chips, programmable interconnects, accelerator hardware like <a href=https://en.wikipedia.org/wiki/General-purpose_computing_on_graphics_processing_units>GPGPUs</a>, <a href=https://en.wikipedia.org/wiki/Network_processor>network processors</a>, <a href=https://en.wikipedia.org/wiki/Secure_cryptoprocessor>crypto processors</a>, etc. While all these hardware components are programmable, the most common way of extracting high-performance from these devices (including CPUs) is still through manual coding of assembly instructions!
+
+<p>More fundamentally speaking: while the number of transistors on a chip has still been increasing at an exponential rate, the clock frequency has saturated several years ago.  Hence, the next-generation improvements in performance and power-to-performance ratios require innovative software-hardware solutions and cannot simply rely on improving clock rate.
+</li>
+
+<li>Modern software stacks require two primary changes to tackle this
+changing hardware environment:
+<ul>
+<li>Higher level programming abstractions, e.g., domain-specific languages,
+higher-level programming constructs that are intuitive yet amenable to
+efficient mapping on modern hardware, abstractions that allow visibility
+to higher-level semantics allowing an automatic optimizer to optimize the
+logic, etc.</li>
+<li>Powerful compilation support: the optimizers in modern compilers need to be much more powerful than what they are today. Unfortunately, today's compilers are already too complex; a potential solution perhaps requires a complete redesign of compiler technology.</li>
+</ul>
+Both the design of programming abstractions and compiler support are
+tightly inter-dependent: good abstractions are those that can be compiled
+efficiently; a good compiler should be able to compile the desired abstractions.
+Thus these problems cannot be looked-at in isolation.
+</ul>
+
+<h3>Proposed solution : synthesis and superoptimization</h3>
+Researchers have been working on applying the vast amount of computing
+resources to chip at this problem at least for over 12-13 years now, and some
+of these ideas are now coming to fruition. Essentially, these techniques
+involve applying artificial-intelligence and machine-learning techniques (<em>ala</em> AI/ML techniques)
+to automatically infer high-performance software
+implementations (for a given machine) from high-level program specifications.
+You can read more about these techniques on the wikipedia
+pages for <a href=https://en.wikipedia.org/wiki/Program_synthesis>program synthesis</a> and <a href=https://en.wikipedia.org/wiki/Superoptimization>superoptimization</a>.
+
+<h3>Our efforts</h3>
+We are working on an automatic "peephole superoptimizer", an idea that
+is described in detail in this paper on <a href=http://www.cse.iitd.ac.in/~sbansal/pubs/asplos06.pdf>Automatic Generation of Peephole Superoptimizers</a>. While this work automatically generated peephole optimizations
+through search-based (AI/ML) techniques, later work on <a href=http://www.cse.iitd.ac.in/~sbansal/pubs/osdi08.pdf>binary translation</a> extended these ideas
+to automatically generate <em>translations</em> from one ISA (PowerPC)
+to another (x86).
+
+In current work, we have been generalizing these ideas to automatically
+generate translations from <a href=https://en.wikipedia.org/wiki/LLVM>LLVM IR</a>
+to x86 ISA. We have also generalized the nature of these translations to
+allow reasoning about loops and aliasing, two very important features that
+enable effective compiler optimizations. Some of our recent work has been
+published in this context of equivalence checking:
+<ul>
+<li>OOElala: Order-Of-Evaluation based Alias Analysis for compiler optimization (with Ankush Phulia and Vaibhav Bhagee) at PLDI 2020 (will post paper soon)</li>
+<li><a href=http://www.cse.iitd.ac.in/~sbansal/pubs/sat18.pdf>Effective use of SMT solvers for program equivalence checking through invariant sketching and query decomposition</a> [ <a href=https://easychair.org/smart-slide/slide/Slg9>slides</a> ] at SAT 2018<br></li>
+<li><a href=http://www.cse.iitd.ac.in/~sbansal/pubs/aplas17.pdf>Black-box equivalence checking across compiler optimizations</a> at APLAS 2017<br></li>
+<li><a href=http://www.cse.iitd.ac.in/~sbansal/pubs/hvc17.pdf>Modeling undefined behaviour semantics for checking equivalence across compiler optimizations</a> at HVC 2017<br> </li>
+<li> <a href=http://www.cse.iitd.ac.in/~sbansal/pubs/osdi08.pdf>Binary Translation using Peephole Superoptimizers</a> at OSDI 2008</li>
+<li> <a href=http://www.cse.iitd.ac.in/~sbansal/pubs/asplos06.pdf>Automatic Generation of Peephole Superoptimizers</a>  [ <a href=https://github.com/WebAssembly/binaryen/pull/900>recent application to WebAssembly</a> ] at ASPLOS 2006
+<ul>
+<li> <a href=https://www.youtube.com/watch?v=Ux0YnVEaI6A>A nice talk by John Regehr on LLVM superoptimization</a> [at <a href=https://youtu.be/Ux0YnVEaI6A?t=880>14:40</a>, John talks very kindly about our <a href=http://www.cse.iitd.ac.in/~sbansal/pubs/asplos06.pdf>superoptimizer paper</a>, calling it the first modern superoptimizer.  Thanks very much John!]
+</ul>
+</li>
+</ul>
+
+
+<h3>What would a BTech/MTech project in this area look like</h3>
+We would like to involve you in our tools that
+<ul>
+<li> compile a C program
+to x86 assembly (our "code generator") using automatically generated
+translations, and</li>
+<li> automatically infer translations using AI/ML techniques</li>
+</ul>
+The exact project may depend on the current needs of the project and
+your interests.
+
+<h3>Demo</h3>
+<a href=http://compiler.ai>compiler.ai</a> hosts an early demo of our
+certified compiler, that verifies every compilation: if it is not able
+to verify, it reports a failure.  This is work in progress.
+
+<h3>Whom to contact</h3>
+If you are interested in working on something like this, you can
+write to <a href=http://www.cse.iitd.ac.in/~sbansal>Sorav Bansal</a>.
+You can also contact some of the current and
+previous people who have worked (or are working on)
+this project to get more clarity:
+<ul>
+<li><a href=http://www.cse.iitd.ernet.in/~dahiya/>Manjeet Dahiya</a>. <a href=http://www.cse.iitd.ac.in/~sbansal/pubs/manjeet_thesis.pdf>Completed PhD in 2018</a>.</li>
+<li><a href=https://shubhanigupta.github.io/>Shubhani Gupta</a>. Pursuing PhD</li>
+<li><a href="email: ar AT fastmail.in">Abhishek Rose</a>. Pursuing PhD</li>
+<li>Masters and UG students</li>
+</ul>

@@ -1,0 +1,136 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+	<title>PIOS: Parallel Instructional Operating System</title>
+	<style>
+	img { margin: 10px; }
+	</style>
+</head><body>
+
+Acknowledgement: <i>The materials in this lab are taken from Bryan Ford's course
+	materials at Yale University</i>
+<h1>PIOS: Parallel Instructional Operating System</h1>
+
+<h3>Introduction</h3>
+
+<p>
+The time of uniprocessor machines
+working alone or in loosely coupled configurations is over.
+The time of massively parallel multicore machines
+working in tightly coupled data center clusters is here.
+It is time for undergraduate operating system courses
+to catch up to this reality,
+and expose students to the multicore and cluster
+OS concepts and programming practices they will need
+in today's and tomorrow's industry and research positions.
+This is the goal of
+<i>PIOS—Parallel Instructional Operating System</i>.
+
+</p><p>
+PIOS is based on <a href="http://pdos.csail.mit.edu/6.828/">JOS</a> from MIT,
+but its core kernel, user-space runtime, and programming assignments
+were redesigned and rewritten
+by <a href="http://www.cs.yale.edu/people/ford.html">Bryan Ford</a>
+at <a href="http://www.cs.yale.edu/">Yale</a>
+to emphasize parallel and distributed OS concepts and programming techniques.
+To the author's knowledge,
+PIOS represents the first instructional OS and curriculum
+in which students build a working multiprocessor, distributed OS,
+which runs on real multicore PCs,
+in a one-semester undergraduate-level course.
+The author used PIOS to teach
+Yale's <a href="http://zoo.cs.yale.edu/classes/cs422/">CS422: Operating Systems</a> course in Spring 2010,
+during which all twelve students (about half undergraduate, half graduate),
+working in teams of 2–3,
+successfully reimplemented all of PIOS's core components,
+then added features of their own design such as
+lazy cross-node address space migration, VGA graphics,
+and booting from USB on their own laptops.
+
+</p><p>
+Since PIOS has been used only one year so far,
+it is still in an early, experimental state,
+and will continue to evolve in subsequent years.
+But adventurous OS instructors are welcome to give it a try,
+and feedback and improvements are welcome.
+
+</p><h3>PIOS Design Overview</h3>
+
+<img src="pios_files/spaces.png" align="right" border="0">
+
+PIOS consists of a boot loader, a microkernel,
+a user-space runtime embedded in a minimal C library,
+and a set of sample applications,
+all sliced into subsets forming an instructional curriculum as described below.
+The PIOS microkernel implements only four system calls
+(one only for debugging),
+and supervises
+a hierarchy of single-threaded, “shared-nothing” address spaces,
+as illustrated in the figure at right.
+User-level code in these spaces
+execute in parallel on multiple CPUs or multiple nodes in a cluster,
+synchronizing and communicating in a simple parent/child rendezvous
+and virtual memory copy model.
+The kernel extends its API across distributed clusters,
+“mostly transparently,”
+by migrating a user-level space cross-node
+when it needs to rendezvous with a space on a different node.
+
+<p>
+Despite the kernel API's minimality,
+PIOS's user-space runtime builds atop it
+a number of familiar Unix abstractions
+such as fork/wait process management,
+console I/O, a logically shared file system,
+and shared-memory multithreading.
+In doing so, the design of PIOS's runtime
+introduces students
+not only to conventional operating abstractions
+such as files, I/O, and user-space shells,
+but also to some advanced distributed systems techniques
+such as weakly-consistent state replication
+and distributed shared memory.
+PIOS is actually a subset of, and was designed concurrently with,
+<a href="http://dedis.cs.yale.edu/2010/det/">Determinator</a>,
+a research OS for deterministic execution of parallel applications.
+
+
+</p><h3>Instructional Curriculum</h3>
+
+Like JOS,
+the instructor's version of PIOS contains scripts
+to “slice” the reference solution into pieces
+forming a progressive set of OS skeletons,
+one for each of five programming labs,
+in which students fill in key components omitted from the skeleton code.
+Supplied automatic test scripts can also aid in grading.
+The instructor can adjust the amount of code
+supplied to the students in the skeleton
+versus the amount the students must write themselves—and
+hence the difficulty of the programming assignments—by
+inserting or removing ‘<tt>#ifdef</tt>’s
+in the PIOS reference code.
+The labs are currently organized as follows:
+
+<ul>
+<li>	<a href="lab1">Lab 1: Initializing PC Hardware</a>:
+	booting the kernel, printing to the console, understanding the stack,
+	handling processor traps, privilege levels, protected control transfer,
+	and page-based physical memory allocation.
+</li><li>	<a href="lab2/">Lab 2: Processes and Synchronization</a>:
+	using spinlocks in a multiprocessor kernel,
+	scheduling processes on physical CPU cores,
+	system calls for user-space process management and synchronization,
+	preemption, and trap reflection.
+</li><li>	<a href="lab3/">Lab 3: Virtual Memory</a>:
+	managing x86 page tables, loading ELF executables,
+	system call argument copyin/copyout,
+	vi
+</li><li>	<a href="lab5/">Lab 5: Cluster Computing</a>:
+</p><address>Copyright (c) 2010
+<a href="http://www.cs.yale.edu/people/ford.html">Bryan Ford</a>,
+<a href="http://www.cs.yale.edu/">Department of Computer Science</a>,
+<a href="http://www.yale.edu/">Yale University</a>
+</address> 
+
+</body></html>

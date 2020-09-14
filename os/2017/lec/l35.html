@@ -1,0 +1,191 @@
+<title>L35</title>
+<html>
+<head>
+</head>
+<body>
+<h3>Logging</h3>
+
+<p>
+ext3 structures:
+<ul>
+	<li>in-memory write-back block cache
+	<li>in-memory list of blocks to be logged, per-transaction
+	<li>on-disk FS
+	<li>on-disk circular log file
+</ul>
+
+<p>
+what's in the ext3 log?
+<ul>
+	<li>superblock: starting offset and starting seq #
+	<li>descriptor blocks: magic, seq, block #s
+	<li>data blocks (as described by descriptor)
+	<li>commit blocks: magic, seq
+</ul>
+
+<p>
+sys call:
+<ul>
+	<li>h = start()
+	<li>get(h, block #)
+	<ul>
+		<li>warn logging system we'll modify cached block.<br>
+      added to list of blocks to be logged
+		<li>prevent writing block to disk until after xaction commits
+	</ul>
+	<li>modify the blocks in the cache
+	<li>stop(h)
+	<li>guarantee: all or none
+	<li>stop() does *not* cause a commit
+	<li>notice that it's pretty easy to add log calls to existing code
+</ul>
+
+<p>
+is log correct if concurrent syscalls?
+<ul>
+	<li>e.g. create of "a" and "b" in same directory
+	<li>inode lock prevents race when updating directory
+	<li>other stuff can be truly concurrent (touches different blocks in cache)
+	<li>transaction combines updates of both system calls
+</ul>
+
+<p>
+what if a crash?
+<ul>
+	<li>crash may interrupt writing last xaction to log on disk
+	<li>so disk may have a bunch of full xactions, then maybe one partial
+	<li>may also have written some of block cache to disk
+	<ul>
+		<li>but only for fully committed xactions, not partial last one
+	</ul>
+</ul>
+
+<p>
+how does recovery work?
+<ol>
+	<li> find the start and end of the log
+	<ul>
+		<li>log "superblock" at start of log file
+		<li>log superblock has start offset and seq# of first transaction. found start.
+		<li>scan until bad record or not the expected seq #
+		<li>go back to last commit record. found end.
+	</ul>
+	<li> Replay all blocks through last complete xaction, in log order
+</ol>
+
+<p>
+what if block after last valid log block looks like a log descriptor?
+<ul>
+	<li>perhaps left over from previous use of log? It will have the wrong sequence number
+	<li>perhaps some file data happens to look like a descriptor? It will not have the
+	magic number.
+</ul>
+
+<p>
+when can ext3 free a transaction's log space?
+<ul>
+	<li>after cached blocks have been written to FS on disk
+	<li>free == advance log superblock's start pointer/seq
+</ul>
+
+<!--
+what if block in T1 has been dirtied in cache by T2?
+  can't write that block to FS on disk
+  note ext3 only does copy-on-write while T1 is commiting
+    after T1 commit, T2 dirties only block copy in cache
+  so can't free T1 until T2 commits, so block is in log
+    T2's logged block contains T1's changes
+		-->
+
+<p>
+what if not enough free space in log for a syscall?
+<ul>
+	<li>suppose we start adding syscall's blocks to T2
+	<li>half way through, realize T2 won't fit on disk
+	<li>we cannot commit T2, since syscall not done
+  <!--can we free T1 to free up log space?
+  maybe not, due to previous issue, T2 maybe dirtied a block in T1
+	deadlock!-->
+	<li>but can free T1 to free up log space.
+	<li>Log space should be bigger than expected size of a single transaction
+</ul>
+
+<!--solution: reservations
+  syscall pre-declares how many block of log space it might need
+  block the sycall from starting until enough free space
+  may need to commit open transaction, then free older transaction
+    OK since reservations mean all started sys calls can complete + commit
+		-->
+
+<p>
+ext3 not as immediately durable as xv6
+<ul>
+	<li>creat() returns -&gt; maybe data is not on disk! crash will undo it.
+	<li>need fsync(fd) to force commit of current transaction, and wait
+	<li>would ext3 have good performance if commit after every sys call?
+	<ul>
+		<li>would log many more blocks, no absorption
+		<li>10 ms per syscall, rather than 0 ms
+	</ul>
+</ul>
+
+<p>
+what if syscall B reads uncommited result of syscall A?
+<pre>
+  A: echo hi &gt; x &amp;
+  B: ls &gt; y &amp;
+</pre>
+could B commit before A, so that crash would reveal anomaly?
+<ul>
+	<li> case 1: both in same xaction -- ok, both or neither
+	<li> case 2: A in T1, B in T2 -- ok, A will commit first (assuming T1 &lt; T2)
+	<li> case 3: B in T1, A in T2
+	<ul>
+		<li>could B see A's modification?
+		<ul>
+			<li>This is possible if B called <code>start()</code> before A, but called
+		  <code>stop()</code> after A. In this case, B could see A's modification, and
+		  yet be in an earlier transaction.
+		</ul>
+		<li>Solution: ext3 must wait for all ops in prev xaction to finish
+      before letting any in next start,
+			so that ops in old xaction don't read modifications of next xaction.
+			Notice that ops in new xaction can start even if the old xaction has
+			not yet committed.
+	</ul>
+</ul>
+
+<p>
+T2 starts while T1 is committing to log on disk
+<ul>
+	<li>what if syscall in T2 wants to write block in prev xaction?
+	<li>can't be allowed to write buffer that T1 is writing to disk
+	<ul>
+		<li>then new syscall's write would be part of T1
+		<li>crash after T1 commit, before T2, would expose update
+	</ul>
+	<li>T2 gets a separate copy of the block to modify
+	<ul>
+		<li>T1 holds onto old copy to write to log
+	</ul>
+</ul>
+
+<p>
+performance?<br>
+create 100 small files in a directory
+<ul>
+	<li> would take xv6 over 10 seconds (many disk writes per syscall)
+	<li> repeated mods to same direntry, inode, bitmap blocks in cache
+	<ul>
+		<li>write absorbtion...
+	</ul>
+	<li>then one commit of a few metadata blocks plus 100 file blocks
+	<li>how long to do a commit?
+	<ul>
+		<li>seq write of 100*4096 at 50 MB/sec: 10 ms
+		<li>wait for disk to say writes are on disk
+		<li>then write the commit record
+		<li>that wastes one revolution, another 10 ms
+		<li>modern disk interfaces can avoid wasted revolution
+	</ul>
+</ul>

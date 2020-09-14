@@ -1,0 +1,822 @@
+<html>
+<head>
+<title>Homework 2</title>
+<link rel="stylesheet" href="../labs.css" type="text/css" />
+</head>
+<body>
+
+<h2><a href="..">Operating Systems</a></h2>
+<hr>
+
+<h1>Homework 2</h1>
+[total 14 marks]
+
+<p>
+<b>Hand-In Procedure</b>
+<p>
+You are to turn in this homework before the lecture begins. Please
+drop your homework in a cardboard box near to the lecture podium. Your
+homework must be hand-written (typed homeworks will not be accepted).
+
+
+
+
+<h2>Assignment : Examine PC state at startup</h2>
+[7 marks]<br>
+<h3>The PC's Physical Address Space</h3>
+<p>
+We will dive into a bit more detail
+about how a PC starts up.
+A PC's physical address space is hard-wired
+to have the following general layout:
+</p>
+
+<table align="center"><tr><td>
+<pre>
++------------------+  &lt;- 0xFFFFFFFF (4GB)
+|      32-bit      |
+|  memory mapped   |
+|     devices      |
+|                  |
+/\/\/\/\/\/\/\/\/\/\
+
+/\/\/\/\/\/\/\/\/\/\
+|                  |
+|      Unused      |
+|                  |
++------------------+  &lt;- depends on amount of RAM
+|                  |
+|                  |
+| Extended Memory  |
+|                  |
+|                  |
++------------------+  &lt;- 0x00100000 (1MB)
+|     BIOS ROM     |
++------------------+  &lt;- 0x000F0000 (960KB)
+|  16-bit devices, |
+|  expansion ROMs  |
++------------------+  &lt;- 0x000C0000 (768KB)
+|   VGA Display    |
++------------------+  &lt;- 0x000A0000 (640KB)
+|                  |
+|    Low Memory    |
+|                  |
++------------------+  &lt;- 0x00000000
+</pre>
+</td></tr>
+</table>
+
+<p>
+The first PCs,
+which were based on the 16-bit Intel 8088 processor,
+were only capable of addressing 1MB of physical memory.
+The physical address space of an early PC
+would therefore start at 0x00000000
+but end at 0x000FFFFF instead of 0xFFFFFFFF.
+The 640KB area marked "Low Memory"
+was the <i>only</i> random-access memory (RAM) that an early PC could use;
+in fact the very earliest PCs only could be configured with
+16KB, 32KB, or 64KB of RAM!
+</p>
+
+<p>
+The 384KB area from 0x000A0000 through 0x000FFFFF
+was reserved by the hardware for special uses
+such as video display buffers
+and firmware held in non-volatile memory.
+The most important part of this reserved area
+is the Basic Input/Output System (BIOS),
+which occupies the 64KB region from 0x000F0000 through 0x000FFFFF.
+In early PCs the BIOS was held in true read-only memory (ROM),
+but current PCs store the BIOS in updateable flash memory.
+The BIOS is responsible for performing basic system initialization
+such as activating the video card and checking the amount of memory installed.
+After performing this initialization,
+the BIOS loads the operating system from some appropriate location
+such as floppy disk, hard disk, CD-ROM, or the network,
+and passes control of the machine to the operating system.
+</p>
+
+<p>
+When Intel finally "broke the one megabyte barrier"
+with the 80286 and 80386 processors,
+which supported 16MB and 4GB physical address spaces respectively,
+the PC architects nevertheless preserved the original layout
+for the low 1MB of physical address space
+in order to ensure backward compatibility with existing software.
+Modern PCs therefore have a "hole" in physical memory
+from 0x000A0000 to 0x00100000 (display buffers and non-volatile memory,
+see above),
+dividing RAM into "low" or "conventional memory" (the first 640KB)
+and "extended memory" (everything else).
+In addition,
+some space at the very top of the PC's 32-bit physical address space,
+above all physical RAM,
+is now commonly reserved by the BIOS
+for use by 32-bit PCI devices.
+
+<p>
+More recently, with the introduction of PCs
+that can address more than 4GB of physical RAM via 64-bit physical addresses,
+the PC architecture has effectively acquired a <i>second</i> hole
+at the top of 32-bit address space,
+where some 32-bit I/O devices are typically mapped,
+and physical RAM continues beyond this point in 64GB address space.
+In multiprocessor and multicore PCs, for example,
+this region at the top of 32-bit address space
+contains mappings of the Advanced Programmable Interrupt Controllers (APICs),
+which different processors use to signal each other
+and distribute I/O device interrupts among processors.
+See the Intel architecture manuals
+and the <a href="../ref/ia32-mp.pdf">Intel MultiProcessor Specification</a>
+for more information about APICs and multiprocessors.
+Dealing with complicated physical address spaces
+and other aspects of hardware organization
+that evolved over many years
+is one of the important practical challenges of OS development.
+</p>
+
+
+<h3>The ROM BIOS</h3>
+
+<p>You will now use QEMU's debugging facilities to
+investigate how a PC boots.</p>
+
+<p>First open two terminal windows,
+and run <kbd>make qemu-gdb</kbd> in one and <kbd>gdb</kbd> in the other
+to debug xv6 remotely,
+as described in the previous homework assignment.
+This time let's look more closely at GDB's output
+immediately after it connects to the QEMU process running xv6:
+
+<pre>
+$ <kbd>gdb</kbd>
+GNU gdb (GDB; openSUSE 11.1) 6.8.50.20081120-cvs
+...
++ target remote localhost:27296
+0x0000fff0 in ?? ()
+The target architecture is assumed to be i8086
+[f000:fff0] 0xffff0:	ljmp   $0xf000,$0xe05b
+(gdb)
+</pre>
+
+<p>The following line is GDB's disassembly
+of the first instruction to be executed.
+<pre>
+[f000:fff0] 0xffff0:	ljmp   $0xf000,$0xe05b
+</pre>
+
+<p>
+From this output you can conclude a few things: 
+
+<ul>
+<li>	The IBM PC starts executing at physical address 0x000ffff0,
+	which is at the very top of the 64KB area reserved for the ROM BIOS.</li>
+
+<li>	The PC starts executing
+	with <tt>CS = 0xf000</tt> and <tt>IP = 0xfff0</tt>.</li>
+
+<li>	The first instruction to be executed is a <tt>jmp</tt> instruction,
+	which jumps to the segmented address
+	<tt>CS = 0xf000</tt> and <tt>IP = 0xe05b</tt>.</li>
+</ul>
+
+<p>
+Why does QEMU start like this?
+This is how Intel designed the 8088 processor,
+which IBM used in their original PC.
+Because the BIOS in a PC is "hard-wired"
+to the physical address range 0x000f0000-0x000fffff,
+this design ensures that the BIOS always gets control of the machine first
+after power-up or any system restart -
+which is crucial because on power-up
+there <i>is</i> no other software anywhere in the machine's RAM
+that the processor could execute.
+The QEMU emulator comes with its own BIOS,
+which it places at this location
+in the processor's simulated physical address space.
+On processor reset,
+the (simulated) processor enters real mode
+and sets CS to 0xf000 and the IP to 0xfff0, so that
+execution begins at that (CS:IP) segment address.
+
+<p>
+How does the segmented address 0xf000:fff0
+turn into a physical address?
+To answer that we need to know a bit about real mode addressing.
+In real mode (the mode that PC starts off in),
+address translation works according to the formula:
+<i>physical address</i> = 16 * <i>segment</i> + <i>offset</i>.
+So, when the PC sets CS to 0xf000 and IP to
+0xfff0, the physical address referenced is:</p>
+
+<pre>
+   16 * 0xf000 + 0xfff0   # in hex multiplication by 16 is
+   = 0xf0000 + 0xfff0     # easy--just append a 0.
+   = 0xffff0 
+</pre>
+
+<p>
+<tt>0xffff0</tt> is 16 bytes before the end of the BIOS (<tt>0x100000</tt>).
+Therefore we shouldn't be surprised that the
+first thing that the BIOS does is <tt>jmp</tt> backwards
+to an earlier location in the BIOS; after all
+how much could it accomplish in just 16 bytes?
+</p>
+
+Use GDB's <kbd>si</kbd> (Step Instruction) command
+to trace into the ROM BIOS
+for a few more instructions,
+and try to guess what it might be doing.
+You might want to look at
+<a href="http://web.archive.org/web/20040404164813/members.iweb.net.au/~pstorr/pcbook/book2/book2.htm">Phil Storrs I/O Ports Description</a>,
+as well as other materials on the
+<a href="../reference.html">reference materials page</a>.
+No need to figure out all the details -
+just the general idea of what the BIOS is doing first.
+
+<div class="required">
+<p><span class="header">Turn in:</span>
+a disassembly of the BIOS from the target of the initial <code>jmp</code>
+up to the next control transfer instruction.
+
+<p>
+Since GDB has no source code line information about the BIOS,
+it will complain if you try to use the '<kbd>l</kbd>' (list) command,
+or even the simple '<kbd>disas</kbd>' (disassemble) command
+with zero or one operand,
+since it will look for a C function in the xv6 kernel
+corresponding to this instruction address and of course not find any.
+To examine "raw instructions" for which GCC has source code information
+(besides the immediate next instruction to be executed,
+which GDB prints automatically), you use the
+<kbd>x/i</kbd> command.  This command has the syntax
+<kbd>x/<i>N</i>i <i>ADDR</i></kbd>, where <i>N</i> is the
+number of consecutive instructions to disassemble and <i>ADDR</i> is the
+memory address at which to start disassembling.
+</div>
+
+<p>
+When the BIOS runs,
+it sets up an interrupt descriptor table
+and initializes various devices such as the VGA display.
+This is where the "<tt>Plex86/Bochs VGABios</tt>" messages
+you see in the QEMU window come from.
+
+<p>
+After initializing the PCI bus
+and all the important devices the BIOS knows about,
+it searches for a bootable device
+such as a floppy, hard drive, or CD-ROM.
+Eventually, when it finds a bootable disk,
+the BIOS reads the <i>boot loader</i> from the disk
+and transfers control to it.
+</p>
+
+<h3>The Boot Loader</h3>
+
+<p>Floppy and hard disks for PCs are
+divided into 512 byte regions called <i>sectors</i>.
+A sector is the disk's minimum transfer granularity:
+each read or write operation must be one or more sectors in size
+and aligned on a sector boundary.
+If the disk is bootable,
+the first sector is called the <i>boot sector</i>,
+since this is where the boot loader code resides.
+When the BIOS finds a bootable floppy or hard disk,
+it loads the 512-byte boot sector
+into memory at physical addresses 0x7c00 through 0x7dff,
+and then uses a <tt>jmp</tt> instruction
+to set the CS:IP to <tt>0000:7c00</tt>,
+passing control to the boot loader.
+Like the BIOS load address,
+these addresses are fairly arbitrary -
+but they are fixed and standardized for PCs.
+</p>
+
+<p>
+The ability to boot from a CD-ROM came much later
+during the evolution of the PC,
+and as a result the PC architects took the opportunity
+to rethink the boot process slightly.
+As a result,
+the way a modern BIOS boots from a CD-ROM
+is a bit more complicated (and more powerful).
+CD-ROMs use a sector size of 2048 bytes instead of 512,
+and the BIOS can load a much larger boot image from the disk into memory
+(not just one sector)
+before transferring control to it.
+For more information, see the
+<a href="../ref/boot-cdrom.pdf"
+	>"El Torito" Bootable CD-ROM Format Specification</a>.
+</p>
+
+<p>
+For this course, however,
+we will use the conventional hard drive boot mechanism,
+which means that our boot loader must fit into a measly 512 bytes.
+The xv6 boot loader consists of
+one assembly language source file, <tt>bootasm.S</tt>,
+and one C source file, <tt>bootmain.c</tt>
+Look through these source files carefully
+and make sure you understand what's going on.
+The boot loader must perform two main functions:
+</p>
+
+<ol>
+<li>	First, the boot loader switches the processor from real mode to
+	<i>32-bit protected mode</i>,
+	because it is only in this mode
+	that software can access all the memory above 1MB
+	in the processor's physical address space.
+	Protected mode is described briefly
+	in sections 1.2.7 and 1.2.8 of
+	<a href="../ref/pcasm-book.pdf">PC Assembly Language</a>,
+	and in great detail in the Intel architecture manuals.
+	At this point you only have to understand
+	that translation of segmented addresses (segment:offset pairs)
+	into physical addresses happens differently in protected mode,
+	and that after the transition
+	offsets are 32 bits instead of 16.</li>
+
+<li>	Second, the boot loader reads the kernel from the hard disk
+	by directly accessing the IDE disk device registers
+	via the x86's special I/O instructions.
+	If you would like to understand better
+	what the particular I/O instructions here mean,
+	check out the "IDE hard drive controller" section
+	on <a href="../reference.html">the reference page</a>.
+	You will not need to learn much
+	about programming specific devices in this class:
+	writing device drivers is in practice
+	a very important part of OS development,
+	but from a conceptual or architectural viewpoint
+	it is also one of the least interesting.</li>
+</ol>
+
+<p>
+After you understand the boot loader source code,
+look at the file <tt>bootblock.asm</tt>.
+This file is a disassembly of the boot loader
+that xv6's Makefile creates <i>after</i> compiling the boot loader.
+This disassembly file makes it easy to see
+exactly where in physical memory all of the boot loader's code resides,
+and makes it easier to track what's happening
+while stepping through the boot loader in GDB.
+</p>
+
+<p>
+You can set address breakpoints at arbitrary instructions
+in GDB with the <tt>b</tt> command:
+for example, <kbd>b *0x7c00</kbd> sets a
+breakpoint at address 0x7C00.  Once at a breakpoint, you can continue
+execution using the <kbd>c</kbd> and
+<kbd>si</kbd> commands: <kbd>c</kbd> causes
+QEMU to continue execution until the next breakpoint (or until you press
+<kbd>Ctrl-C</kbd> in GDB), and <kbd>si
+<i>N</i></kbd> steps through the instructions <i><tt>N</tt></i> at a time.
+</p>
+
+<p>
+Set a breakpoint at address 0x7c00, which is
+where the boot sector will be loaded.
+Continue execution until that break point.
+Trace through the execution of <tt>bootasm.S</tt> under GDB,
+referring to the source code and the disassembly file
+<tt>bootblock.asm</tt> to keep track of where you are.
+Also use the <tt>x/i</tt> command in GDB to disassemble
+sequences of instructions in the boot loader,
+and compare the original boot loader source code
+with both the disassembly in <tt>obj/boot/boot.asm</tt>
+and GDB.
+</p>
+
+<p>
+Then trace into <tt>bootmain()</tt> in <tt>bootmain.c</tt>,
+and then into <tt>readsect()</tt>.
+Identify the exact assembly instructions
+that correspond to each of the statements in <tt>readsect()</tt>.
+Trace through the rest of <tt>readsect()</tt>
+and back out into <tt>bootmain()</tt>,
+and identify the begin and end of the <tt>for</tt> loop
+that reads the remaining sectors of the kernel from the disk.
+Find out what code will run when the loop is finished,
+set a breakpoint there, and continue to that breakpoint.
+Then step through the remainder of the boot loader.
+
+<p>
+Be able to answer the following questions:
+</p>
+<ul>
+<li>	At what point does the processor start executing 32-bit code?
+	What exactly causes the switch from 16- to 32-bit mode?</li>
+<li>	What is the <i>last</i> instruction of the boot loader executed,
+	and what is the <i>first</i> instruction of the kernel it just loaded?</li>
+<li>	How does the boot loader decide how many sectors it must read
+	in order to fetch the entire kernel from disk?
+	Where does it find this information?</li>
+</ul>
+
+<div class="required">
+<p><span class="header">Turn in:</span>
+the values of the CS and EIP registers
+immediately before and after the processor executes
+the <code>ljmp</code> instruction in <tt>bootasm.S</tt>
+where the boot code jumps to a 32-bit code segment.
+Be sure you understand what they mean.
+Hint: GDB's '<kbd>info reg</kbd>' command may be useful.
+</p></div>
+
+<h3> Pointers in C</h3>
+<p>
+We will next look in further detail
+at the C language portion of the boot loader,
+in <tt>bootmain.c</tt>,
+which loads the kernel.
+But to understand this code thoroughly,
+it will be helpful to stop and review
+some of the basics of C programming.
+
+<p>
+Read about programming with pointers in C.
+The best reference
+for the C language is <i>The C Programming Language</i>
+by Brian Kernighan and Dennis Ritchie (known as 'K&amp;R').  
+It is recommended, you purchase this book.
+Read 5.1 (Pointers and Addresses) through 5.5 (Character Pointers
+and Functions) in K&amp;R.
+Then download the code for
+<a href="hw2-pointers.c">hw2-pointers.c</a>, run it, and make sure you
+understand where all of the printed values come from.  In particular,
+make sure you understand where the pointer addresses in lines 1 and
+6 come from, how all the values in output lines 2 through 4 get there, and
+why the values printed in line 5 are seemingly corrupted.
+
+<p> There are other references on pointers in C available online,
+though not as definitive, such as
+<a href="../ref/pointers.pdf">a tutorial by Ted Jensen</a>,
+and the Pointers section in Marshall's
+<a href="http://www.cs.cf.ac.uk/Dave/C/CE.html"><i
+	>Programming in C</i></a>.
+
+<p>
+<b><i>Warning:</i></b>
+Unless you are already thoroughly versed in C,
+do not skip or even skim this reading exercise.
+If you do not really understand pointers in C,
+you will suffer untold pain and misery later in this course,
+and then eventually come to understand them the hard way.
+Trust us; you don't want to find out what "the hard way" is.
+
+<div class="required">
+<p><span class="header">Turn in:</span>
+a diagram of the x86 memory layout of the `<code>int a[4]</code>' array
+from the <a href="hw2-pointers.c">l10-hw3-pointers.c</a> program.
+Show the contents of the array
+as a sequence of <i>bytes</i> (not <code>int</code>s!),
+and show the exact values of each byte in this array
+immediately before the statement
+'<samp>c = (int *) ((char *) c + 1);</samp>'
+at line 32,
+and immediately after the statement
+'<samp>*c = 500;</samp>'
+at line 33 in the program.
+Circle the bytes of the array that this statement changed.
+You may find a calculator with hex/decimal conversion capability
+helpful:
+e.g., <kbd>gcalctool</kbd> or <kbd>kcalc</kbd>.
+</div>
+
+
+<h3> Loading the Kernel </h3>
+
+<p>
+To make sense out of <tt>bootmain.c</tt>
+you'll need to know what an ELF binary is.
+When you compile and link a C program such as the xv6 kernel,
+the compiler transforms each C source ('<tt>.c</tt>') file
+into an <i>object</i> ('<tt>.o</tt>') file
+containing assembly language instructions
+encoded in the binary format expected by the hardware.
+The linker then combines all of the compiled object files
+into a single <i>binary image</i> such as <tt>kernel</tt>,
+which in this case is a binary in the ELF format,
+which stands for "Executable and Linkable Format".
+</p>
+
+<p>
+Full information about this format is available in
+<a href="../ref/elf.pdf">the ELF specification</a>
+on <a href="../reference.html">our reference page</a>,
+but you will not need to delve very deeply
+into the details of this format in this class.
+Although as a whole the format is quite powerful and complex,
+most of the complex parts are for supporting
+dynamic loading of shared libraries,
+which we will not do.
+</p>
+
+<p>
+For purposes of this course,
+you can consider an ELF executable to be
+a header with loading information,
+followed by several <i>program sections</i>,
+each of which is a contiguous chunk of code or data
+intended to be loaded into memory at a specified address.
+The boot loader does not modify the code or data; it
+loads it into memory and starts executing it.
+</p>
+
+<p>
+An ELF binary starts with a fixed-length <i>ELF header</i>,
+followed by a variable-length <i>program header</i>
+listing each of the program sections to be loaded.
+The C definitions for these ELF headers are in <tt>inc/elf.h</tt>.
+The program sections we're interested in are:
+</p>
+<ul>
+<li>	<tt>.text</tt>:
+	The program's executable instructions.</li>
+<li>	<tt>.rodata</tt>:
+	Read-only data,
+	such as ASCII string constants produced by the C compiler.
+	(We will not bother setting up the hardware to prohibit writing,
+	however.)</li>
+<li>	<tt>.data</tt>:
+	The data section holds the program's initialized data,
+	such as global variables declared with initializers
+	like <tt>int x = 5;</tt>.</li>
+</ul>
+
+<p>
+When the linker computes the memory layout of a program,
+it reserves space for <i>uninitialized</i> global variables,
+such as <tt>int x;</tt>,
+in a section called <tt>.bss</tt>
+that immediately follows <tt>.data</tt> in memory.
+C requires that "uninitialized" global variables start with
+a value of zero.
+Thus there is no need to store contents for <tt>.bss</tt>
+in the ELF binary; instead, the linker records just the address and
+size of the <tt>.bss</tt> section.
+The loader or the program itself must arrange to zero the
+<tt>.bss</tt> section.
+</p>
+
+<p>
+You can display a full list of the names, sizes, and link addresses
+of all the sections in the kernel executable by typing:
+</p>
+
+<pre>
+$ <kbd>objdump -h kernel</kbd>
+</pre>
+
+<p>
+You will see many more sections than the ones we listed above,
+but the others are not important for our purposes.
+Most of the others are to hold debugging information,
+which is typically included in the program's executable file
+but not loaded into memory by the program loader.
+</p>
+
+<p>
+Besides the section information,
+there is one more field in the ELF header that is important to us,
+named <tt>e_entry</tt>.
+This field holds the link address
+of the <i>entry point</i> in the program:
+the memory address in the program's text section
+at which the program should begin executing.
+You can see the entry point:
+</p>
+
+<pre>
+$ <kbd>objdump -f kernel</kbd>
+</pre>
+
+<p>
+To examine memory in GDB, you use the <kbd>x</kbd> command
+with different arguments.  The
+<a href="http://www.gnu.org/software/gdb/documentation/">GDB manual</a>
+has full details.  For now, it is enough to know that the recipe
+<kbd>x/<i>N</i>x <i>ADDR</i></kbd> prints <i><tt>N</tt></i>
+words of memory at <i><tt>ADDR</tt></i>.  (Note that both '<tt>x</tt>'s in
+the command are lowercase.)
+</p>
+
+<p>
+<i>Warning</i>: The size of a word is not a universal standard.
+In GNU assembly, a word is two
+bytes (the 'w' in xorw, which stands for word, means 2 bytes).
+</p>
+
+<div class="required">
+<p><span class="header">Turn in:</span>
+	Reset the machine (exit QEMU/GDB and start them again).
+	Examine the 8 words of memory at 0x00100000 
+	at the point the BIOS enters the boot loader,
+	and then again at the point the boot loader enters the kernel.
+	Why are they different?
+	What is there at the second breakpoint?
+	(You do not really need to use QEMU to answer this question;
+	just think.)
+</p></div>
+
+</body>
+</html>
+
+<p><h2>Assignment : Variable Naming</h2>
+[3 marks]<br>
+Consider the following function:
+<pre>
+int32_t global;
+
+int32_t foo(int32_t a, int32_t *b) {
+  int32_t c;
+
+  c = global + a;
+  
+  return *(b + c);
+}
+</pre>
+Assume that the variable <code>global</code> is allocated at a
+global address <code>0x12345</code>.
+<br>
+<i>Turn in</i>: Write the assembly code
+for this function, with proper comments on which assembly code lines
+are implementing which C statement. Assume GCC calling conventions. You will
+need to be careful about properly naming all variables
+and arguments (e.g., using global addresses, stack offsets or frame pointer
+offsets), use proper opcodes and addressing modes, obey caller and callee-save
+conventions, etc.
+
+<p><h2>Assignment : Caller and Callee saved registers</h2>
+[2 marks]<br>
+<p>
+To implement function calls, typically compilers use conventions
+about which registers to save. Some registers are saved
+by the <i>caller</i> (before the <code>call</code> instruction) and
+some registers are saved by the <i>callee</i> (in the function body).
+For example, <code>gcc</code> follows the following convention
+on x86:
+<ul>
+	<li> %eax, %ecx, %edx are "caller save" registers (saved by caller)
+	<li> %ebp, %ebx, %esi, %edi are "callee save" registers (saved by callee)
+</ul>
+<i>Turn in</i>: Why is a convention needed?<br>
+Give an example of a program where using the convention of
+caller and callee saved registers helps in reducing the number
+of saves and restores of registers during function calls.
+What should the compiler be careful about to maximize this
+optimization opportunity? <em>Hint</em>: Are the values of all
+registers useful (i.e., will they be used in future). If a value
+in a register will be used in subsequent instructions, that register is called <em>live</em>.
+If a value in a register will not be used in future (e.g., it will get
+overwritten by another value), that register is called <em>dead</em>.
+Can the caller save only live registers and ignore dead registers? What
+about callee? How does splitting into caller-saved and
+callee-saved registers improve this optimization opportunity? For example,
+which registers should the caller try to use first for storing its temporary
+values? Similarly, which registers should the callee try to use first for
+storing its temporary values?
+Why?)
+
+<p><h2>Assignment : Fastest implementation while respecting calling conventions</h2>
+[2 marks]<br>
+<li>Look at the following program:
+	<ul>
+	<li>C code
+		<pre>
+		int main(void) { return f(8)+1; }
+		int f(int x) { return g(x); }
+		int g(int x) { return x+3; }
+		</pre>
+	<li>assembler
+		<pre>
+		_main:
+					<i>prologue</i>
+			pushl %ebp
+			movl %esp, %ebp
+					<i>body</i>
+			pushl $8
+			call _f
+			addl $1, %eax
+					<i>epilogue</i>
+			movl %ebp, %esp
+			popl %ebp
+			ret
+		_f:
+					<i>prologue</i>
+			pushl %ebp
+			movl %esp, %ebp
+					<i>body</i>
+			pushl 8(%esp)
+			call _g
+					<i>epilogue</i>
+			movl %ebp, %esp
+			popl %ebp
+			ret
+
+		_g:
+					<i>prologue</i>
+			pushl %ebp
+			movl %esp, %ebp
+					<i>save %ebx</i>
+			pushl %ebx
+					<i>body</i>
+			movl 8(%ebp), %ebx
+			addl $3, %ebx
+			movl %ebx, %eax
+					<i>restore %ebx</i>
+			popl %ebx
+					<i>epilogue</i>
+			movl %ebp, %esp
+			popl %ebp
+			ret
+		</pre>
+	</ul>
+
+<li>Super-small <tt>_g</tt>:
+	<pre>
+		_g:
+			movl 4(%esp), %eax
+			addl $3, %eax
+			ret
+	</pre>
+
+<li><b>Turn in:</b> Shortest <tt>_f</tt>? Simply write the shortest code for <tt>_f</tt> which satisfies the calling conventions.
+
+<p><h2>Assignment : Thread priorities and spinlocks</h2>
+[0 marks]<br>
+On a linux shell, try using <code>nice</code> to decrease the
+scheduling priority of
+a process (<code>man nice</code> for documentation).
+To see the high priority processes in your system, type
+<code>ps ax</code> and look for processes
+with "<code>&lt;</code>" character. Look at some of the processes,
+and reason about why they may need higher priority.
+<p>
+Nothing to turn in for this sub-part.
+
+<p><h2>Assignment : fork, caching, and file-descriptor inheritance</h2>
+[0 marks] (this part is optional)<br>
+<p>
+Consider the following C program:
+<pre>
+for (int i = 0; i < 4; i++) {
+  fork();
+  write(1, "hello\n", 6);
+}
+</pre>
+What gets printed? How many times? Can you write a recurrence relation to compute how many times, the characters will be printed for an arbitrary n (in this example, n = 4), in terms of the number of characters printed for (n-1).
+e.g., T(n) = 2*(....(T(n-1))
+
+<p>Now, replace the program above with
+<pre>
+for (int i = 0; i < 4; i++) {
+  fork();
+  printf("hello\n");
+}
+</pre>
+What gets printed? How many times?
+
+<p>Now, redirect the output to a file, e.g.,
+<pre>
+./a.out > out.txt
+</pre>
+(assuming <code>a.out</code> is the compiled executable).<br>
+Also, try redirecting the output to a pipe, e.g.,
+<pre>
+./a.out | wc -l
+</pre>
+
+<p>Try running a few times, in each configuration. What do you find?
+<em>Surprise</em>: the number of times, the characters get printed is non-deterministic and more than the number of times they were printed for the previous program!  Also, the number of characters printed differs, depending on the type of the output file descriptor (e.g., console vs. file out.txt vs. pipe). What could explain this?
+
+<p>You may have to look inside the implementation of the <code>printf()</code> function, to see what may be happening. This is subtle, and you may enjoy exploring this on your own. If you are unable to find the answer, we can share the answer at the end of the course with you (after majors). Till then, keep thinking.
+
+<!--<li> Spinlocks don't block the thread if the lock is already
+acquired by
+another thread. Instead the second thread trying
+to acquire the lock just "spins" till the lock is available,
+hence consuming CPU resources.
+On a uniprocessor machine, what can happen if a higher priority
+thread tries to acquire
+a spinlock which is already held by a lower priority thread?-->
+</ul>
+
+<!--
+<p><h2>Assignment : A20 line : optional (will not be graded)</h2></p>
+<i>This part of the homework is optional.</i><br>
+[0 marks]<br>
+<p>
+Look at <code>bootasm.S</code> (Sheet 82) labels <code>seta20.1</code>
+and <code>seta20.2</code>. What is this A20 line on x86 - explain why it
+was needed and what is this code trying to do?
+-->
+
+
+</body>
+</html>
+

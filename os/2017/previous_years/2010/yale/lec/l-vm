@@ -1,0 +1,197 @@
+<html>
+<head>
+<title>Virtual Machines</title>
+</head>
+
+<body>
+
+<h1>Virtual Machines</h1>
+
+<p>Required
+reading: <a href="http://www.vmware.com/pdf/asplos235_adams.pdf">A
+comparison of software and hardware techniques for x86
+virtualizaton</a>Keith Adams and Ole Agesen, ASPLOS 2006</p>
+
+
+<h2>Overview</h2>
+<pre>
+what's a virtual machine?
+  accurate simulation of a computer (like Bochs)
+  directly on the real computer's CPU + memory (faster than Bochs)
+why use a VM?
+  one computer, multiple operating systems (OSX and Windows)
+  development environment (like Bochs)
+  better fault isolation: contain break-ins
+  manage big machines (allocate CPUs/memory at o/s granularity)
+  simplify o/s development (Disco)
+Disco led to VMware, which started modern popularity of VMs
+terminology
+  guest o/s vs VMM
+  virtual state vs real state
+want to execute guest instructions on real CPU when possible
+  works fine for most instructions
+  e.g. add %eax, %ebx
+  here there's no separate virtual %eax, just using real registers
+  fast!
+why not load JOS into a user-space process on Linux and run it?
+  _start executes lgdt
+    would modify *real* state
+    but DPLs in guest descriptors have DPL=0 -- would crash since CPL=3
+    luckily lgdt forbidden when cpl=3 => trap to VMM
+    VMM might copy GDT somewhere, fix DPLs, lgdt on shadow copy
+this is the basic technique for making VMs
+  need to have virtual state != physical state
+  trap on instructions that write / read real state
+  VMM translates, executes real instruction
+</pre>
+
+<h2>Virtualizing the x86</h2>
+<pre>
+how could we virtualize the x86?
+  like VMware, Parallels, Microsoft Virtual PC
+how shall we give guest illusion of physical memory?
+  can't allow direct access, but must look like mem from PA=0..size
+  use some range of real phys mem
+  real page table will map 0..size to that range
+what CPL should we use for guest o/s?
+  can't use 0: we can't get traps for e.g. lgdt
+  can't use 1 or 2: can then read any page (e.g. VMM's pages)
+  so guest o/s AND user programs at CPL=3
+what real state do we have to hide (i.e. != virtual state)?
+  real physical memory
+  CPL (low bits of CS) since it is 3, guest expecting 0
+  gdt descriptors (DPL 3, not 0)
+  gdtr (pointing to shadow gdt)
+  idt descriptors (traps go to VMM, not guest o/s)
+  idtr
+  pagetable (doesn't map to expected physical addresses)
+  %cr3 (points to shadow pagetable)
+  control flags: IF &c in EFLAGS, %cr0, &c
+can we hide the real state from the guest?
+  do all instructions that read/write sensitive state cause traps?
+  push %cs will show CPL=3, not 0
+  sgdt reveals real GDTR
+  pushf pushes real IF
+    suppose guest turned IF off
+    VMM will leave real IF on, just defer interrupts to guest
+  popf ignores IF if CPL=3, no trap
+    so VMM won't know if guest o/s wants interrupts
+  IRET no ring change so won't restore restore SS/ESP 
+how can we cope with non-trapping instructions that reveal real state?
+  rewrite guest code, change them to INT 3, which traps
+  keep track of original instruction, emulate in VMM
+  INT 3 is one byte, so doesn't change code size/layout
+how does rewriter know where instruction boundaries are?
+  or whether bytes are code or data?
+  scan only as executed, since execution reveals instr boundaries
+  original start of kernel (making up these instructions):
+  entry:
+    pushl %ebp
+    ...
+    popf
+    ...
+    jnz x
+    ...
+    jxx y
+  x:
+    ...
+    jxx z
+  when VMM first loads guest kernel, translate from entry to first jump
+    replace bad instrs (popf) with int3
+    replace jump with int3
+    then start the guest kernel
+  on int3 trap to VMM
+    look where the jump could go (now we know the boundaries)
+    for each branch, xlate until first jump again
+    replace int3 w/ original branch
+    re-start
+  keep track of what we've translated, so we don't do it again
+indirect jumps?
+  same, but probably can't replace with a real jump
+  since we're not sure address will be the same next time
+  so must take a trap every time
+what if guest reads or writes its own code?
+  can't set up PTE for X but no R
+  perhaps make CS != DS
+  put translated code in CS
+  put original code in DS
+  write-protect original code pages
+  on write trap
+    emulate write
+    find all jumps to modified code
+    re-translate starting at those entry points
+VMware avoids many faults 
+  re-writing w/ VMM code, rather than int3
+  often faster than non-VM o/s, e.g. cli vs setting a flag in virt state
+  but then code size and fn addresses change
+  how does VMware hide e.g. return EIPs?
+do we need to rewrite guest user-level code?
+  technically yes: SGDT, IF
+  but probably not in practice
+  user code only does INT, which traps to VMM
+how to handle pagetable?
+  VMM must modify phys addrs in PTEs
+  simple plan:
+    trap on writes to %cr3
+    copy entire page table to VMM memory: shadow pagetable
+    fix the phys addrs in PTEs
+    load %cr3 to point to shadow pagetable
+  what if guest o/s writes a PTE?
+    must immediately be reflected to real pagetable
+    VMM must write-protect guest's PTE pages
+  what if too slow to scan entire pagetable after every %cr3 load?
+    i.e. on every process switch
+  could start w/ empty real page table (just VMM mappings)
+    look at guest pagetable on demand, driven by page faults
+  could cache entire page tables
+    guest o/s probably switching among fairly static per-process tables
+    VMM could learn where they are in guest memory
+  nasty tradeoff
+    if you pre-compute/cache, fault for every guest table write
+    if lazy, lots of page faults to populate shadow pagetable
+  need to reflect dirty/accessed bits back to guest pagetable
+    when? how lazy can we be?
+    could take a trap on first read and first write of each data page
+    could take a trap on guest o/s reads of its page table
+  how to guard guest kernel against writes by guest programs?
+    both are at CPL=3
+    delete kernel PTEs on IRET, re-install on INT?
+what shall we do about devices?
+  trap INB and OUTB
+  DMA addresses are physical, VMM must translate and check
+  rarely makes sense for guest to use real device
+    want to share w/ other guests
+    each guest gets a part of the disk
+    each guest looks like a distinct Internet host
+    each guest gets an X window
+  VMM might mimic some standard ethernet or disk controller
+    regardless of actual h/w on host computer
+  or guest might run special drivers that jump to VMM
+</pre>
+
+<h2>Paper discussion</h2>
+
+
+
+<h2>Related papers</h2>
+
+<p>John Scott Robin, Cynthia E. Irvine. <a
+href="http://www.cs.nps.navy.mil/people/faculty/irvine/publications/2000/VMM-use
+nix00-0611.pdf">Analysis of the
+Intel Pentium's Ability to Support a Secure Virtual Machine
+Monitor</a>.</p>
+
+<p>Jeremy Sugerman,  Ganesh Venkitachalam, Beng-Hong Lim. <a
+href="http://www.vmware.com/resources/techresources/530">Virtualizing
+I/O Devices on VMware Workstation's Hosted Virtual Machine
+Monitor</a>. In Proceedings of the 2001 Usenix Technical Conference.</p>
+
+<p>Kevin Lawton, Drew Northup. <a
+href="http://savannah.nongnu.org/projects/plex86">Plex86 Virtual
+Machine</a>.</p>
+
+<p><a href="http://www.cl.cam.ac.uk/netos/papers/2003-xensosp.pdf">Xen
+and the Art of Virtualization</a>, Paul Barham, Boris
+Dragovic, Keir Fraser, Steven Hand, Tim Harris, Alex Ho, Rolf
+Neugebauer, Ian Pratt, Andrew Warfield, SOSP 2003</p>
+

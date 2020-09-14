@@ -1,0 +1,342 @@
+<title>L4</title>
+<html>
+<head>
+</head>
+<body>
+
+<h1>Processes</h1>
+
+<p>This lecture is about the first process in xv6.
+
+<h2>Processes</h2>
+
+<ul>
+<li>Recall the goals of processes:
+<ul>
+<li>Give each process a private memory area for code, data, stack.
+<li>Prevent one process from reading/writing outside its address space.
+<li>Allow sharing when needed.
+<li>Bring a program to live
+</ul>
+<li>Usually the implementation is split between the O/S and the hardware.
+<li>The O/S manages processes:
+<ul>
+<li>Allocate physical memory for them (for creation, growth, deletion).
+<li>Keep track of them when they are not executing.
+<li>Switch between them (to switch processes).
+<li>Configure the hardware.
+</ul>
+<li>The hardware performs address translation and protection:
+<ul>
+<li>Translate user addresses to physical addresses.
+<li>Detect and prevent attempts to use memory outside the address space.
+<li>Allow cross-space transfers (system calls, interrupts).
+</ul>
+<li>Also:
+<ul>
+<li>O/S has its own address space.
+<li>O/S must be able to conveniently read/write user memory.
+</ul>
+<li>Hardware support may or may not correspond well to what the O/S wants.
+
+<li>Two main approaches: segments and page tables.  Paging has won:
+most O/S are designed for paging, most modern CPU designs support only
+paging. BUT x86 provides many features only via segmentation h/w
+(interrupts, protection), so we must learn about x86 segments, a
+little bit. Also xv6 uses segments, not paging.
+
+</ul>
+
+<h2>Example hardware for address spaces: x86 segments</h2>
+
+<p>The operating system can switch the x86 to protected mode, which
+supports virtual and physical addresses, and allows the O/S to set up
+address spaces so that user processes can't change them.  Translation
+in protected mode is as follows:
+	<ul>
+	<li>selector:offset (virtual / logical addr) <br>
+	     ==SEGMENTATION==> 
+	<li>linear address <br>
+	     ==PAGING ==>
+	<li>physical address
+	</ul>
+
+<p>Next lecture covers paging; now we focus on segmentation. 
+
+<p>Protected-mode segmentation works as follows (see handout):
+<ul>
+<li>segment register holds segment selector
+<li>selector: 13 bits of index, local vs global flag, 2-bit RPL
+<li>selector indexes into global descriptor table (GDT)
+<li>segment descriptor holds 32-bit base, limit, type, protection
+<li>la = va + base ; assert(va < limit);
+<li>choice of seg register usually implicit in instruction
+<ul>
+<li>ESP uses SS, EIP uses CS, others (mostly) use DS
+<li>some instructions can take far addresses: 
+		<ul><li><tt>ljmp $selector, $offset</tt>
+		</ul>
+</ul>
+<li>GDT lives in memory, CPU's GDTR register points to base of GDT
+<li>LGDT instruction loads GDTR
+<li>you turn on protected mode by setting PE bit in CR0 register
+
+<li>What about protection?
+<ul>
+  <li>instructions can only r/w/x memory reachable through seg regs
+  <li>not before base, not after limit
+	<li>can my program change a segment register? yes, but... to one of the
+	    permitted (accessible) descriptors in the GDT
+  <li>can my program re-load GDTR? no!
+  <li>how does h/w know if user or kernel?
+  <li>Current privilege level (CPL) is in the low 2 bits of CS
+  <li>CPL=0 is privileged O/S, CPL=3 is user
+  <li>why can't app modify the descriptors in the GDT? it's in memory...
+  <li>what about system calls? how do they transfer to kernel?
+  <li>app cannot <b>just</b> lower the CPL
+</ul>
+
+</ul>
+
+<h2>Case study (xv6)</h2>
+
+<p>xv6 is a reimplementation of <a href="../v6.html">Unix 6th edition</a>.
+<ul>
+<li>v6 is an early Unix operating system for <a href="http://www.pdp11.org/">DEC PDP11</a>
+<ul>
+         <li>Thompson and Ritchie, 1976
+         <li>PDP11: 16 bit data and addresses, 18 bit physical addresses
+         <li>ancestor of Linux &c but much smaller
+         <li>recognizable: shell, multi-user, directories
+         <li>written in C
+         <li><a href="../reference.html">Unix papers</a>.
+</ul>
+
+<li>xv6 written for the OS course at MIT (6.828):
+<ul>
+         <li>even smaller than v6, maybe not useable as is
+         <li>preserves basic structure (processes, files, pipes, &c)
+         <li>you don't have to learn PDP11 <i>and</i> x86
+	 <li>runs on multi-processor PCs.
+</ul>
+</ul>
+
+<p>Newer Unixs have inherited many of the conceptual ideas even though
+they added paging, networking, graphics, improve performance, etc.
+
+<p>You will need to read most of the source code multiple times. Your
+goal is to explain every line to yourself.  The chapters published
+on the schedule page (by Cox, Kaashoek, and Morris) are helpful and
+also required reading before the lectures!
+
+<h3>Overview of processes in xv6</h3>
+
+<p>In today's lecture we see how xv6 creates the kernel address
+ spaces, and the first user process.  A process consists of an address
+ space and one thread of control (to run the program) in xv6. The
+ kernel address space is the only address space with multiple threads
+ of control. We will study context switching and process management in
+ detail next weeks; creation of the first user process (init) will get
+ you a first flavor.
+
+<p>The process chapter covers the material below in more detail.
+
+<p>xv6 uses only the segmentation hardware on the x86; it doesn't use paging. 
+  (In pintos you will use page-table hardware too, which we cover in
+  next lecture.)
+<ul>
+<li>The kernel address space:
+  <pre>
+  the code segment runs from 0 to 2^32 and is mapped X and R
+  the data segment runs from 0 to 2^32 but is mapped W (read and write).
+  </pre>
+<li>Each process has an address space, laid out as follows starting
+at virtual address zero:
+<pre>
+  text
+  original data and bss
+  fixed-size stack
+  expandable heap
+</pre>
+A process's code, data, and stack segments all map this virtual address
+space to the same range of linear addresses. That is, all three segments
+are the same.
+</ul>
+
+<p>The x86 designers probably had in mind more interesting uses of
+segments. What might they have been?
+
+<h3>xv6 process structure</h3>
+
+<pre>
+we're about to look at how the first XV6 process starts up
+  it will run initcode.S, which does exec("/init")
+  /init is a program that starts up a shell we can type to
+
+what's the important state of an xv6 process?
+  kernel proc[] table has an entry for each process
+    p->mem points to user mem phys address
+    p->kstack points to kern stack phys address
+    struct context holds saved kernel registers
+      EIP, ESP, EAX, &c
+      for when a system call is waiting for input
+  user half: user memory
+    user process sees memory as starting at zero
+    instructions, data, stack, expandable heap
+  kernel half: kernel executing a system call for a process
+    on the process's kernel stack
+
+xv6 has two kinds of transitions
+  trap + return: user->kernel, kernel->user
+    system calls, interrupts, divide-by-zero, &c
+    save user process state ... run in kernel ... restore state
+  process switch: between kernel halves
+    one process is waiting for input, run another
+      or time-slicing between compute-bound processes
+    save p1's kernel-half state ... restore p2's kernel-half state
+  setting up first process involves manually initializing this state
+
+saved state for trap
+  during trap, the CPU:
+    switches to process's kernel stack
+    pushes SS, ESP, EFLAGS, CS, EIP onto kernel stack
+    jumps into kernel
+  kernel then pushes the other user registers
+  this is struct trapframe
+  trap return reverses this, resuming at saved user EIP
+  for first process:
+    manually set up these "saved" registers on the kernel stack
+    EIP 0, ESP top of user memory, &c
+
+saved state for process switch
+  save registers (EIP, ESP, EAX, &c) in oldp->context
+  restore registers from newp->context
+  now we are at the EIP of newp, and using its kernel stack
+  this is the only way xv6 switches among processes
+    there is no direct user->user process switch
+    instead, user TRAP kernel PROCESS-SWITCH kernel TRAP-RETURN user
+  for first process:
+    manually set up EIP and ESP to run forkret, which returns from trap
+</pre>
+
+<p>Since an xv6 process's address space is essentially a single segment,
+a process's physical memory must be contiguous. So xv6 may run into
+fragmentation if process sizes are a significant fraction of physical memory.
+
+<h3>xv6 kernel address space</h3>
+
+<p>Let's see how xv6 creates the kernel address space by tracing xv6
+  from when it boots, focusing on address space management.
+<ul>
+
+<li>Start with ksegment(), which is called from main()
+<li>look at GDT after lgdt with <tt>info gdt</tt>
+<li>How are text, data, and stack mapped?
+<li>What do the protection bits mean?
+<li>How does address translation change right after lgdt completes?
+  (what happened during boot?)
+</ul>
+
+<li>main() calls userinit() to create first process
+<li>then scheduler() to start running processes
+
+</ul>
+
+<h3>creating the first process</h3>
+
+<ul>
+<li>userinit()
+<li>What is in binary_initcode?
+<li>How does the user stack look like?
+<li>allocproc()
+<li>how does the kernel stack look for the new process? what is on it?
+</ul>
+
+</ul>
+
+<h3>running the first process</h3>
+
+<ul>
+<li>remember that main calls scheduler() after userinit()
+<li>we'll see how scheduler() works in a few lectures, overview now
+<li>usegment---how is the address for the user space setup?  protection?
+<li>swtch
+<li>forkret
+<li>Which stack is the kernel using now?
+<li>What is on this stack?
+<li>trapret?
+<li>What is on the stack?
+<li>In which address space is processor after executing iret?
+<li>What is on the stack in that address space?
+</ul>
+
+<p>
+Timeline of a CPU: proc-switch-scheduler-switch-proc2-...
+
+<p>swtch called by interrupt handler on behalf of the current running
+process. iret may be called on the behalf of another process
+
+<p>All switched-out processes (state=RUNNABLE) will have <code>eip</code>
+value somewhere in the <code>swtch</code> function, unless they are
+newly created in which case they will have <code>eip</code> pointing
+to forkret. When is forkret called? (only on new process creation).
+Why does it need to release the ptable lock? (how does it get released
+on a regular context switch?)
+
+<p>Each process has two halves: user and kernel. Transitions from
+user to kernel: interrupts, exceptions, <code>int</code> instruction.
+Transitions from kernel to user: <code>iret</code> instruction.
+
+<p>Process switch: User->Kernel->Kernel2->User2. The switching between
+user and kernel involves switching the registers and the address space.
+More on address space switching later.
+
+<p><code>trapret</code> uses <code>iret</code> instruction to return
+to user mode.
+
+<p>Question: Why can't we release the ptable lock in <code>allocproc</code>
+itself? Answer: because we are not done with the PCB structure or the
+PCBs themselves. We still need to keep the lock till the process has
+actually started running.
+
+
+<h3>Managing physical memory</h3>
+
+<p>To create an address space we must allocate physical memory, which
+  will be freed when an address space is deleted (e.g., when a user
+  program terminates).  xv6 implements a first-fit memory allocator
+  (see kalloc.c).
+
+<p><tt>kalloc()</tt> maintains a list of ranges of free memory.  The
+  allocator finds the first range that is larger than the amount of
+  requested memory.  It splits that range in two: one range of the
+  size requested and one of the remainder.  It returns the first
+  range.  When memory is freed, kfree will merge ranges that are
+  adjacent in memory.
+
+<p>Under what scenarios is a first-fit memory allocator undesirable?
+
+<h3>Growing an address space</h3>
+
+<p>How can a user process grow its address space?  growproc.
+<ul>
+<li>allocate a new segment of old size plus n
+<li>copy the old segment into the new (ouch!)
+<li>why bother zeroing the rest?
+<li>free the old physical memory
+</ul>
+<p>We could do a lot better if segments didn't have to be contiguous in
+  physical memory. How could we arrange that? Using page tables, which
+  is our next topic.  This is one place where page tables would be
+  useful, but there are others too (e.g., in fork).
+</body>
+
+
+<!--  LocalWords:  API addr GDT va movl SS EBP pushl ecx popl ebp eax EIP DS ES
+ -->
+<!--  LocalWords:  ESI EDI rep movsb ljmp LGDT PE CR CPL IDT JOS app seg reg cs
+ -->
+<!--  LocalWords:  SMPs init bss proc TSS gdtr gdt DPL lgdt bcpu struct jmp eip
+ -->
+<!--  LocalWords:  iret kalloc kfree
+ -->

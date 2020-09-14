@@ -1,0 +1,307 @@
+<title>L16</title>
+<html>
+<head>
+</head>
+<body>
+<h2>Creating kernel's page table, Initializing physical memory allocator,
+	Running Processes in Action</h2>
+<h3>Creating kernel's page table</h3>
+<h3>Initializing physical memory allocator</h3>
+<li> Remember that setupkvm allocated phys mem for page directory.<br>
+How does memory allocation work?<br>
+sheet 27</li>
+
+<li> Physical memory allocator interface:<br>
+allocates a page at a time<br>
+va = kalloc()<br>
+kfree(va)<br>
+always allocates from phys mem above where kernel was loaded<br>
+so pa is va - KERNBASE</li>
+
+<li>what does kernel use phys mem allocator for?<br>
+page table pages<br>
+kernel data structures (pipe buffers, stacks, &c)<br>
+user memory<br>
+</li>
+
+<li>How does the allocator work?<br>
+data structure: a list of free physical pages<br>
+allocation = remove first entry from list<br>
+free = add page to head of list<br>
+list's "next" pointers stored in first 4 bytes of each free page<br>
+that memory is available since they are free<br>
+</li>
+
+<li>Allocator depends on phys pages having virtual addresses!<br>
+since it must write them to manipulate free list<br>
+just like VM code needed to write page table pages<br>
+thus xv6 maps all phys pages into kernel address space<br>
+which burns up a lot of virtual address space, limits max user mem<br>
+other arrangements are possible<br>
+</li>
+
+<li>where does allocator get initial pool of free physical memory?<br><br>
+
+kinit1<br>
+called by main<br>
+end is first address beyond the end of the kernel <i>as a virtual address</i><br>
+memory beyond that is unused</li>
+<li>freerange:<br>
+PGROUNDUP since newend may not be page-aligned</li>
+<li>Q: why must allocated pages have page-aligned addresses?</li>
+<li>kinit1 assumes physical memory goes up to 4MB. Hence P2V(4*1024*1024).</li>
+<li>Uses this space for allocation of initial data structures (e.g., first
+page table kpgdir</li>
+<li>kinit2 assumes physical memory goes up to PHYSTOP (lame)
+<li>kfree each page<br>
+usually called on previously-allocated memory<br>
+kinit is abusing kfree a little bit<br></li>
+<li>
+kfree<br>
+linked list<br>
+note cast at 2827<br>
+2828 is where we depend on phys mem being mapped at a virt addr<br>
+</li>
+<li>
+kalloc
+takes the first element of the free list</li>
+<li>
+Q: how to allocate mem for a data structure (e.g. array) > 4096 bytes?
+</li>
+
+<h3>Processes in Action</h3>
+<pre>
+process execution states:
+  diagram: user/kernel, process mem, kernel thread, kern stack, pagetable
+  process might be executing in user space
+    with cr3 pointing to its page table
+    user mode, so can use PTE_U PTEs, < 0x80000000
+  or might be in a system call in the kernel
+    e.g. open() finding a file on disk
+    process's "kernel thread"
+    kernel mode, so can use non-PTE_U PTEs
+    using kernel stack
+  or not currently executing
+
+xv6 has two kinds of transitions
+  trap + return: user->kernel, kernel->user
+    system calls, interrupts, divide-by-zero, &c
+    hw+sw saves user registers on process's kernel stack
+    save user process state ... run in kernel ... restore state
+  process switch: between kernel threads
+    one process is waiting for input, run another
+      or time-slicing between compute-bound processes
+    save p1's kernel-thread state ... restore p2's kernel-thread state
+
+Q: why per-process kernel stack?
+   what would go wrong if syscall used a single global stack?
+
+how does xv6 store process state?
+  struct proc sheet 20
+  kernel proc[] table has an entry for each process
+  discuss pgdir, kstack, state, pid fields.
+	then discuss ofile field (fd table)
+
+discuss how any system call works.
+discuss how fork system call works.
+discuss how external timer interrupt works.
+discuss context switching
+
+discuss proc.tf (trapframe)
+discuss proc.context (for context switch)
+
+</pre>
+<!--
+---------------
+
+big picture
+  getting xv6 as far as the first process
+  load kernel
+  temporary page table
+  real page table
+  create process
+  switch to process
+  exec /init
+
+why do we care about VM?
+  implements address spaces:
+    force each process to only r/w its own memory (bugs, security)
+    user code at predictable addresses
+    big contiguous user address space
+
+where we were last time
+  setting up a page table for xv6 kernel
+  diagram of virtual address space
+     0x80000000
+     0x00000000   
+  each process has its own page table
+  plus one for when not running a process (e.g. early in boot)
+
+quick review of x86 page directory / page table
+  [diagram: cr3, 1024 PDEs, 1024 page table pages]
+  see last week's handout
+  PTE: 22 bits phys addr, 12 flag bits
+  translation: 10, 10, 12
+
+we were early in main(), in kvmalloc(), after setupkvm()
+  sheet 17
+
+****
+
+now let's talk about creating first process and its address space
+
+Q: you'd expect there to be an array or something of pointers
+   to the process's user memory. where is it? how does xv6
+   know what memory a process is using?
+
+ordinarily p->pgdir and phys mem contents created by fork()
+  we will fake them for first process
+
+ordinarily p->tf and p->context created by syscall/switch
+  we will fake them for first process
+
+main calls userinit
+
+userinit sheet 22
+  only called for first process
+    other processes created by fork
+  mimics fork+exec
+    create a normal-looking process
+    ordinary scheduler will run it
+  needs to fill in all struct proc entries
+  
+allocproc sheet 22
+  used by both fork and userinit
+  kernel stack setup:
+    trapframe w/ "saved user registers"
+      for us, initial user registers
+      eax, eip, esp, &c
+    trapret !!!!!!!!!!!!!!!
+    context w/ "saved kernel thread registers"
+      for us, initial kernel thread registers
+      eip
+  Q: where will new kernel thread start executing?
+  doesn't set up trapframe b/c ordinarily copied
+    from parent by fork, which calls allocproc
+  but fork and userinit both always start thread in forkret
+
+trapframe sheet 06
+context sheet 20
+
+kernel stack diagram:
+  top ->
+                esp, ss
+                eip, cs
+                ...
+                gs fs es ds
+  p->tf ->      edi & 7 other registers
+                ---
+                trapret
+                ---
+                eip = forkret
+                ebp
+                ebx
+                esi
+  p->context -> edi
+                ---
+  p->kstack ->  ...
+
+Q: any guesses why there are *two* saved EIPs?
+
+back to userinit
+  we know setupkvm -- only fills in kernel mappings
+  this is a new page table for the new process
+    not using it yet, will switch when new kernel thread starts
+  call inituvm w/ ptr to new process's user instructions
+
+initcode.S sheet 75 : becomes _binary_initcode_start
+  user program
+  exec("/init", args)
+
+inituvm sheet 17
+  we know kalloc and mappages(pgdir, va, sz, pa)
+  initcode is tiny, fits in one page
+  diagram: new mapping
+
+Q: new page is mapped at va=0; could inituvm call memmove(0, init, sz)?
+
+back to userinit sheet 22
+  tf->esp -- user stack at top of page
+  tf->esp=0 -- first instruction at bottom of page
+
+main calls scheduler()
+
+scheduler sheet 24
+  no longer initialization: kernel now fully running
+  whenever process gives up CPU -> scheduler
+  so kernel runs scheduler a lot
+  look for a process that wants to run, run it
+  p->state: SLEEPING, RUNNABLE, RUNNING
+  scheduler looks for RUNNABLE
+
+switchuvm sheet 17
+  tell h/w to use p->stack if re-enters kernel
+    sys call or interrupt
+  load %cr3
+
+let's watch switch to new process's page table:
+  (gdb) break switchuvm
+  (gdb) x/5i 0
+  0x0:    Cannot access memory at address 0x0
+  next past load %cr3
+  (gdb) x/5i 0
+  same as initcode sheet 75
+  but we are still in the kernel, in scheduler
+
+back to scheduler sheet 24
+  mark RUNNING so no other CPU runs it
+  now switch to new process's kernel stack, registers, EIP
+  swtch(place to save current ESP, previously saved ESP to switch to)
+
+swtch sheet 26
+  save current thread's registers and stack
+  load new threads stack and registers
+  saves current registers on current stack, struct context, sheet 20
+  expects new thread's stack to have registers in that format
+  stack diagram:
+    eip *****
+    ebp
+    ebx
+    esi
+    edi
+  Q: why these registers?
+    callee saved, might have caller's live variables
+  same format as struct context
+
+let's watch:
+  (gdb) break swtch
+  si until esp switch...
+  (gdb) x/6x $esp
+  si past esp switch
+  (gdb) x/6x $esp
+  after: 4 regs, forkret, trapret
+
+step into forkret sheet 24
+  just returns
+  allocproc set up stack to have it return to trapret
+  watch out:
+    release and initlog cause interrupts
+    so hack source to set first=0 and pushcli
+    si for iret &c -- si leaves interrupts off
+  next into trapret
+
+look at trapframe sheet 06
+  (gdb) x/19x $esp
+  0x0 0x23 are eip:cs
+  0x1000 0x2b are esp:ss
+
+trapret sheet 29
+  pops trapret registers from stack, mostly zero
+  popal pops 8 general-purpose registers
+  iret pops ESP, EIP, clears supervisor flag
+  x/5x $esp
+  now we are executing at address 0x0 in initcode sheet 75
+
+what does initcode do?
+  traps back into the kernel to make exec() system call
+	-->

@@ -1,0 +1,214 @@
+<title>L26</title>
+<html>
+<body>
+<h2>Transactions</h2>
+Transactions are another way of providing atomicity, and are significantly
+different from locks in their handling of concurrency.
+Recall that for atomicity, we need to ensure that two threads do not
+interleave accesses to shared data within a critical section. Locks
+ensure this by requiring the programmer to apriori announce her intention
+of accessing shared data, and the semantics of a lock prevent concurrent
+execution within a critical section. This is a <em>pessimistic</em> method
+of dealing with concurrency, because you always need to acquire the lock,
+irrespective of whether another thread actually tried to enter the
+critical section or not. This is analogous to saying that whenever you
+enter a room where you need privacy, you must always first lock it
+from inside, before you start using the room.
+
+<p>
+A more optimistic method may be to just enter the room (without locking).
+If another thread tries to enter the same room, it will likely notice that
+somebody else is already using the room and will rollback its execution
+(or return from the room in the physical analogy). This is more optimistic
+because you assume that in the common case, it is unlikely that somebody
+will try to enter the room at the same time. Hence, you have avoided the
+overhead of having to acquire a lock. In software, this is done by enclosing
+the act of accessing the shared resource in a <em>transaction</em>. All
+accesses to the shared resource within a transaction are <em>tentative</em>.
+If during the accesses, the thread notices that the same resource is being
+concurrently accessed by another thread (thus violating atomicity), the
+transaction is <em>rolled back</em>. Let's look at some examples.
+
+<h3>Bank account example with transactions</h3>
+Recall the bank account example where the <code>transfer()</code> function
+was used to transfer a unit of money from one account to another. Let's
+recall the code which used fine-grained locking.
+<pre>
+void transfer(account *a, account *b) {
+  if (a->account_id < b->account_id) {
+    acquire(&amp;a->mutex);
+    acquire(&amp;b->mutex);
+  } else {
+    acquire(&amp;b->mutex);
+    acquire(&amp;a->mutex);
+  }
+  if (a->money > 0) {
+    a->money--;
+    b->money++;
+  }
+  release(&amp;a->mutex);
+  release(&amp;b->mutex);
+}
+</pre>
+In this code which uses fine-grained locks, whenever we access a shared
+account, we always acquire the corresponding lock (mutex) before the access.
+However, in the common case, it is unlikely (though possible)
+that another thread will be accessing the same accounts at the same time.
+But we pay the overhead of lock acquisition each time!
+
+<p>It would be nice if we could structure our code as a transaction that
+can be rolled back if required, as follows:
+<pre>
+void transfer(account *a, account *b) {
+  int am, bm;
+
+  do {
+    tx_begin();
+    am = tx_read(a->money);
+    bm = tx_read(b->money);
+    if (am > 0) {
+      am--;
+      bm++;
+    }
+    success = tx_commit(am, &amp;a->money, bm, &amp;b->money);
+  } while (!success);
+}
+</pre>
+Here <code>tx_begin</code> indicates the start of a transaction,
+and <code>tx_commit</code> indicates the end of a transaction. At the
+end, the commit operation <em>atomically</em> tries to update the values
+of shared variables <code>a->money</code> (with value stored in local
+variable <code>am</code>), and <code>b->money</code> (with value stored
+in local variable <code>bm</code>). The commit succeeds, if no
+concurrent transaction had read these shared variables during the
+time the transaction was executing. It fails otherwise.
+
+<p>Notice that to implement an atomic commit (and rollback if needed), the
+runtime system needs
+to track, which locations were read and written. Also notice that
+this mechanism of a transaction is only useful if we expect that the
+probability of a commit failure is small. Because if there are likely to be
+a lot of rollbacks, then the performance of this system may actually
+be worse than that of coarse-grained locks.
+
+<p>The probability of a commit failure depends on the size of the
+transaction and on the expected concurrency of this code region.
+
+<p>Transactions are very useful for databases, where the read and
+commit operations are performed on disk blocks. Because disk accesses
+are anyways slow, it is relatively cheap to maintain this information
+about which disk blocks were read or written (in memory). However, in the
+case of operating systems, maintaining such information for memory bytes
+is much more expensive. Recently, new processors (e.g., Intel's Haswell)
+are providing hardware support for implementing transactions for memory
+accesses (also called <em>transactional memory</em>).
+
+<h3>Compare and Swap (List insert example, hits example)</h3>
+While most code today uses locks for atomicity, there is a special class
+of operations that have been using transactions for a long time. These
+are operations that can be written as atomic updates on a single
+memory location. The common primitive for single memory location transactions
+is a <em>compare-and-swap</em> instruction.
+<pre>
+int cmpxchg(int *addr, int old, int new) {
+  int was = *addr;
+  if (was == old) {
+    *addr = new;
+  }
+  return was;
+}
+</pre>
+In the instruction form, this can be written as:
+<pre>
+cmpxchg Rold, Rnew, Mem
+</pre>
+This instruction compares the value at location <code>Mem</code> with
+register <code>Rold</code>; if the values are equal, it replaces the
+value at <code>Mem</code> with <code>Rnew</code>. Else it does nothing.
+It returns the old value at location <code>Mem</code> in register
+<code>Rold</code>. This instruction is atomic if prefixed with the
+<code>lock</code> prefix..
+
+<p>
+For example, if we want to increment a shared variable <code>hits</code>
+atomically using <code>cmpxchg</code>, we can write the code as:
+<pre>
+int l_hits, l_new_hits;
+retry:
+l_hits = hits;
+l_new_hits = l_hits + 1;
+if (cmpxchg(&amp;hits, l_hits, new_l_hits) != l_hits) {
+  goto retry;
+}
+</pre>
+Here, we first read the shared <code>hits</code> variable into a local
+variable <code>l_hits</code>. We perform some computation on
+<code>l_hits</code> to obtain a new value <code>l_new_hits</code>. Now,
+we wish to write the new value <code>l_new_hits</code>
+to the shared variable <code>hits</code>, but only if the <code>hits</code>
+variable has not been modified in between (i.e., between the first
+read to <code>hits</code> and this point). To do this, we can use
+the <code>cmpxchg</code> instruction
+on the memory address of shared variable <code>hits</code> with the
+old value as <code>l_hits</code> and the new value as <code>l_new_hits</code>.
+If the atomic <code>cmpxchg</code> instruction returns that the current
+read value of <code>hits</code> is still equal to its previous read
+value (<code>l_hits</code>), the increment operation was performed atomically.
+On the other hand, if the current read value of <code>hits</code> differs
+from the previous read value, it indicates a concurrent access to the
+<code>hits</code> variable, and so the operation needs to be
+retried (or rolled-back).
+
+<p>Simlarly, our list insert example can be written using
+compare-and-swap (or <em>CAS</em>) as follows:
+<pre>
+void insert(struct list *l, int data) {
+  struct list_elem *e;
+  e = new list_elem;
+  e->data = data;
+retry:
+  e->next = l->head;
+  if (cmpxchg(&amp;l->head, e->next, e) != e->next) {
+    goto retry;
+  }
+}
+</pre>
+Once again, if two threads try to insert into a list concurrently,
+one of them will execute the atomic <code>cmpxchg</code> instruction
+first. Whichever thread executes <code>cmpxchg</code>
+first, will succeed (as it will see
+the same current value of <code>l->head</code> as the one that it
+previously read). The successful thread will also atomically update
+the value of <code>l->head</code> to its new value (with the inserted
+element). The thread which executes <code>cmpxchg</code> second, will
+notice that the value of <code>l->head</code> has changed from
+its last read value, and this will cause a rollback.
+
+<h2>Reader-Writer Locks</h2>
+Finally, often there is a situation where some parts of the code
+<em>only</em> read shared data, while other parts of the code read
+and write to it. The threads that only read the data do not need
+to be serialized with respect to each other. In other words, it is
+okay to allow multiple reader threads to execute concurrently. But it
+is still incorrect to allow a writer thread to execute concurrently
+with a reader thread. It is also incorrect to allow a writer thread
+to execute concurrently with another writer thread.
+
+<p>To capture this programming pattern, an abstraction called
+<em>read-write locks</em> can be used. Read-write locks are
+defined as follows:
+<pre>
+struct rwlock rwlock;
+
+void read_acquire(struct rwlock *);
+void write_acquire(struct rwlock *);
+void release(struct rwlock *);
+</pre>
+The <code>read_acquire</code> function acquires the <code>rwlock</code> in
+read mode, while the <code>write_acquire</code> function acquires
+the <code>rwlock</code> in read/write mode.
+The semantics are that an <code>rwlock</code> can be acquired in read
+mode multiple times simultaneously. However, it can only be acquired
+in write mode, if it is not currently held in either read or write mode
+by any other thread.
+</body>

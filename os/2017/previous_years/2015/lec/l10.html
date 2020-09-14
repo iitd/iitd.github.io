@@ -1,0 +1,126 @@
+<html>
+<head><title>L10</title>
+</head>
+<body>
+
+<h2>Segmentation Review</h2>
+Typically, the kernel uses only a few GDT entries: some for the hardware's
+data structures (e.g., Task State Segment), and others for the OS to use.
+For example, the kernel may use only two segment descriptors, one
+for the user's address space (USEGMENT), and another for the kernel's
+address space (KSEGMENT). The contents of the KSEGMENT descriptor remain
+constant throughout the execution of the system, as the kernel does not
+change its own location. The contents of the USEGMENT descriptor are
+overwritten on every context switch, and loaded with the base and limit
+values of the current process.
+
+<h3>Caching of Segment Descriptors</h3>
+A segment descriptor is cached on the CPU (on chip) each time a segment
+register is loaded. Thus the logic to translate a virtual address (VA)
+through segmentation does not require a memory access.
+
+<h2>Address translation and sharing using page tables</h2>
+
+<!--<p> Reading: <a href="../readings/i386/toc.htm">80386</a> chapters 5 and 6<br>-->
+
+<!--<p> Handout: <b> x86 address translation diagram</b> - 
+<a href="x86_translation_and_registers.pdf">PDF</a> -
+<a href="x86_translation.svg">SVG</a>,
+<b>JOS virtual memory layout</b> -
+<a href="jos_layout.pdf">PDF</a> -
+<a href="jos_layout.svg">SVG</a>
+<br>-->
+
+<p>Why do we care about x86 address translation?
+<ul>
+<li>It can simplify s/w structure: addresses in one process not constrained
+    by what other processes might be running.
+<li>It can implement tricks like demand paging and copy-on-write.
+<li>It can isolate programs to contain bugs or increase security.
+<li>It can provide efficient sharing between processes.
+<!--<li>JOS uses paging a lot, and segments more than you might think.-->
+</ul>
+
+<p>Why aren't protected-mode segments enough?
+<ul>
+<li>Why did the 386 add translation using page tables as well?
+<li>Isn't it enough to give each process its own segments?
+<li>Programming model, fragmentation
+<li>In practice, segments are little-used
+</ul>
+
+<p>Translation using page tables (on x86):
+<ul>
+<li>segmentation hardware first computes the <emph>linear</emph> address
+<li>in practice, most segments (e.g. in <tt>pintos</tt>, Linux) have
+base 0 and max limit,
+    making the segmentation step a no-op.
+<li>paging hardware then maps linear address (la) to physical address (pa)
+<li>(we will often interchange "linear" and "virtual")
+<li>when paging is enabled, every instruction that accesses memory is subject
+    to translation by paging
+
+<p>
+
+<li>paging idea: break up memory into 4096-byte chunks called <emph>pages</emph>
+<li>independently control mapping for each page of linear address space
+<li>compare with segmentation (single base + limit): many more degrees of freedom
+
+<p>
+
+<li>4096-byte pages means there are 2^20 = 1,048,576 pages in 2^32 bytes
+<li>conceptual model: array of 2^20 entries, called a <emph>page table</emph>,
+    specifying the mapping for each linear page number
+<li>table[20-bit linear page #] => 20-bit phys page #
+<li>PTE entries: bottom of handout
+<li>20-bit phys page number, present, read/write, user/supervisor, etc
+<li>puzzle: can supervisor read/write user pages?
+
+<p>
+
+<li>can use paging hardware for many purposes
+<ul>
+    <li>(seen some of this two lectures ago)
+    <li>flat memory
+    <li>segment-like protection: contiguous mappings
+    <li>solve fragmentation problems when allocating more memory (xv6-like process memory layout)
+    <li>demand-paging (%cr2 stores faulting address)
+    <li>copy-on-write
+    <li>sharing, direct access to devices (e.g. /dev/fb on linux)
+    <li>switching between processes
+</ul>
+
+<p>
+
+<li>where is this table stored?  back in memory.
+<li>in our conceptual model, CPU holds the physical address of the
+    base of this table.
+<li>%cr3 serves this purpose on the x86 (with one more detail below)
+<li>for each memory access, access memory again to look up in table
+
+<p>
+
+<li>why not just have a big array with each page #'s translation?
+<li>same problems that we were trying to solve with paging!
+    (demand-paging, fragmentation)
+<li>so, apply the same trick
+<ul>
+    <li>we broke up our 2^32-byte memory into 4096-byte chunks and
+	represented them in a 2^22-byte (2^20-entry) table
+    <li>now break up the 2^22-byte table into 4096-byte chunks too,
+	and represent them in another 2^12-byte (2^10-entry) table
+    <li>just another level of indirection
+    <li>now all data structures are page-sized
+</ul>
+
+<li>386 uses 2-level mapping structure
+<li>one page directory page, with 1024 page directory entries (PDEs)
+<li>up to 1024 page table pages, each with 1024 page table entries (PTEs)
+
+<li>so la has 10 bits of directory index, 10 bits table index, 12 bits offset
+<li>%cr3 register holds physical address of current page directory
+<li>puzzle: what do PDE read/write and user/supervisor flags mean?
+
+</ul>
+
+</body>

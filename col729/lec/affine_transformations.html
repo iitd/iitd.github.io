@@ -1,0 +1,38 @@
+<h2>Need for Locality</h2>
+The need for locality of access:
+<ul>
+	<li>Registers : 1 cycle : 256-8000 bytes</li>
+	<li>Cache(L1,L2,L3) : 1-6 cycles : 256K-1M bytes</li>
+	<li>Main memory: 20-100 cycles : 32M-256G bytes</li>
+	<li>Disk: 0.5-5M cycles : 1-100Tbytes</li>
+</ul>
+
+<p>Consider the loop
+<pre>
+for (j=1; j&lt;10; j++) {
+  for (i=1; i&lt;10000000; i++) {
+    a[i] *= b[i];
+  }
+}
+</pre>
+By the time the second outer-loop iteration takes place, the cache does not contain the needed values of the first outer-loop iteration. In other words, the <em>reuse distance</em> is very high.
+
+Change this to the following code with much lower reuse distance:
+<pre>
+for (i=1; i&lt;10000000; i++) {
+  for (j=1; j&lt;10; j++) {
+    a[i] *= b[i];
+  }
+}
+</pre>
+Can be up to 10x faster than the original loop. This optimization is called <em>loop interchange</em>.
+
+<h3>Matrix-Vector multiplication</h3>
+<pre>
+for (i = 0; i &lt; n; i++) {
+  for (j = 0; j &lt; n; j++) {
+    y[i] = A[i,j]*x[j]
+  }
+}
+</pre>
+Would work well if <code>A</code> is stored in row-major format. Would work badly if <code>A</code> is stored in column-major format. If the compiler has a choice, it should decide the <em>data layout</em> of <code>A</code> wisely. Some programming languages (like Matlab) allow you this choice. Others (like C where a 2D array is an array of arrays) do not. Even if this choice is not available in the programming language, if the global use of the 2-D array can be captured fully by the compiler, it can switch the indices of the global variable (e.g., A[100][2] to A[2][100]).

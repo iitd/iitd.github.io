@@ -1,0 +1,11 @@
+diff -ur bochs-2.4.5-jitter/disasm/disasm.h bochs-2.4.5-jitter-att/disasm/disasm.h
+--- bochs-2.4.5-jitter/disasm/disasm.h	2010-04-08 21:20:39.000000000 +0530
++++ bochs-2.4.5-jitter-att/disasm/disasm.h	2010-12-28 16:57:54.000000000 +0530
+@@ -190,7 +190,7 @@
+ 
+ class disassembler {
+ public:
+-  disassembler(): offset_mode_hex(0) { set_syntax_intel(); }
++  disassembler(): offset_mode_hex(0) { set_syntax_att(); }
+ 
+   unsigned disasm(bx_bool is_32, bx_bool is_64, bx_address base, bx_address ip, const Bit8u *instr, char *disbuf);

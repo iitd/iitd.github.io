@@ -1,0 +1,484 @@
+<html>
+<head>
+<title>Homework: running and debugging xv6</title>
+</head>
+<body>
+
+<h1>Homework: running and debugging xv6</h1>
+
+<p>This lecture is the introduction to xv6, an x86-based re-implementation of
+  Unix v6.  Read the source code in the assigned files;  The assigned
+  chapter for today provides a commentary on the  assigned files.
+<p> You won't have to understand the details yet;
+we will simply focus for now on getting xv6 up and running under QEMU
+and debugging it under GDB at the C source code level.
+<p>
+
+<b>Hand-In Procedure</b>
+<p>
+You are to turn in this homework during lecture. Please
+write up your answers to the exercises below and hand them in to a
+staff member at the beginning of lecture.
+
+<p><h2>Assignment</h2>
+
+Fetch and un-tar the xv6 source:
+
+<pre>
+$ <b>wget http://<i>course-webpage</i>/xv6-rev6.tar.gz</b>
+$ <b>tar xzvf xv6-rev6.tar.gz</b>
+xv6/
+xv6/trap.c
+xv6/sysfile.c
+xv6/types.h
+...
+$
+</pre>
+
+Build xv6:
+<pre>
+$ <b>cd xv6</b>
+$ <b>make</b>
+gcc -O -nostdinc -I. -c bootmain.c
+gcc -nostdinc -I. -c bootasm.S
+ld -N -e start -Ttext 0x7C00 -o bootblock.o bootasm.o bootmain.o
+objdump -S bootblock.o > bootblock.asm
+objcopy -S -O binary bootblock.o bootblock
+...
+$ 
+</pre>
+
+<h3>Installing QEMU</h3>
+<p>
+Qemu is installed on the department cluster. If you want to install
+it on your own machine, take a look at the <a href=../tools.html>Tools</a>
+page.
+
+<h3>Running xv6 under QEMU</h3>
+
+<pre>
+$ <b>make qemu</b>
+qemu -parallel mon:stdio -smp 2 -hdb fs.img xv6.img
+QEMU 0.10.6 monitor - type 'help' for more information
+(qemu) QEMU 0.10.6 monitor - type 'help' for more information
+(qemu)
+</pre>
+
+A separate window should appear containing the display of the virtual machine.
+After a few seconds, QEMU's virtual BIOS will load xv6's boot loader
+from a virtual hard drive image contained in the file <code>xv6.img</code>,
+and the boot loader will in turn load and run the xv6 kernel.
+After everything is loaded,
+you should get a '<code>$</code>' prompt in the xv6 display window
+and be able to enter commands into the rudimentary but functional xv6 shell.
+For example, try:
+
+<pre>
+$ <b>ls</b>
+.		1 1 512
+..		1 1 512
+README		2 2 1844
+cat		2 3 12129
+...
+$ <b>echo Hello!</b>
+Hello!
+$ <b>cat README</b>
+xv6 is a re-implementation of Dennis Ritchie's and Ken Thompson's Unix
+Version 6 (v6).  xv6 loosely follows the structure and style of v6,
+...
+$ <b>grep run README</b>
+To build xv6 on an x86 ELF machine (like Linux or FreeBSD), run "make".
+Then run "make TOOLPREFIX=i386-jos-elf-".
+...
+$ <b>cat README | grep run | wc</b>
+6 70 376
+$ <b>echo My New File >newfile</b>
+$ <b>cat newfile</b>
+My New File
+</pre>
+
+<p>
+The small file system you're examining and modifying here
+is resides on a second virtual disk,
+whose initial contents QEMU initializes from the file <code>fs.img</code>.
+Later in the course you will examine how xv6
+accesses and modifies this file system.
+
+<p>
+Now close this QEMU session, destroying the state of the xv6 virtual machine.
+You can do so either by entering <code>quit</code>
+at the <samp>(qemu)</samp> prompt in the original window
+from which you started QEMU,
+or just by pressing CTRL-C in that window.
+
+<p>
+<h3>Remote Debugging xv6 under QEMU</h3>
+
+The easiest way to debug xv6 under QEMU
+is to use GDB's <i>remote debugging</i> feature
+and QEMU's remote GDB debugging stub.
+
+<p>
+Remote debugging is a very important technique
+for kernel development in general:
+the basic idea is that the main debugger (GDB in this case)
+runs separately from the program being debugged (the xv6 kernel atop QEMU) -
+they could be on completely separate machines, in fact.
+The debugger and the target environment communicate
+over some simple communication medium,
+such as a network socket or a serial cable,
+and a small <i>remote debugging stub</i>
+handles the "immediate supervision" of the program
+being debugged in the target environment.
+This way, the main debugger can be a large, full-featured program
+running in a convenient environment for the developer
+atop a stable existing operating system,
+even if the kernel to be debugged is running directly on the bare hardware
+of some other physical machine
+and may not be capable of running a full-featured debugger itself.
+In this case, a small remote debugging stub
+is typically embedded into the kernel being debugged;
+the remote debugging stub
+implements a simple command language that the main debugger uses
+to inspect and modify the target program's memory,
+set breakpoints, start and stop execution, etc.
+Compared with the size of the main debugger,
+the remote debugging stub is typically miniscule,
+since it doesn't need to understand any details of the program being debugged
+such as high-level language source files, line numbers,
+or C types, variables, and expressions:
+it merely executes very low-level operations
+on behalf of the much smarter main debugger.
+
+<p>
+When we are doing kernel development using a virtual machine such as QEMU,
+remote debugging may not be quite as critical:
+for example, xv6 can also be run
+under the <a href="http://bochs.sourceforge.net/">Bochs</a> emulator,
+which is much slower than QEMU but has a debugger built-in
+and thus does not require the use of GDB remote debugging.
+On the other hand, while usable,
+the Bochs debugger is still not as complete as GDB,
+so we will primarily use GDB with QEMU's remote debugging stub in this course.
+
+<p>
+To run xv6 under QEMU and enable remote debugging, type:
+
+<pre>
+$ <b>make qemu-gdb</b>
+*** Now run 'gdb'.
+qemu -parallel mon:stdio -smp 2 -hdb fs.img xv6.img -s -S -p 26000
+QEMU 0.10.6 monitor - type 'help' for more information
+(qemu)
+</pre>
+
+<p>
+You will notice that while a window appears
+representing the virtual machine's display,
+nothing appears on that display:
+that is because QEMU initialized the virtual machine
+but stopped it before executing the first instruction,
+and is now waiting for an instance of GDB to connect
+to its remote debugging stub and supervise the virtual machine's execution.
+In particular, QEMU is listening for connections on a TCP network socket,
+at port 26000 (we have configured the makefile to try and ensure that
+it listens to a different port for each different user) in this example,
+because of the '<samp>-p 26000</samp>'
+in the <code>qemu</code> command line above.
+You might see a different port number:
+this is because xv6's Makefile tries to compute a port number
+that is likely to be unique and available
+even if multiple users are debugging xv6 under QEMU on the same machine
+(see the <samp>GDBPORT</samp> variable in xv6's <samp>Makefile</samp>).
+
+<p>
+To start the debugger and connect it to QEMU's waiting remote debugging stub,
+open a new, separate terminal window,
+change to the same xv6 directory, and type:
+
+<pre>
+$ <b>gdb kernel</b>
+GNU gdb (GDB) 6.8
+Copyright (C) 2009 Free Software Foundation, Inc.
+...
+Reading symbols from /Users/ford/cs422/xv6/kernel...done.
++ target remote localhost:26000
+The target architecture is assumed to be i8086
+[f000:fff0] 0xffff0:	ljmp   $0xf000,$0xe05b
+0x0000fff0 in ?? ()
+(gdb) 
+</pre>
+
+<p>
+Several things are going on here.
+Note that we entered '<samp>gdb kernel</samp>'
+just as if we were going to debug a program named <samp>kernel</samp>
+directly under this GDB instance -
+but actually trying to execute the xv6 kernel under GDB in this way
+wouldn't work at all,
+because GDB would provide an execution environment
+corresponding to a user-mode Linux process
+(or a process on whatever operating system you are running GDB on),
+whereas the kernel expects to be running in privileged mode
+on a "raw" x86 hardware environment.
+But even though we're not going to run the kernel locally under GDB,
+we still need to have GDB load the kernel's ELF program image
+so that it can extract the debugging information it will need,
+such as the addresses of C functions and other symbols in the kernel,
+and the correspondence between line numbers in xv6's C source code
+and the memory locations in the kernel image
+at which the corresponding compiled assembly language code resides.
+That is what GDB is doing when it reports
+"<samp>Reading symbols from ...</samp>".
+
+<p>
+<b>Important:</b>
+When remote debugging,
+<i>always</i> make sure that the program image you give to GDB
+is exactly the same as the program image running on the debugging target:
+if they get out of sync for any reason
+(e.g., because you changed and recompiled the kernel and restarted QEMU
+without also restarting GDB with the new image),
+then symbol addresses, line numbers, and other information GDB gives you
+will not make any sense.
+Fortunately keeping the target program and the debugger in sync
+is not too difficult when they are both loaded
+from the same directory in the same host machine as they are in this case,
+but synchronization can be a bit more of a challenge
+with "true" remote debugging,
+where one machine runs GDB and another machine runs the target kernel
+loaded from a separate media such as a local hard disk or USB stick.
+
+<p>
+The GDB command '<samp>target remote</samp>' connects
+to a remote debugging stub,
+given the waiting stub's TCP host name and port number.
+In our case,
+the xv6 directory contains
+a small GDB script residing in the file <samp>.gdbinit</samp>,
+which gets run by GDB automatically when it starts from this directory.
+This script automatically tries to connect
+to the remote debugging stub on the same machine (<samp>localhost</samp>)
+using the appropriate port number:
+hence the "<samp>+ target remote localhost:26000</samp>" line
+output by GDB.
+If something goes wrong with the xv6 Makefile's port number selection
+(e.g., it accidentally picks a port number already in use
+by some other process on the machine),
+or if you wish to run GDB on a different machine from QEMU (try it!),
+you can comment out the '<samp>target remote</samp>' command
+in <samp>.gdbinit</samp>
+and enter the appropriate command manually once GDB starts.
+
+<p>
+Once GDB has connected successfully to QEMU's remote debugging stub,
+it retrieves and displays information
+about where the remote program has stopped:
+
+<pre>
+The target architecture is assumed to be i8086
+[f000:fff0] 0xffff0:    ljmp   $0xf000,$0xe05b
+0x0000fff0 in ?? ()
+</pre>
+
+As mentioned earlier,
+QEMU's remote debugging stub stops the virtual machine
+before it executes the first instruction:
+i.e., at the very first instruction a real x86 PC would start executing
+after a power on or reset,
+even before any BIOS code has started executing.
+For backward compatibility,
+PCs today still start executing after reset
+in exactly the same way the very first 8086 processors did:
+namely in 16-bit, "real mode", starting at address 0xffff0 -
+16 bytes short of the end of the BIOS
+and the top of the 1MB of total addressable memory
+in the original PC architecture.
+
+<p>
+We'll leave further exploration of the boot process for later;
+for now just type in the GDB window:
+
+<pre>
+(gdb) <b>b exec</b>
+Breakpoint 1 at 0x100800: file exec.c, line 11.
+(gdb) <b>c</b>
+</pre>
+
+These commands set a breakpoint at the entrypoint
+to the <code>exec</code> function in the xv6 kernel,
+and then continue the virtual machine's execution
+until it hits that breakpoint.
+You should now see QEMU's BIOS go through its startup process,
+after which GDB will stop again with output like this:
+
+<pre>
+The target architecture is assumed to be i386
+0x100800 <exec>:	push   %ebp
+
+Breakpoint 1, exec (path=0x20b01c "/init", argv=0x20cf14) at exec.c:11
+11	{
+(gdb) 
+</pre>
+
+At this point, the machine is running in 32-bit mode,
+the xv6 kernel has initialized itself,
+and it is just about to load and execute its first user-mode process,
+the <code>/init</code> program.
+You will learn more about <code>exec</code>
+and the <code>init</code> program later;
+for now, just continue execution:
+
+<pre>
+(gdb) <b>c</b>
+Continuing.
+0x100800 <exec>:	push   %ebp
+
+Breakpoint 1, exec (path=0x2056c8 "sh", argv=0x207f14) at exec.c:11
+11	{
+(gdb) 
+</pre>
+
+The second time the <code>exec</code> function gets called
+is when the <code>/init</code> program
+launches the first interactive shell, <code>sh</code>.
+
+<p>
+Now if you <b>c</b>ontinue again,
+you should see GDB appear to "hang":
+this is because xv6 is waiting for a command
+(you should see a '<samp>$</samp>' prompt in the virtual machine's display),
+and it won't hit the <code>exec</code> function again
+until you enter a command and the shell tries to run it.
+
+Do so by typing something like:
+
+<pre>
+$ <b>cat README</b>
+</pre>
+
+You should now see in the GDB window:
+
+<pre>
+0x100800 <exec>:	push   %ebp
+
+Breakpoint 1, exec (path=0x1f40e0 "cat", argv=0x201f14) at exec.c:11
+11	{
+(gdb) 
+</pre>
+
+GDB has now trapped the <code>exec</code> system call the shell invoked
+to execute the requested command.
+
+<p>
+Now let's inspect the state of the kernel a bit
+at the point of this <code>exec</code> command.
+
+<p>
+<b>Turn in:</b>
+the output of the following GDB
+'<samp>print</samp>' or '<samp>p</samp>' commands,
+with which we can inspect the arguments
+that the <code>exec</code> function was called with:
+
+<pre>
+(gdb) <b>p argv[0]</b>
+(gdb) <b>p argv[1]</b>
+(gdb) <b>p argv[2]</b>
+</pre>
+
+<p>
+<b>Turn in:</b>
+the output of the GDB '<samp>backtrace</samp>' or '<samp>bt</samp>' command
+at this point,
+which traces and lists the chain of function calls
+that led to the current function:
+i.e., the function that made this call to <samp>exec</samp>,
+the function that called that function, etc.
+
+<p>
+Now go "up" one call frame so we can inspect
+the context from which <code>exec</code> was called:
+
+<pre>
+(gdb) <b>up</b>
+#1  0x00103e96 in sys_exec () at sysfile.c:367
+367	  return exec(path, argv);
+(gdb)
+</pre>
+
+<p>
+<b>Turn in:</b>
+the output of the GDB '<samp>list</samp>' or '<samp>l</samp>' command
+at this point, showing the source code around
+<samp>sys_exec</samp>'s call to <samp>exec</samp>.
+
+<p>
+<b>Further exploration:</b>
+Look through the online
+<a href="http://www.gnu.org/software/gdb/documentation/">GDB manual</a>
+to learn about more of GDB's debugging features,
+and try them out on a running instance of the xv6 kernel.
+
+<p>
+Note that you don't have to settle for the "vanilla" command-line GDB;
+you should be able to use one of the many more "user-friendly" variants,
+such as the GNU Emacs graphical interface to GDB,
+or the graphical <a href="http://www.gnu.org/software/ddd/">DDD</a> frontend.
+But you may have to figure out for yourself
+how to connect with QEMU's remote debugging stub
+under your preferred GDB variant or front-end.
+
+<p><h2>Assignment Part 2</h2></p>
+See Page 12 (Section Code: File Descriptors) of the xv6 book. The last sentence of
+the second-last para
+states that the "xv6 shell doesn't support I/O redirection for the
+error file descriptor, but now you can implement it."
+
+<p>Implement redirection to the error file descriptor. Reading the
+chapter should help you (hint: use dup() call).</p>
+<p>
+<b>Turn in:</b>
+Pseudo-code which implements I/O redirection.
+
+<p><h2>Assignment Part 3</h2></p>
+In xv6 shell, why are <code>mkdir</code>, <code>ln</code>
+and <code>rm</code> implemented as separate user-level programs, while
+<code>cd</code> is implemented as a built-in command?
+
+<p><h2>Assignment Part 4 (Processes)</h2>
+
+On a linux machine, type the following command
+<pre>
+$ <b>cat | tee output.file</b>
+
+</pre>
+
+<code>cat</code> is a UNIX utility that prints the contents of STDIN to STDOUT.
+<code>tee</code> is a UNIX utility that prints the contents of STDIN to both STDOUT and to the file named by its argument (<code>output.file</code>). After you type this command, you can type in some characters followed by the newline character.
+
+<p>
+<b>Turn in:</b>
+While this command is running, examine the processes created:
+<ol>
+  <li> Use <code>pstree</code> to see the process hierarchy. Tell us what you find about the process hierarchy. </li>
+	<li> Use '<code>ps x</code>' to identify the process IDs of the processes created by <code>cat</code> and <code>tee</code> commands.
+	Linux provides a <code>proc</code> pseudo-filesystem which can be used to examine the state of a process using filesystem namespace.
+  <ul>
+    <li> Type the following command for both process-ids:
+    <pre>
+    $ <b>ls -l /proc/<i>pid-num</i>/fd/</b>
+    </pre>
+    What do you find? What are 0,1,2,...? What do they symlink to?
+    </li>
+    <li>Type
+    <pre>
+    $ <b>ls -l /proc/self/fd/</b>
+    </pre>
+    What do you find? What is 3 pointing to? Why?
+    </li>
+  </ul></li>
+</ol>
+
+</body>
+</html>

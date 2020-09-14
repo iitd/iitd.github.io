@@ -1,0 +1,61 @@
+diff -ur bochs-2.4.5/bochs.h bochs-2.4.5-jitter/bochs.h
+--- bochs-2.4.5/bochs.h	2010-04-13 23:26:50.000000000 +0530
++++ bochs-2.4.5-jitter/bochs.h	2010-12-26 06:13:08.000000000 +0530
+@@ -610,4 +610,6 @@
+ 
+ #endif
+ 
++extern int jitter;
++
+ #endif  /* BX_BOCHS_H */
+diff -ur bochs-2.4.5/iodev/pit82c54.cc bochs-2.4.5-jitter/iodev/pit82c54.cc
+--- bochs-2.4.5/iodev/pit82c54.cc	2009-06-30 13:39:38.000000000 +0530
++++ bochs-2.4.5-jitter/iodev/pit82c54.cc	2010-12-26 06:14:25.000000000 +0530
+@@ -49,6 +49,7 @@
+ 
+ #include "iodev.h"
+ #include "pit82c54.h"
++#include <stdlib.h>
+ #define LOG_THIS this->
+ 
+ 
+@@ -413,7 +414,13 @@
+       case 2:
+         if (thisctr.count_written) {
+           if (thisctr.triggerGATE || thisctr.first_pass) {
+-            set_count(thisctr, thisctr.inlatch);
++            unsigned n = thisctr.inlatch;
++            if (jitter && n > 5) {
++                n *= (double) rand() / RAND_MAX;
++                if (n < 5)
++                    n = 5;
++            }
++            set_count(thisctr, n);
+             thisctr.next_change_time=(thisctr.count_binary-1) & 0xFFFF;
+             thisctr.null_count=0;
+             if (thisctr.inlatch==1) {
+diff -ur bochs-2.4.5/main.cc bochs-2.4.5-jitter/main.cc
+--- bochs-2.4.5/main.cc	2010-04-24 15:06:04.000000000 +0530
++++ bochs-2.4.5-jitter/main.cc	2010-12-26 06:14:48.000000000 +0530
+@@ -103,6 +103,7 @@
+ BOCHSAPI BX_MEM_C bx_mem;
+ 
+ char *bochsrc_filename = NULL;
++int jitter = 0;
+ 
+ void bx_print_header()
+ {
+@@ -555,6 +556,13 @@
+       else SIM->get_param_string(BXPN_DEBUGGER_LOG_FILENAME)->set(argv[arg]);
+     }
+ #endif
++    else if (!strcmp ("-j", argv[arg])) {
++      if (++arg >= argc) BX_PANIC(("-j must be followed by a number"));
++      else {
++        jitter = 1;
++        srand (atoi (argv[arg]));
++      }
++    }
+     else if (!strcmp("-f", argv[arg])) {
+       if (++arg >= argc) BX_PANIC(("-f must be followed by a filename"));
+       else bochsrc_filename = argv[arg];

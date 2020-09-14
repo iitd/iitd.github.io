@@ -1,0 +1,210 @@
+<html>
+<head><title>Lecture 5</title>
+</head>
+<body>
+
+<!--
+    Notes for next time:
+    - explicitly discuss aliasing and the fact that the same physical memory
+      can show up multiple times in a virtual address space
+    - context switching and why we have the kernel up at KERNBASE
+      (maybe for the next lecture on interrupts, though)
+
+  -->
+
+<h2>Address translation and sharing using page tables</h2>
+
+<p> Reading: <a href="../readings/i386/toc.htm">80386</a> chapters 5 and 6<br>
+
+<p> Handout: <b> x86 address translation diagram</b> - 
+<a href="x86_translation.pdf">PDF</a> -
+<a href="x86_translation.svg">SVG</a>,
+<!--<b>JOS virtual memory layout</b> -
+<a href="jos_layout.pdf">PDF</a> -
+<a href="jos_layout.svg">SVG</a>-->
+<br>
+
+<p>Why do we care about x86 address translation?
+<ul>
+<li>It can simplify s/w structure: addresses in one process not constrained
+    by what other processes might be running.
+<li>It can implement tricks like demand paging and copy-on-write.
+<li>It can isolate programs to contain bugs or increase security.
+<li>It can provide efficient sharing between processes.
+<!--<li>JOS uses paging a lot, and segments more than you might think.-->
+</ul>
+
+<p>Why aren't protected-mode segments enough?
+<ul>
+<li>Why did the 386 add translation using page tables as well?
+<li>Isn't it enough to give each process its own segments?
+<li>Programming model, fragmentation
+<li>In practice, segments are little-used
+</ul>
+
+<p>Translation using page tables (on x86):
+<ul>
+<li>segmentation hardware first computes the <emph>linear</emph> address
+<li>in practice, most segments (e.g. in <tt>pintos</tt>, Linux) have
+base 0 and max limit,
+    making the segmentation step a no-op.
+<li>paging hardware then maps linear address (la) to physical address (pa)
+<li>(we will often interchange "linear" and "virtual")
+<li>when paging is enabled, every instruction that accesses memory is subject
+    to translation by paging
+
+<p>
+
+<li>paging idea: break up memory into 4096-byte chunks called <emph>pages</emph>
+<li>independently control mapping for each page of linear address space
+<li>compare with segmentation (single base + limit): many more degrees of freedom
+
+<p>
+
+<li>4096-byte pages means there are 2^20 = 1,048,576 pages in 2^32 bytes
+<li>conceptual model: array of 2^20 entries, called a <emph>page table</emph>,
+    specifying the mapping for each linear page number
+<li>table[20-bit linear page #] => 20-bit phys page #
+<li>PTE entries: bottom of handout
+<li>20-bit phys page number, present, read/write, user/supervisor, etc
+<li>puzzle: can supervisor read/write user pages?
+
+<p>
+
+<li>can use paging hardware for many purposes
+<ul>
+    <li>(seen some of this two lectures ago)
+    <li>flat memory
+    <li>segment-like protection: contiguous mappings
+    <li>solve fragmentation problems when allocating more memory (xv6-like process memory layout)
+    <li>demand-paging (%cr2 stores faulting address)
+    <li>copy-on-write
+    <li>sharing, direct access to devices (e.g. /dev/fb on linux)
+    <li>switching between processes
+</ul>
+
+<p>
+
+<li>where is this table stored?  back in memory.
+<li>in our conceptual model, CPU holds the physical address of the
+    base of this table.
+<li>%cr3 serves this purpose on the x86 (with one more detail below)
+<li>for each memory access, access memory again to look up in table
+
+<p>
+
+<li>why not just have a big array with each page #'s translation?
+<li>same problems that we were trying to solve with paging!
+    (demand-paging, fragmentation)
+<li>so, apply the same trick
+<ul>
+    <li>we broke up our 2^32-byte memory into 4096-byte chunks and
+	represented them in a 2^22-byte (2^20-entry) table
+    <li>now break up the 2^22-byte table into 4096-byte chunks too,
+	and represent them in another 2^12-byte (2^10-entry) table
+    <li>just another level of indirection
+    <li>now all data structures are page-sized
+</ul>
+
+<li>386 uses 2-level mapping structure
+<li>one page directory page, with 1024 page directory entries (PDEs)
+<li>up to 1024 page table pages, each with 1024 page table entries (PTEs)
+
+<li>so la has 10 bits of directory index, 10 bits table index, 12 bits offset
+<li>%cr3 register holds physical address of current page directory
+<li>puzzle: what do PDE read/write and user/supervisor flags mean?
+
+
+<p>
+
+<li>now, access memory twice more for every memory access: really expensive!
+<li>optimization: CPU's TLB caches vpn => ppn mappings
+<li>if you change any part of the page table, you must flush the TLB!
+<ul>
+    <li>by re-loading %cr3 (flushes everything)
+    <li>by executing <code>invlpg <i>va</i></code>
+</ul>
+
+<p>Is TLB write through? Is it write back? If not, what is it?
+
+<p>
+
+<li>turn on paging by setting CR0_PG bit of %cr0
+
+<p>
+
+<li>Here's how the MMU translates an la to a pa:
+
+   <pre>
+   uint
+   translate (uint la, bool user, bool write)
+   {
+     uint pde; 
+     pde = read_mem (%CR3 + 4*(la >> 22));
+     access (pde, user, write);
+     pte = read_mem ( (pde &amp; 0xfffff000) + 4*((la >> 12) &amp; 0x3ff));
+     access (pte, user, write);
+     return (pte &amp; 0xfffff000) + (la &amp; 0xfff);
+   }
+
+   // check protection. pxe is a pte or pde.
+   // user is true if CPL==3
+   void
+   access (uint pxe, bool user, bool write)
+   {
+     if (!(pxe &amp; PG_P)  
+        => page fault -- page not present
+     if (!(pxe &amp; PG_U) &amp;&amp; user)
+        => page fault -- not access for user
+   
+     if (write &amp;&amp; !(pxe &amp; PG_W)) {
+       if (user)   
+          => page fault -- not writable
+       if (%CR0 &amp; CR0_WP) 
+          => page fault -- not writable
+     }
+   }
+   </pre>
+
+</ul>
+
+
+<p>Can we use paging to limit what memory an app can read/write?
+<ul>
+<li>user can't modify cr3 (requires privilege)
+<li>is that enough?
+<li>could user modify page tables? after all, they are in memory.
+</ul>
+
+<p>Who stores what?
+<ul>
+	<li>cr3: physical address
+	<li>GDT descriptor: linear address
+	<li>IDT descriptor: virtual address
+</ul>
+
+<p>Pintos:
+<ul>
+	<li>Kernel mapped in top 1GB of every process address space
+	<li>Kernel pages have PG_U bit 0
+	<li>Dealing with user pointers -- three options:
+	<ul>
+		<li>Convert user pointer to kernel pointer (in kernel's address space) by walking the page table in software. Then dereference kernel pointer
+		<li>Check user pointer by walking the page table in software. Then dereference user pointer
+		<li>Dereference user pointer at select code locations only (e.g., <code>copy_from_user</code>, <code>copy_to_user</code>). If there is a bad pointer, it will cause a page fault. The page fault handler can check <code>eip</code> to see if it is one of the <code>copy_xx_user</code> functions. If so, the handler can kill the process and cleanup it's state.
+		<li>When will two virtual addresses in the same page table point to a common physical address?
+		<li>When will two virtual addresses in two different page tables point to a common physical address?
+	</ul>
+</ul>
+
+<p>Page tables vs. Segmentation
+<ul>
+	<li>Good: Pages are easy to allocate (keep a list of available pages
+	and just allocate the first available).
+	<li>Good: Pages are easy to swap as everything
+	is same size and pages are usually same size as disk blocks.</li>
+	<li>Bad: Page tables can become very large (need one entry for each
+	page-sized unit of virtual memory).</li>
+</ul>
+
+</body>

@@ -1,0 +1,1033 @@
+<html>
+<head>
+<title>CSL373 Lab 5: Distributed Processing</title>
+<link rel="stylesheet" href="../labs.css" type="text/css" />
+</head>
+<body>
+<h1>CSL373 Lab 5: Distributed Processing</h1>
+<p>
+<b>Handed out Tuesday, March 20, 2011<br />
+Due Tuesday, April 3, 2010</b>
+
+</p>
+
+<h2>Introduction</h2>
+
+<p>
+In this lab we will convert PIOS into a basic distributed operating system.
+
+<p>
+What exactly is a distributed OS?
+While definitions vary, the one we will use is this:
+a distributed OS is one containing built-in support for distributed computing,
+such that making an application run on a distributed cluster of computers
+is nearly as easy as making the same application run on a single machine.
+While mainstream operating systems such as Linux or Windows
+have mature support for <i>networking</i> via TCP/IP and other protocols,
+most mainstream operating systems
+are probably <i>not</i> distributed operating systems by our definition:
+while X and SSH make it relatively easy to log into and use machines remotely,
+you and your applications must still be extremely aware
+of when you're running on one machine versus another.
+Even if multiple machines in a cluster share NFS-mounted home directories,
+as in the Zoo,
+most operating system abstractions
+such as processes, threads, file descriptors, pipes, shared memory, and so on,
+are restricted to one machine at a time
+and not directly accessible by applications running on other machines.
+If you wish to write an application that runs on multiple machines at once,
+to compute the answer to a large but easily parallelized problem for example,
+you can't just fork a bunch of processes communicating through pipes
+as you might on just one node:
+you must use instead something like SSH to start a separate application process
+on each machine, and then use the OS's networking APIs
+to make these processes cooperate explicitly via message passing.
+
+<p>
+Since the PIOS kernel provides essentially only one abstraction &mdash;
+the process &mdash;
+it is not as difficult on PIOS as it would be on mainstream operating systems
+to step into the true "distributed operating systems" realm,
+and make "all" (one) of PIOS's abstractions operate in a distributed fashion
+across multiple machines in a largely application-transparent way.
+In this lab, therefore,
+we will enhance the PIOS kernel so that
+a process started on one machine can <i>migrate</i> to another,
+keeping all of its register and address space state as it moves.
+A PIOS application thus need not use any special networking or message APIs
+in order to make multiple nodes communicate and cooperate:
+instead, a PIOS process "communicates" with another node
+simply by <i>going there</i>,
+and taking with it any data it needs as part of its address space.
+Once on another node,
+a PIOS process can as usual create further child processes,
+each of which may in turn either stay on the node on which they were created
+(their <i>home</i> node) or migrate to other nodes.
+To start a large-scale parallel computation running on many nodes,
+the application's "main" process can simply migrate to each node in turn,
+forking one or more child "worker" processes or threads on each node,
+and later return along the same circuit
+collecting the results these workers produce.
+
+<p>
+This lab contains the following three parts:
+
+<ol>
+<li>	<b>PCI and E100 Device Drivers:</b>
+	Incorporating a driver for a popular network interface card (NIC)
+	into your kernel.
+
+<li>	<b>Process Migration:</b>
+	Making your kernel trigger process migration at appropriate points,
+	and exchanging the appropriate migration request/reply messages
+	on the network.
+
+<li>	<b>Address Space Migration:</b>
+	Once a process's basic state has migrated to another node,
+	making the receiving node "pull"
+	the contents of the process's address space
+	from the process's former node to the new one.
+</ol>
+
+<h3>Software Setup</h3>
+<p>
+
+In this lab you will build on the kernel from lab 4.
+Use the same procedure as in the previous lab
+to create a <tt>lab5</tt> branch in your Git repository,
+fetch our skeleton source code for lab 4 from the master Git repository,
+and merge your lab3 solutions into it as your starting point for lab 5:
+</p>
+<pre>
+$ <kbd>cd lab</kbd>
+$ <kbd>git commit -am 'my solution to lab4'</kbd>
+$ <kbd>git pull</kbd>
+$ <kbd>git checkout -b lab4 origin/lab5</kbd>
+$ <kbd>git merge lab4</kbd>
+</pre>
+
+<p>
+Lab 5 contains the following new source files,
+which you should look through carefully:
+</p>
+
+<blockquote>
+<table> <tr>
+<tr><td><tt>kern/net.{c,h}</tt>
+	<td>Skeleton kernel source file implementing PIOS's
+		network protocol for process migration.
+<tr><td><tt>dev/e100.{c,h}</tt>
+	<td>Device driver for the Intel E100 network card
+		and the Intel 82559 controller chip it is based on.
+<tr><td><tt>dev/pci.{c,h}</tt>
+	<td>Support functions for locating and configuring
+		devices on the PCI bus.
+</table>
+</blockquote>
+
+
+<h2>Part 1: Network Driver</h2>
+
+Before  we can start adding distributed computing support,
+PIOS nodes must first be able to communicate on a network of some kind.
+For simplicity, PIOS will not use TCP/IP at all:
+PIOS will instead communicate via "raw" local-area Ethernet packets.
+This design means that PIOS nodes
+can communicate only within a cluster sharing a common Ethernet link or VLAN,
+and need across the "wide-area" Internet.
+
+<p>
+To get basic networking working in PIOS,
+we will need a network interface card (NIC) and a device driver for it.
+QEMU can emulate a number of popular NICs;
+for no particular reason we will use the Intel E100,
+which is based on the Intel 8255x series of network interface controllers.
+Information on this controller chip is available in these two documents:
+
+<ul>
+<li>	<a href="../ref/8255x_manual.pdf">
+	Intel 8255x 10/100 Mbps Ethernet Controller Family
+	Open Source Software Developer Manual</a>
+<li>	<a href="../ref/82559_eeprom.pdf">
+	Intel 82559 EEPROM Map and Programming Information</a>
+</ul>
+
+<p>
+The E100 is somewhat more complicated
+than the basic console and display drivers
+you've already encountered in PIOS,
+because the E100 is a high-performance controller
+that uses direct memory access (DMA) to copy packets automatically
+into or out of the processor's physical memory.
+We have provided a working E100 driver for you
+in the <tt>dev/e100.{c,h}</tt> source files, however,
+so you should not need to dig too deeply into these hardware details
+unless you wish to enhance it or add drivers for other NICs.
+
+<p>
+Since the E100 NIC is not a basic, "mandatory" component in all PCs,
+it does not have a "reserved" location in every PC's I/O space,
+like the VGA display, PS/2 keyboard, and legacy serial ports do.
+For the same reason, the E100 also does not have
+a fixed, dedicated hardware IRQ line reserved for it
+like <tt>IRQ_KBD</tt> and <tt>IRQ_SERIAL</tt>
+for the keyboard and serial ports.
+Instead, when an E100 card is present,
+it is plugged into the Peripheral Component Interconnect (PCI) bus,
+which has hardware facilities enabling BIOS and OS software
+to detect which cards are plugged into the machine,
+and to assign them I/O space regions and interrupt lines
+dynamically on system startup.
+The BIOS takes care of most of this task
+of PCI hardware enumeration and resource assignment;
+the OS mainly just needs to be smart and flexible enough
+to search through a hierarchy of busses and devices the BIOS set up
+to find the devices it recognizes and has drivers for.
+We have provided basic code for this purpose
+in the <tt>dev/pci.{c,h}</tt> source files.
+Of course, a real PC may have more than one network interface card
+of the same or different types,
+which may require that the OS start multiple "instances" of a device driver.
+Our E100 driver simply assumes that there is only one E100 in the system,
+but this assumption could be lifted without much difficulty.
+
+<h3>Using QEMU to Build a Virtual Cluster</h3>
+
+<p>
+We have set up the <tt>GNUmakefile</tt> for this lab
+to start <i>two</i> concurrent instances of QEMU
+when you type <tt>make qemu</tt>,
+instead of just one,
+in order to create a small two-machine "test cluster"
+on a private virtual Ethernet LAN.
+Each QEMU instance will have its own VGA display window;
+just move the one on top if it happens to be
+exactly on top of the other one on startup.
+Both nodes' serial output will go to standard output,
+with the second node's output lines prefixed with "<tt>2: </tt>".
+Text you type into the terminal from which you started QEMU
+will always go to node 1's serial port;
+node 2 takes console input only via its virtual display.
+
+<p>
+Our PIOS kernel will actually support clusters
+of up to 32 nodes,
+so you are welcome to construct and test larger virtual clusters if you like.
+You can also run different QEMU instances
+on different physical machines if you wish:
+just start one QEMU instance
+with the <tt>-net socket,listen=:<i>port</i></tt> option,
+and all the others with <tt>-net socket,listen=<i>host</i>:<i>port</i></tt>
+indicating the host name and port number of the "listener" instance.
+Also, if you start more than two virtual nodes,
+you will have to give each an appropriate Ethernet MAC address
+using the <tt>-macaddr=</tt> option.
+PIOS assumes that all nodes' MAC addresses in a cluster are identical
+except for their last byte,
+which is a unique "node number" between 1 and 32.
+See our <tt>GNUmakefile</tt> for basic examples,
+and the <a href="http://wiki.qemu.org/download/qemu-doc.html">
+		QEMU documentation</a>
+for detailed information on setting up QEMU's virtual networking.
+
+<h3>Tracing QEMU's Virtual Network</h3>
+
+In addition to the processor-level debugging capability
+QEMU's GDB stub gives you,
+it can be useful to see exactly what packets your nodes
+are sending and receiving on the network.
+Our <tt>GNUmakefile</tt> configures both QEMU instances
+to produce traces of all network packets into and out of that virtual node,
+in a pair of files <tt>node1.dump</tt> and <tt>node2.dump</tt>.
+These dump files are in the PCAP format used by the <tt>tcpdump</tt> utility;
+to view them, type '<samp>tcpdump -r node<i>N</i>.dump</samp>'.
+Both dump files should usually be at least nearly the same,
+since every packet one node sends should get received by the other.
+
+<div class="required">
+<p><span class="header">Exercise 1.</span>
+	Add an IDT vector for the E100 device interrupt,
+	and add code to <tt>trap()</tt> to handle E100 interrupts
+	and dispatch them to <tt>e100_intr()</tt> in <tt>e100.c</tt>.
+	Because the E100's hardware IRQ is chosen dynamically by the BIOS
+	instead of having a fixed value,
+	it will be available in the global variable <tt>e100_irq</tt>,
+	but only <i>after</i> <tt>init()</tt> calls <tt>pci_init()</tt>
+	(which in turn calls <tt>e100_attach()</tt> once it finds the E100).
+	Since this all happens well after <tt>trap_init()</tt>,
+	you will either need to go back and set up an IDT vector
+	for the E100 after you know its IRQ
+	(remember that the trap vector is <tt>T_IRQ0 + <i>irq</i></tt>),
+	or &mdash; probably the cleaner solution &mdash;
+	just set up IDT trap vectors for <i>all</i> 16 IRQs
+	and have <tt>trap()</tt> dispatch the correct one
+	to <tt>e100_intr()</tt> when E100 interrupts actually start arriving.
+</p></div>
+
+<div class="required">
+<p><span class="header">Exercise 2.</span>
+	Now get the E100 driver working and verify its operation.
+	To do this, make <tt>trap()</tt> call <tt>net_tick()</tt>
+	(in <tt>net.c</tt>)
+	on every timer interrupt;
+	<tt>net_tick()</tt> will later be used to retransmit lost packets,
+	but for now we'll just use it as a periodic "traffic generator".
+	Modify <tt>net_tick()</tt> to transmit a packet to the "other" node
+	once every 64 ticks or so.
+
+	<p><i>Hint:</i>
+	Each packet needs only an Ethernet header,
+	which you can set up with
+	the provided <tt>net_ethsetup()</tt> function;
+	call <tt>net_tx()</tt> to transmit a packet.
+	After <tt>net_init()</tt>,
+	the kernel's <tt>net_node</tt> variable contains "our" node number
+	(either 1 or 2 for the default 2-node cluster).
+</p></div>
+
+<div class="challenge">
+<p><span class="header">Challenge:</span>
+	Since QEMU's simulated networking hardware is pretty permissive,
+	we've been lazy and left off the (technically mandatory)
+	4-byte Ethernet CRC that should be attached to every Ethernet packet.
+	Modify the E100 driver to compute and append this CRC automatically
+	whenever it transmits a packet,
+	and modify the driver's receive logic to verify the CRC,
+	passing only correct packets (minus their CRC) to <tt>net_rx()</tt>
+	and dropping incorrect packets with a warning.
+	There are two ways to do this:
+	you can either find and incorporate some Ethernet CRC code
+	to perform the CRC calculation and verification in software,
+	or let the E100 (virtual) hardware do this work for you
+	by enabling the appropriate device options;
+	see the 8255x manuals above for more details.
+</p></div>
+
+<div class="challenge">
+<p><span class="header">Challenge:</span>
+	Add support for multiple concurrent E100 instances.
+	Then set up a QEMU topology of three or more nodes,
+	such that each node has a "point-to-point" Ethernet link
+	to each other node via a dedicated virtual E100 adapter.
+	Finally, add whatever logic to the networking protocols is needed
+	to choose the correct adapter for a particular packet transmission.
+	Such point-to-point topologies are useful in practice
+	when you have a relatively small cluster
+	and care a lot about bandwidth and/or latency:
+	it eliminates all Ethernet switches between nodes in the cluster
+	and gives each node a dedicated and congestion-free
+	communication path with every other node.
+</p></div>
+
+
+<h2>Part 2: Process Migration</h2>
+
+As mentioned above,
+each PIOS node in a cluster has a node ID between 1 and 32,
+which is defined by the low byte of the node's Ethernet MAC address
+and available in the kernel's <tt>net_node</tt> variable.
+In PIOS's distributed process model,
+each process has a <i>home node</i>,
+which is the node on which that process was first created.
+If the process is a child of another process (i.e., not a node's root process),
+then the process's home node is whichever node its parent process
+resided on when the parent created this child.
+
+<p>
+Once a process is created, however,
+it may explicitly or implicitly request that the kernel
+move it to another node.
+When a process migrates to another node,
+the node receiving the process creates its own local <tt>proc</tt> structure
+to hold the process's execution state while it is running on that node,
+but remembers which node the process originally came from &mdash;
+the process's <i>home</i>.
+
+<h3>System Call API Extensions</h3>
+
+We do not need to add any new system calls to PIOS for process migration:
+instead, a process triggers a migration through
+the existing PUT, GET, and RET system calls.
+Process migration affects PIOS's API as follows:
+<ul>
+<li>	<p><b>PUT/GET:</b>
+	GET and PUT now take not only an 8-bit child process number
+	but an 8-bit node number as well,
+	indicating which node the process should move to
+	before performing the GET or PUT.
+	Each process has a separate set of 256 child processes
+	on <i>each</i> node:
+	thus, the 8-bit node number and 8-bit child number, combined,
+	effectively yield a 16-bit <i>distributed child ID</i>.
+	For purposes of the GET and PUT calls,
+	a node number of zero is a synonym for the process's home node:
+	thus, a process can move back to its home node
+	by making a GET or PUT system call with a node number of zero.
+	(And the child process numbers associated with this "node zero"
+	represent the same processes as the child process numbers
+	associated with the actual node number of the process's home node.)
+
+<li>	<p><b>RET:</b>
+	Whenever a process invokes the RET system call,
+	the kernel automatically migrates the process to its home node,
+	if it is not already on its home node,
+	before attempting to synchronize with and return to the parent.
+	That is, RET "returns home" as well as returning to the parent.
+	The same behavior applies to any "implicit" returns
+	the process makes when it takes a processor exception.
+	A process essentially has no "parent process", as such,
+	while it is executing on a node other than its home.
+
+<li>	<p><b>CPUTS:</b>
+	The CPUTS system call always simply prints debugging output
+	to the console of whichever node the process is currently running on,
+	and never triggers a migration.
+	Note that the PIOS file system's "standard output"
+	will <i>not</i> behave this way.
+	Because standard output propagates up the process hierarchy
+	through parent/child file synchronization,
+	unlike <tt>CPUTS</tt> output,
+	a process's standard output will always appear on the home node
+	of the process's ultimate "ancestor" root process &mdash;
+	i.e., the node whose root process ultimately initiated
+	the hierarchy this process is contained in &mdash;
+	regardless of what node the process may be currently executing on.
+	The behavior of <tt>CPUTS</tt> thus reflects the needs
+	of the OS developer to get information about
+	exactly what is going on where, and when;
+	whereas standard output behavior reflects the needs
+	of an application or user to collect output or logging information
+	back to the originator of a distributed process hierarchy.
+</ul>
+
+Once a PUT/GET/RET system call has migrated a process to the correct node,
+if and when necessary according to the rules above,
+the system call otherwise operates more-or-less as before.
+If a child process tries to RET
+(either explicitly or implicitly through a trap)
+while its parent process is away at another node,
+the child simply waits passively for the parent
+to return to the child's home node and control the child via GET/PUT.
+Similarly, if a parent process tries to GET or PUT a child
+while the child is executing on some other node,
+then the parent process waits until the child returns to its home node
+and does an explicit or implicit RET.
+
+<h3>Process Migration Protocol</h3>
+
+When a user process triggers a migration
+through to one of the events described above,
+the PIOS kernel on the node the process is currently running on
+sends a <i>migration request</i> to the node the process wishes to migrate to,
+and this destination node returns a <i>migration reply</i>
+acknowledging that it has received and taken charge of the process.
+The acknowledgment is required
+because Ethernet is an unreliable network medium:
+either the sending or receiving NIC or any switches or hubs along the path
+may drop any packet without warning.
+If either a migration request or its reply gets lost, therefore,
+the initiating node must periodically resend its migration request
+until it <i>does</i> receive a reply.
+Note that if a migration request gets through but its reply is dropped,
+then the node receiving the process will get the migration request twice;
+nodes must therefore be prepared to receive
+and safely ignore duplicate requests.
+
+<p>
+The format of migration requests and responses
+are defined by the <tt>net_migrq</tt> and <tt>net_migrp</tt> structures
+defined in <tt>kern/net.h</tt>.
+The bulk of a migration request consists of the CPU register state
+of the migrating process.
+The process's entire address state
+must also logically migrate with the process,
+but since even one 4KB page is too large
+to fit into a 1500-byte Ethernet packet,
+the migration initiator does not include any actual address state
+with the original migration request.
+Instead, the migration initiator just includes two <i>remote references</i>:
+one referring to the process itself at its original location on its home node,
+the other referring to the process's latest page directory
+on the node initiating the migration,
+and referring indirectly through that page directory
+to the process's entire address space.
+But what is a remote reference?
+
+<h3>Remote References</h3>
+
+A remote reference in PIOS provides a way to refer to
+a particular page on a particular node,
+not necessarily the node on which the remote reference is stored.
+Remote references essentially serve as cross-node "pointers"
+for a cluster of cooperating PIOS kernels.
+In PIOS, a remote reference consists in particular of three elements:
+
+<ul>
+<li>	<b>Node:</b> the node number holding the referenced page.
+<li>	<b>Address:</b> the physical address of the referenced page
+		on that node.
+<li>	<b>Permissions:</b> nominal read/write permissions;
+		only applicable to pages containing address space data.
+</ul>
+
+Remote references (RRs) in PIOS are always packed into one 32-bit word,
+in a standard format,
+according to the definitions and macros in <tt>kern/net.h</tt>.
+This packed representation allows RRs to substitute directly
+for 32-bit page directory and page table entries
+during address space migration,
+as we will see in Part 3 of this lab.
+For now, however, the main things you need to know are
+how to create remote references using the <tt>RRCONS()</tt> macro,
+and how to extract their fields using <tt>RRNODE()</tt> and <tt>RRADDR</tt>.
+
+<h3>Tracking Remote References</h3>
+
+When a node receives a remote reference from another node,
+it will often need to know whether it has seen that remote reference before.
+When a node receives a process migration request, for example,
+the receiving node needs to know whether the migrating process
+already has a <tt>proc</tt> structure on this node
+or whether a new one needs to be allocated.
+There are three specific cases:
+
+<ol>
+<li>	The RR's node field is the receiving process's node number,
+	in which case the RR refers to a page on the receiving node itself.
+	In the case of an RR referring to a process,
+	this is the case when a process migrates back to its home node.
+<li>	The RR's node field holds some other node number,
+	and the receiving node has not yet seen an RR
+	with the same node number and physical page address as this RR.
+	In the process case,
+	this means that a process is migrating to this node (not its home node)
+	for the first time.
+<li>	The RR's node field holds some other node number,
+	but we <i>have</i> previously seen an RR
+	wit hthe same node and physical page number.
+	In the process case,
+	this means that a process is migrating to this node (not its home node)
+	again after having "visited" previously and migrated away again.
+</ol>
+
+Case 1 is easy to identify from the RR's node number field,
+and in that case the RR's physical address is directly usable
+as a local physical page address.
+The challenge is distinguishing between cases 2 and 3.
+
+<p>
+For this purpose, we have added several fields
+to the <tt>pageinfo</tt> struct that holds metadata for each physical page,
+and added the new functions <tt>mem_rrtrack</tt> and <tt>mem_rrlookup</tt>
+to <tt>kern/mem.c</tt> to record and lookup, respectively,
+local pages corresponding to remote references we have seen before.
+When we first allocate a local page
+to mirror the state of a remote page we found through a remote reference,
+we set the new <tt>pageinfo.home</tt> field
+to hold a copy of the remote reference to the original page.
+At the same time, the "home node" to which the remote reference refers
+sets a bit in the original page's <tt>pageinfo.shared</tt> field
+to indicate which other nodes in the cluster it has shared the page with.
+Finally, the <tt>mem_rrtrack</tt> and <tt>mem_rrlookup</tt> functions
+use the <tt>pageinfo.homelist</tt> and <tt>pageinfo.homenext</tt> fields
+to maintain, for each remote physical page address (on any node),
+a list of local pages we have that "mirror" a remote page
+at that physical address on some node.
+
+<div class="required">
+<p><span class="header">Exercise 3.</span>
+	Modify your implementation of <tt>mem_alloc()</tt>
+	to set the <tt>home</tt> and <tt>shared</tt> fields to zero
+	in any newly-allocated page.
+	Do <i>not</i> touch the <tt>homelist</tt> field here,
+	because its use is associated with <i>remote</i>
+	rather than <i>local</i> physical addresses:
+	a page may be allocated or freed locally
+	independent of where or how it may be used on other nodes.
+	<i>Do</i>, however, double-check
+	that you are clearing the entire <tt>pageinfo</tt> array to zero
+	in <tt>mem_init()</tt>,
+	e.g., using <tt>memset()</tt>.
+</p></div>
+
+<h3>Process Migration Initiation and Response</h3>
+
+You should now have the tools required to initiate process migration requests,
+accept and handle them,
+issue migration replies in response,
+and handle those replies on the node initiating the migration.
+First, we need to trigger process migration at the appropriate points.
+
+<div class="required">
+<p><span class="header">Exercise 4.</span>
+	Modify your implementations of the GET, PUT, and RET system calls
+	so that before doing anything else,
+	they check to see if the process is currently running
+	on the "appropriate" node according to
+	the system call API semantics described above,
+	and if not, initiate process migration to the appropriate node
+	by calling <tt>net_migrate()</tt> in <tt>kern/net.c</tt>.
+	Also modify your user-mode exception handling code in <tt>trap()</tt>
+	to migrate the trapping process to its home node,
+	if it isn't already there,
+	before/instead of calling <tt>proc_ret()</tt>.
+
+	<p><i>Hint:</i>
+	As with sleep/wakeup due to local inter-process synchronization,
+	a process migrating due to a system call
+	will need to re-start the system call on the remote node
+	once it arrives;
+	be sure you handle the EIP correctly.
+
+	<p>
+	You can verify that migration is getting triggered correctly
+	by running the <tt>testmigr</tt> program we have provided.
+</p></div>
+
+Now we need to implement the primary message exchange
+for process migration.
+We have added two new process states in <tt>kern/proc.h</tt>
+and several new fields in the <tt>proc</tt> structure
+to keep track of necessary process state information during this sequence.
+In particular, when a process first initiates a migration request,
+the initiating kernel puts the process into the <tt>PROC_MIGR</tt> state,
+adds the process to the <tt>net_migrlist</tt> list
+(using the <tt>proc.migrnext</tt> field as its next link),
+and keeps the process sleeping there
+until it receives a migration reply from the destination node.
+When this reply is received,
+implying that the destination node
+has taken over responsibility for the process,
+the migration initiator removes the process from the <tt>net_migrlist</tt>
+and places it in the <tt>PROC_AWAY</tt> state,
+where it remains quiescent
+until/unless the process later migrates back to this node.
+
+<div class="required">
+<p><span class="header">Exercise 4.</span>
+	Now implement the missing code
+	in <tt>net_migrate()</tt> (to trigger a process migration),
+	<tt>net_txmigrq()</tt> (transmit a migration request message),
+	<tt>net_txmigrp()</tt> (transmit a migration reply message),
+	and <tt>net_rxmigrp()</tt> (receive and handle a migration reply).
+	The one somewhat tricky functions in this message exchange sequence,
+	<tt>net_rxmigrq()</tt> (handling received migration requests),
+	we have implemented for you.
+	Also, you will need to fill in <tt>net_rx()</tt>
+	to dispatch received messages
+	to <tt>net_rxmigrq()</tt> and <tt>net_rxmigrp()</tt>
+	according to the <tt>type</tt> field in the message's <tt>net_hdr</tt>.
+
+	<p>
+	Once you have this code working correctly,
+	you should be able to run <tt>testmigr</tt> on one node,
+	have it issue a migration request to the other node,
+	which handles and replies to the request,
+	and finally see the migration response being handled
+	by <tt>net_rxmigrp()</tt> in the node initiating the migration.
+	The request/response sequence might sometimes (or even often)
+	hang until you implement the retransmission code below, however.
+</p></div>
+
+Since as mentioned earlier Ethernet can drop packets,
+the node initiating a process migration
+needs to resend its migration request periodically
+until it receives a response.
+The main purpose of the <tt>net_migrlist</tt>
+is to enable the kernel to keep track of which processes
+have outstanding migration requests that may need to be retransmitted.
+
+<div class="required">
+<p><span class="header">Exercise 5.</span>
+	Insert the necessary code into <tt>net_tick()</tt>
+	so that, every 64 ticks or so,
+	the kernel traverses the <tt>net_migrlist</tt>
+	and re-sends all migration requests still outstanding.
+	(Better yet would be to resend one element of the list
+	about every 64/n ticks, where n is the current length of the list,
+	so that if many processes happen to be migrating at once,
+	their retransmissions don't all try to flood the network at once.
+	But this is not likely to be an issue for you in this lab.)
+
+	<p>
+	With this retransmission code in place,
+	your two-node virtual network should reliably
+	be able to get to the <tt>net_rxmigrp()</tt>
+	(migration reply received) stage.
+	The process will not do much on the destination node, of course,
+	since it does not yet have an address space there to run in.
+	If you just let the process take a page fault
+	and let that page fault trigger a migration back to the home node,
+	however,
+	you should be able to get migration to happen in both directions:
+	first to the remote node due to a GET/PUT,
+	then back to the process's home node due to the page fault.
+</p></div>
+
+
+<h2>Address Space Migration</h2>
+
+Now that one node can signal the handoff of a process to another node
+and communicate the process's register state to the receiving node,
+the one major missing piece is providing a way
+for the process to carry along its address space state as well.
+
+<p>
+If we had a reliable stream-oriented protocol like TCP in the PIOS kernel,
+then one option would be to migrate a process
+by opening up a TCP connection
+and sending not only the process's register state
+but the entire contents of its address to the receiving node.
+This approach would have two downsides, however.
+First, PIOS does not have a full TCP/IP protocol stack built in,
+and adding one would involve a lot of complex code;
+even a "lightweight" version of TCP/IP
+like <a href="http://www.swedish-ict.net/~adam/lwip/">lwIP</a>
+is a substantial body of code
+whose exploration we would prefer to leave to
+a good networking course.
+Second, copying a process's entire address space from one node to another
+every time it migrates is likely to be very slow and inefficient,
+given the likelihood that:
+(a) much of a process's address space tends to be empty and unmapped;
+(b) of the process's address space pages that are not empty,
+the process is likely to need only some of these pages
+while it is executing on a particular node, and
+(c) of the pages the process does need access to while visiting another node,
+many of those are likely only to be read (such as code) and never modified.
+This suggests three optimizations to address space migration:
+
+<ol>
+<li>	<b>Sparse transfer:</b>
+	Transfer only pages that are non-empty.
+	For pages (or even entire 4MB page table regions)
+	that are entirely empty, just send a small piece of metadata
+	indicating this fact.
+<li>	<b>Lazy transfer:</b>
+	Don't transfer all a process's pages immediately
+	when the process is first migrated;
+	instead, wait to see which pages the process actually needs
+	before copying them over.
+	In effect, give the migrated process an initially empty address space,
+	and when the process takes a fault on a page that "should" be there
+	(because it was present on the origin node before the migration),
+	only then, pull the contents of that page over the network.
+	This way, pages that the process never touches while on a given node
+	never need to be transferred to that node at all.
+<li>	<b>Read-only page reuse:</b>
+	Once a page <i>is</i> copied to a given node,
+	remember which page on the origin node the page was copied from.
+	If the process never writes to that page
+	before it returns to the origin node,
+	then the page need not be copied back to the origin node
+	because the origin node still has an up-to-date copy
+	from before the process migrated.
+	Similarly, if the process visits the destination node several times
+	and needs to read the page each time it visits (e.g., program code),
+	the page needs to be copied to the destination node only once
+	and then can be reused on each subsequent visit.
+</ol>
+
+In this lab we will implement optimizations 1 and 3 above,
+leaving optimization 2 as an optional challenge exercise.
+
+<p>
+When one node is initiating the migration of a process to another node,
+the initiator probably does not have all the information necessary
+to implement optimizations 2 and 3:
+only the destination node will be able to tell
+which pages the process actually needs while it is running on that node,
+or which pages the process modifies and which pages it only reads.
+This fact suggests a slightly different general approach
+to address space migration:
+instead of having the migration initiator "push"
+the process's address space to the destination node all at once,
+the initiator will only "push" the process's basic register state
+as we did in part 2,
+and then the destination node will "pull" whichever pages it needs
+from the migration initiator if and when it needs them.
+(The destination node might even end up "pulling"
+parts of the process's address space from other nodes
+by following remote references, as we will see.)
+
+<h3>Pulling the Address Hierarchy</h3>
+
+Since PIOS address spaces are naturally defined
+by the x86's hierarchy of page directories, page tables, and pages,
+the address space "pull" process follows this same structure.
+The node receiving a process first pulls the process's page directory,
+then iterates through the user-mode portion of the process's address space
+and pulls the necessary page tables and pages
+to fill the address space.
+Each pull operation pulls exactly one page of data across the network.
+When we pull a page directory or page table,
+the page we pull is full of remote references
+that we have to convert to local PDEs or PTEs
+before the process can use these mappings.
+When we pull a "leaf" page,
+we don't have to perform any conversion of the data we pull
+since the page contains "raw" address space content.
+
+<p>
+When a node first receives and processes a migration request
+in <tt>net_rxmigrq</tt> (which we have provided),
+after saving the received process's CPU state,
+we immediately allocate a new page directory page for the process
+and call <tt>net_pull()</tt> to "pull" the process's (remote) page directory
+into that new page.
+The <tt>net_pull()</tt> function takes a remote reference as an argument
+and initiates a page full request to that remote reference's home node
+to obtain a copy of the page.
+This function places the process into the <tt>PROC_PULL</tt> state,
+saves the critical information about the pull operation
+in the <tt>proc</tt> structure,
+and calls <tt>net_txpullrq()</tt> to send a pull message
+to the owner of the remote reference.
+As with page migration requests,
+the node requesting the pull may have to resend the pull request
+if it (or its reply) gets dropped in the network:
+thus, <tt>net_pull()</tt> places the process onto the <tt>net_pulllist</tt>
+and <tt>net_tick()</tt> calls <tt>net_txpullrq()</tt> periodically
+on all processes waiting for a pull to retransmit these pull requests.
+
+<p>
+When the remote reference's origin node receives the pull request
+in <tt>net_rxpullrq()</tt> (most of which we have provided),
+this node looks up the page from the physical address in the remote reference,
+and sends back up to three Ethernet packets containing the page's content.
+We have to break up each 4KB page into three parts &mdash;
+the first two are 1368 bytes long and the remaining one 1360 bytes &mdash;
+because Ethernet packets are limited to 1500 "payload" bytes
+not including Ethernet header or CRC.
+The node issuing the pull request indicates
+which parts of the page it needs
+in the low three bits of the <tt>net_pullrq.need</tt> member;
+the first time a pull request is sent this will always be seven (binary 111),
+but if some of the response parts arrive while others are dropped,
+then the next retransmission of the pull request
+will adjust the <tt>need</tt> member
+so that the responding node can send only the parts that are still needed.
+
+<p>
+The <tt>net_rxpullrq()</tt> function transmits a part of the requested page
+by calling <tt>net_txpullrp()</tt>.
+If the requested page is a page directory or page table,
+the first thing this function must do is
+convert the PDEs or PTEs in the appropriate part of the page
+into remote references that the pulling node will be able to use.
+Thus, once the node to which a progress has just migrated
+pulls the process's page directory,
+it will receive a page full of remote references to page tables,
+which the node then needs to pull to populate its local page directory;
+each of those page tables will in turn contain remote references for pages,
+which the node needs to pull to populate each page table.
+The "driver" for this iterative address space pulling
+is in <tt>net_rxpullrp()</tt>,
+the function that handles pull responses,
+which we have provided:
+study this function carefully in order to understand the pull process.
+The only missing piece to the <tt>net_rxpullrp()</tt> function
+is a "helper" function it calls, <tt>net_pullpte()</tt>,
+which examines a remote reference
+contained in a just-pulled page directory or page table
+and determines how to convert that remote reference to a local PDE or PTE.
+
+<h3>Address Space Transfer Optimizations</h3>
+
+We mentioned earlier that we would implement optimizations 1 and 3 above.
+Optimization 1 arises naturally from the top-down traversal
+we use to pull over a process's address space,
+starting with its page directory.
+If a particular page directory entry on the process's origin node
+refers to no page table (i.e., contains PTE_ZERO),
+then this PDE becomes a "zero" remote reference on the wire,
+which <tt>net_pullpte()</tt> in turn converts back to a PTE_ZERO PDE
+after the page directory has been received on the process's new home node.
+In this case, <tt>net_pullpte()</tt> need not issue a pull request at all
+for that (nonexistent) page table,
+and just returns 1 after converting the zero RR to a PTE_ZERO PDE
+so that <tt>net_rxpullrp()</tt> will continue immediately to the next PDE.
+The same thing happenes when <tt>net_pullpte()</tt>
+encounters a zero RR in a page table:
+it just converts it immediately into a zero PTE,
+allowing <tt>net_rxpullrp()</tt> to continue to the next PTE
+without issuing a pull request.
+This implements optimization 1.
+
+<p>
+We implement optimization 3 &mdash;
+incremental transfer only of pages that have actually changed
+since the process last visited a node &mdash;
+in similar fashion, by using <tt>mem_rrlookup()</tt>
+to recognize when we already have a copy of a remote page
+that we have pulled over in the past.
+Two things must happen in order for this to work correctly, however.
+First, when <tt>net_pullpte()</tt> allocates a local page
+and issues a pull request to obtain a remote page
+we <i>haven't</i> seen before,
+we it must call <tt>mem_rrtrack()</tt>
+to keep track of the original remote reference that page came from,
+so that <tt>mem_rrlookup()</tt> will be able to find it later.
+Second, any page we obtain via <tt>net_pullpte()</tt>
+<i>must not be modified</i> locally,
+since our page pull protocol currently provides no consistency mechanism
+by which the owner of a page might send "change notifications"
+to other nodes holding copies of that page.
+Thus, we treat <i>all</i> pages that get shipped across the network
+like "copy-on-write" pages:
+if the page is mapped with nominal write permissions,
+we map it read-only,
+and let the page fault handler create a fresh, local copy of the page
+if the process actually attempts to write to it.
+
+<p>
+Of you implemented read-only page table sharing in lab 3,
+then you can follow the same logic as above for page tables
+as for "leaf" data pages.
+That is, when <tt>net_pullpte()</tt>
+is attempting to convert an RR in a page directory into a local PDE,
+it initiates a pull of the referenced page table 
+(if it hasn't already been seen)
+and inserts a read-only PDE pointing to the resulting local page table.
+If the process subsequently attempts to write to anything in that page table,
+it will fault and <tt>pmap_walk()</tt> will "unshare" the page table
+as described in lab 4.
+
+<p>
+If you did <i>not</i> implement read-only page table sharing in lab 3,
+then just make sure you <i>don't</i> call <tt>mem_rrtrack()</tt>
+on any page table pages that you pull (only on "leaf" data pages).
+That way, <tt>net_pullpte()</tt> will <i>always</i>
+pull over fresh copies of all of a process's page tables
+whenever the process migrates.
+Each process migration will be somewhat slower,
+but it is simpler and will still work.
+
+<div class="required">
+<p><span class="header">Exercise 6.</span>
+	Implement the missing pieces of
+	<tt>net_pull()</tt>, <tt>net_txpullrq()</tt>,
+	<tt>net_rxpullrq()</tt>, <tt>net_txpullrp()</tt>,
+	and <tt>net_pullpte()</tt>.
+	Read the comments at the missing code locations carefully
+	for more detailed hints about how to fill them in.
+
+	<p>Once this code is working,
+	<tt>testmigr</tt> should be able to migrate a process
+	from node 1 to node 2 and back again multiple times.
+	The first migration may take a some time
+	because node 2 must pull the process's entire address space,
+	which contains the complete initial file system image,
+	but subsequent migrations should be much quicker
+	as the PIOS kernel recognizes that most of the process's pages
+	have not changed and avoids copying them back and forth each time.
+
+	<p>
+	We have also provided a slightly more interesting application
+	for you to test your distributed OS kernel with:
+	a distributed MD5 "password cracker" (<tt>pwcrack</tt>).
+	Brute-force attacks on cryptographic algorithms
+	are an ideal application for distribution across many machines,
+	since they're easy to parallelize and do not depend too much
+	on high-bandwidth or low-delay interaction between parallel tasks.
+	Just run <tt>pwcrack</tt> with a 16-byte MD5 hash in hex,
+	and the program will attempt to find an ASCII string
+	that hashes to that value.
+	The cracker's main process just subdivides the possible strings
+	into blocks and hands blocks out to four worker threads,
+	two of which run on each of the two nodes,
+	to take advantage of the two virtual CPUs per virtual node.
+	The MD5 cracker performs no optimizations based on dictionaries
+	or probability distributions or whatnot,
+	so you probably won't want to wait around for it to crack
+	a long password: try hashes of passwords of 3 or 4 characters,
+	such as <tt>acbd18db4cc2f85cedef654fccc4a4d8</tt>
+	or <tt>06c1653a2fea476a1966f3052c40b14d</tt>.
+	Changing <tt>BLOCKLEN</tt> in <tt>pwcrack.c</tt>
+	from 2 to 3 will increase efficiency significantly,
+	by allowing worker threads to do more "work"
+	between "check-ins" by the migrating supervisor thread,
+	at the cost of making you wait longer
+	between interesting status updates showing up on the consoles.
+
+	<p>
+	Lab 5 currently has no grade script;
+	just make sure <tt>testmigr</tt> and <tt>pwcrack</tt> work!
+</p></div>
+
+<div class="challenge">
+<p><span class="header">Challenge:</span>
+	If you wish, you can further optimize process migration
+	by implementing optimization 2 above:
+	fully lazy, "on-demand" address space transfer.
+	The idea is to eliminate the <tt>while</tt> loop
+	in <tt>net_rxpullrp()</tt>,
+	which iterates through a process's entire address space
+	converting all remote references it finds into local PDEs and PTEs,
+	and instead just start running the process immediately
+	while leaving all those remote references as-is and "un-pulled".
+	Notice that remote references are laid out
+	so that their least-significant bit (bit 0), corresponding to PTE_P,
+	is always zero:
+	thus, if you leave a remote reference in a PDE or PTE,
+	the processor will simply fault on any attempt to access
+	the corresponding page table or page.
+	Your page fault handler will then need to notice
+	that the PDE or PTE actually contains a remote reference,
+	and initiate an "on-demand" pull of that remote reference
+	to create a local copy of the appropriate remote page table or page.
+	This way, parts of the process's address space that it never touches
+	(which will likely include a lot of file system pages at least)
+	never need to get pulled across the network at all.
+
+	<p>
+	Note, however, that you will probably have to rework
+	other parts of your virtual memory code as well.
+	For example, <tt>pmap_walk()</tt> may have to initiate a pull request
+	if it discovers a page table exists but only on some other node.
+	Since issuing a pull request
+	means putting the calling process to sleep,
+	any call to <tt>pmap_walk()</tt>
+	in turn must be cleanly interruptible and restartable.
+	(Alternatively, you might implement fully on-demand transfer
+	only for "leaf" pages and not for page tables,
+	and still have <tt>net_rxpullrp()</tt> pull over
+	all of a process's page tables before allowing the process to execute.)
+</p></div>
+
+<div class="challenge">
+<p><span class="header">Challenge:</span>
+	Implement a consistency protocol
+	among the nodes sharing copies of a page,
+	allowing the kernel to relax the restriction
+	that pages shared across nodes may never be modified.
+	For example, you might implement
+	a simple <i>Modified/Exclusive/Shared/Invalid</i>
+	or <i>MESI</i> protocol
+	among all the nodes holding copies of a particular page:
+	that way, at most one node can be the "owner"
+	of a writable copy of that page,
+	and if other nodes need write access,
+	they need to obtain exclusive access
+	(along with the latest updates to the page)
+	when the process attempts to write to the page on another node.
+</p></div>
+
+<div class="challenge">
+<p><span class="header">Challenge:</span>
+	You might have noticed that,
+	once we mark a page as remotely "shared"
+	by setting a bit in <tt>pageinfo.shared</tt>,
+	we effectively no longer have a way to "un-share" the page
+	and garbage collect it at any point:
+	thus, process migration is currently a huge memory leak.
+	Fix this bug, so that memory used by migrated processes
+	may be reclaimed once it's no longer needed.
+</p></div>
+
+<p>
+<b>This completes the lab.</b>
+
+
+</body>
+</html>

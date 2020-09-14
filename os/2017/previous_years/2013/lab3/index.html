@@ -1,0 +1,1542 @@
+<html>
+<head>
+<title>CSL373 Lab 3: Virtual Memory</title>
+<link rel="stylesheet" href="../labs.css" type="text/css" />
+</head>
+<body>
+<h1>CSL373 Lab 3: Virtual Memory</h1>
+<p>
+<b>Handed out Tuesday, February 7, 2011<br />
+Due Tuesday, February 28, 2011</b>
+
+</p>
+
+<h2>Introduction</h2>
+<p>
+In this lab,
+you will add paged virtual memory management to PIOS.
+So far PIOS's "processes" have all been running
+in the same address space as the kernel,
+with full ability to read or modify any part of physical memory,
+which of course makes the whole system vulnerable
+to bugs or misbehavior in any process
+even when processes are executing in user mode.
+We will now use the x86's page-based address translation facilities
+to give each process an independent user-level address space,
+providing remaining key ingredient for protection between processes
+by preventing processes from accessing either the kernel's
+or other processes' address spaces.
+We will also enhance PIOS's system call API
+to allow a process to copy data into and out of child processes,
+using <i>copy-on-write</i> optimization to minimize the cost of copying,
+These system call enhancements will allow the parent process
+not only to "fork" child processes with cloned address spaces as in Unix,
+but also &mdash; moving a step beyond typical Unix APIs &mdash;
+allow the parent to <i>merge</i> results that a child process computes
+directly back into the parent's own address space
+without having to communicate indirectly through pipes or files.
+
+<p>
+This lab contains the following implementation components:
+
+<ol>
+<li>	<b>Page Table Management:</b>
+	Building paging structures for the kernel and for user processors,
+	and enabling page translation.
+
+<li>	<b>Loading and Running an ELF Executable:</b>
+	Loading an ELF executable image into the first user-space process
+	and preparing it for execution.
+
+<li>	<b>User Space Copyin/Copyout:</b>
+	Copying memory-based system call arguments out of or into user space
+	while protecting against invalid arguments or traps.
+
+<li>	<b>Memory Management with Copy-on-Write:</b>
+	Efficiently "copying" memory via read-only shared mappings,
+	and lazily copying actual page content only on demand.
+
+<li>	<b>Virtual Memory Merge:</b>
+	Merging memory changes made in one process since a memory snapshot
+	into another process's address space.
+</ol>
+
+<h3>Software Setup</h3>
+<p>
+
+In this lab you will build on the kernel you started in lab 2.
+Use the same procedure as in the previous lab
+to create a <tt>lab3</tt> branch in your Git repository,
+fetch our skeleton source code for lab 3 from the master Git repository,
+and merge your lab2 solutions into it as your starting point for lab 3:
+</p>
+<pre>
+$ <kbd>cd lab</kbd>
+$ <kbd>git commit -am 'my solution to lab2'</kbd>
+$ <kbd>git pull</kbd>
+$ <kbd>git checkout -b lab3 origin/lab3</kbd>
+$ <kbd>git merge lab2</kbd>
+</pre>
+
+<p>
+Lab 3 contains the following new source files,
+which you should browse through and familiarize yourself with:
+</p>
+
+<center>
+<table> <tr>
+<tr><td><tt>kern/pmap.{c,h}</tt>
+	<td>Page mapping and virtual memory code template
+<tr><td><tt>lib/entry.S</tt>
+	<td>Entrypoint code in assembly language for user-level processes
+<tr><td><tt>lib/debug.c</tt>
+	<td>Debugging support code for user-level processes
+</table>
+</center>
+
+
+<h2>Part 1: Page Table Management</h2>
+
+<p>
+Before doing anything else,
+make sure you thoroughly understand the x86's
+protected-mode memory management architecture
+for both segmentation and page translation.
+</p>
+
+<div class="required">
+<p><span class="header">Exercise 1.</span>
+	Read chapters 3 of the
+	<a href="../ref/ia32-3.pdf">
+	IA-32 System Programming Guide</a>,
+	if you haven't done so already.
+	Pay especially careful attention to the details
+	in sections 3.6, 3.7, and 3.11.
+
+	<p>
+	Next, carefully review all the paging-related definitions
+	in the PIOS source files <tt>inc/mmu.h</tt> and <tt>kern/pmap.h</tt>.
+	The former in particular has a variety of macros and constants
+	that will be extremely useful in this lab if used appropriately.
+</p></div>
+
+<h3>Setting Up the Kernel's Address Space</h3>
+
+Once paging is enabled on an x86 processor,
+it is enabled <i>all the time</i>,
+whether the processor is executing in kernel or user mode.
+While some processor architectures give the kernel
+a "special" way to access physical memory directly
+while running in kernel mode,
+the x86 is not such an architecture.
+Once an x86 kernel enables paging,
+the only way <i>any</i> running code, <i>including the kernel</i>,
+ can access physical memory or I/O devices
+is through the paged memory management system.
+This means that to use page memory management at all,
+the kernel must first initialize
+at least one page directory/page table structure
+with the mappings it will need in order to continue executing,
+and must load this paging structure into the processor
+<i>before</i> enabling paging.
+
+<p>
+In PIOS, the kernel expects to access physical memory and I/O devices
+at virtual addresses identical to their physical addresses.
+This means that before enabling paging
+we will have to create a set of <i>identity mappings</i>,
+which map a given virtual address to the same physical address.
+
+
+<div class="required">
+<p><span class="header">Exercise 2.</span>
+	Replace the <tt>panic</tt> in <tt>pmap_init()</tt>
+	with code to set up identity-mappings for
+	the kernel portion of PIOS's virtual address space,
+	which is all the virtual address space
+	below <tt>VM_USERLO</tt> and above <tt>VM_USERHI</tt>.
+	The easiest way to do this is to use 4MB "super-pages",
+	as described in the IA-32 System Programming Guide.
+	Also, since these page mappings will never need to change
+	when the processor context switches among user processes,
+	it is worthwhile to mark these mappings <i>global</i>,
+	again as described in the System Programming Guide:
+	that way, the processor knows not to flush these mappings
+	when the kernel reloads the CR3 register to change address spaces.
+
+	<p>
+	You should initialize all page directory entries
+	corresponding to the user-mode address space,
+	between <tt>VM_USERLO</tt> and <tt>VM_USERHI</tt>,
+	to the constant <tt>PTE_ZERO</tt>, defined earlier in <tt>pmap.c</tt>.
+	Note that this constant is <i>not</i> the same as <tt>NULL</tt>:
+	it is the (nonzero!) physical address of a particular <i>page</i>
+	that the kernel will keep permanently set to all zeros.
+	Using <tt>PTE_ZERO</tt> instead of <tt>NULL</tt>
+	in unmapped page directory and page table entries
+	will slightly simplify code later in this lab,
+	since the kernel can safely enable read permission
+	on <tt>PTE_ZERO</tt> mappings
+	and allow user code to read (but not write!) this all-zero page.
+
+	<p>
+	<i>Hint:</i> Be sure to take full advantage of the many macros
+	we have provided in <tt>inc/mmu.h</tt> to manipulate paging structures.
+	Appropriate use of macros such as these will make your code
+	<i>much</i> simpler and easier to understand.
+
+	<p>
+	We have included code further down in <tt>pmap_init()</tt>
+	to enable the processor paging features that PIOS uses
+	(namely 4MB pages and Global mappings),
+	load the bootstrap page directory into the CR3 register,
+	and turn on paging.
+	Once you have correctly initialized the bootstrap page directory,
+	you should be able to execute past the final <tt>lcr0</tt> instruction.
+	If something is wrong with your page directory,
+	the processor is likely to triple-fault and reset at this instruction,
+	because once paging is enabled with a bad page directory,
+	the processor is unlikely to be able to do just about anything &mdash;
+	including dispatch a page fault to the kernel's page fault handler.
+</p></div>
+
+<h3>Per-Process Page Directories</h3>
+
+Now that the kernel can execute with paging enabled,
+it is time to start building the mapping structures we will need
+to give each user process its own independent address space.
+Recall that the x86's basic 32-bit paging system
+uses a two-level mapping structure:
+a <i>page directory</i> represents the entire 32-bit address space, and
+the <i>page tables</i> that the page directory refers to
+each contain page mappings for a 4MB (2^22 byte) address region.
+
+<p>
+In PIOS,
+each process will always have <i>two</i> page directories
+exclusively for the use of that process:
+a <i>working</i> page directory (<tt>proc.pdir</tt>)
+and a <i>reference</i> page directory (<tt>proc.rpdir</tt>).
+The working page directory is the one the kernel loads into the processor
+when executing that process.
+We will see the purpose of the reference page directory in part 5 of this lab;
+for now all you need to know is that both page directories
+need to be allocated when a new process is allocated,
+and both get initialized to a copy of the <tt>pmap_bootpdir</tt>:
+i.e., with the standard mappings for the kernel part of the address space
+and an empty user address space region.
+
+<div class="required">
+<p><span class="header">Exercise 3.</span>
+	Add code to <tt>proc_alloc()</tt>
+	to allocate and initialize a process's
+	working and reference page directories
+	when the process is created.
+	We have <tt>pmap_newpdir()</tt> and <tt>pmap_freepdir()</tt>
+	functions in <tt>pmap.c</tt> that may be useful.
+</div>
+
+<h3>Page Table Management</h3>
+
+You will now implement the "boilerplate" code the kernel will need
+to create and manage full two-level page tables for user processes.
+This basic management code consists of the following three functions:
+
+<ul>
+<li><p>	<tt>pte_t *pmap_walk(pde_t *<i>pdir</i>, uint32_t <i>va</i>,
+		bool <i>writing</i>)</tt>:
+	This is the main function to "walk" the 2-level structure
+	and allocate page tables as needed by the kernel.
+	The purpose of the function is to
+	locate the <i>page table entry</i> (PTE) &mdash;
+	the particular 32-bit word in the <i>second-level</i> table &mdash;
+	that maps the 4KB page containing virtual address <i>va</i>.
+	Note that <i>va</i> can be an arbitrary address within a page:
+	it need not point to the beginning of a page.
+
+	<p>
+	Since the kernel initializes all page directory entries (PDEs)
+	in a new page directory to <tt>PTE_ZERO</tt>, however,
+	this means that a new directory has <i>no</i> associated page tables:
+	instad the kernel allocates and initialize page tables on demand
+	the first time it needs to map something
+	into the 4MB region covered by a given PDE.
+	This is one of the secondary tasks of <tt>pmap_walk()</tt>.
+
+	<p>
+	The behavior of <tt>pmap_walk()</tt> varies
+	depending on whether it is being used
+	for "reading" or "writing" the paging structures,
+	as indicated by the caller with the <i>writing</i> flag.
+	If <i>writing</i> is zero (false)
+	and <tt>pmap_walk()</tt> encounters a missing page table,
+	it just returns <tt>NULL</tt>
+	and assumes the caller will know how to proceed.
+	If <i>writing</i> is nonzero (true), however,
+	then <tt>pmap_walk()</tt> will attempt to "fill in"
+	a missing PDE by allocating and initializing a new page table,
+	returning <tt>NULL</tt> only if the <tt>mem_alloc()</tt> fails.
+	When <tt>pmap_walk()</tt> allocates and inserts a new page table
+	into the page directory,
+	it initializes all the PTEs in the new page table to <tt>PTE_ZERO</tt>,
+	but inserts the page table itself into the page directory
+	with permissions allowing the processor to use the new page table,
+	for both read and write accesses and in either user or kernel mode.
+
+<li><p>	<tt>pte_t *pmap_insert(pde_t *<i>pdir</i>, pageinfo *<i>pi</i>,
+		uint32_t <i>va</i>, int <i>perm</i>)</tt>:
+	Given a pointer to a <tt>pageinfo</tt> structure
+	describing a given physical page,
+	this function maps that page in the paging structure
+	at virtual address <i>va</i>
+	and with PTE permissions <i>perm</i>.
+	If another page was already mapped at the same virtual address,
+	this function first unmaps the previous page.
+
+	<p>
+	Both the unmapping and mapping processes
+	adjust the reference counts associated physical pages
+	(in the <tt>pageinfo</tt> structure) appropriately:
+	incrementing the reference count for the page being mapped,
+	and decrementing the reference count for any page being unmapped.
+	If unmapping the old page releases the last reference to that page,
+	then the old page must be freed as well.
+	We have provided <tt>mem_incref()</tt> and <tt>mem_decref()</tt>
+	functions in <tt>kern/mem.c</tt>
+	to increment and decrement the per-page reference counts atomically:
+	this means that you don't have to use spinlocks
+	to maintain the consistency of the reference counts
+	when multiple processors may be adding and releasing references
+	to the same page concurrently.
+	The <tt>mem_decref()</tt> function
+	also calls <tt>mem_free()</tt> automatically
+	once the reference count reaches zero:
+	this means that you must be <i>really done</i> with the page
+	when you call <tt>mem_decref()</tt>,
+	since another processor could immediately allocate
+	and start using the page the moment
+	you release the last reference.
+
+<li><p>	<tt>void pmap_remove(pde_t *<i>pdir</i>, uint32_t <i>va</i>,
+		size_t <i>size</i>)</tt>:
+	This function removes an arbitrary contiguous range
+	of page mappings from a virtual address space,
+	starting at <i>va</i> (which must be page-aligned),
+	and covering an address region of size <i>size</i>
+	(which must likewise be a multiple of <tt>PAGESIZE</tt>).
+	Unlike the above two functions,
+	which deal with only a single 4KB page mapping at a time,
+	this function iterates through the virtual address space,
+	possibly removing many page mappings in the process.
+	Also, if the address region to be removed
+	covers the entire 4MB regions represented by one or more page tables,
+	then <tt>pmap_remove()</tt> not only removes
+	all the mappings in those page tables,
+	but also unmaps and releases the page tables themselves.
+
+	<p>
+	As with <tt>pmap_insert()</tt>,
+	this function decrements the reference counts of all unmapped pages,
+	and frees any page whose last reference has been released.
+	Unmapped page table entries are left in the same state
+	that PTEs in freshly allocated page tables are initialized with:
+	namely, set to <tt>PTE_ZERO</tt>.
+</ul>
+
+Since both <tt>pmap_insert()</tt> and <tt>pmap_remove()</tt>
+can affect page mappings that have already been used by the processor
+and loaded into the processor's translation lookaside buffer (TLB),
+these functions also ensure that all the affected mappings
+are flushed from the TLB if the address space being modified
+is the address space of the currently running process.
+
+<p>
+In most multiprocessor operating systems,
+operations like <tt>pmap_insert()</tt> and <tt>pmap_remove()</tt>
+might have to flush not only the <i>current</i> processor's TLB,
+but the TLBs of <i>other</i> concurrently running processors.
+This procedure is known as <i>TLB shootdown</i>.
+Why do they have to do this?
+Think about what happens if multiple user-level threads
+share the same process's address space space.
+What characteristics of PIOS's process model
+make remote TLB shootdown unnecessary in PIOS's case?
+
+<div class="required">
+<p><span class="header">Exercise 4.</span>
+	Implement the above three functions in <tt>kern/pmap.c</tt>.
+	Be careful to maintain all reference counts properly,
+	both when allocating and releasing page tables
+	and when inserting and removing page mappings.
+	Be careful to set all the permission bits correctly
+	at both the page directory and page table levels.
+	Also, when iterating through the address space in <tt>pmap_remove</tt>,
+	be careful to handle the nontrivial cases properly:
+	e.g., when given an address region
+	that does not start <i>or</i> end on 4MB boundaries
+	represented by particular page tables,
+	but may nevertheless cover entire 4MB regions
+	whose page tables must be unmapped and released.
+
+	<p>
+	For now, you can ignore the text in the comment for <tt>pmap_walk</tt>
+	about copying read-shared page tables:
+	you will deal with that, if necessary, in part 4 of the lab.
+
+	<p>
+	When you have completed this exercise correctly,
+	you should be able to get through <tt>pmap_check()</tt> successfully.
+</div>
+
+
+<h2>Part 2: Loading and Running an ELF Executable</h2>
+
+Now that you have code to set up paging structures,
+it's time to set up some paging structures:
+namely those required to run a "root" user-mode process
+<i>in user address space</i>
+and from an executable image separately linked from that of the kernel.
+We have provided a test program, <tt>user/testvm.c</tt>,
+which exercises and tests your virtual memory system,
+but you need to load that executable
+into the root process's address space and start it running.
+
+<p>
+You already encountered <i>Executable and Linkable Format</i> (ELF) files
+earlier while exploring the xv6 and PIOS boot process:
+the boot loader code in <tt>boot/main.c</tt>
+already loaded the kernel into physical memory from an ELF executable.
+Now you will write a very similar,
+and not much more complicated,
+loader in the kernel to load the first user-level program into memory.
+Now would be a good time to have a close look at
+the <a href="../ref/elf.pdf">ELF specification</a>
+and the definitions in <tt>inc/elf.h</tt>.
+
+<p>
+The main differences between what the boot loader did for the kernel
+and what your kernel code needs to do now are:
+
+<ul>
+<li><p>	Whereas physical memory was already "just sitting there"
+	waiting for the boot loader to load something into it,
+	the root process initially contains <i>no accessible memory at all</i>
+	in the user address space area where you need to load the program.
+	The kernel must allocate physical pages
+	and map them into the user virtual memory area
+	as it loads the program.
+
+<li><p>	An ELF executable can contain multiple <i>segments</i>
+	intended to be loaded with different memory access permissions:
+	e.g., read-only for code and constant strings,
+	read/write for initialized and uninitialized data (bss).
+	The flags in the <tt>p_flags</tt> member
+	of the ELF Program Header (<tt>proghdr</tt>) structure,
+	in particular, indicates how a segment should be mapped.
+	The boot loader simply ignored these flags
+	since there is no way to assign access permissions to physical memory.
+	While loading the first user process into virtual memory, however,
+	the kernel can and should set its memory permissions correctly,
+	for good measure and aid in debugging.
+	The only permissions you need to worry about are read and write,
+	because until recently the x86 architecture
+	didn't support page-level execute permissions.
+
+	<p>
+	<i>Note:</i>
+	The relevant bit values for <tt>p_flags</tt>
+	are defined in <tt>inc/elf.h</tt>
+	and are <i>not</i> the same values as the x86 PTE permissions:
+	you have to translate them when setting the page permissions.
+	Also, an ELF program segment may span many virtual memory pages,
+	and will not necessarily start or end on a page boundary.
+	However, no two ELF program segments will load
+	onto the same virtual memory page.
+	(The linker enforces this rule while it is laying out the executable.)
+
+<li><p>	The boot loader only loads the <i>initialized</i>
+	portion of each program segment,
+	represented by the <tt>p_filesz</tt> in the ELF Program Headers:
+	i.e., the portion of the program segment contained in the ELF file.
+	Any program segment can also contain an <i>uninitialized</i> portion,
+	above <tt>p_filesz</tt>
+	but below the <i>in-memory segment size</i>
+	indicated by the Program Header's <tt>p_memsz</tt> member.
+	An ELF program loader is expected
+	to map this uninitialized data area but set its contents to zero.
+	The PIOS boot loader just neglected this duty
+	and instead let the kernel do that itself:
+	that's what the <tt>memset(edata, 0, end - edata)</tt> does
+	at the beginning of <tt>kern/init.c</tt>.
+	When the kernel loads the first user-mode process, however,
+	it should do it "the right way",
+	mapping and initializing the entire <tt>p_memsz</tt> bytes
+	of each program segment correctly.
+	(In practice there is generally only one program segment
+	for which <tt>p_memsz</tt> is greater than <tt>p_filesz</tt>,
+	but there is no reason this fact needs to affect the ELF loader.)
+
+	<p>
+	<i>Note:</i>
+	Neither the initialized nor uninitialized portions of a program segment
+	will necessarily start or end on a page boundary.
+	This implies that one page of a program segment &mdash;
+	the one containing the "boundary" &mdash;
+	may contain both initialized (from the ELF file)
+	and uninitialized (cleared to zero) data.
+</ul>
+
+Besides describing the segments to be loaded into memory,
+the ELF header also indicates where the program should start executing:
+i.e., the user-level EIP of the first instruction in the program.
+
+In addition to loading the program itself as described by the ELF image,
+the kernel will need to give the root process a stack to execute on.
+A small one-page stack should be sufficient;
+the root process can later allocate a bigger stack for itself if it needs one.
+The high end of the user virtual memory area &mdash;
+the last page just before <tt>VM_USERHI</tt> &mdash;
+would probably be a suitable place for the root process's stack.
+
+<div class="required">
+<p><span class="header">Exercise 5.</span>
+	Implement a root program loader in <tt>kern/init.c</tt>,
+	by replacing your lab 2 code to start a root process
+	executing at <tt>user()</tt> in the kernel's address space
+	(which should no longer work now that the kernel's address space
+	is inaccessible when the processor is running in user mode).
+	The PIOS makefiles have linked directly into the kernel
+	a binary copy of the ELF executable for the root process,
+	which you can find using the "magic" linker-defined symbol
+	<tt>_binary_obj_user_testvm_start</tt>
+	referenced at the top of <tt>kern/init.c</tt>.
+
+	<p>
+	<i>Hint:</i>
+	There are at least two general approaches to the loading process:
+	<ol>
+	<li>	For each virtual page affected by a program segment,
+		allocate and map a physical page appropriately,
+		and copy the correct data and/or zeros into that page
+		using the page's <i>physical</i> address as the destination.
+		This approach doesn't (yet) require the mappings to work,
+		but slicing and dicing program segments into pages
+		can require moderately complicated arithmetic.
+	<li>	First allocate and map all the pages a program segment covers,
+		then initialize the segment all at once
+		by accessing it at its <i>virtual</i> address.
+		This approach may make the loading arithmetic simpler,
+		but you'll need to make sure the processor is using
+		the correct page directory &mdash;
+		and how do you write to the virtual mapping
+		of a program segment that (eventually) needs to be read-only?
+	</ol>
+
+	<p>
+	<i>Hint 2:</i>
+	Testing your program loader
+	is likely to reveal bugs in your mapping structure management code.
+	If something is wrong with your mappings,
+	the processor will probably take a page fault,
+	so set a breakpoint at <tt>trap()</tt> to catch these.
+	Also, make sure your process management code does something sensible
+	when trying to "reflect" a trap that occurs in the root process:
+	since the root process has no parent to reflect the trap to,
+	you might want to dump the trapframe and panic, for example.
+	When the root process "returns" gracefully via <tt>sys_ret()</tt>,
+	however, your kernel should simply call <tt>done()</tt>,
+	which will help the grade scripts know
+	when the root process is finished with all tests.
+
+	<p>
+	Once you have the program loader working,
+	you should be able to step through <tt>proc_run()</tt>
+	and into the user mode process.
+	GDB initially won't know where you are,
+	because <tt>testvm</tt> was linked separately from the kernel
+	and GDB only has symbols for the kernel.
+	You can fix this problem by typing this command into GDB:
+
+	<p>
+	<pre><kbd>add-symbol-file obj/user/testvm 0x40000000</kbd></pre>
+
+	<p>
+	This will augment the debugging symbols GDB already has for the kernel
+	with the debugging symbols contained
+	in the ELF image <tt>obj/user/testvm</tt>.
+	The <tt>0x40000000</tt> tells GDB
+	where <tt>testvm</tt> is loaded in virtual memory.
+	GDB requires this argument because this command is normally used
+	to load symbol tables for shared libraries,
+	which are normally position-independent code (PIC).
+	PIOS's root process is not position-independent,
+	so GDB technically doesn't need the load location argument in our case,
+	but GDB apparently doesn't know that.
+</div>
+
+<div class="challenge">
+<p><span class="header">Challenge:</span>
+	Add proper support for page-level execute permissions
+	when running on AMD processors,
+	via AMD's extension for "No Execute" bits in page table entries.
+	This isn't as easy as it may sound, unfortunately,
+	because at the time AMD introduced this feature
+	there were no more bits available in 32-bit page table entries,
+	so the "No Execute" bit is available only in conjunction with
+	Intel's "Page Address Extensions" to support 64-bit PTEs.
+
+	<p>
+	<i>Background:</i>
+	A number of years ago,
+	long before the introduction of true 64-bit x86 processors,
+	the 32-bit physical address space introduced by the 80386 processor
+	started getting cramped,
+	and hardware vendors wanted to build PCs
+	with more than 4GB of RAM &mdash;
+	even though users were still running 32-bit operating systems.
+	In response to this demand,
+	Intel created the <i>Page Address Extensions</i> (PAE),
+	which allow 32-bit operating systems
+	to use 64GB (36 bits worth) of physical RAM.
+	All this RAM obviously can't be mapped
+	into the kernel's &mdash; or any single user process's &mdash;
+	32-bit address space at once,
+	but it <i>can</i> be used if the kernel
+	doesn't need to have all physical RAM
+	mapped into its address space all the time (as PIOS does)
+	and if this physical RAM is distributed among several user processes.
+
+	<p>
+	PAE works by rearranging the paging structures:
+	it increases all page table entries from 32 to 64 bits in size,
+	thus halving the number of entries per page table or page directory,
+	while making room for more physical address bits and other features.
+	But halving the number of entries
+	meant one page table level could translate
+	only 9 bits of virtual address rather than 10,
+	thus necessiating a third (small) level of translation.
+	This "level 3" page table,
+	called the <i>page directory pointer table</i>,
+	contains the four "page directory pointers" necessary
+	to map a full 32-bit virtual address space with 64-bit PTEs.
+	Thus, making use of PAE does not exactly represent
+	a trivial change to the kernel's page table management code,
+	although nothing has changed fundamentally.
+
+	<p>
+	AMD later enhanced PAE mode further
+	by adding the ability to disable code execution at page granularity,
+	via a new "No Execute" (NX) bit in each PTE.
+	This was touted as a major security feature,
+	because it makes it more difficult for viruses and other malware
+	to exploit buffer overflow bugs
+	by injecting code into the heap or stack
+	and then causing that code to be executed (from the heap or stack).
+	Both Intel and AMD now support execute-disable in the new 64-bit mode,
+	although only AMD supports it in 32-bit PAE mode
+	(see AMD's latest architecture manuals for details).
+	So if you try this challenge problem,
+	make sure you have an AMD processor to test on
+	(or be prepared to rewrite your kernel to run in 64-bit mode)!
+</p></div>
+
+<h2>Part 3: User Space Copyin/Copyout</h2>
+
+<p>
+Now that virtual memory has provided us
+some hope of protecting the kernel's state from user-level processes
+and protecting processes from each other,
+we need to reconsider how the kernel interacts
+with user-level code during system calls.
+System calls generally have arguments,
+which need to be passed from user space to the kernel.
+PIOS system calls pass simple arguments in registers:
+the user-mode system call stubs in <tt>lib/syscall.c</tt>
+just load the arguments into the appropriate registers
+before executing the <tt>INT T_SYSCALL</tt> instruction,
+and the kernel's system call handling code in <tt>kern/syscall.c</tt>
+retrieves these arguments from the user-level <tt>trapframe</tt>
+that the trap entrypoint code pushed on the kernel stack.
+
+<p>
+Many system calls take arguments that don't fit in registers, however,
+such as the string argument to <tt>sys_cputs</tt>
+and the <tt>cpustate</tt> pointer to <tt>sys_put</tt> and <tt>sys_get</tt>.
+For such arguments,
+PIOS's user-space system call stub just leaves the argument data in user space
+and passes a pointer to the data in a register.
+The kernel then needs to read
+the contents of the argument data from user space &mdash;
+or write system call results into user space,
+in the case of output arguments
+such as the <tt>cpustate</tt> structure that <tt>sys_get</tt> fills in.
+But what if the user code passes an invalid pointer for such an argument?
+Consider what would happen in your current system call handling code
+if a user mode program:
+
+<ul>
+<li><p>	passes a pointer into the kernel's address space region,
+	outside the <tt>VM_USERLO</tt> and <tt>VM_USERHI</tt> region.
+<li><p>	passes a pointer into user space,
+	but the area of virtual memory pointed to
+	is either fully or partially unmapped (no access permissions).
+<li><p>	passes a pointer to a user space data area
+	that the system call will write to,
+	such as the <tt>cpustate</tt> argument to <tt>sys_get</tt>,
+	but part or all of that data area is mapped read-only.
+</ul>
+
+<h3>The Confused Deputy Problem</h3>
+
+<p>
+This issue is one specific instance of a very general security issue
+called the
+<i><a href="../bib/hardy88confused.pdf">confused deputy problem</a></i>.
+In short, a trusted "deputy" (the kernel in this case)
+has multiple sets of authorities &mdash;
+namely the ability to access both kernel space and user virtual memory &mdash.
+The kernel has only one "namespace" of virtual addresses
+with which to access memory, however:
+kernel space and user process space are mixed into one 32-bit address space
+whose boundaries are defined only by the kernel programming conventions.
+Because the kernel needs to access memory under multiple authorities
+(i.e., wearing different "hats"),
+but has no way to associate the memory accesses it performs
+with the authority it <i>intends</i> to use when performing that access,
+without extreme care a user process can "confuse" the kernel
+into exercising its authority to access kernel space
+when it only intends to use its authority to access user space,
+thereby fatally compromising the kernel's security.
+
+<p>
+Security issues of this kind
+are a direct consequence of PIOS's use of page-level protection bits
+to distinguish kernel space from user space,
+because clearing the <tt>PTE_U</tt> in a PDE or PTE
+prevents user code from <i>directly</i> accessing privileged memory,
+but does nothing to prevent the kernel
+from accidentally accessing privileged memory
+when it is reading or writing data on behalf of the user
+using user-provided pointers.
+
+<p>
+In at least this one respect,
+the 80286's old segmentation-based virtual memory system
+may have actually provided a fundamentally cleaner and more secure design.
+When segmentation-based software passes pointers among system components,
+it typically does so using "far pointers",
+which encapsulate both a segment selector and an offset
+in a single "pointer object."
+The x86 processor's rules for handling segment registers ensure
+that user-level (ring 3) code can never load
+a segment associated with a higher privilege level.
+Unprivileged code cannot even "inherit" access to more-privileged segments
+from more privileged code that might accedentally leave
+privileged segments loaded in segment registers
+when returning to less privileged code,
+because the processor clears any such segment registers
+whenever it transfers control to a lower privilege level
+(via <tt>IRET</tt> for example).
+Therefore, if user code passes a far pointer to a kernel system call
+by passing the segment in a segment register
+and the offset in a normal register,
+the kernel may safely use that far pointer to access the user's segment,
+because the segment selector acts as a <i>capability</i>
+that binds the name of the memory to be accessed
+to the authority under which it should be accessed.
+In this design,
+user code cannot trick the kernel into accessing memory
+that the user code itself could not access
+because the user code must explicitly pass the authority
+with which the memory is to be accessed (the segment selector),
+it cannot pass an authority to which it does not itself have access
+(by virtue of being able to load the segment selector),
+and the kernel uses <i>only</i> the explicitly passed authority
+(the segment selector passed by the user)
+when accessing the memory named by that far pointer.
+See the <a href="../bib/hardy88confused.pdf">Confused Deputy paper</a>
+for other illuminating discussion of this issue.
+
+<h3>Protecting PIOS System Calls</h3>
+
+<p>
+Since neither segmentation-based nor capability-based systems took off,
+however,
+we unfortunately live in a word in which kernels
+simply have to be extraordinarily careful
+whenever they access memory on behalf of a user process &mdash;
+or when <i>any</i> program with special privileges
+does <i>anything</i> with <i>any</i> kind of name
+supplied by a less-trusted program, for that matter.
+To fix PIOS's gaping security vulnerabilities,
+we need to do two things:
+
+<ul>
+<li>	Whenever the kernel is about to access an area of memory
+	that was specified by the user
+	and is supposed to be pointing into user space,
+	the kernel must carefully verify that <i>the entire data area</i>
+	specified by the user indeed lies in
+	the user's part of the address space
+	(between <tt>VM_USERLO</tt> and <tt>VM_USERHI</tt>).
+
+<li>	In addition, the kernel must anticipate that
+	a user process may accidentally or maliciously pass
+	a pointer to a memory area that is, in full or in part,
+	not mapped with the correct permissions for the intended operation.
+	In this case, the processor will take a trap
+	<i>while running in the kernel</i>
+	(e.g., in a <tt>memmove</tt> used to copy data
+	into or out of user space),
+	but the kernel must be careful to place the blame for this trap
+	where it belongs: on the user process, not the kernel itself.
+</ul>
+
+<p>
+PIOS handles memory access errors caused by the user during system calls
+by behaving as if the <tt>INT T_SYSCALL</tt> instruction itself
+had caused the corresponding memory access error.
+For example, if the user issues a <tt>SYS_GET</tt> system call
+requesting that the kernel write a <tt>cpustate</tt> structure
+to an invalid or unmapped address,
+the user process will take a page fault
+exactly as if it had instead executed a <tt>MOV</tt> instruction
+that directly tried to write to the illegal address.
+This approach to handling memory access faults during system calls
+is merely PIOS's approach:
+Unix systems more commonly just cause the system call
+to return with an error code such as <tt>EFAULT</tt> in such a situation,
+which has advantages
+(it's a bit simpler for the user code
+to catch a simple error return than a simulated trap)
+and disadvantages
+(the user code is more likely just to ignore the return code,
+even though it likely indicates a serious program failure,
+and perhaps cause the error cause even more damage).
+
+<div class="required">
+<p><span class="header">Exercise 6.</span>
+	Implement <tt>systrap</tt>, <tt>sysrecover</tt>,
+	<tt>checkva</tt>, and <tt>usercopy</tt> in <tt>kern/syscall.c</tt>,
+	to provide the logic necessary
+	to access user memory safely using user-provided pointers.
+	Then modify the system call handlers
+	to use <tt>usercopy</tt> when copying system call argument data
+	into or out of user space.
+</div>
+
+<h2>Part 4: Memory Management with Copy-on-Write</h2>
+
+We have created a root process in a fully virtual address space,
+and finally taken proper measures to protect the kernel from user processes;
+what's still missing is a way for user processes themselves
+to change their own virtual address spaces,
+to set up virtual address spaces for their child processes,
+and to communicate data inputs and results with their children.
+Instead of adding more new system calls for this purpose,
+we will simply extend the existing GET and PUT system calls
+to enable the caller to perform memory management operations
+along with the existing functions of these system calls.
+This way, processes can easily combine several related operations
+into one GET or PUT system call for efficiency:
+e.g., a parent can set up both a child's register memory state
+and start the child running with one PUT system call,
+and can later synchronize with the child, retrieve its register state,
+and retrieve results from its virtual address space with one GET system call.
+The process specifies memory management operations to perform
+by ORing the following values into the system call command code:
+
+<ul>
+<li><p>	<b>Memory operation code</b> in the <tt>SYS_MEMOP</tt> bit field.
+	Must be one of the following values:
+	<ul>
+	<li><p>	<b><tt>SYS_ZERO</tt></b>:
+		Remove all permissions from a range of virtual memory
+		in the destination process
+		(child for PUT, parent for GET),
+		and replace the content of this virtual memory range
+		with all zeros.
+		This operation effectively reverts the given memory range
+		to the "primordial" state all user memory starts out in
+		when a user process is first created.
+
+	<li><p>	<b><tt>SYS_COPY</tt></b>:
+		Copy a virtual memory range from the source process
+		(parent for PUT, child for GET)
+		into the parent process
+		(child for PUT, parent for GET).
+		To make the copy more efficient,
+		the kernel initially copies only memory mappings,
+		making all affected mappings read-only
+		in both the source and destination,
+		and then copies actual page content
+		only on demand as user code tries to write to the copied pages.
+
+	<li><p>	<b><tt>SYS_MERGE</tt></b> (only available with GET):
+		Copy the <i>differences</i>
+		between the child's reference address space snapshot
+		and its current working address space,
+		within a given virtual memory range in the child's space,
+		back into the parent's address space.
+		This operation is described later in Part 5.
+	</ul>
+
+	<p>
+	In all of these memory operations,
+	for simplicity the memory region affected
+	must start on a 4MB boundary and must be a multiple of 4MB in size:
+	that is, these memory operations always affect
+	<i>complete page tables</i> at a time worth of address space,
+	and are not available to the user at page granularity.
+	Taking advantage of this assumption will greatly simplify your code.
+
+	<p>
+	On entry to the GET/PUT system call,
+	user code specifies the relevant memory ranges
+	in the following registers:
+
+	<ul>
+	<li>	<tt>ECX</tt>: contains the memory region size.
+		Must be a multiple of 4MB.
+	<li>	<tt>ESI</tt>:
+		contains the start of the <i>source</i> region
+		in the relevant process
+		(child for GET, parent for PUT).
+		Must be a multiple of 4MB.
+	<li>	<tt>EDI</tt>:
+		contains the start of the <i>destination</i> region
+		in the relevant process
+		(parent for GET, child for PUT).
+		Must be a multiple of 4MB.
+	</ul>
+
+<li><p>	<b><tt>SYS_PERM</tt></b>:
+	If the calling process ORs this flag into the GET/PUT command code,
+	then <i>after</i> performing any memory operation
+	specified in the <tt>SYS_MEMOP</tt> bit field as described above
+	(or after performing no memory operation
+	if the <tt>SYS_MEMOP</tt> bits are zero),
+	the kernel sets the nominal page permissions
+	on all the pages in the destination memory operation range
+	to the values specified
+	in the <tt>SYS_READ</tt> and <tt>SYS_WRITE</tt> bits
+	of the system call command code.
+	Thus:
+
+	<ul>
+	<li><p>	<b><tt>SYS_PERM</tt></b> alone:
+		If the caller specifies specifies just <tt>SYS_PERM</tt>
+		without <tt>SYS_READ</tt> or <tt>SYS_WRITE</tt>,
+		then the GET/PUT removes all access permissions
+		from all pages in the destination memory region.
+		This removal of access does <i>not</i> deallocate or zero
+		the content of the destination memory region:
+		the actual page contents remain associated with
+		the relevant locations in the virtual address space,
+		but merely temporarily "hidden" and inaccessible.
+		A subsequent <tt>SYS_PERM</tt> operation
+		can reinstate access permissions to the inaccessible pages,
+		and the old content in these pages
+		will then be reinstated unchanged.
+		Only the <tt>SYS_ZERO</tt> operation above
+		actually clears both permissions <i>and</i> page content.
+
+	<li><p>	<b><tt>SYS_PERM | SYS_READ</tt></b>:
+		Sets the permissions on all pages in the destination region
+		to permit read-only access (but not write access),
+		regardless of any of these pages' previous permissions.
+		If the caller performs this operation
+		on a destination memory region that has never been used,
+		or on pages that have been reset with <tt>SYS_ZERO</tt>,
+		these pages become accessible read-only and filled with zeros.
+
+	<li><p>	<b><tt>SYS_PERM | SYS_READ | SYS_WRITE</tt></b>:
+		Sets the permissions on all pages in the destination region
+		to permit both read and write access,
+		regardless of any of these pages' previous permissions.
+		If the caller performs this operation
+		on a destination memory region that has never been used,
+		or on pages that have been reset with <tt>SYS_ZERO</tt>,
+		these pages are initially filled with zeros
+		but become accessible read/write,
+		and thus may be used as "newly allocated" virtual memory.
+		Calling <tt>SYS_PERM | SYS_READ | SYS_WRITE</tt>
+		on a never-before-used or <tt>SYS_ZERO</tt>'d region
+		is essentially PIOS's equivalent to <tt>sbrk()</tt>
+		in Unix or xv6.
+	</ul>
+
+	<p>
+	Although the memory <tt>SYS_MEMOP</tt> memory operations
+	are restricted to operating on 4MB-aligned memory regions
+	a multiple of 4MB in size,
+	if the caller does <i>not</i> request a memory operation
+	but only specifies <tt>SYS_PERM</tt>,
+	then <tt>SYS_PERM</tt> allows the destination memory region
+	to have arbitrary page alignment in both start and size.
+	This allows processes to manage access permissions at page granularity,
+	to set up page permissions
+	when loading child processes from ELF executables for example,
+	even though the kernel's "bulk memory management" facilities
+	only support the much larger 4MB granularity.
+
+<li><p>	<b><tt>SYS_SNAP</tt></b> (only available with PUT):
+	If the calling process ORs in this flag in a PUT system call,
+	then <i>after</i> performing any memory operation
+	and/or permission change specified above,
+	the kernel copies the child's entire working address space
+	into the child's <i>reference address space snapshot</i>,
+	represented by <tt>proc->rpdir</tt>,
+	again using copy-on-write.
+	This flag is discussed further in Part 5 below.
+</ul>
+
+<h3>Copy-on-Write and Nominal versus Actual Page Permissions</h3>
+
+<p>
+When the kernel performs a "bulk" virtual address space copy
+as requested by a <tt>SYS_COPY</tt> or <tt>SYS_SNAP</tt> operation,
+it uses <i>copy-on-write</i>
+to make the copy "appear" to happen almost instantaneously,
+merely after rearranging some virtual memory mappings,
+while deferring the actual "hard labor" of copying physical memory
+until the affected processes actually start writing to the copied pages.
+When the kernel performs a virtual copy,
+for each "copied" page the kernel effectively just:
+
+<ol>
+<li>	copies the page mapping rather than the page itself,
+	so that the source and destination mappings
+	actually refer to the same physical page in memory.
+<li>	increments the reference count on each page shared this way,
+	to keep track of the number of references that exist to each page.
+<li>	sets both the source and destination mappings to read-only,
+	to prevent either process from directly modifying the shared page
+	and shattering the illusion that the two processes
+	really have separate and independent copies of the page's content.
+</ol>
+
+When either process tries to write to a page
+that <i>was</i> writable but is now read-only
+because of the kernel's copy-on-write optimization,
+the kernel needs handle this page fault transparently to the application.
+Specifically, the kernel allocates a new page,
+copies of the shared page's content into the new page,
+redirects the faulting mapping from the old, shared page
+to point to the new, exclusive page,
+and updates the pages' reference counts accordingly
+(releasing a reference to the old shared page and adding one to the new page).
+Since the new page is now owned exclusively
+by the process that took the page fault,
+the kernel can now safely reinstate write permission on the new page.
+
+<p>
+But how does the kernel keep track of which pages <i>were</i> writeable
+before it did a virtual copy,
+and which pages were <i>never supposed to be</i> writeable,
+e.g., because they are part of a read-only segment
+loaded from an ELF executable that contains program code or constant data?
+To make this distinction correctly
+we must associate two sets of permissions with each page:
+<i>nominal</i> and <i>actual</i> permissions.
+
+<p>
+The <tt>SYS_PERM</tt> operation described above affects
+the <i>nominal page permissions</i> of the destination memory region,
+which may sometimes be different
+from the <i>actual page permissions</i>
+of some or all of those virtual memory pages.
+The nominal page permissions of a range of virtual memory
+are the page permissions as specified and seen by user-level processes,
+whereas the actual page permissions are the "kernel-internal" permissions
+that the processor sees
+in the <tt>PTE_P</tt> and <tt>PTE_W</tt> bits of page table entries.
+A page's nominal and actual page permissions are often the same,
+but may differ when the kernel performs copy-on-write
+or other virtual memory tricks
+transparently to user mode code.
+For example, when the kernel uses copy-on-write to copy
+a memory page whose nominal permissions
+are <tt>SYS_READ | SYS_WRITE</tt>,
+the resulting two copies of the page mapping
+continue to have nominal permissions
+of <tt>SYS_READ | SYS_WRITE</tt>,
+but the kernel gives these mappings <i>actual</i> page permissions
+of only <tt>PTE_P</tt> but <i>not</i> <tt>PTE_W</tt>.
+When one of the user processes
+attempts to modify that page,
+the processor takes a page fault
+because the actual permissions do not allow writes.
+The kernel then notices that the mapping's nominal <i>do</i> allow writes,
+so it copies the shared page
+and raises the mapping's actual permissions once again
+to equal the nominal permissions.
+
+<p>
+If the user-specified nominal permissions on a page
+are only <tt>SYS_READ</tt>, however,
+then the kernel's page fault handler does <i>not</i>
+automatically raise the page's actual permissions on a write fault,
+since this nominal permission indicates that
+<i>from the user's perspective</i> the page should not be writable.
+A write to a page with nominal permissions of <tt>SYS_READ</tt>
+probably indicates a logical software bug &mdash;
+or at least means that user-level code
+does not want writes to happen to that page &mdash;
+so the kernel must reflect a write fault on that page to the parent process
+just as it would with other exceptions,
+rather than attempting to handle the fault transparently.
+
+<p>
+If you look at the definitions of <tt>SYS_READ</tt> and <tt>SYS_WRITE</tt>
+in <tt>inc/syscall.h</tt>
+and compare them with the PTE definitions in <tt>inc/mmu.h</tt>,
+you will notice that <tt>SYS_READ</tt> and <tt>SYS_WRITE</tt>
+both lie in the <tt>PTE_AVAIL</tt> part of the page table entry,
+which the processor ignores and leaves available for software use.
+This design is intentional:
+it makes it easy for the kernel to record each page's nominal permissions
+(as represented by the <tt>SYS_READ</tt> and <tt>SYS_WRITE</tt> bits)
+in the <tt>PTE_AVAIL</tt> portion of each page table entry,
+without interfering with the PTE's actual page permissions in the lower bits
+or with the physical address in bits 12-31.
+
+<h3>Implementing PIOS Memory Management Operations</h3>
+
+You now should have the information required
+to implement PIOS's memory management API.
+When implementing it,
+keep in mind that although it has a number of features described above,
+many of those features are fairly orthogonal,
+and their implementations can be kept relatively simple
+as long as you take advantage of their orthogonality.
+For example,
+even though a single PUT system call can potentially do
+a <tt>SYS_COPY</tt>, a <tt>SYS_PERM</tt>, and a <tt>SYS_SNAP</tt>
+(not to mention any or all of the other process management operations
+you implemented in lab 2),
+the kernel does these operations <i>one at a time</i> and <i>independently</i>.
+The implementation of one operation doesn't need to know if or how
+the other operations were or will be performed,
+as long as you simply perform them in the correct order
+as described above.
+
+<div class="required">
+<p><span class="header">Exercise 7.</span>
+	Implement the <tt>pmap_copy()</tt> function in <tt>kern/pmap.c</tt>,
+	which provides the basis for copy-on-write
+	used by <tt>SYS_COPY</tt>
+	(and <tt>SYS_SNAP</tt>, described below,
+	but you don't have to worry about that
+	while implementing <tt>pmap_copy()</tt>).
+
+	<p>
+	<i>Hint:</i>
+	Keep in mind the API restriction stated above
+	that both the source and destination memory regions
+	are always aligned on 4MB boundaries.
+	This API restriction makes the virtual copy operation much simpler:
+	if you need more than about 50 lines of code,
+	you are probably doing something wrong.
+
+	<p>
+	<i>Hint:</i>
+	One design choice you will have to make
+	is whether to perform copy-on-write optimization
+	on <i>page tables</i> as well as on pages.
+	Performing virtual copies of entire page tables
+	makes the initial virtual copy operation even simpler and faster,
+	but means that page tables may become shared read-only
+	among multiple page directories,
+	and you will have to modify <tt>pmap_walk()</tt>
+	to copy and "un-share" a read-shared page table it encounters
+	when called with the <i>writing</i> flag set to true.
+	For simplicity, we recommend that you <i>not</i> share page tables
+	in your initial implementation &mdash;
+	just make <tt>pmap_copy</tt> directly copy
+	all the individual page mappings from the source page table
+	to the destination page table &mdash;
+	and then perhaps try implementing copy-on-write for page tables
+	once you have basic copy-on-write working.
+</div>
+
+<div class="required">
+<p><span class="header">Exercise 8.</span>
+	Now implement a kernel page fault handler
+	to copy-on-write faults transparently to user mode code.
+	We have provided a template function <tt>pmap_pagefault()</tt>
+	in <tt>kern/pmap.c</tt>;
+	you will need to fill it in and hook it into <tt>trap()</tt>
+	at the appropriate point.
+
+	<p>
+	<i>Hint:</i>
+	Think very carefully about exactly where
+	the kernel's main trap handler
+	should call <tt>pmap_pagefault()</tt>,
+	especially in relation to the trap handler's recovery mechanism
+	(the part that looks at the <tt>cpu_cur()->recover</tt> pointer).
+	Suppose that a user-mode process asks the GET system call
+	to deposit the child process's CPU register state
+	into a memory buffer that has recently been copied via copy-on-write,
+	and thus has nominal permissions of <tt>SYS_READ | SYS_WRITE</tt>
+	but actual permissions of only <tt>PTE_P</tt> (but not <tt>PTE_W</tt>).
+	How should the kernel handle the page fault
+	that results during the system call -
+	who is "at fault", so to speak, and who should handle the fault?
+</div>
+
+<div class="required">
+<p><span class="header">Exercise 9.</span>
+	Implement the memory operations <tt>SYS_ZERO</tt>
+	and <tt>SYS_COPY</tt>,
+	as described above.
+	But be sure to check the memory region arguments for validity:
+	e.g., they should not allow user processes
+	to modify or copy data out of the kernel part of the address space.
+	If user code attempts such evilness,
+	the system call handler should call <tt>systrap()</tt>
+	to issue a general protection fault (<tt>T_GPFLT</tt>).
+
+	<p>
+	<i>Hint:</i>
+	After the above argument validity checking,
+	<tt>SYS_ZERO</tt> is basically just a <tt>pmap_remove()</tt>,
+	and <tt>SYS_COPY</tt> is basically just a <tt>pmap_copy()</tt>.
+</div>
+
+<div class="required">
+<p><span class="header">Exercise 10.</span>
+	Finally, implement the <tt>SYS_PERM</tt> operation,
+	which happens after the <tt>SYS_ZERO</tt> or <tt>SYS_COPY</tt>
+	(if requested) in a GET or PUT system call.
+
+	<p>
+	<i>Hint:</i>
+	Take full advantage of the fact that "empty" page table entries
+	in new page tables allocated by <tt>pdir_walk()</tt>,
+	as well as page table entries removed by <tt>pmap_remove()</tt>,
+	are set to <tt>PTE_ZERO</tt> &mdash;
+	which is <i>not</i> just NULL
+	but the physical address of a page full of zeros.
+	You can set the nominal permissions in such a PTE
+	according to the caller's request,
+	without actually having to allocate a page for that PTE.
+	You can even set the <i>actual</i> permissions on such a PTE
+	to <tt>PTE_P</tt>,
+	allowing the user process to read this all-zero page.
+	You cannot enable <tt>PTE_W</tt> in such a page mapping,
+	of course,
+	since that would allow the user process
+	to scribble on this page that's only ever supposed to hold zeros.
+	But if the user does try to write to a <tt>PTE_ZERO</tt> page
+	with nominal permissions of <tt>SYS_READ | SYS_WRITE</tt>,
+	just make sure your page fault handler knows how to
+	make a new, exclusive copy of the zero page
+	just as it would copy a read-shared page from a copy-on-write:
+	the only real difference will be in the reference count handling,
+	since <tt>PTE_ZERO</tt> mappings do not represent counted references.
+	In effect, you are reusing your copy-on-write code
+	to implement <i>demand zero</i>,
+	or clearing "newly allocated" virtual pages on demand
+	only as the user process actually starts writing to them.
+</div>
+
+<div class="challenge">
+<p><span class="header">Challenge:</span>
+	Enhance the memory operations above
+	so that they all work on arbitrary 4KB page boundaries,
+	not just 4MB page table boundaries as specified above.
+	Also write some testing code
+	to exercise all of these system calls at non-4MB boundaries,
+	including testing "exotic" boundary cases,
+	such as performing memory operations on a memory range
+	that doesn't start or end on a 4MB boundary
+	but is big enough to cover one or more complete 4MB page tables
+	"in the middle" of the region.
+</div>
+
+<h2>Part 5: Virtual Memory Merge</h2>
+
+You have seen how xv6 implements the Unix <tt>fork()</tt> system call,
+by simply copying the parent process's entire memory segment
+into a new memory segment for the child process.
+And now you have implemented,
+in the context of PIOS's rather different system call API,
+the same basic copy-on-write mechanism that all modern Unix kernels use
+to make their implementations of <tt>fork()</tt> efficient,
+especially in the common case where the child process
+actually writes to very few pages before it <tt>exec()</tt>s another program.
+Now we will take a step beyond the functionality Unix kernels offer
+and provide a mechanism to <i>merge</i> a child's results
+directly back into the parent's address space
+after executing independently for some (perhaps long) time period.
+
+<p>
+Recall that Unix's <tt>fork()</tt>
+effectively initializes the child process's state
+with a "one-time snapshot" of the parent process's state
+at the time of the <tt>fork()</tt>,
+but after that time the parent and child processes evolve separately
+and can communicate only
+via the small (typically 8-bit) return code
+that the child returns to the parent on <tt>exit()</tt>,
+or else via separate abstractions such as pipes, sockets,
+or files in the globally shared file system.
+In order to keep PIOS as simple as possible, however,
+we wish to minimize the number of abstractions
+the PIOS kernel needs to implement.
+Processes need <i>some</i> way to communicate with each other,
+and since processes need virtual memory in any case,
+PIOS uses virtual memory instead of pipes or files
+as the basic abstraction for inter-process communication.
+
+<p>
+The GET/PUT system call API you implemented above
+already provides a "coarse-grained" way for processes to communicate:
+a parent process can use <tt>SYS_PUT | SYS_COPY</tt>
+to copy itself or another program, together with suitable input data,
+into a child process's address space,
+run the child process,
+and then use <tt>SYS_GET | SYS_COPY</tt>
+to retrieve results the child left in its address space
+back into the parent's address space for further use.
+This is a coarse-grained mechanism, however,
+operating on a minimum granularity of 4MB address space regions
+(or 4KB pages even if you implement that challenge problem).
+And the parent has to "know" in exactly which contiguous region(s)
+the child will deposit its results
+and what region(s) in the parent's address space to copy those results to,
+and avoid clobbering any important data in the parent
+with the result data copied from the child.
+If the parent and child processes are closely related,
+the parent may prefer to have the child produce results
+at a much finer granularity:
+e.g., to have the child compute new values of
+a few particular word-size variables
+scattered throughout the parent's address space,
+and perhaps intermixed with memory areas
+that the child is <i>not</i> expected to modify &mdash;
+but which the parent itself or <i>other</i> children
+might modify in the meantime.
+Providing such a capability is the purpose of PIOS's
+<i>virtual memory merge</i> facility.
+Don't be afraid of the fancy-sounding name:
+it's not much more complicated than plain copy-on-write copying,
+but requires some explanation since it's likely to be an unfamiliar concept.
+
+<h3>Threads Without Heisenbugs</h3>
+
+In modern Unix kernels,
+tightly-coupled parallel activities
+would typically be implemented by multiple threads
+sharing the same address space,
+rather than by multiple processes.
+The motivation for threads is partly one of efficiency,
+and partly one of convenience:
+namely, threads provide exactly the capability described above,
+of allowing a program to "fire off" a parallel activity
+that computes certain values or updates certain variables
+that may be at arbitrary, scattered locations in the shared address space.
+But conventional threads come with the severe danger of <i>heisenbugs</i>.
+Because the memory access interleaving
+that the program sees among different threads
+depends on the relative execution speed of the different threads,
+which can vary from one run to another
+depending on a huge variety of subtle nondeterministic factors,
+the slightest error in synchronization
+is likely to lead to wild behavior that can be extremely difficult
+to reproduce and debug.
+
+<p>
+Instead of providing the heisenbug-ridden
+thread and shared memory abstractions of conventional kernels,
+therefore,
+PIOS instead simply enhances its support for independent <i>processes</i>
+so as to provide the <i>convenience</i> of threads
+without the <i>nondeterminism</i> and resulting susceptibility to heisenbugs.
+PIOS's virtual memory merge facility provides this capability
+by allowing a parent process to <i>snapshot</i>
+a child process's address space before execution,
+run the child process,
+then merge only the <i>differences</i> between the reference snapshot
+and the child's final virtual memory state
+back into the parent process.
+This mechanism operates not at a 4MB or 4KB granularity
+but at a machine word granularity.
+Thus, if the child modified a particular variable in the merged region
+since the parent forked it off,
+the new, modified value will appear back in the parent's address space
+at the corresponding location after the merge,
+allowing the parent to compute further with the new value
+or propagate the new data to future child processes it forks off.
+But for variables that the child did <i>not</i> change during its execution,
+the merge leaves the corresponding location
+unaffected in the parent process &mdash;
+even if the parent process itself,
+or some <i>other</i> child that also merges its results into the parent
+before or after the child in question,
+happens to modify that variable.
+
+<p>
+Thus, as long as the parent and its children are careful to work together
+and avoid modifying conflicting locations in the merged address region,
+each child can compute and return results
+in variables arbitrarily scattered throughout the parent's address space,
+just as threads could do in conventional operating systems.
+Unlike threads in conventional systems, however,
+these computed results won't appear in the parent's address space
+at apparently random times dependent on the child thread's execution speed,
+but will instead appear in the parent <i>only</i>
+at the instant the parent explicitly requests that those results appear,
+by issuing the merge operation as part of the GET system call.
+The point at which the parent synchronizes with the child
+(namely the <tt>SYS_GET</tt> system call),
+and the point at which child synchronizes with the parent
+(due to a <tt>SYS_RET</tt> system call or an exception from user mode),
+are both deterministic results
+of the respective processes' local, single-threaded executions
+and independent of relative execution speeds,
+and the virtual memory merge operation is similarly deterministic
+in its behavior.
+For this reason, PIOS's equivalent of "threads"
+does not suffer from the nondeterminism of conventional threads,
+ensuring that the result of any computation,
+correct or not, can always be exactly reproduced.
+PIOS's deterministic "threads" do come with a potential performance cost
+due to additional virtual memory and copying operations, of course:
+most convenient, high-level abstractions that kernels provide
+come with some performance cost,
+and the question is then whether the abstraction's convenience
+justifies its cost.
+For more information about this somewhat unusual programming model,
+see this short
+<a href="http://arxiv.org/abs/0912.0926"
+	>draft paper on Deterministic Consistency</a>.
+
+<h3>Merge API</h3>
+
+PIOS's API support for virtual memory merge
+consists of two operations briefly mentioned earlier:
+
+<ul>
+<li>	<b><tt>SYS_SNAP</tt></b>,
+	only available in the PUT system call:
+	When the caller specifies this flag,
+	after performing any other requested
+	memory and/or permission management operations,
+	the kernel performs a copy-on-write copy
+	of the child process's entire working user address space
+	(from <tt>VM_USERLO</tt> to <tt>VM_USERHI</tt>)
+	into the child process's reference address space
+	(represented by <tt>proc->rpdir</tt>),
+	overwriting any previous state in the child's reference address space.
+
+<li>	<b><tt>SYS_MERGE</tt></b>,
+	only available in the GET system call:
+	When the caller specifies this memory operation
+	(as an alternative to <tt>SYS_ZERO</tt> or <tt>SYS_COPY</tt>),
+	the kernel copies data from the child to the parent
+	much as with <tt>SYS_COPY</tt>,
+	except that the kernel copies
+	<i>only</i> those parts of the child's address space
+	whose values have changed with respect to
+	the child's last reference snapshot.
+	This merge process occurs at 32-bit machine word granularity:
+	if some words in a particular page of the child's working address space
+	differ from the corresponding words in the child's reference space,
+	then the kernel copies only those words
+	into the destination region in the parent's space,
+	leaving other words on the same destination page
+	in the parent's address space unmodified.
+</ul>
+
+When performing a merge,
+the kernel need not necessarily compare
+every word of every page in the merged part of the child's address space
+with the corresponding word in the child's reference space.
+Since the child's reference space was merely a copy-on-write snapshot
+of the child's working space from some time before the merge,
+pages in the working space that the child never wrote to at all
+will still contain the same, read-shared page mappings
+as in the reference space.
+Thus, on such pages,
+the kernel merely needs to compare page table entries,
+and need not delve into actual page contents
+unless the working page has been modified (and thus un-shared)
+with respect to the original reference page.
+
+<div class="required">
+<p><span class="header">Exercise 11.</span>
+	Implement <tt>SYS_SNAP</tt> and <tt>SYS_MERGE</tt>
+	as described above.
+	We have provided the skeleton functions
+	<tt>pmap_merge()</tt> and <tt>pmap_mergepage()</tt>
+	in <tt>kern/pmap.c</tt>
+	to provide an outline for how to implement the merge function.
+	The <tt>testvm</tt> program contains several parallel computations
+	to exercise and test your merge implementation.
+
+	<p>
+	<i>Hint:</i>
+	Keep in mind that <tt>SYS_SNAP</tt>
+	is essentially just a <tt>pmap_copy()</tt>,
+	and that <tt>SYS_MERGE</tt> requires
+	the source and destination memory range
+	to be aligned on 4MB boundaries,
+	which should greatly simplify
+	your page directory and page table traversal logic.
+</div>
+
+<div class="challenge">
+<p><span class="header">Challenge:</span>
+	The obvious way to merge a page of the child's space
+	back into the parent at a word granularity
+	is to iterate through the page a word at a time,
+	reading and comparing each word in the child's working page
+	with the corresponding word in the reference page,
+	and if different, copying the word into the parent's page.
+	This approach is not the most efficient, however,
+	because (a) it merges only one word at a time,
+	and (b) it involves branches,
+	which limit the performance of modern processors
+	by decreasing potential parallelism and introducing pipeline bubbles.
+
+	<p>
+	Intel's Streaming SIMD Extensions (SSE) instructions
+	can be used to merge pages in 128-bit rather than word-sized chunks,
+	and without using <i>any</i> branches
+	other than the one that iterates the loop
+	(and that branch is "mostly harmless" because it's highly predictable).
+	Not only that, but using this approach,
+	we can implement not just word-granularity merges
+	but <i>byte-granularity</i> merges with no performance penalty.
+	For example, if a parent process creates a <tt>char[]</tt> array,
+	and forks one child process to compute even elements of the array
+	and a second child to compute odd elements of the array,
+	a word-granularity merge will yield incorrect results
+	due to <i>false conflicts</i> between changes to bytes within a word,
+	while a byte-granularity merge will provide the desired behavior.
+
+	<p>
+	Implement a <i>byte-granularity, branch-free</i> merge using SSE.
+	To use SSE instructions at all,
+	you will need to modify a control register or two
+	during kernel initialization to enable the SSE extensions:
+	see the IA-32 System Programming Guide for details.
+	To implement the merge itself,
+	some particular SSE instructions you will probably want to look at
+	include PCMPEQB, PAND, PANDN, and POR.
+	Use the processor's timestamp counters (RDTSC instruction)
+	or some other timing mechanism
+	to compare the performance of your SSE-based merge
+	against the performance of a na&iuml;ve word-by-word merge.
+</div>
+
+<p>
+<b>This completes the lab.</b>
+
+
+</body>
+</html>
+

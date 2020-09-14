@@ -1,0 +1,415 @@
+
+<HTML>
+<HEAD>
+	<TITLE>CPSC 422/522: Operating Systems, Spring 2010
+		
+		&mdash Overview
+		
+	</TITLE>
+	<LINK REL="stylesheet" HREF="stylesheet.css">
+</HEAD>
+<BODY>
+
+<table cellspacing="2" cellpadding="10" width="100%">
+<tbody>
+<tr>
+
+<td bgcolor="white" align="left">
+<H1>CS422/522: Operating Systems, Spring 2010
+	
+	&mdash Overview
+	
+</H1>
+
+<table cellpadding="5" bgcolor="blue">
+<tr><td bgcolor="white" align="center">
+<a href="index">Home</a> &nbsp;&ndash;&nbsp;
+<a href="info">Overview</a> &nbsp;&ndash;&nbsp;
+<a href="sched">Schedule</a> &nbsp;&ndash;&nbsp;
+<a href="reference">Reference</a> &nbsp;&ndash;&nbsp;
+<a href="reading">Reading List</a> &nbsp;&ndash;&nbsp;
+<a href="tools">Tools</a> &nbsp;&ndash;&nbsp;
+<a href="../pios">PIOS</a> &nbsp;&ndash;&nbsp;
+<a href="prior">Prior Years</a>
+</table>
+
+</td>
+
+<td align="center" valign="center" width="80" bgcolor="white">
+<a href="http://www.yale.edu/">
+<img border="0" src="images/yaleclr.jpg" width="70" height="79">
+</a>
+</td>
+
+</tr>
+</tbody>
+</table>
+
+<hr>
+
+
+<menu>
+<li><a href="#information">Administrative</a>
+<li><a href="#overview">Overview</a>
+<li><a href="#texts">Reference Materials</a>
+<li><a href="#computers">Computers</a>
+<li><a href="#grading">Grading</a>
+<li><a href="#collaboration">Collaboration Policy</a>
+<li><a href="#attendance">Attendance</a>
+<li><a href="#newsgroup">Keeping In Touch</a>
+</menu>
+
+<p><hr><H2><a name="information">Administrative Information</a></H2>
+
+<dl>
+
+<dt><b>Lectures</b>: 
+<dd>MW 1:00-2:15 PM, Room 500 AKW
+<a href="http://business.yale.edu/map/#building:AKW">
+<img src="images/watson.gif" align="right">
+</a>
+<p>
+
+<dt><a name="instructor"><b>Instructor</b>:
+<dd><a href="http://www.cs.yale.edu/people/ford.html">Bryan Ford</a>,
+211 Watson, 432-1055, 
+<em><a href="mailto:"><img src="images/eaddr.png"></a></em> 
+<dd>Office hours: MW 4:00-5:00 PM, or by appointment.
+</a><p>
+
+<dt><a name="ta"><b>Teaching Assistant</b></a>:
+<dd><a href="http://cs.yale.edu/~alv">Alex Vaynberg</a>,
+312 Watson, office: 432-2349, cell: (804)519-2540
+<em><a href="mailto:alv@cs.yale.edu">alv@cs.yale.edu</a></em> 
+<dd>Office hours: TBA.
+<p>
+
+<dt><b>Website</b>: 
+<dd>URL: <a href="http://zoo.cs.yale.edu/classes/cs422"
+	>http://zoo.cs.yale.edu/classes/cs422</a>
+</dl>
+
+<p><hr><H2><a name="overview">Overview</a></H2>
+
+This course covers the fundamentals of operating system design and
+implementation.
+The course takes a hands-on approach,
+emphasizing learning by studying the structure and implementation
+of existing operating systems
+and using this knowledge to build a new one.
+
+<p>
+<b>Lectures:</b>
+Lectures in the first part of the course
+present basic operating system ideas and concepts,
+explaining how they manifest in the
+<a href="http://pdos.csail.mit.edu/6.828/2009/xv6-book/index.html">xv6</a>
+operating system,
+an instructional operating system that closely mirrors
+the structure of modern Unix systems while being much smaller and simpler.
+Some lectures will involve preparatory homework assignments
+requiring students to explore important aspects of xv6
+by examining its source code and running it in a virtual machine.
+Later lectures will expose students to more recent operating system developments
+through research papers and other readings.
+
+<p>
+<b>Labs:</b>
+Throughout the semester,
+students will work in teams to build their own version of
+<a href="../pios">PIOS</a>,
+a small but real operating system,
+substantially different in design from xv6
+though utilizing the same general principles,
+through a series of six programming labs.
+While the xv6-based homework assignments are to be completed individually,
+the programming labs emphasize teamwork and collaboration,
+and are structured to encourage collaborative learning
+and to help students develop the important skills
+of reading and building on code written by others.
+
+<p>
+Prerequisites: 
+<a href="http://zoo.cs.yale.edu/classes/cs323">CS 323 
+Introduction to Systems Programming and Computer Organization.</a>
+<p>
+
+<p><hr><H2><a name="texts">Reference Materials</a></H2>
+
+<p>All of the required reference materials for this course
+are available on-line on the <a href="reference">reference page</a>
+(also available in the quick links at the top).
+
+<p>
+The primary reference for the lectures is
+<b><i>
+xv6: a teaching operating system</i></b>,
+an instructional operating system and draft commentary
+by Russ Cox, Frans Kaashoek, and Robert Morris.
+This operating system is an x86-based rewrite of an early version of Unix,
+which still reflects accurately the basic structure of modern operating systems
+while being small and simple enough to be understood
+at source code level in a one-semester course.
+The original xv6 home page is
+<a href="http://pdos.csail.mit.edu/6.828/2009/xv6-book/index.html"
+>at MIT</a>,
+but please use the local copies on the <a href="reference">reference page</a>
+for this class
+to ensure that everyone refers to the same version throughout the semester.
+We will arrange for printed copies to be available
+from <a href="http://www.yale.edu/ris/">Yale RIS</a>
+for students who would like them.
+
+<p>To provide a broader perspective on operating system design concepts
+than the primarily Unix-oriented xv6 commentary provides,
+students are encouraged to refer to the following
+optional, supplementary textbook,
+whose chapters will be referenced as appropriate in course lectures:
+<p>
+<blockquote>
+A. Silberschatz, P. Galvin, and G. Gagne, 
+<a href="http://www.bestwebbuys.com/books/compare/isbn/0470128720">
+<strong><i>Operating System Concepts (Eighth Edition)</i></strong></a>
+</a>, John Wiley & Sons, Inc., 2008. ISBN 0-470-12872-0. 
+Available from the
+<a href="http://yale.bkstore.com">Yale bookstore</a>
+or on the 
+<a href="http://www.bestwebbuys.com/books/compare/isbn/0470128720">web</a>.
+</blockquote>
+
+<p>
+This and several other other books that may be useful in this course
+have been placed on reserve at the
+<a href="http://www.library.yale.edu/science/library/engineering.html">
+Becton Library</a>.
+See the <a href="reference">reference page</a> for a complete list,
+as well as links to many relevant resources available online.
+
+
+<p><hr><H2><a name="computers">Computers</a></H2>
+
+You will be using the Intel Linux PCs
+in the <b><a href="http://zoo.cs.yale.edu/">Zoo</a></b> 
+computing lab.
+You may access them either locally on the third floor of Watson Hall,
+or remotely via the following command,
+which will log you into a randomly-chosen Zoo machine
+in order to balance load on the cluster:
+
+<pre>
+	ssh <i>netid</i>@node.zoo.cs.yale.edu
+</pre>
+
+<p>
+To access these PCs, you can either directly login from their consoles
+in the <b>Zoo</b>, or just remotely login from other 
+machines across the campus. 
+<p>
+If you plan to take the course for credit, you should get an account 
+on these machines in the first week. Please also visit the following web 
+site to create a cs422 class directory (or just to sign up for a zoo account):
+<pre>
+       <a href="http://zoo.cs.yale.edu/accounts.html">http://zoo.cs.yale.edu/accounts.html</a>
+</pre>
+<p>
+<strong>Do not allow anyone else to use your accounts for any purpose</strong>.
+They are for your use alone, and you are responsible for any misuse.
+Your passwords control access to your accounts and should be kept secret.<p>
+
+<p><hr><H2><a name="grading">Grading</a></H2>
+
+Your grade will be calculated as follows:
+<ul>
+<li>Lecture preparation homework and in-class participation: 20%
+<li>Midterm exam: 20%
+<li>Programming labs: 60%
+</ul>
+These weights are subject to minor variation.<p>
+
+<p>
+Many lectures have associated preparatory homework assignments,
+labeled <b>PREP:</b> in the <a href="sched">schedule</a>.
+Homeworks will typically involve
+and answering a few questions about xv6 or other assigned material.
+Written homework assignments must be turned in
+at the beginning of the associated lecture;
+late homework will be accepted <i>only</i> during 
+the first two-week "shopping period," until Monday January 25.
+
+<p>
+The midterm exam is scheduled in class on Wednesday March 3, 2010.
+Unless prior arrangements are made,
+a grade of zero will be recorded for missed exam.
+<p>
+
+<p><hr><H2><a name="collaboration">Collaboration Policy</a></H2>
+
+Programming, like composition, is an individual creative process.
+Individuals must reach their own understanding of the problem
+and discover a path to its solution. During this time,
+discussions with friends are encouraged.
+However, when the time comes to write the code that solves the problem,
+such discussions are no longer appropriate:
+each team's code must be the work of the members of that team alone
+(although you may ask teaching assistants or lab assistants
+for help in debugging).
+In your coding you are encouraged to adopt ideas suggested
+by classmates or other reference sources,
+but must carefully acknowledge the sources of those ideas
+in your own code and/or documentation.
+
+<p>
+<strong>Do not, under any circumstances, copy 
+another team's code</strong>.  Writing code for use by another or using 
+another's code in any form violates the University's academic regulations and 
+will be dealt with harshly.
+<p>
+
+<p><hr><H2><a name="time">Time Logging</a></H2>
+
+As you work on each of the programming labs,
+keep a detailed record of how you spend your time working on the lab.
+Since the programming labs are team-oriented,
+you are expected to work closely with your teammates on each lab,
+but EACH team member must keep a separate log of time spent on the lab.
+To do this, place a log file with a name of the form
+'<tt>lab<i>N</i>-<i>netid</i>.txt</tt>'
+in the top-level lab source directory.
+The log file should have the following general form,
+adopted from Prof. Eisenstat's CPSC 323 course:
+
+<pre>
+ESTIMATE of time to complete lab: 15 hours
+
+      Start  Time  Lab
+Date  Time   Spent Part Work completed
+----  -----  ----  ---- ---------
+9/08  10:15  1:00  1    Read assignment, completed cprintf exercise
+9/09  20:15  2:00  1    Studied IA-32 programmer's guide, got backtrace working
+9/10  12:45  0:30  2    Reading IA-32 system guide on trap handling
+9/10  14:00  0:30  2    Discussing trap handling approach with teammates
+9/10  16:00  2:00  2    Helped debug Bob's implementation of _alltraps
+9/12  21:20  2:00  4    First cut on coding up physical page allocation
+9/13  09:00  3:00  3    Meet, help teammates debug protected control transfer
+9/13  20:00  5:00  4    Mysterious memory corruption bug in my page allocator
+9/14  10:00  1:00  4    Aha!  Was overwriting the last page of the kernel.
+	    -----
+	    17:00  TOTAL time spent
+
+<i>a brief discussion of the major difficulties encountered</i>
+</pre>
+
+The format above is only an example,
+but your log <i>must</i> contain:
+
+<ul>
+<li>	An estimate of the time you think will be required
+	to complete the lab, made prior to writing any code.
+	This estimate must be on the <i>only</i> line in the log file
+	containing the string <tt>ESTIMATE</tt> in all-caps.
+<li>	The total time you actually spent on the lab.
+	This time must be on the <i>only</i> line in the log file
+	containing the string <tt>TOTAL</tt> in all-caps.
+<li>	A brief discussion (100 words <i>minimum</i>
+	of the major difficulties you encountered
+	while writing and debugging the code
+	(there will always be some).
+</ul>
+
+<p><hr><H2><a name="handin">Lab Handin Procedures</a></H2>
+
+For each lab, the TA will create a directory named
+<tt>/c/cs422/SUBMIT/lab<i>N</i>.ontime</tt>,
+in which you are to copy your lab solution into a subdirectory
+named according to one of the teammate's NetIDs.
+(We know who the other members of your team are
+from the log files you include in the solution,
+so be sure to include the log files!)
+At the lab deadline, the TA will freeze
+the <tt>lab<i>N</i>.ontime</tt> directory
+and create a <tt>lab<i>N</i>.late1</tt> directory
+in which to submit labs that will be considered one day late.
+This process will continue as needed
+with directories named <tt>lab<i>N</i>.late<i>D</i></tt>
+for labs <i>D</i> days late.
+
+<p>
+You will be using the <a href="http://git-scm.com/">Git</a>
+version control system to manage source code in your programming labs,
+as will be laid out in Lab 1.
+When you turn in a lab, you are to include
+your team's <i>entire</i> Git repository,
+including the <tt>.git</tt> directory and all its contents.
+The recommended approach to using Git is for one team member to maintain
+a "master" Git repository for each lab in a known location,
+and for all team members to '<samp>git clone</samp>' that repository
+to create their own working repositories.
+Each team member can then work concurrently
+and '<samp>git push</samp>' their code back to the master repostiory when ready.
+Team members may alternatively use completely separate Git repositories,
+but in that case you should combine all of your repositories
+into one before submitting:
+for example, other team members can incorporate their repositories
+into the submitting team member's repository as separate branches
+using the command
+'<samp>git push <i>myrepository</i> <i>submitters-repository</i>
+	lab<i>N</i>:lab<i>N</i>-<i>mynetid</i></samp>'.
+
+<p><hr><H2><a name="attendance">Attendance</a></H2>
+
+Attendance at lectures is expected but will not be recorded.  Students are, 
+however, fully responsible for all material presented in lectures, even 
+if some of it does not appear in the "official" lecture notes.   
+Class attendance is recommended strongly.
+
+<p>
+Lecture notes will be made available,
+though they are by no means guaranteed to be a complete record of the class
+and cannot substitute for class attendance.
+
+<p><hr><H2><a name="newsgroup">Keeping In Touch</a></H2>
+
+The best way to contact the <a href="#instructor">instructor</a> and 
+the <a href="#ta">TA</a> is by electronic mail.
+To get help quickly, 
+your best bet is to send email to 
+<a href="mailto:cs422ta@cs">cs422ta@cs</a>,
+where it will be seen only by the instructor and TA,
+or to
+<a href="mailto:cs422@cs">cs422@cs</a>, where your
+message will also be forwarded to every student in the class.
+Use of the whole-class mailing list is encouraged
+especially in the case of clarifications or debugging questions,
+since it is likely that other teams will be encountering
+the same or similar difficulties that you are
+and may offer the quickest answer.
+
+All the course-related information will be kept on the web
+(URL: <a HREF="http://zoo.cs.yale.edu/classes/cs422">http://zoo.cs.yale.edu/classes/cs422</a>). <p>
+
+<p><hr><H2>Acknowledgments</a></H2>
+
+This course is heavily based on Frans Kaashoek's course
+<a href="http://pdos.csail.mit.edu/6.828/2009/overview.html">6.828:
+Operating System Engineering</a> at <a href="http://www.mit.edu/">MIT</a>.
+It also draws material from prior versions of CPSC 422 at Yale
+taught by <a href="http://cs.yale.edu/people/shao.html">Zhong Shao</a>,
+and in turn from <a href="http://www.cs.princeton.edu/~li/">Kai Li</a>'s
+operating systems course at Princeton.
+
+
+<P><HR><P>
+<ADDRESS>Copyright (c) 2000-2010
+<a href="http://www.cs.yale.edu/users/shao-zhong/">Zhong Shao</a>
+and
+<a href="http://www.cs.yale.edu/people/ford.html">Bryan Ford</a>,
+<a href="http://www.cs.yale.edu/">Department of Computer Science</a>,
+<a href="http://www.yale.edu/">Yale University</a><br>
+Many course materials derived from
+<a href="http://pdos.csail.mit.edu/6.828/">6.828</a>
+by Frans Kaashoek and others at MIT.
+</ADDRESS> 
+
+</BODY>
+</HTML>
+

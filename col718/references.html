@@ -1,0 +1,58 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252"><title>COL718 : Architecture of High Performance Computers : References</title>
+</head><body><h1><font color="blue">COL718 : High-Performance Computing : References</font></h1>
+
+<h2>Papers and Links</h2>
+<ul>
+<li><a href=https://web.mit.edu/6.033/www/papers/Worse_is_Better.pdf>The Rise of Worse is Better</a> by Richard P. Gabriel.</li>
+<li><a href=https://monoskop.org/images/e/e0/Raymond_Eric_S_The_Cathedral_and_the_Bazaar_rev_ed.pdf>The Cathedral and the Bazaar</a>, by Eric S. Raymond.</li>
+<li><a href=https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf>Intel Software Developer ISA Manual</a></li>
+<li><a href=ref/arm-instructionset.pdf>ARM Instruction set</a></li>
+<li><a href=http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0802b/a64_simd_vector_alpha.html>ARM A64 vector instructions</a></li>
+<li><a href=https://software.intel.com/en-us/articles/measuring-instruction-latency-and-throughput>Measuring Instruction Latency and Throughput</a> [<a href=labs/latThpt.zip>latThpt.zip</a> taken from <a href=https://code.google.com/archive/p/hardwaredetect/source/default/source>here</a>].</li>
+<li><a href=https://www.agner.org/optimize/instruction_tables.pdf>Agner Fog's Instruction Tables</a></li>
+<li><a href=https://ai.google/research/pubs/pub40801>The tail at scale</a>, by Jeffrey Dean and Luiz André Barroso.</li>
+<li><a href=https://youtu.be/bIB-m-tWpLI>Interesting talk</a> by Christos Kozyrakis. Talks about OS abstractions, Power-performance (throughput/latency) tradeoffs, In-memory computing, Disaggregation (remote memory, remote NICs, remote storage).</li>
+<li><a href=https://www.youtube.com/watch?v=zWxSZcpeS8Q>Benchmarking C++ Code</a>, Bryce Adelstein-Lelbach at CppCon 2015. Talks about benchmarking best practices.
+<ul>
+<li><a href=https://youtu.be/zWxSZcpeS8Q?t=473>Why you may see variance in computer performance</a></li>
+<li><a href=https://youtu.be/zWxSZcpeS8Q?t=2024>Mean-median test</a>: easy normality test</li>
+<li><a href=https://youtu.be/zWxSZcpeS8Q?t=2215>Time-based benchmarking</a>: using x86 TSC, C++11 Chrono, more ideas</li>
+<li><a href=https://youtu.be/zWxSZcpeS8Q?t=2513>Memory benchmarking</a>: googleperftools/TCMalloc (MALLOCSTATS), more ideas</li>
+<li><a href=https://youtu.be/zWxSZcpeS8Q?t=2688>x86 hardware performance counters</a>: Intel VTune Amplifier</li>
+<li><a href=https://youtu.be/zWxSZcpeS8Q?t=3101>Intel Vectorization Adviser</a></li>
+<li><a href=https://youtu.be/zWxSZcpeS8Q?t=3209>Stateful Performance Tests</a></li>
+<li><a href=https://dl.acm.org/citation.cfm?id=2908111>FlexVec: auto-vectorization for irregular loops</a> (recent paper to potentially discuss in lecture).</li>
+</ul>
+<br><br></li>
+<li><a href=https://easyperf.net/blog/2019/08/02/Perf-measurement-environment-on-Linux#6-drop-file-system-cache>How to get consistent results when benchmarking on Linux?</a></li>
+<li><a href=https://www.youtube.com/watch?v=AmjliNp0_00>Scalar Evolution - Demystified</a></li>
+</ul>
+
+<h2>Documents/Papers discussed in class</h2>
+<ul>
+<li><a href=https://www.7-cpu.com/cpu/Haswell.html>Intel Haswell Specification</a></li>
+<li><a href=ref/vol6iss1_art01.pdf>Hyper-Threading Technology Architecture and Microarchitecture</a></li>
+<li><a href=https://dl.acm.org/citation.cfm?id=349320>Exploiting superword level parallelism with multimedia instruction sets</a></li>
+</ul>
+<b>Virtualization</b>
+<ul>
+<li> <a href=ref/bellard.pdf>QEMU, a Fast and Portable Dynamic Translator</a>, Fabrice Bellard, USENIX Annual Technical Conference 2005.</li>
+<li> <a href=ref/asplos235_adams.pdf>A Comparison of Software and Hardware Techniques for x86 Virtualization</a>, K. Adams, O. Agesen. ASPLOS 2006.</li>
+  <li><a href=ref/waldspurger02osdi.pdf>Memory Resource management in VMware ESX Server</a>, Carl Waldspurger. OSDI 2002.</li>
+  <li><a href=ref/p26-bhargava.pdf>Accelerating Two-Dimensional Page Walks for Virtualized Systems</a>, R. Bhargava, B. Serebrin, F. Spadini, S. Manne. ASPLOS 08.</li>
+ <li> <a href=ref/sugerman.pdf>Virtualizing I/O Devices on VMware Workstation's Hosted Virtual Machine Monitor</a>, Sugerman et al. USENIX 2001.</li>
+</ul>
+
+<h2>Books, slides</h2>
+<ul>
+<li>"Computer Architecture: A Quantitative Approach, 3rd Edition",
+by John L. Hennessy  (Author), David A. Patterson  (Author)</li>
+<li><a href=http://www.cse.iitd.ac.in/~srsarangi/archbooksoft.html>Computer Organisation and Architecture</a> by Smruti Ranjan Sarangi</li>
+<li>Smruti Sarangi's slides:
+<ul>
+<li><a href=slides/OOOpipelines.pptx>OOO-I</a>, <a href=slides/OOO-II.pptx>OOO-II</a>, <a href=slides/OOO-III.pptx>OOO-III</a>.</li>
+</ul>
+</li>
+<li> <a href=https://en.wikipedia.org/wiki/Compilers:_Principles,_Techniques,_and_Tools>Compilers: Principles, Techniques, and Tools</a>, by A.V. Aho, M.S. Lam, R. Sethi, J.D. Ullman (available in <a href=http://libcat.iitd.ac.in:8080/opac/browse/browse.html?browseType=2&key=compilers+principles+aho&sortByVal=--Select--&bcat=2&db=4&browse_siteId=99&tokenId=V4L6T7S5O7D8F4M4>IITD library</a>) [ <a href=../col729/refs/ALSUdragonbook.pdf>PDF</a> ]<br><br></li>
+</ul>

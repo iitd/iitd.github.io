@@ -1,0 +1,101 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252"><title>COL100 : Introduction to Computer Science : Labs (written, online and programming assignments)</title>
+</head><body><h1><font color="blue">COL100 : Introduction to Computer Science : Labs (written, online and programming assignments)</font></h1>
+
+All lab assignments are to be done in groups of at most two people. The two people in a group must belong to the same section.
+
+<p><a href="http://col100lab.6te.net/labdetails.html">Update Lab Work</a> (ONLY FOR COL-100 STAFF) </p>
+ 
+<p><a href="http://col100lab.6te.net/lablog.html">View Lab Work</a></p>
+
+<p><a href="labs/lab_roster.html">View Lab Roster</a></p>
+ 
+ <h2>Lab Sessions:</h2>
+ <p><a href="labs/labassignment1.html">Lab Assignment 1: </a> Getting Familiar With Environment</p>
+ <p><a href="labs/labassignment2.html">Lab Assignment 2: </a> Introduction to C++</p>
+ <p><a href="labs/labassignment3.html">Lab Assignment 3: </a>I/O, if-then-else</p>
+ <p><a href="labs/labassignment4.html">Lab Assignment 4: </a><font color="red"> Graded Assignment 1</font></p>
+ <p><a href="labs/labassignment5.html">Lab Assignment 5: </a>Scope, Functions</p>
+ <p><a href="labs/labassignment6.html">Lab Assignment 6: </a>Reference parameters, return values, square root by Newton's method</p>
+ <p><a href="labs/labassignment7.html">Lab Assignment 7: </a><font color="red"> Graded Assignment 2</font></p>
+ <p><a href="labs/labassignment8.html">Lab Assignment 8: </a>String functions</p>
+ <p><a href="labs/labassignment9.html">Lab Assignment 9: </a><font color="red"> Graded Assignment 3</font></p>
+ <p><a href="labs/labassignment10.pdf">Lab Assignment 10: </a>vector, istringstream, ostringstream</p>
+ <p><a href="labs/labassignment11.html">Lab Assignment 11: </a><font color="red"> Graded Assignment 4</font></p>
+ <p><a href="labs/lab12/labassignment12.html">Lab Assignment 12: </a>Stacks, Queues, GDB</p>
+ <p><a href="labs/labassignment13.html">Lab Assignment 13: </a><font color="red"> Graded Assignment 5</font></p>
+ <p><a href="labs/lab14/labassignment14.html">Lab Assignment 14: </a>Maps and Recursion</p>
+
+ 
+ <h2>Lab References:</h2>
+ <p><a href="labs/vectorofvector.pdf">vector of vector</a></p> 
+ <p><a href="labs/without-qt.html">Use Stanford libraries without Qt (Easy to use)</a></p> 
+ <p><a href="https://stanford.edu/~stepp/cppdoc/simpio.html">simpio.h (STANFORD LIBRARY FUNCTIONS) </a></p>
+ <p><a href="https://iitd-plos.github.io/col100/labs/qtcreator.html">QT Creator (Beginners Guide) </a></p>
+ <p><a href="labs/qtcreator_windows.html">Qt creator on Windows</a></p>
+ <p><a href="labs/vector.pdf">vector(STL) Reference for Graded Assignment 3 submissions</a></p>
+
+<h2>FAQ</h2>
+<ul>
+<li><a href=labs/why_stanford_lib.html>Why are we using Stanford libs?</a></li>
+</ul>
+  
+<h2><font color="blue">Resources required to attempt the labs</font></h2>
+Here we list some instructions to set up the environment
+required to attempt the lab assignments. This environment has already been
+set up in LHC lab 503.  These instructions are useful if you would like
+to set up the environment locally on your laptop or desktop. You need Linux OS to set up the environment. 
+
+<p><b>Note:</b> If you only have access to a Windows/Mac machine, we recommend using VirtualBox to install Linux as a "virtual machine" inside your Windows/Mac operating system. You can follow this excellent tutorial on how to install VirtualBox, how to download a Linux ISO image, and how to install Linux (Ubuntu) as a virtual machine using VirtualBox: <a href="http://www.psychocats.net/ubuntu/virtualbox" target="_blank">http://www.psychocats.net/ubuntu/virtualbox</a>
+</p>
+
+Once you're booted to your Linux machine (or virtual machine), follow these instructions to ensure that all the required dependencies are installed:
+<ul>
+<li>Install the necessary packages on your system: If you are running Ubuntu, Debian, Mint, or any other Debian derivative: Open a terminal and type:
+<pre>
+$ sudo apt-get -y install openjdk-8-jre build-essential
+</pre>
+If you are running another variant of Linux, ensure that the following
+tools are installed on  your system:
+<ul>
+<li>make</li>
+<li>gdb</li>
+<li>gcc</li>
+<li>g++</li>
+</ul>
+</li>
+<li>Download and install the Qt Creator: Go to <a href=https://www1.qt.io/offline-installers/>the Qt Creator official download site</a> to download this software. Now scroll down to "Linux Host", and chose <b>Qt 5.11.1 for Linux 64-bit (1.2 GB)</b>. (The exact version may change over time, but make sure to choose the Linux 64-bit option). Your download will begin. The file is very large, so it may take some time. It downloads a <code>.run</code> file to your machine. Execute this file to install Qt Creator on your system.
+
+<p><em>Important:</em> For most screens, you must choose default options during installation. But at the screen labeled "<b>Select Components</b>", you <u>must</u> expand the "Qt 5.11.1" tree by clicking the <code>&gt;</code> triangle next to it, and then you must click the checkbox labeled, "<b>(none)</b>". This is absolutely crucial; if you forget to do this, your computer will not be able to compile and run C++ programs.
+</li>
+<li>Try to compile/run a sample project: Let's run a sample Qt Creator
+project that uses the Stanford C++ libraries. We use these C++ libraries in our lab assignments. The Stanford C++ libraries also interact with Java, so if this project runs properly for you, then you will be sure that your Qt Creator and Java JDK are both set up properly. Here's what to do:
+<ul>
+<li> Download the following project ZIP file to your computer: <a href=labs/simple-project.zip>simple-project.zip</a>.</li>
+<li> Un-zip the file's contents to a directory of your choice. After un-zip: you will find a directory named <code>simple-project</code> with several files and folders inside.</li>
+<li>Open the project: In Qt Creator, choose "File" --&gt; "Open File or Project..." or press Ctrl+O. Navigate to the simple-project folder and open the file <code>simple-project.pro</code>.</li>
+<li>Qt Creator will ask you a few questions about how to set up the build process for this project. You can just accept the defaults and click "Configure Project".</li>
+<li>Build it: You should be able to Build (Ctrl+B) y our project in Qt Creator. If it builds properly, your C++ compiler and the Stanford C++ libraries are compiling properly.  You can click the bottom "4 Compile Output" tab if you want to see the progress as it is compiling. (Recommended: In Qt Creator, click Tools → Options → Build &amp; Run, and check the box labeled "Open Compile Output pane when building" to always see this output during compilation).</li>
+<li>Run it: Now that it's built, you should be able to Run (Ctrl+R) your <code>simple-project</code>. This is the part where Java is needed, so if your Java isn't properly installed, this is probably where it will fail. If it runs properly, you will see a window appear with a smiley face. Congratulations, you're done! Now your machine should work just fine for working on our lab assignments.</li>
+</ul>
+</li>
+</ul>
+
+<!--<h2><u><font color="maroon">Lab 1 : TBA</font></u></h2>
+<h3><font color="green">Due date</font></h3>
+TBA
+<h3><font color="green">Weight</font></h3>
+TBA marks
+<h3><font color="green">Submission Instructions</font></h3>
+
+<h2><u><font color="maroon">Lab 2 : TBA</font></u></h2>
+<h3><font color="green">Due date</font></h3>
+TBA
+<h3><font color="green">Weight</font></h3>
+TBA marks
+<h3><font color="green">Submission Instructions</font></h3>
+TBA
+<h3><font color="green">Lab Instructions</font></h3>
+TBA-->
+
+</body></html>

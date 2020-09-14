@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Deepak Ravi">
+  <title>Package management</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="reveal.js/css/reveal.css">
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="reveal.js/css/theme/black.css" id="theme">
+  <!-- Printing and PDF exports -->
+  <script>
+    var link = document.createElement( 'link' );
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = window.location.search.match( /print-pdf/gi ) ? 'reveal.js/css/print/pdf.css' : 'reveal.js/css/print/paper.css';
+    document.getElementsByTagName( 'head' )[0].appendChild( link );
+  </script>
+  <!--[if lt IE 9]>
+  <script src="reveal.js/lib/js/html5shiv.js"></script>
+  <![endif]-->
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section>
+  <h1 class="title">Package management</h1>
+  <h2 class="author">Deepak Ravi</h2>
+</section>
+<section id="TOC">
+<ul>
+<li><a href="#/overview"><span class="toc-section-number">0.1</span> Overview</a></li>
+<li><a href="#/package-management"><span class="toc-section-number">0.2</span> Package Management</a></li>
+<li><a href="#/need-for-package"><span class="toc-section-number">0.3</span> Need for package?</a></li>
+<li><a href="#/need-for-package-1"><span class="toc-section-number">0.4</span> Need for package?</a></li>
+<li><a href="#/need-for-package-2"><span class="toc-section-number">0.5</span> Need for package?</a></li>
+<li><a href="#/need-for-package-3"><span class="toc-section-number">0.6</span> Need for package:</a></li>
+<li><a href="#/need-for-package-4"><span class="toc-section-number">0.7</span> Need for package:</a></li>
+<li><a href="#/summary-so-far"><span class="toc-section-number">0.8</span> Summary so far:</a></li>
+<li><a href="#/how-to-specify-the-list-of-available-packages"><span class="toc-section-number">0.9</span> How to specify the list of available packages</a></li>
+<li><a href="#/apt"><span class="toc-section-number">0.10</span> apt</a></li>
+<li><a href="#/install-deb-directory"><span class="toc-section-number">0.11</span> Install deb directory</a></li>
+<li><a href="#/format-of-deb"><span class="toc-section-number">0.12</span> format of deb:</a></li>
+<li><a href="#/create-your-own-deb"><span class="toc-section-number">0.13</span> Create your own deb:</a></li>
+<li><a href="#/lab"><span class="toc-section-number">0.14</span> Lab:</a></li>
+<li><a href="#/create-your-own-repository"><span class="toc-section-number">0.15</span> Create your own repository:</a></li>
+<li><a href="#/install-samba"><span class="toc-section-number">0.16</span> Install samba</a></li>
+<li><a href="#/install-cups"><span class="toc-section-number">0.17</span> Install cups:</a></li>
+</ul>
+</section>
+
+<section id="overview" class="slide level2">
+<h1><span class="header-section-number">0.1</span> Overview</h1>
+<ul>
+<li>Package management
+<ul>
+<li>Different kinds of package management systems</li>
+<li>Lab: Configure client to use a package repository</li>
+<li>Lab: What is in a packagename.deb?</li>
+<li>Lab: Create your own deb file</li>
+<li>Lab: Create your package repository</li>
+<li>Lab: Install Samba, cups, and configure them.</li>
+</ul></li>
+</ul>
+</section>
+<section id="package-management" class="slide level2">
+<h1><span class="header-section-number">0.2</span> Package Management</h1>
+</section>
+<section id="need-for-package" class="slide level2">
+<h1><span class="header-section-number">0.3</span> Need for package?</h1>
+<ul>
+<li>Our software:
+<ul>
+<li>bin/workshop</li>
+<li>bin/bash</li>
+<li>lib/libxyz.so</li>
+<li>doc/documentation.txt</li>
+<li>etc/workshop.cfg</li>
+</ul></li>
+<li>How to distribute the packages?
+<ul>
+<li>One simple way: Just zip and ship it!</li>
+<li>And client just unzip it to some folder and use it!</li>
+</ul></li>
+<li>Issue?</li>
+</ul>
+</section>
+<section id="need-for-package-1" class="slide level2">
+<h1><span class="header-section-number">0.4</span> Need for package?</h1>
+<ul>
+<li>Our software:
+<ul>
+<li>bin/workshop</li>
+<li>bin/bash</li>
+<li>lib/libxyz.so</li>
+<li>doc/documentation.txt</li>
+<li>etc/workshop.cfg</li>
+</ul></li>
+<li>How to distribute the packages?
+<ul>
+<li>One simple way: Just zip and ship it!</li>
+<li>And client just unzip it to some folder and use it!</li>
+</ul></li>
+<li>Issue?
+<ul>
+<li>Every package has it’s own version of libraries, and its dependency</li>
+<li>Large file size</li>
+</ul></li>
+<li>How to fix this issue?</li>
+</ul>
+</section>
+<section id="need-for-package-2" class="slide level2">
+<h1><span class="header-section-number">0.5</span> Need for package?</h1>
+<ul>
+<li>Our software:
+<ul>
+<li>bin/workshop</li>
+<li>bin/bash</li>
+<li>lib/libxyz.so</li>
+<li>doc/documentation.txt</li>
+<li>etc/workshop.cfg</li>
+</ul></li>
+<li>Approach 2:
+<ul>
+<li>Don’t ship dependencies which are shared.</li>
+<li>Only allow one version of package at a time.</li>
+<li>Just mention that we need another package in some special file, say control.</li>
+<li>Use a tool to ensure that dependencies are met or not.</li>
+</ul></li>
+<li>Issue?
+<ul>
+<li>We need a tool to ensure dependency are met (dpkg)</li>
+<li>To install a package user has to manually download dependency packages</li>
+<li>Only one version of package at a time.</li>
+</ul></li>
+</ul>
+</section>
+<section id="need-for-package-3" class="slide level2">
+<h1><span class="header-section-number">0.6</span> Need for package:</h1>
+<ul>
+<li>Issue?
+<ul>
+<li>Only one version of package at a time. (ignored by debian. solved by nix)</li>
+<li>We need a tool to ensure dependency are met (dpkg)</li>
+<li>To install a package user has to manually download dependency packages</li>
+</ul></li>
+<li>How to solve issue of manually downloading dependency packages..
+<ul>
+<li>New tool which will maintain a list of
+<ul>
+<li>all available packages that can be downloaded</li>
+<li>and their dependencies</li>
+<li>and from where they can be downloaded</li>
+</ul></li>
+<li>If a user wants to install a package:
+<ul>
+<li>recursively download the dependencies</li>
+<li>download the requested package</li>
+<li>ask dpkg to install downloaded files.</li>
+</ul></li>
+</ul></li>
+<li>Issue? Constraints. User wants to say need gcc (&gt;= 6.0)</li>
+</ul>
+</section>
+<section id="need-for-package-4" class="slide level2">
+<h1><span class="header-section-number">0.7</span> Need for package:</h1>
+<ul>
+<li>Issue?
+<ul>
+<li>Only one version of package at a time. (ignored by debian. solved by nix)</li>
+<li>We need a tool to ensure dependency are met (dpkg)</li>
+<li>To install a package user has to manually download dependency packages</li>
+</ul></li>
+<li>How to solve issue of manually downloading dependency packages..
+<ul>
+<li>New tool which will maintain a list of
+<ul>
+<li>all available packages that can be downloaded</li>
+<li>and their dependencies</li>
+<li>and from where they can be downloaded</li>
+</ul></li>
+<li>If a user wants to install a package:
+<ul>
+<li>recursively download the dependencies</li>
+<li>download the requested package</li>
+<li>ask dpkg to install downloaded files.</li>
+</ul></li>
+</ul></li>
+<li>Issue? Constraints. User wants to say need gcc (&gt;= 6.0)</li>
+<li>Implement constraint solving in apt.</li>
+</ul>
+</section>
+<section id="summary-so-far" class="slide level2">
+<h1><span class="header-section-number">0.8</span> Summary so far:</h1>
+<ul>
+<li>deb: file format
+<ul>
+<li>Why a new format? We need to specify the dependencies as well.</li>
+</ul></li>
+<li>dpkg: tool
+<ul>
+<li>To ensure the dependencies are met.</li>
+<li>Install the deb</li>
+<li>To manage the installed files(so no conflict, and can be uninstalled)</li>
+</ul></li>
+<li>apt: tool
+<ul>
+<li>Knows a list of all packages</li>
+<li>Can download dependencies automatically</li>
+</ul></li>
+</ul>
+</section>
+<section id="how-to-specify-the-list-of-available-packages" class="slide level2">
+<h1><span class="header-section-number">0.9</span> How to specify the list of available packages</h1>
+<ul>
+<li>/etc/apt/sources.list
+<ul>
+<li>format:
+<ul>
+<li>deb uri suite/distribution components</li>
+</ul></li>
+<li>ex:
+<ul>
+<li>deb http://httpredir.debian.org/debian/ unstable main</li>
+<li>deb http://localhost/debian unstable main</li>
+</ul></li>
+<li>doc:
+<ul>
+<li>see man sources.list</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="apt" class="slide level2">
+<h1><span class="header-section-number">0.10</span> apt</h1>
+<ul>
+<li>To update the list of packages:
+<ul>
+<li>sudo apt update</li>
+</ul></li>
+<li>Search for a package:
+<ul>
+<li>apt search keyword</li>
+</ul></li>
+<li>How to install a package:
+<ul>
+<li>sudo apt install package</li>
+</ul></li>
+<li>Download a deb file:
+<ul>
+<li>apt download package</li>
+<li>sudo apt -d install package</li>
+</ul></li>
+</ul>
+</section>
+<section id="install-deb-directory" class="slide level2">
+<h1><span class="header-section-number">0.11</span> Install deb directory</h1>
+<ul>
+<li>sudo dpkg -i deb_file</li>
+</ul>
+</section>
+<section id="format-of-deb" class="slide level2">
+<h1><span class="header-section-number">0.12</span> format of deb:</h1>
+<ul>
+<li>deb: ar format (similar to zip)
+<ul>
+<li>data.tar.gz</li>
+<li>control.tar.gz</li>
+<li>debian-binary</li>
+</ul></li>
+<li>ar t deb</li>
+<li>ar x deb</li>
+</ul>
+</section>
+<section id="create-your-own-deb" class="slide level2">
+<h1><span class="header-section-number">0.13</span> Create your own deb:</h1>
+<ul>
+<li>usr/bin/workshop : your software executables</li>
+<li><p>DEBIAN/control : To mention dependency</p>
+<pre><code>     Package: workshop
+     Version: 1.0-1
+     Section: base
+     Priority: optional
+     Architecture: i386
+     Depends: bash (&gt;= 1.0)
+     Maintainer: Deepak Ravi &lt;deepak.ravi@gmail.com&gt;
+     Description: A simple tool to print hello
+      This is our first debian package.</code></pre></li>
+<li>dir:
+<ul>
+<li>workshop-1.0-1/usr/bin/workshop</li>
+<li>workshop-1.0-1/DEBIAN/control</li>
+</ul></li>
+<li><p>dpkg-deb -b ./workshop-1.0-1</p></li>
+</ul>
+</section>
+<section id="lab" class="slide level2">
+<h1><span class="header-section-number">0.14</span> Lab:</h1>
+<ul>
+<li>create different deb files
+<ul>
+<li>mention unmet constraints</li>
+<li>create two dependency file one depending on another</li>
+<li>What if two deb files try to overwrite same file?</li>
+</ul></li>
+</ul>
+</section>
+<section id="create-your-own-repository" class="slide level2">
+<h1><span class="header-section-number">0.15</span> Create your own repository:</h1>
+<ul>
+<li>Tool: reprepro</li>
+<li><p>create config file for reprepro: conf/distributions</p>
+<pre><code>   Origin: Debian
+   Label: Debian-All
+   Suite: unstable
+   Codename: sid 
+   Architectures: i386 amd64
+   Components: main non-free contrib
+   Description: Debian unstable
+   SignWith: 59BF40EC1EB1E240A908571577A92009B7A9F876</code></pre></li>
+<li>man reprepro for more info</li>
+<li>reprepro includedeb distribution deb_file</li>
+<li><p>serve using an http server</p></li>
+</ul>
+</section>
+<section id="install-samba" class="slide level2">
+<h1><span class="header-section-number">0.16</span> Install samba</h1>
+<ul>
+<li>Install: sudo apt install samba smbc smbclient</li>
+<li><p>Configure: edit /etc/samba/smb.conf</p>
+<pre><code> [test]                                                                          
+    comment = Test Public                                                        
+    browseable = yes                                                             
+    path = /home/deepakravi/Public                                               
+    guest ok = yes                                                               
+    read only = yes                                                              </code></pre></li>
+<li>Restart samba service: sudo service smbd restart</li>
+<li>In your file manager(nautilus),
+<ul>
+<li>Click on:connect to server</li>
+<li>Enter smb://localhost</li>
+</ul></li>
+</ul>
+</section>
+<section id="install-cups" class="slide level2">
+<h1><span class="header-section-number">0.17</span> Install cups:</h1>
+<ul>
+<li>Install: sudo apt install cups cups-pdf</li>
+<li>Print file to PDF printer</li>
+<li>Printed file will be saved in $HOME/PDF</li>
+</ul>
+</section>
+    </div>
+  </div>
+
+  <script src="reveal.js/lib/js/head.min.js"></script>
+  <script src="reveal.js/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true },
+          { src: 'reveal.js/plugin/notes/notes.js', async: true }
+        ]
+      });
+    </script>
+    </body>
+</html>

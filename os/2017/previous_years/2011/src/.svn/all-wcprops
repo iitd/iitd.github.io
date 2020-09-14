@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/~cs1080167/pintos-repo/!svn/ver/1/src
+END
+Make.config
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/~cs1080167/pintos-repo/!svn/ver/1/src/Make.config
+END
+LICENSE
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/~cs1080167/pintos-repo/!svn/ver/1/src/LICENSE
+END
+Makefile.userprog
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/~cs1080167/pintos-repo/!svn/ver/1/src/Makefile.userprog
+END
+Makefile.build
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/~cs1080167/pintos-repo/!svn/ver/1/src/Makefile.build
+END
+Makefile.kernel
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/~cs1080167/pintos-repo/!svn/ver/1/src/Makefile.kernel
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/~cs1080167/pintos-repo/!svn/ver/1/src/Makefile
+END

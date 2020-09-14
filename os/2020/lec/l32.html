@@ -1,0 +1,299 @@
+<title>L32</title>
+<html>
+<head>
+</head>
+<body>
+
+<!--
+    notes for next year:
+	- explain more clearly where the FS comes from (mkfs), which parts
+	  are allocated statically (inode table, bitmaps) vs at runtime
+	  (blocks).
+
+	- set up the foray into asynchronous writes much more explicitly,
+	  though perhaps discussing it in the context of xv6 will always
+	  just run into non-essential aspects of xv6 design.  talk about
+	  the motivation for async writes first, then think about the
+	  ramifications for an OS in general?
+ -->
+
+<h1>File systems</h1>
+
+<!--<p>Required reading:
+readi, writei, fileread, filewrite,
+create, and dirlink, and code related to
+these calls in fs.c, bio.c, ide.c, file.c, and sysfile.c-->
+
+<h2>Overview</h2>
+<ul>
+  <li>DOS FAT: Cute modification to linked list. Links reside in fixed
+	 size File Allocation Table (FAT). Still need to do pointer chasing but
+	 the entire FAT can fit in memory so chasing cheap.
+	 <ul>
+		 <li>Discussion (Entry size = 16 bits for FAT16, 28 bits for FAT32):
+			 <ul>
+				 <li>What's the maximum size of the FAT? (2<sup>16</sup> for FAT16,
+				 2<sup>28</sup> for FAT32)
+				 <li>Each entry descibes a "block" that may be made up of multiple
+				 contiguous sectors.
+				 <li> Given a 2KByte block, what's the maximum size of FS?
+				 (2<sup>16</sup>*2KB=128MB for FAT16, 2<sup>28</sup>*2KB=512GB for
+				 FAT32)
+				 <li>Option: go to bigger blocks. FAT allows 2-32KB block sizes.
+				 Block size
+				 fixed for a disk partition at format time (called
+				 "Allocation Unit Size"). Pro? Bigger disk, better spatial
+				 locality exploitation. Con? Internal fragmentation, more time
+				 for data transfer than strictly needed, buffer cache pollution.
+			 </ul>
+			 <li>Space Overhead of FAT16: 4 bytes/2Kbyte block = approx .2%
+			 <li>Reliability: create duplicate copies of FAT to protect against
+			 errors
+			 <li>Bootstrapping: Where is root directory? Fixed location on disk /
+			 have a table in the bootsector (sector 0)
+			 </li>
+		 </ul>
+		 </li>
+		 <li>Indexed Files: Each file has an array holding all it's block pointers.
+		 Fill in the block pointers as file grows/shrinks.
+		 <ul>
+			 <li>Pros: Fast random access, easy growth
+			 <li>Cons: Slow sequential access, growth beyond index size clumsy. Index
+			 size? (filesize/blocksize)*4 (assuming 4 bytes per block pointer).
+		 </ul></li>
+		 <li>Multi-level Indexed Files (BSD/Unix/xv6): Direct blocks, Indirect
+		 blocks, Double-indirect blocks. Caters to common case of small files.
+		 Handles large files. Example: 4.3 BSD Unix
+		 <ul>
+			 <li>Inode contains 14 4-byte block pointers (initally 0, indicating no block)
+			 <li>First 12 point to data blocks
+			 <li>Next entry points to an indirect block containing
+			 1024 4-byte block pointers
+			 <li>Last entry points to a doubly-indirect block.
+			 <li>Maximum file length is fixed, but large.
+			 <li>Indirect blocks are not allocated until needed.
+			 <li>Common case: small files require only one extra disk access
+			 for metadata lookup (inode lookup). Larger files require 2 or 3
+			 metadata lookups.
+		 </ul>
+	 </ul>
+	 </li>
+
+<!--<p>What makes filesystems hard/interesting?  At one level, it's much
+    like any other part of an OS: trying to achieve good performance
+    and provide useful functionality for lots of different applications
+    with very different workload characteristics.
+		However, more specifically:-->
+
+<p>A design issue is the semantics of a file system operation that
+  requires multiple disk writes.  In particular, what happens if the
+  logical update requires writing multiple disks blocks and the power
+  fails during the update?  For example, to create a new file,
+  requires allocating an inode (which requires updating the list of
+  free inodes on disk), writing a directory entry to record the
+  allocated i-node under the name of the new file (which may require
+  allocating a new block and updating the directory inode).  If the
+  power fails during the operation, the list of free inodes and blocks
+  may be inconsistent with the blocks and inodes in use. Again this is
+  up to implementation of the file system to keep on disk data
+  structures consistent:
+
+<ul>
+<li>Don't worry about it much, but use a recovery program to bring
+    file system back into a consistent state.  Linux ext2 and FAT
+    are such examples.  xv6 is almost in this category, except that
+    it has no recovery program.
+
+<li>Journaling all file system state (kernel-managed structure as
+		well as user-managed data). As we will discuss later,
+journaling provides atomicity over multiple disk operations.
+This tends to be quite
+    expensive, in terms of performance.  Linux's ext3 has
+    a full data journaling mode that behaves in this fashion.
+
+<li>Journaling only state that maintains kernel invariants. 
+    Never let the file system metadata get into an
+    inconsistent state.  In some sense, this resembles
+    how the kernel deals with killing user processes:
+    it cleans up kernel structures, so kernel invariants
+    are upheld, but ignores application invariants.
+    NTFS does this, as does Linux ext3 by default.
+</ul>
+
+<p>Another design issue is the semantics are of concurrent writes to
+the same data item.  What is the order of two updates that happen at
+the same time? For example, two processes open the same file and write
+to it.  Modern Unix operating systems allow the application to lock a
+file to get exclusive access.  If file locking is not used and if the
+file descriptor is shared, then the bytes of the two writes will get
+into the file in some order (this happens often for log files).  If
+the file descriptor is not shared, the end result is not defined. For
+example, one write may overwrite the other one (e.g., if they are
+writing to the same part of the file.)  Lots of other examples with
+directories, names, etc.
+
+<p>An implementation issue is performance, because writing to magnetic
+disk is relatively expensive compared to computing. Three primary ways
+to improve performance are: careful file system layout and data structure
+design that induces few seeks (locality, btrees, logging, etc), an
+in-memory cache of frequently-accessed blocks (or even prefetching),
+and overlap I/O with computation so that file operations don't have
+to wait until their completion and so that that the disk driver has
+more data to write, which allows disk scheduling.
+(We will talk about performance in detail later.)
+
+<h2>xv6 code examples</h2>
+
+<p>xv6 implements a minimal Unix file system interface. xv6 doesn't
+pay attention to file system layout. It overlaps computation and I/O,
+but doesn't do any disk scheduling.  Its cache is write-through, which
+simplifies keeping on disk data structures consistent, but is bad for
+performance.
+
+<p>What is xv6's disk layout?  Who determines how many inodes, blocks,
+  etc. (mkfs.c). How does xv6 keep track of free blocks and inodes?
+  See balloc()/bfree() and ialloc()/ifree().  Is this layout a good
+  one for performance?  What are other options?
+
+	<ul>
+		<li>Block 0 is unused
+		<li>Block 1 is super block
+		<li>Inodes start at block 2
+		<li>Free-block bitmap at block <code>ninodes/IPB + 3</code>
+		<li>Free blocks after that
+	</ul>
+	Free blocks are tracked using bitmap. Free inodes are tracked by
+	linearly scanning the inode array to find one that is free.
+	Other options (bitmap for inodes, better locality among inodes
+	and blocks)
+
+<p>On disk, files are represented by an inode (struct dinode in fs.h),
+and blocks.  Small files have up to 12 block addresses in their inode;
+large files use the last address in the inode as a disk address
+for a block with 128 disk addresses (512/4).  The size of a file is
+thus limited to 12 * 512 + 128*512 bytes.  What would you change to
+support larger files? (Ans: e.g., double indirect blocks.)
+
+<p>Directories are files with a bit of structure to them. The file
+contains of records of the type struct dirent.  The entry contains the
+name for a file (or directory) and its corresponding inode number.
+
+<p>
+Directory contents: A directory is much like a file, but
+user can't directly write or read from it. It can only do so
+using system calls like <code>readdir()</code>. Also, the kernel
+reads the contents to do path resolution (e.g., converting
+"x/y" to inode number). The content of a "directory file" is an
+array of dirents (notice that the contents are structured this time).
+<br>
+dirent:
+<ul>
+		<li> inum
+		<li> 14-byte file name
+</ul>
+dirent is free if inum is zero
+<br>
+How many files can appear in a directory?
+(max file size / sizeof(struct dirent))
+
+<p>xv6's on-disk inode (64 bytes):
+<ul>
+	<li> type (free, file, directory, device)
+	<li> nlink
+	<li> size
+	<li> addrs[12+1]<br>
+  direct and indirect blocks
+</ul>
+
+<p>
+Each i-node has an i-number. To turn i-number into inode's
+block, use 2 + inum/IPB. (IPB = inodes per block). Blocksize=512
+inodesize=64, IPB=8
+
+<p>
+Can view FS as an on-disk data structure. Draw tree: dirs, inodes, blocks.
+There are two allocation pools: inodes and blocks.
+
+<p>Q: how does xv6 create a file?:
+<pre>
+$ echo &gt; a
+log_write 4 ialloc (44, from create 54)
+# allocating an inode for a
+
+log_write 4 iupdate (44, from create 54)
+# updating the inode of a
+
+log_write 29 writei (47, from dirlink 48, from create 54)
+# adding entry for a in the contents to the current working directory
+
+log_write 2 iupdate
+# updating the inode of the current working directory.
+</pre>
+
+	<!--
+<p>Let's look at:
+<pre>
+echo > a
+echo x > a
+echo < a > b
+rm a
+mkdir b
+</pre>
+
+<p>What file systems operations do these shell commands invoke?
+
+<p>1rst command. Let's walk through sys_open, create, etc, skipping
+  directory stuff, and look at the number of disk writes.  study
+  ialloc; layout of inodes.
+
+<p>buffer cache caches blocks containing inodes. what replacement
+policy does the buffer cache implement?  (LRU, look at bget() which
+traverses the list in reverse order to find a free block; brelease() adds the
+block to the start of the list). what is B_BUSY? (the buffer is being
+used) B_VALID? (the buffer has been loaded with disk's contents).
+why does bget() panic if there's no free blocks?  (because this means
+that these many threads are concurrently trying to read something off the
+block, which should be a rare occasion. we expect the programmer to
+release the block as soon as he is done; notice that the block still
+has valid metadata and data so can be locked again if needed without
+going to the disk). could we sleep? (we could).
+  if the block wasn't in the cache, read it from disk - are read's
+	synchronous or asynchronous? (synchronous)
+	why does the ide driver need a queue? (so that many processes can
+	simultaneously wait on the disk). Given that we have a queue of
+	requests, what could we have done better? (process the requests using
+	elevator algorithm perhaps). We are allowing only single request
+	in flight to disk at a time. Modern disk controllers will allow
+	many requests to be in flight and perform scheduling internally.
+
+	<p>what does ilock(ip) after ialloc() do? (processes are only allowed
+	to read and write inode metadata and contents when holding the inode's
+lock).	how does ilock() implement
+locks? (using icache.lock and I_BUSY flag and sleep/wakeup).
+why not use a spinlock to lock an inode?  (too expensive)
+why have locks? (protect against concurrent access to the same file).
+  Atomic read and update.  For example, allocating an inode: read
+  block containing inode, mark it allocated, and write it back.  This
+	operation must be atomic (guaranteed with lock on buffer cache). 
+	Are writes write-through? (yes)
+
+<p>Returning to create, why is the update of the inode before the
+update of the directory?  (to avoid dangling pointers on crash)
+Can we make the disk write asynchronous? (yes)
+Is there any reason to wait in ide_rw() if we're writing a block? (no,
+the order of disk writes is still preserved).
+
+<p>2nd command: write a block. bmap allocates block.  is data written
+to disk? (yes) must it? (no)
+
+<p>3rd command. read. does the read cause a disk read to happen? (no, file a's
+inode and data is still in the buffer cache).
+
+<p>4th command. unlink.  why are the old block written? (the old block is
+written with the new value of nlink which has been decremented). iunlockput()
+will then truncate the file using itrunc(), free the inode by setting it's
+type to 0. So the old block may have to be written twice actually.)
+
+</ul>
+-->
+</body>

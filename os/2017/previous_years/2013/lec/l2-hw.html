@@ -1,0 +1,119 @@
+<html>
+<head>
+<title>Homework: processes and threads</title>
+</head>
+<body>
+
+<h1>Homework: processes and threads</h1>
+
+<p>This lecture covers scheduling policies of threads and processes.
+Recall that a process is an abstraction which includes a program
+counter, registers, and an address space which includes the code,
+static data, stack and the heap. Threads are abstractions similar
+to processes except that multiple threads can share the same
+address space. Each thread has it's own program counter, registers
+and stack. Threads can share code, static data, and heap. Threads
+take significantly less space than processes because they don't require
+separate address spaces.<br><br>
+
+<b>Hand-In Procedure</b>
+<p>
+You are to turn in this homework during lecture. Please
+write up your answers to the exercises below and hand them in to a
+staff member at the beginning of lecture. Mention your CSE login
+ID at the top of your homework submission.
+
+<p><h2>Assignment Part 1 (Processes)</h2>
+
+On a linux machine, type the following command (we will see more details
+about processes, just like we saw in previous homework).
+<pre>
+$ <b>cat | tee output.file</b>
+
+</pre>
+<p>
+<b>Turn in:</b>
+While this command is running, examine the processes created:
+<ol>
+  <ul>
+    <li>Type
+    <pre>
+    $ <b>cat /proc/<i>pid-num</i>/stack</b>
+    </pre>
+    Whose stack is this?
+    </li>
+    <li>Type
+    <pre>
+    $ <b>cat /proc/<i>pid-num</i>/maps</b>
+    </pre>
+    The <code>maps</code> file shows the address space of the process. You will
+    find the output divided into columns. The leftmost column is
+    the address space range and the rightmost column shows what is mapped into
+    that column. You will see the code/data from the main executable mapped in
+    some address ranges. You will also find other libraries that are loaded
+    by this executable mapped in the address space.
+    Can you identify where is code, static data, heap and stack
+    mapped?
+    </li>
+  </ul></li>
+</ol>
+
+<p><h2>Assignment Part 2 (Threads)</h2></p>
+Threads can be implemented completely at the user level. i.e., we do
+not require privileged operations to implement a thread abstraction
+and schedule different threads. In other words, a process can provide
+multiple threads by implementing a scheduler. Let's see how this
+can be done.
+
+<p>To implement threads, the process needs to provide the abstraction
+of multiple control-flow (program counter), multiple register
+sets and multiple stacks. This can be done if after every periodic
+time interval, one thread can be interrupted and saved and another
+thread can be loaded. Saving a thread involves saving it's program
+counter, registers and stack pointer. Similarly, loading a thread
+involves loading the new thread's program counter, registers and stack
+pointer. Neither the save operation, nor the load operation requires
+any privileged operation -- we are just loading and saving registers.
+
+<p>So the only remaining issue is how to periodically interrupt a
+running thread from within a process. For an OS, this interruption
+is done by the hardware timer device. A process can do this using
+the SIGALRM signal.
+
+<p>Such threads implemented inside a process are called user-level
+threads. The OS cannot distinguish between multiple user-level threads
+and it can only see one process that is running which includes the
+thread scheduler and the different threads. 
+
+<p><b>Turn in:</b><br>
+Read the manpage of
+the <code>signal</code>, <code>alarm</code>, and <code>setitimer</code>.
+Understand how SIGALRM can
+help in implementing user-level threads. Briefly describe how you
+will do this (2-3 sentences and some pseudo-code).
+
+<h3>Assignment Part 3 (Zombies)</h3>
+In UNIX, a child process may terminate before a parent calls
+<code>wait()</code>. When the parent calls <code>wait()</code> eventually,
+it still expects to read the correct exitcode that the child returned.
+To support this functionality, UNIX does not completely remove the process
+till it's parent has called <code>wait()</code> on it.
+
+<p>
+Such processes that have completed execution but still have an entry
+in the process table are called <em>zombie processes</em>. Usually,
+the presence of zombie processes in the system for a long time indicates
+a bug in the program (it is a common error).
+
+<p>
+Read about Zombie process at this <a href=http://en.wikipedia.org/wiki/Zombie_process>wikipedia article</a>. Also read about the <a href=http://en.wikipedia.org/wiki/SIGCHLD>SIGCHLD</a> signal.
+
+<p>
+<b>Turn in:</b><br>
+In class we discussed that the shell implements "<code>&</code>" functionality
+by not calling <code>wait()</code> immediately. Should the shell
+never call <code>wait()</code>? When should it call
+<code>wait()</code>? Answer by providing short pseudo-code.
+
+</body>
+</html>

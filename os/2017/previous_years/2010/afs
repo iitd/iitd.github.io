@@ -1,0 +1,5 @@
+Regarding the question about consistency of AFS if multiple clients
+have the same file open at the same time, and one of them closes it.
+There are no guarantees for the already opened files -- they could
+see either the new data or the old data. But any files opened after
+the close should always see the new data.

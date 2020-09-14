@@ -1,0 +1,76 @@
+
+<HTML>
+<HEAD>
+	<TITLE>CPSC 422/522: Operating Systems, Spring 2010
+		
+		&mdash Prior Years
+		
+	</TITLE>
+	<LINK REL="stylesheet" HREF="stylesheet.css">
+</HEAD>
+<BODY>
+
+<table cellspacing="2" cellpadding="10" width="100%">
+<tbody>
+<tr>
+
+<td bgcolor="white" align="left">
+<H1>CS422/522: Operating Systems, Spring 2010
+	
+	&mdash Prior Years
+	
+</H1>
+
+<table cellpadding="5" bgcolor="blue">
+<tr><td bgcolor="white" align="center">
+<a href="index">Home</a> &nbsp;&ndash;&nbsp;
+<a href="info">Overview</a> &nbsp;&ndash;&nbsp;
+<a href="sched">Schedule</a> &nbsp;&ndash;&nbsp;
+<a href="reference">Reference</a> &nbsp;&ndash;&nbsp;
+<a href="reading">Reading List</a> &nbsp;&ndash;&nbsp;
+<a href="tools">Tools</a> &nbsp;&ndash;&nbsp;
+<a href="../pios">PIOS</a> &nbsp;&ndash;&nbsp;
+<a href="prior">Prior Years</a>
+</table>
+
+</td>
+
+<td align="center" valign="center" width="80" bgcolor="white">
+<a href="http://www.yale.edu/">
+<img border="0" src="images/yaleclr.jpg" width="70" height="79">
+</a>
+</td>
+
+</tr>
+</tbody>
+</table>
+
+<hr>
+
+
+Archives of a few prior CS422 courses taught at Yale:
+<ul>
+<li>	<a href="http://arch.cs.yale.edu/~bradley/cs422/">Spring 1999</a>
+	by Bradley
+<li>	<a href="http://flint.cs.yale.edu/cs422/Sp2000/">Spring 2000</a>
+	by Zhong Shao
+<li>	<a href="http://flint.cs.yale.edu/cs422/">Spring 2008</a>
+	by Zhong Shao
+</ul>
+
+
+<P><HR><P>
+<ADDRESS>Copyright (c) 2000-2010
+<a href="http://www.cs.yale.edu/users/shao-zhong/">Zhong Shao</a>
+and
+<a href="http://www.cs.yale.edu/people/ford.html">Bryan Ford</a>,
+<a href="http://www.cs.yale.edu/">Department of Computer Science</a>,
+<a href="http://www.yale.edu/">Yale University</a><br>
+Many course materials derived from
+<a href="http://pdos.csail.mit.edu/6.828/">6.828</a>
+by Frans Kaashoek and others at MIT.
+</ADDRESS> 
+
+</BODY>
+</HTML>
+

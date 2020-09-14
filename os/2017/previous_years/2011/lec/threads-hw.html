@@ -1,0 +1,142 @@
+<html>
+<head>
+<title>Homework: processes and threads</title>
+</head>
+<body>
+
+<h1>Homework: processes and threads</h1>
+
+<p>This lecture covers scheduling policies of threads and processes.
+Recall that a process is an abstraction which includes a program
+counter, registers, and an address space which includes the code,
+static data, stack and the heap. Threads are abstractions similar
+to processes except that multiple threads can share the same
+address space. Each thread has it's own program counter, registers
+and stack. Threads can share code, static data, and heap. Threads
+take significantly less space than processes because they don't require
+separate address spaces.<br><br>
+
+<b>Hand-In Procedure</b>
+<p>
+You are to turn in this homework during lecture. Please
+write up your answers to the exercises below and hand them in to a
+staff member at the beginning of lecture. Mention your CSE login
+ID at the top of your homework submission.
+
+<p><h2>Assignment Part 1 (Processes)</h2>
+
+On a linux machine, type the following command
+<pre>
+$ <b>cat | tee output.file</b>
+
+</pre>
+
+<code>cat</code> is a UNIX utility that prints the contents of STDIN to STDOUT.
+<code>tee</code> is a UNIX utility that prints the contents of STDIN to both STDOUT and to the file named by its argument (<code>output.file</code>). After you type this command, you can type in some characters followed by the newline character.
+
+<p>
+<b>Turn in:</b>
+While this command is running, examine the processes created:
+<ol>
+  <li> Use <code>pstree</code> to see the process hierarchy. Tell us what you find about the process hierarchy. </li>
+	<li> Use '<code>ps x</code>' to identify the process IDs of the processes created by <code>cat</code> and <code>tee</code> commands.
+	Linux provides a <code>proc</code> pseudo-filesystem which can be used to examine the state of a process using filesystem namespace.
+  <ul>
+    <li> Type the following command for both process-ids:
+    <pre>
+    $ <b>ls -l /proc/<i>pid-num</i>/fd/</b>
+    </pre>
+    What do you find? What are 0,1,2,...? What do they symlink to?
+    </li>
+    <li>Type
+    <pre>
+    $ <b>cat /proc/<i>pid-num</i>/stack</b>
+    </pre>
+    Whose stack is this?
+    </li>
+    <li>Type
+    <pre>
+    $ <b>cat /proc/<i>pid-num</i>/maps</b>
+    </pre>
+    The <code>maps</code> file shows the address space of the process. You will
+    find the output divided into columns. The leftmost column is
+    the address space range and the rightmost column shows what is mapped into
+    that column. You will see the code/data from the main executable mapped in
+    some address ranges. You will also find other libraries that are loaded
+    by this executable mapped in the address space.
+    Can you identify where is code, static data, heap and stack
+    mapped?
+    </li>
+  </ul></li>
+</ol>
+
+<p><h2>Assignment Part 2 (Threads)</h2></p>
+Threads can be implemented completely at the user level. i.e., we do
+not require privileged operations to implement a thread abstraction
+and schedule different threads. In other words, a process can provide
+multiple threads by implementing a scheduler. Let's see how this
+can be done.
+
+<p>To implement threads, the process needs to provide the abstraction
+of multiple control-flow (program counter), multiple register
+sets and multiple stacks. This can be done if after every periodic
+time interval, one thread can be interrupted and saved and another
+thread can be loaded. Saving a thread involves saving it's program
+counter, registers and stack pointer. Similarly, loading a thread
+involves loading the new thread's program counter, registers and stack
+pointer. Neither the save operation, nor the load operation requires
+any privileged operation -- we are just loading and saving registers.
+
+<p>So the only remaining issue is how to periodically interrupt a
+running thread from within a process. For an OS, this interruption
+is done by the hardware timer device. A process can do this using
+the SIGALRM signal.
+
+<p>Such threads implemented inside a process are called user-level
+threads. The OS cannot distinguish between multiple user-level threads
+and it can only see one process that is running which includes the
+thread scheduler and the different threads. 
+
+<p><b>Turn in:</b><br>
+Read the manpage of
+the <code>signal</code>, <code>alarm</code>, and <code>setitimer</code>.
+Understand how SIGALRM can
+help in implementing user-level threads. Briefly describe how you
+will do this (2-3 sentences and some pseudo-code).
+
+<p><h2>Assignment Part 3 (Scheduling)</h2></p>
+Carefully read <a href=../pintos/doc/pintos_2.html>Pintos Threads Assignment</a>
+completely. <a href=../pintos/doc/pintos.html>Install pintos</a> and run it
+using both <code>bochs</code> and
+<code>qemu</code>. <a href=../tools.html>Tools page</a> has detailed instruction
+on setting up and running pintos. Look through pintos source code and
+design a solution. Ask your
+doubts and questions during the lecture.
+
+<p>Setup a subversion repository on CSC servers. Follow the instructions
+on the <a href=../tools.html>tools</a> page.
+Ensure that nobody else can access the files in your directory by
+setting the file and directory permissions (using <code>chmod</code>).
+See the CSC subversion page for details on how to do this. Maintaining
+the security of your project files is your responsibility. If your
+project files are visible to others (through any backdoor), we
+will penalize you.
+
+<p>
+Logon to <code>palasi.cse.iitd.ernet.in</code> and type
+"<code>submit-pintos base</code>". You will be prompted for the URL
+of your repository. The script will tell you if your repository
+is correctly formed. If the script does not succeed ("Submission NOT made."),
+fix the reported errors and submit again. Your repository is expected
+to be identical to the pintos source code provided by
+us <a href=../pintos/doc/pintos.tar.gz>here</a>
+
+<p><b>NOTE</b>: <em>'<code>submit-pintos</code>' is now functional.</em>
+
+<p><b>Turn in:</b><br>
+After you have submitted using the <code>submit-pintos</code> script,
+write the URL of your repository in your written submission.
+
+
+</body>
+</html>

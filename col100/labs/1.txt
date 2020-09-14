@@ -1,0 +1,17 @@
+2 4
+A
+RollNo Name
+1 Ram
+2 Hari
+B
+RollNo CourseID
+1 COL100
+1 COL114
+1 COL356
+2 CSL656
+Q
+X COL100
+Y COL
+Z none
+Z all
+Z one

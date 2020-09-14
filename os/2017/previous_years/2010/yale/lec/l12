@@ -1,0 +1,264 @@
+<title>L10</title>
+<html>
+<head>
+</head>
+<body>
+
+<!--
+    notes for next year:
+	- explain more clearly where the FS comes from (mkfs), which parts
+	  are allocated statically (inode table, bitmaps) vs at runtime
+	  (blocks).
+
+	- set up the foray into asynchronous writes much more explicitly,
+	  though perhaps discussing it in the context of xv6 will always
+	  just run into non-essential aspects of xv6 design.  talk about
+	  the motivation for async writes first, then think about the
+	  ramifications for an OS in general?
+ -->
+
+<h1>File systems</h1>
+
+<p>Required reading:
+readi, writei, fileread, filewrite,
+create, and dirlink, and code related to
+these calls in fs.c, bio.c, ide.c, file.c, and sysfile.c
+
+<h2>Overview</h2>
+
+<p>The next 3 lectures are about file systems:
+<ul>
+<li>Basic file system implementation
+<li>Naming
+<li>Performance
+<li>Correctness
+</ul>
+
+<p>Users desire to store their data durably, so that data survives when
+the user turns off their computer.  The primary media for doing so are:
+magnetic disks, flash memory, and tapes.  We focus on magnetic disks
+(e.g., through the IDE interface in xv6).
+
+<p>To allow users to remember where they stored a file, they can
+assign a symbolic name to a file, which appears in a directory.
+
+<p>The data in a file can be organized in a structured way or not.
+The structured variant is often called a database.  UNIX uses the
+unstructured variant: files are streams of bytes.  Any particular
+structure is likely to be useful to only a small class of
+applications, and other applications will have to work hard to fit
+their data into one of the pre-defined structures. Besides, if you
+want structure, you can easily write a user-mode library program that
+imposes that format on any file.  The end-to-end argument in action.
+(Databases have special requirements and support an important class of
+applications, and thus have a specialized plan.)
+
+<p>The API for a minimal file system consists of: open, read, write,
+seek, close, and stat.  Dup duplicates a file descriptor. For example:
+<pre>
+  fd = open("x/y", O_RDWR);
+  read (fd, buf, 100);
+  write (fd, buf, 512);
+  close (fd)
+</pre>
+
+<p>There's a couple of different things going on here.
+    <ul>
+	<li>Names: how do we get from the name "x/y" to the file
+	    we're actually talking about.  The next lecture
+	    (after the midterm) will be all about naming.
+	    Kernel interface relies on these names a lot.
+	<li>Directories: provide a way of assigning user-meaningful
+	    names to files.  Part of the kernel name interface.
+	<li>In Unix (and almost all other filesystems) there's
+	    some notion of an on-disk file that's independent
+	    of the file's name, called an "inode".  Seen by the
+	    user (e.g. stat) but cannot access a given inode.
+	<li>Disk blocks: the inode translates offsets in our
+	    conceptual file into concrete locations on disk.
+	    Not seen by the user.
+	<li>File descriptors: in Unix, the FD binds to the inode,
+	    rather than the pathname, so the pathname lookup is
+	    done only when the file is first opened.  Application
+	    handle for an inode in the Unix API.
+    </ul>
+
+We're going to talk about files, blocks, and FDs today;
+names and directories will be next time.
+
+<p>Maintaining the file offset behind the read/write interface is an
+  interesting design decision. The alternative is that the state of a
+  read operation should be maintained by the process doing the reading
+  (i.e., that the pointer should be passed as an argument to read).
+  This argument is compelling in view of the UNIX fork() semantics,
+  which clones a process which shares the file descriptors of its
+  parent.
+
+<p>With offsets in the file descriptor, a read by the parent of a
+    shared file descriptor (e.g., stdin) changes the read pointer
+    seen by the child.  This isn't always desirable: for example,
+    consider a data file, in which the program seeks around and
+    reads various records.  If we fork(), the child and parent
+    might interfere.  On the other hand, the alternative (no
+    offset in FD) would make it difficult to get
+    "(echo one; echo two) > x" right.  Easy to implement
+    separate-offsets if kernel provides shared-offsets
+    (re-open file, mostly), but not the other way around.
+
+<p>The file API turned out to be quite a useful abstraction.
+    Unix uses it for many things that aren't just files on local disk,
+    e.g. pipes, devices in /dev, network storage, etc.
+    Plan9 took this further, and a few of those ideas came back to Linux,
+    like the /proc filesystem.
+
+<p>Unix API doesn't specify that the effects of write are immediately
+  on the disk before a write returns. It is up to the implementation
+  of the file system within certain bounds. Choices include (that
+  aren't non-exclusive):
+
+<ul>
+<li>Before the write returns [most conservative, but bad for performance];
+<li>Before close returns [AFS];
+<li>At some point in the future, if the system stays up (e.g., after
+    30 seconds) [highest performance];
+<li>Application specified (e.g., before fsync returns) [requires
+    careful application coding];
+<li>Before external things (screen, network) indicate the write returned
+    [will read paper about this later].
+</ul>
+
+<p>What makes filesystems hard/interesting?  At one level, it's much
+    like any other part of an OS: trying to achieve good performance
+    and provide useful functionality for lots of different applications
+    with very different workload characteristics.
+    However, more specifically:
+
+<p>A design issue is the semantics of a file system operation that
+  requires multiple disk writes.  In particular, what happens if the
+  logical update requires writing multiple disks blocks and the power
+  fails during the update?  For example, to create a new file,
+  requires allocating an inode (which requires updating the list of
+  free inodes on disk), writing a directory entry to record the
+  allocated i-node under the name of the new file (which may require
+  allocating a new block and updating the directory inode).  If the
+  power fails during the operation, the list of free inodes and blocks
+  may be inconsistent with the blocks and inodes in use. Again this is
+  up to implementation of the file system to keep on disk data
+  structures consistent:
+
+<ul>
+<li>Don't worry about it much, but use a recovery program to bring
+    file system back into a consistent state.  Linux ext2 and FAT
+    are such examples.  xv6 is almost in this category, except that
+    it has no recovery program.
+
+<li>Journaling state that maintains kernel invariants.
+    Never let the file system metadata get into an
+    inconsistent state.  In some sense, this resembles
+    how the kernel deals with killing user processes:
+    it cleans up kernel structures, so kernel invariants
+    are upheld, but ignores application invariants.
+    NTFS does this, as does Linux ext3 by default.
+
+<li>Journaling all file system state (kernel-managed structure as
+    well as user-managed data).  This tends to be quite a bit
+    more expensive, in terms of performance.  Linux's ext3 has
+    a full data journaling mode that behaves in this fashion.
+</ul>
+
+<p>Another design issue is the semantics are of concurrent writes to
+the same data item.  What is the order of two updates that happen at
+the same time? For example, two processes open the same file and write
+to it.  Modern Unix operating systems allow the application to lock a
+file to get exclusive access.  If file locking is not used and if the
+file descriptor is shared, then the bytes of the two writes will get
+into the file in some order (this happens often for log files).  If
+the file descriptor is not shared, the end result is not defined. For
+example, one write may overwrite the other one (e.g., if they are
+writing to the same part of the file.)  Lots of other examples with
+directories, names, etc.
+
+<p>An implementation issue is performance, because writing to magnetic
+disk is relatively expensive compared to computing. Three primary ways
+to improve performance are: careful file system layout and data structure
+design that induces few seeks (locality, btrees, logging, etc), an
+in-memory cache of frequently-accessed blocks (or even prefetching),
+and overlap I/O with computation so that file operations don't have
+to wait until their completion and so that that the disk driver has
+more data to write, which allows disk scheduling.
+(We will talk about performance in detail later.)
+
+<h2>xv6 code examples</h2>
+
+<p>xv6 implements a minimal Unix file system interface. xv6 doesn't
+pay attention to file system layout. It overlaps computation and I/O,
+but doesn't do any disk scheduling.  Its cache is write-through, which
+simplifies keeping on disk datastructures consistent, but is bad for
+performance.
+
+<p>On disk files are represented by an inode (struct dinode in fs.h),
+and blocks.  Small files have up to 12 block addresses in their inode;
+large files use files the last address in the inode as a disk address
+for a block with 128 disk addresses (512/4).  The size of a file is
+thus limited to 12 * 512 + 128*512 bytes.  What would you change to
+support larger files? (Ans: e.g., double indirect blocks.)
+
+<p>Directories are files with a bit of structure to them. The file
+contains of records of the type struct dirent.  The entry contains the
+name for a file (or directory) and its corresponding inode number.
+How many files can appear in a directory?
+
+<p>In memory files are represented by struct inode in fsvar.h.  What
+    is the role of the additional fields in struct inode?  Why don't
+    we embed dinode in the directory? (Links from multiple directories
+    to the same file.)
+
+<p>Kernel allows users to look at the inode state using stat()
+or fstat(), which returns a struct stat, from stat.h.
+
+<p>What is xv6's disk layout?  Who determines how many inodes, blocks,
+  etc. (mkfs.c). How does xv6 keep track of free blocks and inodes?
+  See balloc()/bfree() and ialloc()/ifree().  Is this layout a good
+  one for performance?  What are other options?
+
+<p>Let's look at:
+<pre>
+echo > a
+echo x > a
+echo < a > b
+rm a
+mkdir b
+</pre>
+
+<p>What file systems operations do these shell commands invoke?
+
+<p>1rst command. Let's walk through sys_open, create, etc, skipping
+  directory stuff, and look at the number of disk writes.  study
+  ialloc; layout of inodes.
+
+<p>buffer cache caches blocks containing inodes. what replacement
+  policy does the buffer cache implement?  what is B_BUSY? B_VALID?
+  why does bget() panic if there's no free blocks?  could we sleep?
+  if the block wasn't in the cache, read it from disk--are read's
+  synchronous or asynchronous? why does the ide driver need a queue?
+
+<p>what does ilock(ip) after ialloc()?  how does ilock() implement
+  locks?  why not use a spinlock to lock an inode?  why have locks?
+  Atomic read and update.  For example, allocating an inode: read
+  block containing inode, mark it allocated, and write it back.  This
+  operation must be atomic.  Are writes write-through? 
+
+<p>Returning to create, why is the update of the inode before the
+  update of the directory?  Can we make the disk write asynchronous?
+  Is there any reason to wait in ide_rw() if we're writing a block?
+
+<p>2nd command: write a block. bmap allocates block.  is data written
+to disk? must it?
+
+<p>3rd command. read. does the read cause a disk read to happen?
+
+<p>4th command. unlink.  why are the old block written? 
+
+</ul>
+
+</body>

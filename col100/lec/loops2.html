@@ -1,0 +1,208 @@
+<h4>For loops continued</h4>
+<p>General form of for-loop:
+<pre>
+for (init-statement; check; step-statement)
+{
+  statement;
+  statement;
+  ...
+}
+</pre>
+Show the flowchart: first init-statement executes, followed by check, and so on.  If the check is false at the first entry to the loop, the body is never executed. The init-statement or the step-statement could be empty. Also, point out that the init-statement could be anything, e.g., declaration, assignment, function call, another for-loop, etc. Same for step-statement.
+
+<p>Why do we need the for-loop when we already have the while loop? More structure, better readability. e.g., if we just want to count, for loop has much better readability than the while loop.
+
+<p>Example: add up the first 100 numbers
+<pre>
+int sum = 0;
+for (int i = 0; i < 100; i++)
+{
+  sum = sum + i;
+}
+cout << "The sum is " << sum << endl;
+</pre>
+Show the correspondence of the for-loop with the <code>while</code> loop.
+
+<p><code>sum = sum + i</code> can also be written as <code>sum += i</code>.</p>
+
+<p>While without braces:
+<pre>
+while (condition)
+  statement;
+</pre>
+If only one statement in body, can omit left and right braces (just like if statement). Similarly for for loop.
+
+<h4>Example: countdown using the for loop</h4>
+<pre>
+for (int i = 10; i >= 1; i--)
+{
+  cout << i << endl;
+}
+cout << "Blast off!" << endl;
+</pre>
+Output:
+<pre>
+10
+9
+8
+7
+6
+5
+4
+3
+2
+1
+Blast off!
+</pre>
+
+<p>Discuss that any (or all) of init-stmt, check, or step-stmt could be empty.
+
+<p>Introducing the <code>break</code> statement: You can use a special statement called <code>break;</code>. It simply breaks out of the loop at that point and transfers control to the first statement following the end of the for the block.
+
+<p>Example:
+<pre>
+#include &lt;iostream&gt;
+#include "simpio.h"
+using namespace std;
+int main() {
+  int sum = 0; //sum must be declared outside of the loop! Otherwise it will be redeclared many times
+  int num = getInteger("Enter a number: "); //num must be declared outside of the loop! Otherwise, the loop condition makes no sense.
+  while (true)
+  {
+    sum += num;
+    num = getInteger("Enter a number: ");
+    if (num == -1)
+      break;
+  }
+  cout << "Sum is " << sum << endl;
+  return 0;
+}
+</pre>
+
+
+
+
+<h4>Nested loops</h4>
+A loop placed inside another loop
+<pre>
+for (int i = 0; i < 5; i++)
+{
+  for (int j = 0; j < 10; j++)
+  {
+    cout << "*";
+  }
+  cout << endl;
+}
+</pre>
+Could we have ommitted the braces in the for loop here?
+
+<p>Output:
+<pre>
+**********
+**********
+**********
+**********
+**********
+</pre>
+The outer loop repeats five times; the inner loop repeats ten times
+
+<h4>Exercise: What is produced by the following code</h4>
+<pre>
+for (int i = 0; i < 5; i++)
+{
+  for (int j = 0; j < i + 1; j++)
+  {
+    cout << "*";
+  }
+  cout << endl;
+}
+</pre>
+
+<h4>Write programs to print the following patterns</h4>
+<p>Pattern 1
+<pre>
+*******
+******
+*****
+****
+***
+**
+*
+</pre>
+
+<p>Pattern 2
+<pre>
+*
+**
+***
+****
+*****
+******
+*******
+</pre>
+
+<p>Pattern 3
+<pre>
+1
+22
+333
+4444
+55555
+666666
+7777777
+</pre>
+
+<p>Pattern 4
+<pre>
+......1
+.....22
+....333
+...4444
+..55555
+.666666
+7777777
+</pre>
+
+<p>Pattern 5
+<pre>
+......1
+.....21
+....321
+...4321
+..54321
+.654321
+7654321
+</pre>
+
+<h4>Methods (or functions)</h4>
+We can make new commands (or <b>methods</b>). This lets us decompose our program into smaller pieces that are easier to understand.
+<pre>
+type name()
+{
+  statement1;
+  statement2;
+  ...
+}
+</pre>
+
+<p>Example:
+<pre>
+int printGreeting()
+{
+  cout << "Hello, world!" << endl;
+  cout << "I hope you had a great day.";
+  return 0;
+}
+
+int main()
+{
+  string name = readLine("Next name? ");
+  while (name != "")
+  {
+    printGreeting();
+    name = readLine("Next name? ");
+  }
+  return 0;
+}
+</pre>
+Introduce the <code>void</code> type. Replace return type of <code>printGreeting</code> with <code>void</code>.

@@ -1,0 +1,50 @@
+<html>
+<head>
+  <title>COL718 Lab 1 : Measuring the ROB Capacity, PRF Size and MLP</title>
+</head>
+
+ 
+<body>
+  <h1><font color="blue">COL718 Lab 1 : Measuring the ROB Capacity, PRF Size and MLP</font></h1>
+
+  <h2>Due date - 23:55, 7 September 2019</h2>
+
+  <p>In this assignment, we will try to measure the capacity of ROB(Re-Order Buffer) which is, as discussed in the class, a central element in OOO Processor architecture.
+     We will also measure the number of speculative and non-speculative registers. We will try to measure the degree of MLP(Memory Level Parallelism) as well.
+     We will write our own microbenchmarks to measure all these parameters. The guiding principle of writing suitable microbenchmarks will be discussed
+     in the following section.</p>
+
+ 
+  <h3>Instructions</h3>
+ 
+  <ul>
+    
+    <li>Please have a look at the paper(only Para 5,6 of Section 3(Hardware Callibration), Page 5)for a general outline of how to write microbenchmark(s) to measure the ROB Capacity and MLP : <a href=
+    "http://www.cse.iitd.ac.in/~sbansal/pubs/bacus.pdf">http://www.cse.iitd.ac.in/~sbansal/pubs/bacus.pdf</a>.</li>
+    
+    <li>For more detailed understanding, please have a look at the blog <a href=
+    "http://blog.stuffedcow.net/2013/05/measuring-rob-capacity/">http://blog.stuffedcow.net/2013/05/measuring-rob-capacity/</a>.</li>
+    
+    <li>You have to measure ROB Capacity, Number of Speculative and Non-Speculative Regsters(including floating-point), Degree of MLP for
+        different machines like, your laptop, your lab machine and a server machine(you would be given access to a server, if needed)</a></li>
+   
+    <li>To write a microbenchmark for measuring the ROB Capacity and MLP, you have to use long-latency instruction seperated by several NOPs.
+        As described in the above links, you could use memory load instruction. But, you have to make sure that everytime the load is executed,
+        it is a cache-miss. Only then, you could guarantee that the instruction doesn't committ early and occupies ROB. 
+        You could use CLFLUSH, or may be, non-temporal memory loads to ensure cache-misses everytime.
+        Please refer to the manual to know more about CLFLUSH: <a href="https://www.cse.iitd.ernet.in/~sbansal/os/ref/ia32-2.pdf">https://www.cse.iitd.ernet.in/~sbansal/os/ref/ia32-2.pdf</a></li>
+    
+    <li>You can use inline assemblies, intrinsics to write your own microbenchmarks.</a></li>
+
+    <li>Express all your findings in a report. Your report should contain all the graphs, reported ROB capacity, degree of MLP, numbers of speculative and non-speculative registers 
+        for all the different machines you have used. </a></li>    
+
+    <li><font color="blue">Please do not reuse the code that is available on the link that is
+        provided with the assignment description.Please code your own original solution. Your submission would be graded on your original exploration and investigations; copied answers
+        will receive zero and potentially disciplinary action. In your report, you are expected to describe your experiences (including failed attempts, etc.).</font></a></li>
+
+    <li>Submit the report along with your microbenchmarks.</a></li>
+
+  </ul>
+  </body>
+</html>

@@ -1,0 +1,105 @@
+<h2>File I/O</h2>
+
+We will learn about another form of input and output: files.
+
+<h3>Files</h3>
+<ul>
+<li>Store data beyond the run of a program</li>
+<li>Easy way to gather a lot of information together (vs. user input)</li>
+<li>Stored in <b>streams</b> in C++
+<ul>
+<li>Similar to strings --- sequence of characters</li>
+<li>To read files, declare an <code>ifstream</code> (<u>i</u>nput <u>f</u>ile <u>stream</u>)</li>
+<li>To write to files, declare an <code>ofstream</code> (<u>o</u>utput <u>f</u>ile <u>stream</u>)
+<ul>
+<li>Similar to cout</li>
+</ul>
+</li>
+</ul>
+</ul>
+
+<h3>Common File I/O Pattern</h3>
+<ul>
+<li>Open file
+<pre>
+#include <fstream>  // standard librark package for files
+#include "filelib.h'  //contains helpful methods
+</pre>
+<ul>
+<li>Example Stanford function
+<pre>
+string promptUserForFile(ifstream& stream, string prompt);
+</pre>
+Asks the user for the name of a file (using the string prompt). The file is opened using the reference parameter stream, and the function returns the name of the file. If the requested file cannot be opened, the user is given additional chances to enter a valid file.
+</ul>
+<li>Creating and closing
+<pre>
+ifstream infile;
+promptUserForFile(infile, "File?");
+
+char ch;
+while (infile.get(ch)) {
+  //do something with ch
+  cout << ch << endl;
+}
+infile.close();
+</pre>
+Summary for every file-reading program: (1) Creates <code>ifstream</code> object; (2) closes <code>ifstream</code> object.
+</li>
+<li>If you already know the name of the file to open (another method for opening a file):
+<pre>
+ifstream infile;
+infile.open("File.txt");
+
+char ch;
+while (infile.get(ch)) {
+  //do something with ch
+  cout << ch << endl;
+}
+infile.close();
+</pre>
+</li>
+<li>Reading char by char: (1) declare the variable to read data into (<code>ch</code>); (2) while loop continues <b>until read fails</b>. Every iteration of while loop is a new char.</li>
+<li>Reading line by line
+<pre>
+ifstream infile;
+infile.open("File.txt");
+
+string line;
+while (getline(infile, line)) {
+  //do something with line
+  cout << line << endl;
+}
+infile.close();
+</pre>
+Now reads each <b>line</b> (breaks on newline characters). Still declare the line before the while loop. Still continues until <code>getline</code> fails; each while loop iteration has a different line. Notice lowercase <code>l</code> of <code>getline</code> (different from Stanford library's <code>getLine</code>).
+</li>
+<li>Reading formatted input
+<pre>
+ifstream infile;
+promptUserForFile(infile, "File?");
+
+string word;
+while (infile >> word) {
+  //do something word
+}
+
+infile.close();
+</pre>
+Now reads each <b>word</b> (removes whitespace). Still declare the variable before the while loop in which the word will be stored. Stll continues until fails to read a new word. Each while loop iteration has a different word. Works with other types (e.g., int or Vector) too. Do not try to mix with <code>getline</code> (recall previous discussion).
+</li>
+</ul>
+
+<p>Writing output
+<ul>
+<li>Use <code>ofstream</code>
+<pre>
+ofstream ofile;
+promptUserForFile(outfile, "File?");
+string word = "Output";
+int x = 3;
+outfile << word << " " << x << endl;
+outfile.close();
+</pre>
+Similar to reading formatted input. Works a lot like <code>cout</code>. Works with (almost) any type. Use <code>ofstream</code> instead of <code>ifstream</code> and <code>&lt;&lt;</code> instead of <code>&gt;&gt;</code>.
+</ul>

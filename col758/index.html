@@ -1,0 +1,54 @@
+<h2>Problems with current MTech curriculum</h2>
+<ul>
+<li>The incoming MTech students are exposed to a lot of theory, without adequate grounding in systems. Given that they already come in with inadequate CS training, this is not a healthy situation and has several fallouts:
+<ul>
+<li>The MTech students do not get exposed to the full spectrum of interesting CS topics, especially the topics that are very relevant from an industry perspective.</li>
+<li>Many MTech students often feel disinterested in the material, and take up the attitude of resignation after the first semester. They are now just interested in getting through the MTech program with reasonable grades, to land a "good job". Our central objective of kindling interest for CS in the students is hardly being met in the current curriculum IMHO.
+</li>
+<li>Poor grades in theoretical courses further de-motivate the students.</li>
+<li>The students hardly have any appreciation on the empirical aspects of computing, which IMHO is one of the most interesting and fundamental aspects of CS. All theory is supposed to model these interesting empirical aspects IMHO.</li>
+<li>The systems faculty members hardly get any MTech students to staff their courses/projects.</li>
+</ul>
+</li>
+<li>The first year sets the tone for the rest of their MTech experience. Most students lean towards "easy courses" after their first-semester experience. They are especially wary of hard systems courses/projects, because they feel they just do not have the relevant background. Even if they had any curiosity to learn this stuff, they simply give up after the first semester because there is very little time left to catch up. This is very unfortunate for everyone IMHO.</li>
+</ul>
+Computer systems is an area where we require lots of students to develop and experiment with systems. More people in these areas is a pressing need both for the industry and for researchers, and not addressing these issues is hurting badly.
+
+<h2>What are we doing about it</h2>
+We have gone through rounds and rounds of discussions on changing the MTech curriculum, but to no avail. Even if one faculty member objects, the whole discussion is stalled. Status-quo suits some of us, but hurts many of us very badly. IMHO this current situation is very unfair to the systems people.
+To quote John F. Kennedy:
+<q>
+There are risks and costs to action. But they are far less than the long range risks of comfortable inaction. 
+</q>
+
+<h2>Proposal</h2>
+If we cannot change the curriculum structure, perhaps we can try and adapt the course material of the courses that we are currently teaching?
+
+I bravely volunteered to try and teach COL758 this semester, but I can completely understand the department's nervousness in handing over a course to me that I would be teaching for the first time. Actually, I would be nervous to teach it too, given that my distinguished colleagues teach it so well.
+
+<p>
+However, I do have some thoughts on how we can modify the material of COL758 so it becomes more "practical" and less "theory".
+
+<p>I looked through the COL758 material taught in previous years at the following webpages:
+<ul>
+<li>Amit : <a href=http://www.cse.iitd.ac.in/~amitk/SemII-2015/main.html>http://www.cse.iitd.ac.in/~amitk/SemII-2015/main.html</a></li>
+<li>Naveen : <a href=http://www.cse.iitd.ac.in/~naveen/courses/CSL630/index.html>http://www.cse.iitd.ac.in/~naveen/courses/CSL630/index.html</a></li>
+<li>Sandeep : <a href=http://www.cse.iitd.ac.in/~ssen/col702/admin702.html>http://www.cse.iitd.ac.in/~ssen/col702/admin702.html</a></li>
+</ul>
+Here are some of my observations on the course offerings:
+<ul>
+<li>The instructors sample some very interesting algorithms and data structures and discuss them in the course. The exact selection of topics may vary across years, but the general theme is to introduce the students to the basic structure of computation and common algorithmic techniques/categories.</li>
+<li>While I like the general idea, it may be good to supplement these topics with empirical material. Further, I think it may be a good idea to discuss algorithms in context of their applications.  I do not have clear ideas myself but use some examples to try and convey my thoughts:
+<ul>
+<li>When we discuss data structures like balanced trees, we can have them implement and empirically compare the performance of these different trees, and reason about the micro-architectural features that cause some data structures to perform better than others. For example, why are red-black trees the usual choice for software such as the Linux kernel?</li>
+<li>I would love to see ideas like lattices and fixed-points discussed in such a course. Perhaps even discuss a simple compiler-like data-flow analysis algorithm so the application context is immediately clear, and perhaps interesting to students. Again, I would love to see them implement this stuff, and not just learn it in a classroom. IMHO this exposes them to some compiler-style reasoning, and prepares them for wider courses/projects.</li>
+<li>Another idea is to perhaps have them learn about the behaviour of big-data programs on modern machines in the presence of caching, e.g., what is the performance of a matrix-multiply routine, and then what is the performance of a blocked matrix-multiply routine? What and why is the empirical difference? Finally, what would be an algorithm that would automatically convert a matrix-multiply routine to a blocked matrix-multiply routine. In other words, I think this is a good opportunity to get the students introduced to micro-architectural complexities. I would have liked to introduce them to algorithms that carefully manage data across magnetic disks and main memory, but perhaps there is too little time for that.</li>
+<li>I notice that some of us are teaching gradient descent; perhaps may be a good idea to introduce them to some application of stochastic gradient descent, e.g., canonical example of handwriting recognition in machine learning.</li>
+<li>Algorithmic techniques like greedy, divide-and-conquer, dynamic programming, and some other stuff that I do not quite know-of (that we are already teaching) are great -- perhaps it would be good to get students to implement some of this stuff too? I am also very happy with the idea of teaching students about NP-completeness, polynomial reduction, and undecidability, as is already being done. I am not suggesting that we water-down the treatment of any of these concepts; just suggesting that perhaps we can make the discussion more empirical wherever possible.</li>
+</ul>
+</ul>
+Once again: sorry if this appears as interference, but I did want to put-forward my thoughts. The current course material is great, but perhaps given that this is a first-year MTech core course, we can try and design it so it meets several needs of the department simultaneously.  I realize that to accommodate some of the topics, we may have to throw out some other topics --- and perhaps there would be severe disagreements here. But I hope some of us consider this worthy of further discussion at least.
+
+I am very happy to hear your responses, disagreements, dismissals, etc.  But I really hope we can proactively try to address this lingering MTech curriculum dilemma.
+
+<p>Footnote: I have similar fledgling thoughts on how the COL703 (logic for computer science) course can be made more empirical too. But I will need more time to mature these thoughts.

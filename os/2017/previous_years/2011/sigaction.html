@@ -1,0 +1,12 @@
+<pre>
+This simple C program demonstrates the usage of sigaction(). This program will call usleep() in an infinite loop. When SIGINT is received, it prints the pid of the process that signalled it and exit()s.
+
+How to use the program:
+1. Compile: gcc sigaction.c
+2. Run: ./a.out
+3. To send SIGINT, use either of the following methods:
+    a. Press Ctrl+C
+		    b. Open another shell and find out the pid of the process using ps -e | grep a.out. Now send SIGINT using kill -s INT <pid>.
+</pre>
+<hr>
+Thanks to Daniel Mathew for constructing this example program.

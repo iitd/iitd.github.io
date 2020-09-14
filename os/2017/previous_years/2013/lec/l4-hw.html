@@ -1,0 +1,115 @@
+<html>
+<head>
+<title>Homework: virtual memory</title>
+<link rel="stylesheet" href="../labs.css" type="text/css" />
+</head>
+<body>
+
+<h2><a href="..">Operating Systems</a></h2>
+<hr>
+
+<h1>Homework: virtual memory</h1>
+<p><h2>Assignment Part 1</h2>
+On x86 using 4KB pages only, we wish to map virtual address 0x80100000 to
+physical address 0x00100000 with read-only permissions. Assume that all segments
+are setup to [0:0xffffffff] and use only paging. You will need to describe the
+offset at which the page directory
+and the page table need to be modified and to what values.
+
+<p><h2>Assignment Part 2</h2>
+Let's look at the page table (kpgdir) that setupkvm produces
+<pre>
+(gdb) break kvmalloc
+(gdb) next
+(gdb) print/x kpgdir[0]
+why is this zero?
+
+let's look up a virtual address
+how about the first instruction of kvmalloc
+(gdb) x/i kvmalloc
+0x80107990 <kvmalloc>:  push   %ebp
+how would we translate 0x80107990 to a physical address?
+
+(gdb) print/x 0x80107990 >> 22
+$4 = 0x200
+(gdb) print/x kpgdir[0x200]
+$6 = 0x114007
+Q: what is this?
+Q: what is the PPN?
+Q: what does the 7 mean?
+(gdb) print/x (0x80107990 >> 12) & 0xfff
+$6 = 0x107
+(gdb) print/x ((int*)0x114000)[0x107]
+$12 = 0x107001
+Q: what is this?
+Q: why 1 in the low bits?
+(gdb) print/x 0x107000 + 0x990
+$13 = 0x107990
+(gdb) x/i 0x107990
+
+why did the physical address work in gdb?
+
+back to kvmalloc
+it called setupkvm to create a page table
+now it calls switchkvm to start using it
+switchkvm loads kpgdir into %cr3
+
+and now 0x170990 won't work:
+(gdb) x/i 0x107990
+0x107990:       Cannot access memory at address 0x107990
+
+why?
+</pre>
+
+
+<p><h2>Assignment Part 3</h2></p>
+Suppose you wanted bootmain() to load the kernel at 0x80200000 instead of
+0x80100000, and you did so by modifying bootmain() to add 0x100000 to the va/pa of each
+ELF section. Something would go wrong. What?
+
+<p><h2>Assignment Part 4 (pintos submissions)</h2>
+You should have submitted Lab1 by now using <code>submit-lab1</code> script.
+<p>
+You should now checkout the <code>pintos</code> source code using:
+<pre>
+svn checkout https://svn.iitd.ernet.in/~sbansal/pintos-repo
+</pre>
+Next, you should submit the base version of pintos
+using <code>csl373-submit-pintos</code> script (we need that you submit the base
+version to be able to correctly submit your next lab). You will need to
+create a Subversion repository for yourself to do this. See
+instructions on the <a href=../tools.html>tools</a> page for instructions
+on using Subversion.
+
+<p>On successful submission, you should have seen a "Congratulations"
+message with your submission ID if your submission
+was successful. At any time, you can check if your submission
+has been made by typing
+"<code>csl373-get-submission <user-id> base</code>". For
+future assignments just replace <code>base</code>
+with <code>userprog</code>, <code>vm</code>, etc.
+The <code>csl373-get-submission</code> script should
+create a directory with your submission-id. This directory
+should contain a <code>submit.note</code> file.
+
+<p>You should build your solution to Lab2 (<code>userprog</code>)
+on top of the base pintos version that you submitted. We
+encourage you to use the
+SVN repository actively during development. Use good and
+illustrative commit messages. We will examine your repository
+log during demos.
+
+<p>Study the grading policy on the
+<a href=../administrivia.html>Administrivia</a> page. You
+can check your current score using <code>csl373-score</code>
+script. In case of multiple submissions by the
+same person/group, we will use the date
+of your <em>last</em>
+submission to compute the late days. Notice that
+late days are counted at the granularity of hours.
+So if you are late by 4 hours for <code>Lab1</code>
+and late by 5 hours for <code>Lab2</code>, your total late "days" is
+only 9 hours (not 2 days).
+Nothing to turn in for this part.
+
+

@@ -1,0 +1,79 @@
+<html><head>
+<title>CSL373: Assignment 1 on Processes control</title>
+</head>
+<h1><font color=blue>CSL373: Assignment 1 on Process control and IPC</font></h1>
+<h2>Background reading</h2>
+
+<ol>
+	<li> Read one (or more) of the following references:
+	<ul>
+		<li> UNIX System Programming in C++ by Terrance Chan</li>
+		<li> <a href="beej's guide to unix ipc.pdf">Beej's Guide to Unix IPC</a> by Brian Hall</li>
+		<li> Chapter 2 of <i> Unix Network Programming Volume 2: Interprocess Communications</i> by W. Richard Stevens</li>
+		<li> Chapter 14 on Interprocess Communication of <i>Advanced Programming in the UNIX Environment</i> by W. Richard Stevens</li>
+	</ul>
+</li>
+<li> Carefully read the following man pages: signal, kill, ualarm, umask, sigprocmask,
+     gettimeofday, wait, exec, fork, pipe,open, ipc, clone, msgctcl, msgsnd,
+     msgrcf,rand, srand48.
+</li>
+<li> (optional) Read from the OS books the sections (bed time stories) that deal
+with: CPU scheduling, processes, threads, IPC.</li>
+</ol>
+
+<h2>Processes</h2>
+<ol>
+<li> Expand the <a href="turtle.ex">hare and turtle</a> process descriptions and implement IPC solutions  by
+defining cooperating processes.</li>
+<li> First use fork() and execve() to create the processes and develop
+complete applications using the following Linux IPC (message passing)
+mechanisms separately: (i) pipes (ii) FIFO files and (iii) message queues.</li>
+</ol>
+     
+<h2>Threads</h2>
+<ol>
+<li> Now, develop the same application (hare and turtle) using Linux
+pthreads (shared memory). <a href=http://www.yolinux.com/TUTORIALS/LinuxTutorialPosixThreads.html>Here</a> is a good pthreads tutorial. Notice that you have shared memory between threads so you do not need explicit communication channels. You can communicate using shared variables. However, you will need to ensure that different threads synchronize their access to shared variables to avoid inconsistencies. In particular, you should use <em>mutexes</em> (see tutorial) to protect all accesses to shared variables.</li>
+</ol>
+
+<h2>Tests</h2>
+<ul>
+  <li>
+  The current outcome of the race should be displayed after fixed intervals.
+  </li>
+  <li>
+  Try varying the speed and the sleeping time of the hare to see different
+  outcomes.
+  </li>
+	<li>
+	Compare the performance (running time) of shared memory communication
+	versus pipes by transferring a large amount of data between two processes
+	using these two mechanisms. Report your results.
+	</li>
+	<li>
+	Optionally compare the performance of other IPC mechanisms too.
+	</li>
+</ul>
+
+<h2>Note:</h2>
+<ol>
+  <li> To be done individually.</li>
+  <li> The last date of submission of solutions using pipes, FIFOs and
+  message Qs (processes) is <b>Jan 11</b>. 
+	The last date for the threads assignment is <b>Jan 13</b>. The deadlines
+	are final and no extensions will be allowed.
+	<li> Submissions should be made through the <code>submit-lab1</code> script on palasi.</li>
+	<ul>
+		<li>To submit lab1, log on to palasi.cse.iitd.ernet.in, chdir into the top
+	  directory containing the source files of your solution, and type
+	  'submit-lab1'.</li>
+
+	  <li>Note that only .[chC] files will be submitted. Your submission must
+	  have a makefile and typing 'make' in the top directory should build
+	  your programs.</li>
+
+		<li>Type '<code>get-submission <em>login-id</em> lab1</code>' to get a copy of your submitted files.</li>
+  </ul>
+  </li></ol>
+<hr>
+</body></html>

@@ -1,0 +1,207 @@
+<html>
+<head>
+<title>L7</title>
+</head>
+<body>
+
+<h1>Segmentation and Traps</h1>
+
+<h2>Outline</h2>
+<ul>
+<li>Segmentation : Address spaces and Protection
+<li>Trap Handling
+</ul>
+
+<h2>Segmentation</h2>
+<p>Protected-mode segmentation works as follows (see handout):
+<ul>
+<li>segment register holds segment selector
+<li>selector: 13 bits of index, local vs global flag, 2-bit RPL
+<li>selector indexes into global descriptor table (GDT)
+<li>segment descriptor holds 32-bit base, limit, type, protection
+<li>la = va + base ; assert(va < limit);
+<li>choice of seg register usually implicit in instruction
+<ul>
+<li>ESP uses SS, EIP uses CS, others (mostly) use DS
+<li>some instructions can take far addresses: 
+		<ul><li><tt>ljmp $selector, $offset</tt>
+		</ul>
+</ul>
+<li>GDT lives in memory, CPU's GDTR register points to base of GDT
+<li>LGDT instruction loads GDTR
+<li>you turn on protected mode by setting PE bit in CR0 register
+
+<li>What about protection?
+<ul>
+  <li>instructions can only r/w/x memory reachable through seg regs
+  <li>not before base, not after limit
+	<li>can my program change a segment register? yes, but... to one of the
+	    permitted (accessible) descriptors in the GDT
+  <li>can my program re-load GDTR? no!
+  <li>how does h/w know if user or kernel?
+  <li>Current privilege level (CPL) is in the low 2 bits of CS
+  <li>CPL=0 is privileged O/S, CPL=3 is user
+  <li>why can't app modify the descriptors in the GDT? it's in memory...
+  <li>what about system calls? how do they transfer to kernel?
+  <li>app cannot <b>just</b> lower the CPL
+</ul>
+
+</ul>
+
+<h2>Traps</h2>
+<p>
+The x86 processor uses a table known as the
+<i>interrupt descriptor table</i> (IDT)
+to determine how to transfer control when a trap occurs.
+The x86 allows up to 256 different
+interrupt or exception entry points into the kernel,
+each with a different <i>interrupt vector</i>.
+A vector is a number between 0 and 256.
+An interrupt's vector is determined by the
+source of the interrupt: different devices, error
+conditions, and application requests to the kernel
+generate interrupts with different vectors.
+The CPU uses the vector as an index
+into the processor's IDT,
+which the kernel sets up in kernel-private memory of the kernel's choosing,
+much like the GDT.
+From the appropriate entry in this table
+the processor loads:
+
+<ul>
+<li>	the value to load into
+	the instruction pointer (<tt>EIP</tt>) register,
+	pointing to the kernel code designated
+	to handle that type of exception.</li>
+<li>	the value to load into
+	the code segment (<tt>CS</tt>) register,
+	which includes in bits 0-1 the privilege level
+	at which the exception handler is to run.
+	In PIOS, all exceptions are handled in kernel mode,
+	privilege level 0.</li>
+</ul>
+
+<h3>Entering and Returning from Trap Handlers</h3>
+
+<p>
+When an x86 processor takes a trap while in kernel mode,
+it first pushes a <i>trap frame</i> onto the kernel stack,
+to save the old values of certain registers
+before the trap handling mechanism modifies them.
+The processor then
+looks up the CS and EIP of the trap handler in the IDT,
+and transfers control to that instruction address.
+The following diagram illustrates the format
+of the basic kernel trap frame,
+defining the state of the kernel stack on entry to the trap handler:
+</p>
+<pre>
+                     +--------------------+ &lt;---- old ESP
+                     |     old EFLAGS     |     " - 4
+                     | 0x00000 | old CS   |     " - 8
+                     |      old EIP       |     " - 12
+                     +--------------------+ &lt;---- ESP
+</pre>
+
+<p>
+For certain types of x86 exceptions,
+in addition to the basic three 32-bit words above,
+the processor pushes onto the stack another word
+containing an <i>error code</i>.
+The page fault exception, number 14,
+is an important example.
+See the x86 manuals to determine for which exception numbers
+the processor pushes an error code,
+and what the error code means in that case.
+When the processor pushes an error code,
+the stack would look as follows at the beginning of the trap handler:
+</p>
+
+	<pre>
+                     +--------------------+ &lt;---- old ESP
+                     |     old EFLAGS     |     " - 4
+                     | 0x00000 | old CS   |     " - 8
+                     |      old EIP       |     " - 12
+                     |     error code     |     " - 16
+                     +--------------------+ &lt;---- ESP
+	</pre>
+
+<p>
+The x86 processor provides a special instruction, <samp>iret</samp>,
+to return from trap handlers.
+It expects the kernel's stack to look like the <i>first</i> figure above,
+with ESP pointing to the old EIP.
+When the processor executes an <samp>iret</samp> instruction,
+pops the saved values of EIP, CS, and EFLAGS off the stack
+and back into the corresponding registers,
+and resumes instruction execution at the popped EIP.
+
+<p>
+Note that when returning from a trap,
+the processor doesn't actually know or care
+whether the "old" values it is popping off the stack
+are really the exact same values
+that it originally pushed onto the stack on entry to the trap handler.
+Think about what would happen - for better or worse -
+if the kernel trap handler
+changes these values during its execution.
+
+<p>	<b>The Task State Segment.</b>
+	The processor needs a place
+	to save the <i>old</i> processor state
+	before the interrupt or exception occurred,
+	such as the original values of <tt>EIP</tt> and <tt>CS</tt>
+	before the processor invoked the exception handler,
+	so that the exception handler can later restore that old state
+	and resume the interrupted code from where it left off.
+	But this save area for the old processor state
+	must in turn be protected from unprivileged user-mode code;
+	otherwise buggy or malicious user code
+	could compromise the kernel:
+	for example, one user mode thread could change the kernel state
+	of another thread while the latter is in a system call,
+	or user code could simply point ESP to unmapped or read-only memory,
+	making it impossible for the processor to push the trap frame
+	and causing an immediate reset as described above.
+	</p>
+
+	<p>
+	For this reason,
+	when an x86 processor takes an interrupt or trap
+	that causes a privilege level change from user to kernel mode,
+        it also switches to a stack in the kernel's memory.
+	A structure called the <i>task state segment</i> (TSS) specifies
+	the segment selector and address where this stack lives.
+	The processor pushes (on this new stack)
+        <tt>SS</tt>, <tt>ESP</tt>, <tt>EFLAGS</tt>,
+	<tt>CS</tt>, <tt>EIP</tt>, and an optional error code.
+        Then it loads the <tt>CS</tt> and <tt>EIP</tt>
+	from the interrupt descriptor,
+	and sets the <tt>ESP</tt> and <tt>SS</tt> to refer to the new stack.
+	</p>
+
+	<p>
+	Although the TSS is large
+	and can potentially serve a variety of purposes,
+	PIOS only uses it to define
+	the kernel stack that the processor should switch to
+	when it transfers from user to kernel mode.
+	Since "kernel mode" in PIOS/Pintos/xv6
+	is privilege level 0 on the x86,
+	the processor uses the <tt>ESP0</tt> and <tt>SS0</tt> fields of the TSS
+	to define the kernel stack when entering kernel mode.
+   PIOS/Pintos/xv6 don't use any other TSS fields.
+	</p>
+	</li>
+</ol>
+
+Combined,
+the IDT and TSS provide the kernel with a mechanism
+to ensure that traps are handled
+only by calling well-defined entrypoints in the kernel
+(the interrupt vectors in the IDT)
+and that trap handlers will have a well-defined, protected workspace
+(the stack pointers in the TSS).
+Exactly <i>where</i> these entrypoints and kernel stacks are located
+is up to the kernel,
+however.

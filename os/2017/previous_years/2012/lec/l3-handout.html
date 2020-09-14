@@ -1,0 +1,60 @@
+	<li>C code
+		<pre>
+		int main(void) { return f(8)+1; }
+		int f(int x) { return g(x); }
+		int g(int x) { return x+3; }
+		</pre>
+	<li>assembler
+		<pre>
+		_main:
+					<i>prologue</i>
+			pushl %ebp
+			movl %esp, %ebp
+					<i>body</i>
+			pushl $8
+			call _f
+			addl $1, %eax
+					<i>epilogue</i>
+			movl %ebp, %esp
+			popl %ebp
+			ret
+		_f:
+					<i>prologue</i>
+			pushl %ebp
+			movl %esp, %ebp
+					<i>body</i>
+			pushl 8(%esp)
+			call _g
+					<i>epilogue</i>
+			movl %ebp, %esp
+			popl %ebp
+			ret
+
+		_g:
+					<i>prologue</i>
+			pushl %ebp
+			movl %esp, %ebp
+					<i>save %ebx</i>
+			pushl %ebx
+					<i>body</i>
+			movl 8(%ebp), %ebx
+			addl $3, %ebx
+			movl %ebx, %eax
+					<i>restore %ebx</i>
+			popl %ebx
+					<i>epilogue</i>
+			movl %ebp, %esp
+			popl %ebp
+			ret
+		</pre>
+	</ul>
+
+<li>Super-small <tt>_g</tt>:
+	<pre>
+		_g:
+			movl 4(%esp), %eax
+			addl $3, %eax
+			ret
+	</pre>
+
+<li>Shortest <tt>_f</tt>?

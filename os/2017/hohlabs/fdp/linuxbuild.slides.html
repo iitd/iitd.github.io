@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Deepak Ravi">
+  <title>Linux Build/Configuration</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="reveal.js/css/reveal.css">
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="reveal.js/css/theme/black.css" id="theme">
+  <!-- Printing and PDF exports -->
+  <script>
+    var link = document.createElement( 'link' );
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = window.location.search.match( /print-pdf/gi ) ? 'reveal.js/css/print/pdf.css' : 'reveal.js/css/print/paper.css';
+    document.getElementsByTagName( 'head' )[0].appendChild( link );
+  </script>
+  <!--[if lt IE 9]>
+  <script src="reveal.js/lib/js/html5shiv.js"></script>
+  <![endif]-->
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section>
+  <h1 class="title">Linux Build/Configuration</h1>
+  <h2 class="author">Deepak Ravi</h2>
+</section>
+<section id="TOC">
+<ul>
+<li><a href="#/overview"><span class="toc-section-number">0.1</span> Overview</a></li>
+<li><a href="#/linux-kernel-build"><span class="toc-section-number">0.2</span> Linux Kernel Build</a></li>
+<li><a href="#/why-do-we-need-os"><span class="toc-section-number">0.3</span> Why do we need OS?</a></li>
+<li><a href="#/linux-kernel-as-a-secure-multiplexer-of-resources"><span class="toc-section-number">0.4</span> Linux kernel as a secure multiplexer of resources</a></li>
+<li><a href="#/linux-kernel-build-1"><span class="toc-section-number">0.5</span> Linux Kernel Build</a></li>
+<li><a href="#/linux-source-code-repository"><span class="toc-section-number">0.6</span> Linux source code repository</a></li>
+<li><a href="#/can-we-have-an-ui-for-generating-.config"><span class="toc-section-number">0.7</span> Can we have an UI for generating .config</a></li>
+<li><a href="#/can-we-have-an-ui-for-generating-.config-1"><span class="toc-section-number">0.8</span> Can we have an UI for generating .config</a></li>
+<li><a href="#/demo"><span class="toc-section-number">0.9</span> Demo</a></li>
+<li><a href="#/demo-1"><span class="toc-section-number">0.10</span> Demo</a></li>
+<li><a href="#/need-for-kernel-modules"><span class="toc-section-number">0.11</span> Need for kernel modules</a></li>
+<li><a href="#/need-for-kernel-modules-1"><span class="toc-section-number">0.12</span> Need for kernel modules</a></li>
+<li><a href="#/build-steps"><span class="toc-section-number">0.13</span> Build steps</a></li>
+<li><a href="#/build-steps-1"><span class="toc-section-number">0.14</span> Build steps</a></li>
+<li><a href="#/on-boot"><span class="toc-section-number">0.15</span> On Boot</a></li>
+<li><a href="#/can-we-compile-load-unload-a-module-without-kernel-source-code"><span class="toc-section-number">0.16</span> Can we compile, load, unload a module without kernel source code?</a></li>
+<li><a href="#/lets-write-a-new-kernel-driver"><span class="toc-section-number">0.17</span> Let’s write a new kernel driver</a></li>
+<li><a href="#/lets-write-a-new-kernel-driver-1"><span class="toc-section-number">0.18</span> Let’s write a new kernel driver</a></li>
+</ul>
+</section>
+
+<section id="overview" class="slide level2">
+<h1><span class="header-section-number">0.1</span> Overview</h1>
+<ul>
+<li>Linux
+<ul>
+<li>Lab: Download linux kernel source code</li>
+<li>Lab: Install dependency packages</li>
+<li>Lab: do make menuconfig</li>
+<li>Lab: do make</li>
+</ul></li>
+</ul>
+</section>
+<section id="linux-kernel-build" class="slide level2">
+<h1><span class="header-section-number">0.2</span> Linux Kernel Build</h1>
+<ul>
+<li>Step 1: Edit/Generate .config</li>
+<li>Step 2: make</li>
+<li>Step 3: ?</li>
+</ul>
+</section>
+<section id="why-do-we-need-os" class="slide level2">
+<h1><span class="header-section-number">0.3</span> Why do we need OS?</h1>
+<ul>
+<li>If there is only one trusted application ever running..</li>
+<li>If the applications are all trusted..</li>
+</ul>
+</section>
+<section id="linux-kernel-as-a-secure-multiplexer-of-resources" class="slide level2">
+<h1><span class="header-section-number">0.4</span> Linux kernel as a secure multiplexer of resources</h1>
+<figure>
+<embed src="os_secure_multiplex.eps" />
+</figure>
+<ul>
+<li>Map infinte resources to finite resources</li>
+<li>Isolation/Controlled sharing</li>
+</ul>
+</section>
+<section id="linux-kernel-build-1" class="slide level2">
+<h1><span class="header-section-number">0.5</span> Linux Kernel Build</h1>
+<ul>
+<li>Step 0: Get the source code (git clone)</li>
+<li>Step 1: Switch to right branch/tag. (git checkout)</li>
+<li>Step 2: Edit/Generate .config</li>
+<li>Step 3: make</li>
+<li>Step 4: ?</li>
+</ul>
+</section>
+<section id="linux-source-code-repository" class="slide level2">
+<h1><span class="header-section-number">0.6</span> Linux source code repository</h1>
+<ul>
+<li><p>Stable: https://git.kernel.org/pub/scm/linux/kernel/git/ stable/linux-stable.git</p></li>
+<li><p>Main: https://git.kernel.org/pub/scm/linux/kernel/git/ torvalds/linux.git</p></li>
+</ul>
+</section>
+<section id="can-we-have-an-ui-for-generating-.config" class="slide level2">
+<h1><span class="header-section-number">0.7</span> Can we have an UI for generating .config</h1>
+<ul>
+<li>Need to know the type of each parameter:
+<ul>
+<li>Bool : Is it an Y or N</li>
+<li>Tristate: Is it Y or N or M</li>
+<li>Int : an integer value</li>
+<li>String..</li>
+</ul></li>
+<li>How to get these information?</li>
+</ul>
+</section>
+<section id="can-we-have-an-ui-for-generating-.config-1" class="slide level2">
+<h1><span class="header-section-number">0.8</span> Can we have an UI for generating .config</h1>
+<ul>
+<li><p>Yes, Linux Kernel’s solution:</p>
+<ul>
+<li><p>Specify type of each parameter in Kconfig file</p>
+<p>config MY_READ bool “Enable read system call” default y</p></li>
+<li>For different types of UI:
+<ul>
+<li>make config : cli</li>
+<li>make menuconfig : tui</li>
+<li>make xconfig : gui</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="demo" class="slide level2">
+<h1><span class="header-section-number">0.9</span> Demo</h1>
+<ul>
+<li>Step 0: Get the source code (git clone)</li>
+<li>Step 1: Switch to right branch/tag (git checkout)</li>
+<li>Step 2: Edit/Generate .config (make menuconfig)</li>
+<li>Step 3: make</li>
+<li>Step 4: ?</li>
+</ul>
+</section>
+<section id="demo-1" class="slide level2">
+<h1><span class="header-section-number">0.10</span> Demo</h1>
+<ul>
+<li>How to modify the configuration options?</li>
+<li>How to add a new configuration option for your new driver?</li>
+<li>What happens when you modify the option?</li>
+<li>How does Makefile uses this generated option?</li>
+<li>Can your C code driver uses this config information?</li>
+</ul>
+</section>
+<section id="need-for-kernel-modules" class="slide level2">
+<h1><span class="header-section-number">0.11</span> Need for kernel modules</h1>
+<ul>
+<li>What’s the issue with all the drivers compiled into single executable/kernel?</li>
+</ul>
+</section>
+<section id="need-for-kernel-modules-1" class="slide level2">
+<h1><span class="header-section-number">0.12</span> Need for kernel modules</h1>
+<ul>
+<li>What’s the issue with all the drivers compiled into single executable/kernel?
+<ul>
+<li>Increase in size. Not all drivers may not be needed by everyone</li>
+<li>Updating a driver requires kernel update. Increase in devel time</li>
+</ul></li>
+</ul>
+</section>
+<section id="build-steps" class="slide level2">
+<h1><span class="header-section-number">0.13</span> Build steps</h1>
+<ul>
+<li>Step 0: Get the source code (git clone)</li>
+<li>Step 1: Switch to right branch/tag (git checkout)</li>
+<li>Step 2: Edit/Generate .config (make menuconfig)</li>
+<li>Step 3: make</li>
+<li><p>Step 4: make modules</p></li>
+<li><p>But how to boot this kernel?</p></li>
+</ul>
+</section>
+<section id="build-steps-1" class="slide level2">
+<h1><span class="header-section-number">0.14</span> Build steps</h1>
+<ul>
+<li>Step 0: Get the source code (git clone)</li>
+<li>Step 1: Switch to right branch/tag (git checkout)</li>
+<li>Step 2: Edit/Generate .config (make menuconfig)</li>
+<li>Step 3: make</li>
+<li>Step 4: make modules</li>
+<li>Step 5: sudo make install</li>
+<li><p>Step 6: sudo make modules_install</p></li>
+<li><p>But how to boot this kernel?</p></li>
+</ul>
+</section>
+<section id="on-boot" class="slide level2">
+<h1><span class="header-section-number">0.15</span> On Boot</h1>
+<ul>
+<li>CPU sets cs:ip to 0xffff:0x0000 and starts executing code.</li>
+<li>CPU starts executing BIOS code directly from ROM.</li>
+<li>BIOS code initializes cache, RAM and other peripherals</li>
+<li>BIOS code installs its handlers IDT to provide services for bootloader</li>
+<li>BIOS loads the boot loader(grub2) code from the boot disk at 0x0000:0x7c00 and jump to it.</li>
+<li>Now, CPU starts executing boot loader code(grub2).</li>
+<li>(specific to grub2): grub2 uses bios provided interrupt handlers to load it’s configuration file /boot/grub/grub2.cfg and gets the path of kernel to be loaded</li>
+</ul>
+</section>
+<section id="can-we-compile-load-unload-a-module-without-kernel-source-code" class="slide level2">
+<h1><span class="header-section-number">0.16</span> Can we compile, load, unload a module without kernel source code?</h1>
+<ul>
+<li>Need the header files (for your driver code)
+<ul>
+<li>sudo apt install linux-headers-amd64</li>
+</ul></li>
+<li>Need the linux kernel’s Makefile, and the .config</li>
+<li>cd linux_headers_dir</li>
+<li>make modules M=path_to_your_external_module</li>
+</ul>
+</section>
+<section id="lets-write-a-new-kernel-driver" class="slide level2">
+<h1><span class="header-section-number">0.17</span> Let’s write a new kernel driver</h1>
+<ul>
+<li>module_init(my_init): specify the function to be called on loading</li>
+<li>module_exit(my_exit): specify the function to be called on unloading</li>
+</ul>
+</section>
+<section id="lets-write-a-new-kernel-driver-1" class="slide level2">
+<h1><span class="header-section-number">0.18</span> Let’s write a new kernel driver</h1>
+<pre><code>#include &lt;linux/module.h&gt;
+MODULE_LICENSE(&quot;GPL&quot;);
+
+static void my_exit(void){
+  printk(&quot;Bye&quot;);
+}
+static void my_init(void){
+  printk(&quot;Hello&quot;);
+}
+
+module_init(my_init);
+module_exit(my_exit);</code></pre>
+<ul>
+<li>But how to load/unload this driver?</li>
+<li>Why printk? Why not printf?</li>
+<li>Where to see the output of printk?</li>
+</ul>
+</section>
+    </div>
+  </div>
+
+  <script src="reveal.js/lib/js/head.min.js"></script>
+  <script src="reveal.js/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true },
+          { src: 'reveal.js/plugin/notes/notes.js', async: true }
+        ]
+      });
+    </script>
+    </body>
+</html>

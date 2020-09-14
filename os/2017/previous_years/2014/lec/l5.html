@@ -1,0 +1,172 @@
+<html>
+<head>
+<title>L5</title>
+</head>
+<body>
+
+<h1>PC Architecture and Processor Setup</h1>
+
+<h2>Outline</h2>
+<ul>
+<li>x86 instruction set
+<li>GCC calling conventions
+</ul>
+
+<h2>x86 Instruction Set</h2>
+
+<ul>
+	<li>Intel syntax: <tt>op dst, src</tt> (Intel manuals!)
+	<li>AT&amp;T (gcc/gas) syntax: <tt>op src, dst</tt> (labs, xv6)
+		<ul>
+		<li>uses b, w, l suffix on instructions to specify size of operands
+		</ul>
+	<li>Operands are registers, constant, memory via register, memory via constant
+	<li>	Examples:
+		<table cellspacing=5>
+		<tr><td><u>AT&amp;T syntax</u> <td><u>"C"-ish equivalent</u>
+		<tr><td>movl %eax, %edx <td>edx = eax; <td><i>register mode</i>
+		<tr><td>movl $0x123, %edx <td>edx = 0x123; <td><i>immediate</i>
+		<tr><td>movl 0x123, %edx <td>edx = *(int32_t*)0x123; <td><i>direct</i>
+		<tr><td>movl (%ebx), %edx <td>edx = *(int32_t*)ebx; <td><i>indirect</i>
+		<tr><td>movl 4(%ebx), %edx <td>edx = *(int32_t*)(ebx+4); <td><i>displaced</i>
+		</table>
+
+<li>Instruction classes
+	<ul>
+	<li>data movement: MOV, PUSH, POP, ...
+	<li>arithmetic: TEST, SHL, ADD, AND, ...
+	<li>i/o: IN, OUT, ...
+	<li>control: JMP, JZ, JNZ, CALL, RET
+	<li>string: REP MOVSB, ...
+	<li>system: IRET, INT
+	</ul>
+
+<li>Intel architecture manual Volume 2 is <i>the</i> reference
+
+</ul>
+
+<h2>gcc x86 calling conventions</h2>
+
+<ul>
+<li>x86 dictates that stack grows down:
+	<table cellspacing=5>
+	<tr><td><u>Example instruction</u> <td><u>What it does</u>
+	<tr><td>pushl %eax
+		<td>
+		subl $4, %esp <br>
+		movl %eax, (%esp) <br>
+	<tr><td>popl %eax
+		<td>
+		movl (%esp), %eax <br>
+		addl $4, %esp <br>
+	<tr><td>call 0x12345
+		<td>
+		pushl %eip <sup>(*)</sup> <br>
+		movl $0x12345, %eip <sup>(*)</sup> <br>
+	<tr><td>ret
+		<td>
+		popl %eip <sup>(*)</sup>
+	</table>
+	(*) <i>Not real instructions</i>
+
+<li>GCC dictates how the stack is used.
+	Contract between caller and callee on x86:
+	<ul>
+	<li>at entry to a function (i.e. just after call):
+		<ul>
+		<li>%eip points at first instruction of function
+		<li>%esp+4 points at first argument
+		<li>%esp points at return address
+		</ul>
+	<li>after ret instruction:
+		<ul>
+		<li>%eip contains return address
+		<li>%esp points at arguments pushed by caller
+		<li>called function may have trashed arguments
+		<li>%eax (and %edx, if return type is 64-bit) contains
+		    return value (or trash if function is <tt>void</tt>)
+		<li>%eax, %edx (above), and %ecx may be trashed
+		<li>%ebp, %ebx, %esi, %edi must contain contents from time of <tt>call</tt>
+		</ul>
+	<li>Terminology:
+		<ul>
+		<li>%eax, %ecx, %edx are "caller save" registers
+		<li>%ebp, %ebx, %esi, %edi are "callee save" registers
+		</ul>
+	</ul>
+
+<li>Functions can do anything that doesn't violate contract.
+	By convention, GCC does more:
+	<ul>
+	<li>each function has a stack frame marked by %ebp, %esp
+		<pre>
+		       +------------+   |
+		       | arg 2      |   \
+		       +------------+    &gt;- previous function's stack frame
+		       | arg 1      |   /
+		       +------------+   |
+		       | ret %eip   |   /
+		       +============+   
+		       | saved %ebp |   \
+		%ebp-&gt; +------------+   |
+		       |            |   |
+		       |   local    |   \
+		       | variables, |    &gt;- current function's stack frame
+		       |    etc.    |   /
+		       |            |   |
+		       |            |   |
+		%esp-&gt; +------------+   /
+		</pre>
+	<li>%esp can move to make stack frame bigger, smaller
+	<li>%ebp points at saved %ebp from previous function,
+		chain to walk stack
+	<li>function prologue:
+		<pre>
+			pushl %ebp
+			movl %esp, %ebp
+		</pre>
+		<!--or
+		<pre>
+			enter $0, $0
+		</pre>
+		enter usually not used: 4 bytes vs 3 for pushl+movl,
+		not on hardware fast-path anymore-->
+	<li>function epilogue can easily find return EIP on stack:
+		<pre>
+			movl %ebp, %esp
+			popl %ebp
+		</pre>
+		<!--or
+		<pre>
+			leave
+		</pre>
+		leave used often because it's 1 byte, vs 3 for movl+popl-->
+	</ul>
+	<li> The frame pointer (in <code>ebp</code>) is not strictly needed
+	because a compiler can
+	compute the address of its return address and function arguments based
+	on its knowledge of the current depth of the stack
+	pointer (in <code>esp</code>).
+	<li> The frame pointer is useful for debugging purposes, especially the
+	current backtrace (function call chain) can be computed by following
+	the frame pointers. The current function is based on the current value
+	of <code>eip</code>. The current value of <code>*(ebp+4)</code> provides
+	the return address of the caller. The current value of
+	<code>*((*ebp) + 4)</code> (where <code>*ebp</code> contains the saved <code>ebp</code>
+		of the caller) provides the return address of the caller's caller,
+		the current value of <code>*(*(*ebp) + 4)</code> provides the
+		return address of the caller's caller's caller, and so on . . .
+<li>Compiling, linking, loading:
+	<ul>
+	<li>	<i>Preprocessor</i> takes C source code (ASCII text),
+		expands #include etc, produces C source code
+	<li>	<i>Compiler</i> takes C source code (ASCII text),
+		produces assembly language (also ASCII text)
+	<li>	<i>Assembler</i> takes assembly language (ASCII text),
+		produces <tt>.o</tt> file (binary, machine-readable!)
+	<li>	<i>Linker</i> takes multiple '<tt>.o</tt>'s,
+		produces a single <i>program image</i> (binary)
+	<li>	<i>Loader</i> loads the program image into memory
+		at run-time and starts it executing
+	</ul>
+</ul>

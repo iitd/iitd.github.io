@@ -1,0 +1,947 @@
+<html>
+<head>
+<title>CSL373 Lab 2: Processes and Synchronization</title>
+<link rel="stylesheet" href="../labs.css" type="text/css" />
+</head>
+<body>
+<h1>CSL373 Lab 2: Processes and Synchronization</h1>
+<p>
+<b>Handed out Tuesday, January 24, 2011<br />
+Due Thursday, February 7, 2011</b>
+
+</p>
+
+<h2>Introduction</h2>
+<p>
+In this lab,
+you will add the first major OS abstraction to PIOS: processes.
+Like Unix, PIOS creates a single "root" process on startup
+and allows that and any subsequent process to create "child" processes,
+forming a process hierarchy.
+PIOS's process abstraction is much simpler than Unix's, however:
+for example,
+child processes cannot outlive their parents,
+and processes can directly interact <i>only</i>
+with their immediate parent and immediate children,
+not with arbitrary other processes in the system
+like Unix processes can via pipes or the file system.
+Philosophically, the PIOS process abstraction
+follows more of a
+<a href="../bib/goldberg74architecture.pdf"
+	><i>recursive virtual machine</i></a>
+or <a href="http://bford.info/pub/os/fluke-rvm.pdf"
+	><i>nested process model</i></a>,
+in contrast with Unix's timesharing-oriented job control model.
+
+<p>
+This lab contains the following four main implementation components:
+
+<ol>
+<li>	<b>Synchronization:</b>
+	Maintaining the consistency of data structures
+	in a multiprocessor kernel.
+
+<li>	<b>Scheduling:</b>
+	Determining which process to run on which CPU
+	at a given moment, and running them.
+
+<li>	<b>System calls:</b>
+	Implementing system calls allowing process
+	to create and manage child processes.
+
+<li>	<b>Preemption:</b>
+	Using asynchronous hardware interrupts to
+	switch periodically among processes.
+</ol>
+
+<h3>Software Setup</h3>
+<p>
+
+In this lab you will build on the kernel you started in lab 1.
+We will also provide you with some additional source code.
+To fetch the new source code,
+use Git to commit your Lab 1 source code if you haven't already,
+then fetch the latest updates from the master Git repository,
+and then create a local branch called <tt>lab2</tt> based on our lab2 branch,
+which will be named <tt>origin/lab2</tt> in your copy of the repository:
+</p>
+<pre>
+$ <kbd>cd lab</kbd>
+$ <kbd>git commit -am 'my solution to lab1'</kbd>
+Created commit 254dac5: my solution to lab1
+ 3 files changed, 31 insertions(+), 6 deletions(-)
+$ <kbd>git pull</kbd>
+Already up-to-date.
+$ <kbd>git checkout -b lab2 origin/lab2</kbd>
+Branch lab2 set up to track remote branch refs/remotes/origin/lab2.
+Switched to a new branch "lab2"
+</pre>
+
+<p>
+The <kbd>git checkout -b</kbd> command shown above actually does two
+things: it first creates a local branch <tt>lab2</tt> that is
+based on the <tt>origin/lab2</tt> branch provided by the course
+staff, and second, it changes the contents of your <tt>lab</tt>
+directory to reflect the files stored on the <tt>lab2</tt> branch.
+Git allows switching between existing branches using <kbd>git
+checkout <i>branch-name</i></kbd>, though you should commit any
+outstanding changes on one branch before switching to a different
+one.
+</p>
+
+<p>
+You will now need to merge the changes you made in your <tt>lab1</tt>
+branch into the new <tt>lab2</tt> branch, as follows:
+</p>
+<pre>
+$ <kbd>git merge lab1</kbd>
+Merge made by recursive.
+ kern/kdebug.c  |   11 +++++++++--
+ kern/monitor.c |   19 +++++++++++++++++++
+ lib/printfmt.c |    7 +++----
+ 3 files changed, 31 insertions(+), 6 deletions(-)
+</pre>
+
+<p>
+In some cases, Git may not be able to figure out how to merge your changes with
+the new lab assignment (e.g. if you modified some of the code that
+is changed in the second lab assignment).  In that case, the <kbd>git
+merge</kbd> command will tell you which files are <i>conflicted</i>,
+and you should first resolve the conflict (by editing the relevant files)
+and then commit the resulting files with <kbd>git commit -a</kbd>.
+</p>
+
+<p>
+Lab 2 contains the following new source files,
+which you should browse through and familiarize yourself with:
+</p>
+
+<center>
+<table> <tr>
+<tr><td><tt>inc/syscall.h</tt>
+	<td>Definitions of PIOS system call conventions
+<tr><td><tt>kern/spinlock.{c,h}</tt>
+	<td>Spinlock-based mutual exclusion module template
+<tr><td><tt>kern/proc.{c,h}</tt>
+	<td>Process management and scheduling module template
+<tr><td><tt>kern/syscall.{c,h}</tt>
+	<td>System call handling module template
+<tr><td><tt>kern/mp.{c,h}</tt>
+	<td>Multiprocessor hardware identification
+<tr><td><tt>boot/bootother.S</tt>
+	<td>Boot code for CPUs other than CPU 0
+<tr><td><tt>dev/pic.{c,h}</tt>
+	<td>Legacy interrupt controller (PIC) driver
+<tr><td><tt>dev/lapic.{c,h}</tt>
+	<td>Local interrupt controller (LAPIC) driver
+<tr><td><tt>dev/ioapic.{c,h}</tt>
+	<td>I/O interrupt controller (IOAPIC) driver
+</table>
+</center>
+
+<h3>Hand-In Procedure</h3>
+
+<p>
+<i>The exact handin procedure is to be determined;
+we will update this section closer to the lab's due date.</i>
+
+<p>
+You do not need to turn in answers
+to any of the questions in the text of the lab.
+(Do answer them for yourself though!  They will help with the rest of the lab.)
+
+<p>
+We will be grading your solutions with a grading program.
+You can run <kbd>make grade</kbd>
+to test your solutions with the grading program.
+
+
+<h2>Part 1: Multiprocessor Synchronization</h2>
+
+<p>
+Like xv6, PIOS is a multiprocessor kernel,
+and will therefore have to use synchronization mechanisms
+to ensure that different physical CPUs running kernel code concurrently
+do not accidentally corrupt the kernel's data structures.
+For now, PIOS will use only one simple synchronization abstraction
+to protect kernel data structures: the <i>spinlock</i>.
+Since xv6 also uses spinlocks in the kernel,
+make sure you have read the xv6 chapter on locking
+and thoroughly understand how xv6 implements and uses spinlocks
+before you attempt this part of the lab.
+
+<p>
+PIOS's use of spinlocks will be different from xv6's
+in one important way,
+in terms of how spinlocks relate to interrupt handling.
+The xv6 kernel can take asynchronous device interrupts
+while running in either user or kernel mode,
+and servicing those interrupts often requires acquiring spinlocks.
+If an interrupt handler were to attempt to acquire a spinlock
+that the interrupted code already holds, however,
+then a deadlock would result:
+the interrupt handler will spin
+waiting for the "lock holder" to release the lock,
+but the lock holder is the kernel code that was preempted by the interrupt!
+So the xv6 spinlock code always disables hardware interrupts
+when the kernel first takes a spinlock,
+and re-enables interrupts only after unlocking the last spinlock it is holding,
+effectively preemption whenever kernel code is holding any spinlock.
+PIOS, in contrast,
+simply never enables interrupts in the first place
+while running in kernel mode,
+so the spinlock code in PIOS doesn't need to deal with this issue.
+
+<h3>Basic Spinlock Functionality</h3>
+
+<p>
+PIOS spinlocks are declared in <tt>kern/spinlock.h</tt>,
+and support the following four operations:
+
+<ul>
+<li>	<tt>void spinlock_init(spinlock *<i>lk</i>)</tt>:
+	initialize spinlock <i>lk</i> to the unlocked state.
+<li>	<tt>void spinlock_acquire(spinlock *<i>lk</i>)</tt>:
+	acquire spinlock <i>lk</i>, spinning if necessary
+	until it becomes available.
+<li>	<tt>void spinlock_release(spinlock *<i>lk</i>)</tt>:
+	release spinlock <i>lk</i>.
+<li>	<tt>int spinlock_holding(spinlock *<i>lk</i>)</tt>:
+	return true (nonzero) if this CPU is holding spinlock <i>lk</i>,
+	false (zero) otherwise.
+</ul>
+
+<p>
+You will need to implement these four functions.
+Use the <tt>xchg()</tt> function in <tt>inc/x86.h</tt>
+to provide the atomicity needed when acquiring the spinlock.
+
+<p>
+You should also use the atomic <tt>xchg()</tt> instruction
+to <i>release</i> the lock -
+in this case not because of the atomicity it provides,
+but because atomic instructions also prevent the processor
+from reordering other reads or writes around the atomic instruction,
+which modern processors often do with normal memory accesses,
+and such reordering can cause synchronization code to fail
+if not controlled carefully.
+See section 7.2, "Memory Ordering", in the
+<a href="../ref/ia32-3.pdf">IA-32 System Programming Guide</a>
+for more information.
+
+<p>
+One further detail about the spin loop itself:
+while a spinlock will work if you just do nothing in the loop,
+Intel has defined a special instruction called <tt>PAUSE</tt>
+that notifies the processor that a spin loop is in progress
+and can improve system performance in such cases,
+especially on "hyper-threaded" processors
+that multiplex a single execution unit
+among multiple virtual CPUs.
+See the x86 manuals for details on this instruction.
+We have provided a <tt>pause()</tt> function in <tt>inc/x86.h</tt>
+for convenience.
+
+<h3>Debugging Enhancements</h3>
+
+<p>
+While the main purpose of spinlocks is to ensure mutual exclusion,
+and that can be accomplished if spinlocks are nothing but
+a single word in memory,
+we can make debugging multiprocessor code much easier 
+by instrumenting spinlocks a little.
+Design your spinlocks so that they:
+
+<ul>
+<li>	On initialization, save the file and line number
+	of the <tt>spinlock_init()</tt> call that initialized the spinlock.
+	This way, if your kernel gets into a spinlock-related deadlock,
+	you can type CTRL-C in your GDB window,
+	inspect the spinlock, and immediately see
+	what the spinlock is used for based on where it was initialized.
+	Note that <tt>spinlock_init()</tt> is actually a macro
+	defined in <tt>kern/spinlock.h</tt> that invokes an actual function
+	called <tt>spinlock_init_()</tt> with this file and line number;
+	all you have to do is save this information in the spinlock.
+
+<li>	Whenever a spinlock is held by a given CPU,
+	save a pointer to that CPU's <tt>cpu</tt> struct in the spinlock,
+	and clear it to NULL when releasing the spinlock.
+	This way, if a deadlock occurs,
+	you can see which (other) CPU is holding the lock you're spinning on.
+
+<li>	When acquiring a spinlock,
+	check to make sure the current CPU
+	isn't <i>already</i> holding that spinlock,
+	and panic if it is.
+	This will turn a simple but very common class of deadlock bugs
+	into immediate panics, which are much easier to debug.
+
+<li>	Similarly, when releasing a spinlock,
+	check to make sure that the current CPU
+	<i>is</i> holding the spinlock,
+	and panic if it isn't.
+
+<li>	Finally, when acquiring a spinlock,
+	use the <tt>debug_trace()</tt> function
+	you implemented in the previous lab
+	to take a backtrace of the contents of the stack
+	at the time the spinlock was acquired,
+	and save that backtrace in the <tt>eips</tt> array
+	in the <tt>spinlock</tt> struct.
+	This will further aid in debugging deadlocks,
+	enabling you to see the exact call chain
+	by which each of the spinlocks involved in the deadlock was acquired.
+</ul>
+
+These debugging facilities won't necessarily make
+writing multiprocessor code "easy" per se,
+but hopefully it may be a little easier than it would be otherwise!
+
+<div class="required">
+<p><span class="header">Exercise 1.</span>
+	Implement spinlocks in PIOS as described above.
+	Make sure your implementation passes
+	the <tt>spinlock_check()</tt> test provided.
+	But note that this test code only tests basic functionality;
+	it does <i>not</i> verify that your spinlocks
+	are properly atomic and race-free under multiprocessor operation!
+</p></div>
+
+<h3>Using Spinlocks</h3>
+
+You will now need to use the spinlocks you have just implemented
+to provide mutual exclusion for two existing kernel facilities:
+the console code and the physical memory code from lab 1.
+
+<div class="required">
+<p><span class="header">Exercise 2.</span>
+	Add a spinlock to <tt>kern/console.c</tt>,
+	initialized in <tt>cons_init()</tt>,
+	which prevents the characters output
+	by a <tt>cputs()</tt> call on one processor
+	from being mingled with those output by another processor.
+	In other words, we want each <tt>cputs()</tt> call to be atomic:
+	if two CPUs try to print messages at about the same time,
+	we want to see all of one message followed by all of the other,
+	and not a random mix of characters from both messages at once.
+</p></div>
+
+<div class="required">
+<p><span class="header">Exercise 3.</span>
+	Add mutual exclusion to protect the <tt>mem_freelist</tt>
+	in <tt>kern/mem.c</tt>,
+	so that different CPUs can safely call
+	<tt>mem_alloc()</tt> and <tt>mem_free()</tt> concurrently
+	without pages being lost or the free list being corrupted.
+</p></div>
+
+
+<h2>Part 2: Creating and Scheduling Processes</h2>
+
+<p>
+First familiarize yourself with <tt>kern/proc.h</tt>
+and the template code in <tt>kern/proc.c</tt>.
+This will be PIOS's main process management and scheduling module.
+
+<p>
+As mentioned earlier,
+PIOS processes form a strictly tree-structured process hierarchy.
+The <tt>proc</tt> structure contains a <tt>parent</tt> pointer
+and up to <tt>PROC_CHILDREN</tt> (256) <tt>child</tt> pointers
+to child processes.
+The <tt>parent</tt> pointer is NULL in the root process
+but valid for all other processes;
+any child pointer in a proc's <tt>child</tt> array may be NULL
+indicating that child does not exist.
+
+<table align="right" cellpadding=10>
+<tr><td align="center"><img src="states.png">
+<tr><td align="center"><b>PIOS Process State Machine</b>
+</table>
+
+<p>
+At a given moment a process may be in any of four states,
+as defined by the <tt>state</tt> field in the <tt>proc</tt> structure
+and illustrated in the figure to the right:
+<ul>
+<li>	<tt>PROC_RUN</tt> means the process
+	is currently running on some CPU.
+	The <tt>runcpu</tt> field in the <tt>proc</tt> struct
+	should point to the <tt>cpu</tt> struct of the CPU
+	the process is currently running on when in this state;
+	at all other times this field should be NULL.
+
+<li>	<tt>PROC_READY</tt> means the process
+	<i>has</i> been started by its parent process
+	and is ready to run,
+	but is not actually running yet on a physical CPU.
+	The scheduler keeps track of all ready processes
+	in some data structure -
+	typically a queue -
+	in order to decide which ready process to run next
+	whenever a physical CPU becomes available to run a process.
+	The <tt>readynext</tt> field in the <tt>proc</tt> struct
+	is intended to be a next pointer to chain processes onto a ready queue,
+	although you may use a different queueing mechanism if you wish.
+
+<li>	<tt>PROC_STOP</tt> means the process is <i>stopped</i>,
+	which means it is just passively sitting
+	under the control of its immediate parent process.
+	No stopped process ever runs until its parent explicitly starts it,
+	using the PUT system call described later.
+	Stopped processes can maintain saved register state
+	(and after the next lab, virtual memory state as well),
+	but nothing can cause this state to change or evolve
+	except by the action of the parent process.
+
+<li>	<tt>PROC_WAIT</tt> is complementary to the stopped state:
+	it means the process is waiting for one of its <i>children</i>
+	to finish executing and "return to" the parent
+	by entering the stopped state.
+</ul>
+
+<h3>Scheduling and Running Processes</h3>
+
+<p>
+You will now need to design and implement a simple scheduler.
+The scheduler can be as simple as keeping all ready processes
+on a single queue and running them in round-robin order.
+The main requirements for purposes of this lab are:
+(a) the scheduler must work correctly, even on a multiprocessor system,
+and never lose processes or corrupt the ready queue for example; and
+(b) assuming the scheduler is invoked on a regular basis,
+it must not "starve" any process of CPU time forever.
+The second requirement means that while a simple queue structure will work,
+a stack structure would not for example,
+because processes pushed more recently on the stack
+could starve processes pushed earlier forever.
+
+<p>
+We have declared and provided skeletons for the following scheduling functions;
+you may add other helper functions and data structures as needed
+in <tt>kern/proc.c</tt> and <tt>kern/proc.h</tt>:
+
+<ul>
+<li><p>	<tt>proc_ready(proc *<i>p</i>)</tt>:
+	Places process <i>p</i> in the <tt>PROC_READY</tt> state
+	and insert it into the ready queue,
+	so that this or some other CPU will eventually run the process
+	at some future invocation of the scheduler.
+
+<li><p>	<tt>proc_sched(void)</tt>:
+	Remove some process from the ready queue and run it.
+	If the ready queue is currently empty
+	(there is no work to do at the moment),
+	just spin until some other CPU puts some work into the ready queue.
+	(For good measure, use the <tt>pause()</tt> function
+	discussed above in the ready loop,
+	although this doesn't affect correctness.)
+
+<li><p>	<tt>proc_run(proc *<i>p</i>)</tt>:
+	Place process <i>p</i> in the <tt>PROC_RUN</tt> state,
+	mark it as running on this CPU, and run it.
+	This function does not return
+	because it is expected to call <tt>trap_return()</tt>
+	and enter user space to run the process.
+
+<li><p>	<tt>proc_yield(trapframe *<i>tf</i>)</tt>:
+	Put the currently running process on this CPU
+	back in the <tt>PROC_READY</tt> state
+	and yield its CPU to some other ready process.
+	(The old process could end up yielding to itself
+	if it is the only ready process.)
+	This function is called with a pointer
+	to a <tt>trapframe</tt> containing the user state
+	of the process that is yielding the CPU,
+	which was typically pushed on the kernel stack on kernel entry.
+	Since the kernel stack is reset on switching to a new process,
+	the old process's state needs to be saved in its <tt>proc</tt> struct
+	before switching to the new process.
+</ul>
+
+You will of course need to make sure that
+your implementations of these functions are multi-processor safe
+via appropriate use of spinlocks.
+Be sure to think carefully about what needs to be locked when.
+Do you ever need to acquire two or more spinlocks at once,
+e.g., the spinlocks in two different {\tt proc} structures?
+If so, how can you ensure that you never deadlock?
+
+<div class="required">
+<p><span class="header">Exercise 4.</span>
+	Implement the above scheduling functions.
+	Then modify <tt>init()</tt> in <tt>kern/init.c</tt>
+	so that instead of just conjuring up a <tt>trapframe</tt>
+	and calling <tt>trap_return()</tt> directly to enter user space,
+	it calls <tt>alloc_proc()</tt> to create a "root process",
+	sets up that process's saved EIP and ESP
+	to run the <tt>user()</tt> function on the <tt>user_stack</tt>,
+	calls <tt>proc_ready()</tt> to make the process ready,
+	and finally calls <tt>proc_sched()</tt> to schedule and run it.
+
+	<p>
+	You should now be able to get into user mode via your scheduler,
+	although the root process won't yet be able to create other processes
+	without the system calls to be implemented shortly.
+	You may wish to test your scheduler a bit more thoroughly now
+	by creating several "root" processes,
+	starting them all at once,
+	and ensuring that your schedule correctly picks a separate one
+	to run on each physical CPU.
+	But note that each user process will need its own stack!
+</p></div>
+
+<p>
+<i>Hint:</i>
+In general,
+it may make debugging easier
+if you get your code working first in a uniprocessor environment,
+by removing the `<samp>-smp 2</samp>' option
+from the <tt>qemu</tt> command line,
+before trying to get it working in a multiprocessor environment.
+If you are experiencing a mysterious bug,
+always check to see if it goes away in uniprocessor mode:
+if it does, it probably means it's a locking issue;
+if it doesn't, it'll probably be easier to replicate and debug
+in the simpler uniprocessor environment.
+
+<div class="challenge">
+<p><span class="header">Challenge:</span>
+	Make your scheduler more powerful
+	by implementing one of the enormous number of prioritization
+	or fair-share scheduling algorithms you can find
+	in textbooks or in the research literature:
+	for example, fixed-priority scheduling,
+	Unix-style variable-priority scheduling,
+	or <a href="../bib/waldspurger94lottery.pdf">lottery scheduling</a>.
+</p></div>
+
+<div class="challenge">
+<p><span class="header">Challenge:</span>
+	Make your scheduler more scalable
+	by giving each CPU its own dedicated ready queue,
+	so that that CPU can insert and remove ready processes
+	without contending with other CPUs in the common case.
+	You will still need locking, however,
+	because when one CPU's ready queue is empty
+	that CPU's scheduler will have to
+	check other CPUs' ready queues and "steal" processes from them.
+	This technique is called <i>work stealing</i>.
+</p></div>
+
+<h2>Part 3: System Calls</h2>
+
+Now that your kernel has a way to create and schedule processes,
+it needs to provide user-mode code a way to do something interesting.
+User-mode processes invoke the kernel explicitly
+through an x86 software interrupt (<tt>INT</tt> instruction)
+to vector 0x30 (<tt>T_SYSCALL</tt>).
+
+<h3>Entering, Completing, and Restarting System Calls</h3>
+
+Before we get into the details of individual system calls,
+we need to clarify a few general system call principles.
+
+<p>
+<b>Entering System Calls:</b>
+When the processor encounters an explicit <tt>INT</tt> instruction,
+it behaves in <i>mostly</i> the same way
+as if it had encountered an exception such as divide-by-zero,
+with two important differences:
+<ul>
+<li>	For <tt>INT</tt> instructions,
+	the processor checks the current privilege level (CPL)
+	against the descriptor privilege level (DPL) field
+	in the IDT entry for the interrupt,
+	and throws an exception if the currently running code
+	does not have sufficient privilege
+	to invoke that interrupt vector explicitly
+	(effectively converting the <i>explicit</i> software interrupt
+	into a different, <i>implicit</i> hardware-generated exception).
+
+<li>	If everything goes well and the processor <i>does</i>
+	successfully execute the <tt>INT</tt> instruction,
+	the user-mode EIP it saves on the stack is different
+	from the value it would push as a result of an exception.
+	For exceptions, the saved EIP is a pointer
+	<i>at</i> the instruction that caused the exception,
+	whereas for successfully executed <tt>INT</tt> instructions,
+	the saved EIP points to the next instruction
+	<i>after</i> the <tt>INT</tt> instruction.
+</ul>
+
+<p>
+Be sure you thoroughly understand both of these differences in behavior,
+and the reasons for them!
+Now we need to think about how PIOS actually processes system calls.
+
+<p>
+<b>Completing System Calls:</b>
+
+When the kernel handles a system call,
+in the "easy cases" it will complete whatever action the user process requested
+and then need to resume execution of the user mode process
+from where it left off.
+In PIOS, the system call handler does this by calling <tt>trap_return()</tt>.
+
+<p>
+Given the above considerations regarding the value of EIP
+that the processor pushes
+when it successfully executes an <tt>INT</tt> instruction,
+does the system call handler need to do anything
+to the <tt>trapframe</tt> pushed on entry
+before calling <tt>trap_return()</tt> to resume the user process?
+
+<p>
+<b>Blocking Processes and Restarting System Calls:</b>
+
+In the "not so easy" system call handling cases,
+the kernel may not be able to complete the system call immediately,
+but instead must <i>block</i> the process until some future event occurs,
+typically as a result of an action of some other process or an external device.
+In a process-model kernel like xv6,
+which maintains a separate kernel stack for each user process,
+the kernel stack provides a convenient place
+where the kernel can maintain state pertaining to
+whatever system call was in progress when the process needed to block:
+when the necessary "wakeup" condition is satisfied,
+the process simply resumes executing in the kernel
+at the intermediate system call processing state represented by the contents
+of the process's kernel stack.
+
+<p>
+In an interrupt-model kernel such as PIOS, however,
+processes do not have kernel stacks,
+so a blocked process must entirely give up the use of the kernel stack
+so that the next process to run on the same CPU can use it.
+So how does the kernel keep track of what it was or is
+supposed to be doing on behalf of a blocked process?
+We <i>could</i> add explicit state to the <tt>proc</tt> structure
+describe exactly what the kernel was supposed to be doing -
+e.g., executing user-mode code,
+or blocked at a particular stage in a particular system call.
+Keeping track of this complicated state machine can be difficult, however.
+Another option is to design the kernel's system calls
+to be simple and semantically <i>atomic</i> -
+meaning the system call either runs to completion
+or blocks before changing any user-visible state at all.
+That way, if a process needs to block waiting for some event to occur,
+then once the process is woken by the occurrence of that event,
+the process simply <i>restarts</i> the original system call from scratch -
+beginning with the original <tt>INT</tt> instruction executed in user mode.
+In this design, the only process state that really matters
+is its user-mode register state, particularly its EIP.
+
+<p>
+PIOS takes the latter, <i>system call restart</i> approach,
+because it simplifies kernel state
+(and can have <a href="http://bford.info/pub/os/atomic-osdi99.pdf"
+	>other kernel design advantages</a>).
+To implement the restart model,
+however,
+you have to think carefully about exactly where you want
+the user-mode EIP to point when you actually <i>complete</i> a system call,
+versus what you want the saved EIP to point to
+when you block the process <i>without</i> completing the system call.
+Given the EIP that the processor saves in the <tt>trapframe</tt>
+when it executes the <tt>INT</tt> instruction,
+if the system call handler decides it needs to block the process,
+does it need to do anything
+to the <tt>trapframe</tt> before saving it into the <tt>proc</tt> structure
+for use when the processor eventually wakes up and resumes execution?
+<i>Hint:</i> how long exactly is an <tt>INT</tt> instruction?
+(Look it up in the IA-32 manuals if you don't know.)
+
+<h3>PIOS System Calls</h3>
+
+We now examine the specific system calls PIOS supports.
+PIOS for now implements only four system calls,
+which we list according to their C function prototypes
+as called from user space programs
+(see <tt>inc/syscall.h</tt> and <tt>lib/syscall.c</tt>):
+
+<ul>
+<li><p>	<tt>sys_cputs(const char *<i>s</i>)</tt>:
+	Print the null-terminated ASCII string <i>s</i> to the console
+	for debugging purposes.
+
+<li><p>	<tt>sys_put(uint32_t <i>flags</i>, uint8_t <i>child</i>,
+		cpustate *<i>cpu</i>)</tt>:
+	Initialize one of the calling process's 256 child process slots,
+	as indicated by <i>child</i>,
+	and optionally start the child process running
+	concurrently with the parent.
+	The <i>flags</i> argument contains a mask of flags
+	defined in <tt>inc/syscall.h</tt>
+	that modify <tt>sys_put</tt>'s precise behavior as follows:
+	<ul>
+	<li>	<tt>SYS_REGS</tt>:
+		indicates that the calling process wishes to set
+		the register state of the child process,
+		from the <tt>tf</tt> member
+		of the provided <tt>cpustate</tt> structure;
+		otherwise the child's state remains unmodified
+		(or initialized to all 0's, if the child is newly created).
+
+		<p>
+		The kernel shouldn't allow user processes
+		to set <i>all</i> register state in another process:
+		in particular, the kernel should force
+		all the segment registers in the child's <tt>trapframe</tt>
+		to the usual user-mode code and data segments,
+		and should only allow "non-sensitive" bits in EFLAGS,
+		such as the arithmetic condition code bits,
+		to be set via this system call.
+		Otherwise a process could trick the kernel
+		into "returning" into a kernel-mode segment
+		at an arbitrary EIP specified by the user process, for example.
+		(Think about how you would implement this attack.)
+
+	<li>	<tt>SYS_START</tt>:
+		indicates that that the child process should start executing;
+		otherwise the child remains in the stopped state.
+	</ul>
+
+	<p>
+	This system call requires the specified child
+	to be in the <tt>PROC_STOP</tt> state in order to complete.
+	If the specified child process is not already in the stopped state
+	when the parent process makes this system call,
+	the kernel puts the parent process to sleep
+	waiting for the child to stop.
+	In other words, the parent goes into the <tt>PROC_WAIT</tt> state
+	and sits there until the child enters the <tt>PROC_STOP</tt> state,
+	at which point the parent wakes up
+	and restarts its PUT system call as described above.
+
+<li><p>	<tt>sys_get(uint32_t <i>flags</i>, uint8_t <i>child</i>,
+		cpustate *<i>cpu</i>)</tt>:
+	Collect information from a child process.
+	As with <tt>sys_put()</tt>,
+	this system call first waits for the child to stop
+	if the child isn't already in the stopped state.
+	The <i>flags</i> argument again determines
+	exactly what information the parent retrieves from the child.
+	Currently only one flag is supported,
+	although we will add other flags in future labs:
+	<ul>
+	<li>	<tt>SYS_REGS</tt>:
+		indicates that the calling process wishes to
+		retrieve the register state of the child process;
+		the kernel copies the child's register state
+		into the <tt>tf</tt> member
+		of the provided <tt>cpustate</tt> structure.
+	</ul>
+
+<li><p>	<tt>sys_ret(void)</tt>:
+	Explicitly "returns" from a child process to its parent.
+	The child process goes into the <tt>PROC_STOP</tt> state,
+	and wakes up its parent
+	if the parent happened to be waiting for this particular child,
+	as a result of either a <tt>sys_put()</tt> or <tt>sys_get()</tt>.
+
+	<p>
+	If the parent subsequently retrieves this process's register state,
+	the <tt>tf_trapno</tt> field in the returned <tt>trapframe</tt>
+	should contain <tt>T_SYSCALL</tt>,
+	indicating that the child "returned" via a system call,
+	and the <tt>tf_eip</tt> field should point to
+	the next instruction in the child <i>after</i> the system call.
+	This way, a <tt>sys_ret()</tt> call by a child process
+	doesn't need to "terminate" the child completely:
+	instead, the parent can resume the child
+	at the point in its execution immediately after the <tt>sys_ret()</tt>,
+	just by calling <tt>sys_put()</tt> again
+	with the <tt>SYS_START</tt> flag but without <tt>SYS_REGS</tt>.
+</ul>
+
+<div class="required">
+<p><span class="header">Exercise 5.</span>
+	Implement the above process management system calls.
+	You will first need to modify <tt>kern/trap.c</tt>
+	to set up a trap entrypoint for the <tt>T_SYSCALL</tt> vector
+	and make <tt>trap()</tt> invoke <tt>syscall()</tt>
+	when that trap occurs.
+	Then fill out the <tt>syscall()</tt> function
+	in <tt>kern/syscall.c</tt>;
+	we have oh so generously implemented <tt>SYS_CPUTS</tt> for you.
+	You will have to design the process management code carefully
+	to interact with your scheduling code in <tt>kern/proc.c</tt>
+	when putting processes to sleep or waking them up.
+
+	<p>
+	Test this code with the first part of <tt>proc_check()</tt>,
+	which <tt>user()</tt> calls to check process management.
+	With QEMU emulating 2 CPUs
+	(the default when you type '<samp>make qemu</samp>'
+	with our GNUmakefile),
+	your code should be able to get through the spawn/wait test
+	with 2 child processes.
+	The subsequent test with 4 child processes will hang, however,
+	until you implement preemption in the next part
+	(or you can increase the number of emulated CPUs to 4).
+</p></div>
+
+<div class="challenge">
+<p><span class="header">Challenge:</span>
+	Implement x87/MMX/XMM FPU state saving and restoring
+	in the kernel,
+	so that user processes can use floating-point arithmetic,
+	and make a process's FPU state accessible to its parent process
+	via <tt>sys_put</tt> and <tt>sys_get</tt>
+	with the <tt>SYS_FPU</tt> flag,
+	which we have defined in <tt>inc/syscall.h</tt>.
+	We have also provided a structure, <tt>fxstate</tt>,
+	that is suitable for holding FPU state
+	and laid out in the format required by the processor's convenient
+	<tt>FXSAVE</tt> and <tt>FXRSTOR</tt> instructions.
+</p></div>
+
+<h2>Part 4: Preemption and Trap Reflection</h2>
+
+In this final part of the lab you will enhance the kernel's handling
+of traps <i>other than</i> explicit system calls
+to integrate with the scheduling and process management code above.
+
+<h3>Preemption</h3>
+
+If one process executes for too long,
+we would like to <i>preempt</i> the CPU
+and give other processes a chance to run.
+
+<p>
+To implement preemption,
+we need to arrange for an asynchronous <i>timer interrupt</i>
+to be delivered to each CPU periodically,
+so that the processor will return control to the kernel
+and the kernel can schedule and run a different process.
+In multiprocessor x86 systems,
+each CPU has a <i>Local Advanced Programmable Interrupt Controller</i>
+or LAPIC, which can generate such interrupts.
+We have provided code in <tt>dev/lapic.{c,h}</tt>
+to initialize each CPU's LAPIC and enable its periodic timer interrupt.
+The processor will simply ignore these interrupt requests, however,
+until the kernel enables interrupts
+by setting the IF bit in the EFLAGS register.
+Once interrupts are enabled,
+timer interrupts will arrive at vector <tt>T_IRQ0+IRQ_TIMER</tt>.
+In response,
+the kernel should place the current process back on the ready queue,
+and pick and run a new process from the ready queue.
+
+<p>
+When the kernel takes an asynchronous hardware interrupt,
+it must signal the hardware that generated the interrupt
+that the handling of the interrupt is complete:
+otherwise,
+the source of the interrupt 
+(in this case the local APIC)
+would just keep the interrupt request asserted,
+interrupting the processor again immediately,
+as soon as its IF flag is set again.
+This "interrupt clearing" procedure is commonly called
+an <i>End Of Interrupt</i> or EOI.
+For interrupts generated by the local APIC,
+we have provided a function <tt>lapic_eoi()</tt>
+to signal the LAPIC that the timer interrupt has been handled.
+
+<p>
+As described in Section 8.9 of the
+<a href="../ref/ia32-3.pdf">IA-32 System Programming Guide</a>,
+certain corner-case timing situations can cause the Local APIC
+to generate a <i>spurious interrupt</i>.
+Our local APIC setup code directs such interrupts
+to interrupt vector <tt>T_IRQ0+IRQ_SPURIOUS</tt>;
+you should catch interrupts arriving at this vector
+and simply do a <tt>trap_return()</tt>
+without an EOI, as specified in the IA-32 manual.
+You may want to print a message to a console on a spurious interrupt,
+since they're not likely to happen often and if/when it does
+you probably want to know so that you can tell
+whether your spurious interrupt handler is working.
+
+<div class="required">
+<p><span class="header">Exercise 6.</span>
+	Implement preemption in PIOS.
+	You will need to create entrypoints for the Timer IRQ
+	and Spurious Interrupt vectors,
+	and handle them in <tt>trap()</tt>.
+
+	<p>
+	You will also need to turn on the Interrupt Flag
+	in order to allow the processor to take timer interrupts.
+	Keep in mind, however, that the PIOS kernel assumes
+	that the processor takes asynchronous hardware interrupts
+	<i>only</i> when running in user mode,
+	never while while running in kernel mode (as xv6 allows).
+	You must be careful to preserve this design convention,
+	otherwise the kernel will get very confused
+	when it tries to preempt itself.
+	How do you cause the IF flag to be set <i>only</i>
+	while the processor is running in user mode?
+	(<i>Hint:</i> the <tt>write_eflags()</tt> function
+	in <tt>inc/x86.h</tt> is <i>not</i> what you want.)
+
+	<p>
+	Once you get interrupts working,
+	your code should be able to get through
+	the part of <tt>proc_chec()</tt> that uses 4 child processes,
+	even when running on the default 2-CPU SMP configuration
+	(or even a 1-CPU uniprocessor QEMU configuration).
+</p></div>
+
+<h3>Trap Reflection</h3>
+
+While the <tt>sys_ret()</tt> system call
+gives a PIOS process an <i>explicit</i> way to "return" to its parent,
+a process can also <i>implicitly</i> return to its parent
+by causing any other processor-defined exception,
+such as a divide by zero or general protection fault.
+That is, whenever a process causes an exception in user mode
+that the PIOS kernel doesn't handle automatically in some way,
+the kernel <i>reflects</i> reflects the trap to the process's parent
+in the form of an implicit "return":
+the process goes into the stopped state
+and sits passively until the parent collects its state
+via <tt>sys_get()</tt>.
+In this case, the <tt>tf_trapno</tt> in the <tt>trapframe</tt> structure
+that <tt>sys_get(SYS_REGS)</tt> returns to the parent
+will indicate which trap the child process caused,
+and the <tt>tf_eip</tt> will point at
+(<i>not</i> after, as in the explicit <tt>sys_ret</tt> system call)
+the instruction that caused the trap.
+This reflection facility gives user-mode processes
+the ability to "supervise" their children,
+handling traps caused by their children in any way appropriate.
+Of course, the kernel can't reflect traps caused by the root process
+because the root process doesn't have a parent to reflect them to.
+
+<div class="required">
+<p><span class="header">Exercise 7.</span>
+	Implement reflection for processor exceptions
+	in the x86 architecture-defined vector range of 0 through 31,
+	but only if the exception occurs in user mode.
+	(Exceptions in this range that occur in kernel mode
+	still probably represent bugs and should cause a panic
+	with a backtrace.)
+	We have declared and provided a skeleton function
+	<tt>proc_ret()</tt> in <tt>kern/proc.c</tt>,
+	which is intended to handle
+	either "explicit returns" via <tt>sys_ret()</tt>
+	or "implicit returns" via other traps from user mode.
+
+	<p>
+	Your kernel should now be able to pass
+	the entire <tt>proc_check()</tt> test,
+	including its test of reflection for several types of traps.
+	Run <tt>make grade</tt> to make sure
+	the whole test suite for lab 2 comes out right.
+</p></div>
+
+<p>
+<b>This completes the lab.</b>
+
+
+</body>
+</html>

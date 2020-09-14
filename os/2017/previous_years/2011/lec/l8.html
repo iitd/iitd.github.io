@@ -1,0 +1,369 @@
+<title>L9</title>
+<html>
+<head>
+</head>
+<body>
+
+<h1>Coordination and more processes</h1>
+
+<p>Required reading: remainder of proc.c,
+  sys_wait, sys_exit, and sys_kill.
+
+<h2>Overview</h2>
+
+<p>Big picture: Multiple threads executing in the kernel and sharing
+   memory, devices, and various data structures. We need to allow more
+   than one process to be executing in the kernel to take full
+   advantage of multiple CPUs and to allow system calls that block
+   waiting for I/O.  Last two lectures covered threads, locking, and
+   context switching.  Today: how to arrange for threads to wait for
+   each other to do things, at time scales too long for spin-locks.
+
+<p>Sequence coordination: tools to let threads explicitly wait for
+   each other. This is different from the mutual exclusion that you
+   get with spin-locks; spin-locks help threads ignore each other by
+   making their actions atomic.
+
+<p>For example, a thread may want to wait until another thread
+  terminates. One way to do so is to have the thread run periodically,
+  checking if the other thread terminated, and if not give up the
+  processor again.  This is wasteful, especially if there are many
+  threads. 
+
+<p>With primitives for sequence coordination one can do better.  The
+  thread could tell the thread manager that it is waiting for an event
+  (e.g., another thread terminating).  When the other thread
+  terminates, it explicitly wakes up the waiting thread.  This is more
+  work for the programmer, but more efficient.
+
+<p>Sequence coordination interacts with locks and
+  thread context switch, as we will see below.
+
+<p>The operating system literature has a rich set of primitives for
+  sequence coordination.  We'll look at xv6's sleep and wakeup,
+  which are a simplified version of "condition variables".
+
+<h2>xv6 code examples</h2>
+
+<h3>Sleep and wakeup - usage</h3>
+
+Let's consider implementing a producer/consumer queue
+(like a pipe) that can be used to hold a single non-null char pointer:
+
+<pre>
+struct pcq {
+    void *ptr;
+};
+
+void*
+pcqread(struct pcq *q)
+{
+    void *p;
+
+    while((p = q-&gt;ptr) == 0)
+        ;
+    q-&gt;ptr = 0;
+    return p;
+}
+
+void
+pcqwrite(struct pcq *q, void *p)
+{
+    while(q-&gt;ptr != 0)
+        ;
+    q-&gt;ptr = p;
+}
+</pre>
+
+<p>This code has no locks. Does it need them?
+
+<p>Unfortunately, the while loops waste CPU time.
+Instead of polling, it would be great if there were
+primitives saying ``wait for some event to happen''
+and ``this event happened''.
+That's what sleep and wakeup do.
+
+<p>
+Sleep takes a 32-bit value as argument, called the channel.
+Sleep marks the process as
+waiting for a wakeup on that channel and yields the CPU.
+Wakeup marks all processes waiting for the channel as RUNNABLE;
+more than one process can sleep for the same channel.
+Wakeup only wakes up processes that are already waiting;
+if one process calls wakeup, and then another calls sleep,
+the second will sleep until a second call to wakeup.
+The channel is just a number, so callers of
+sleep and wakeup must agree on a convention. We'll look a full
+and correct implementation later; for now:
+
+<pre>
+sleep(chan):
+  curproc->chan = chan
+  curproc->state = SLEEPING
+  sched()
+
+wakeup(chan):
+  foreach p in proc[]:
+    if p->chan == chan and p->state == SLEEPING:
+      p->state = RUNNABLE
+</pre>
+
+
+<p>Here's a second try at producer/consumer, with sleep/wakeup:
+
+<pre>
+void*
+pcqread(struct pcq *q)
+{
+    void *p;
+
+    if(q-&gt;ptr == 0)
+        sleep(q);
+    p = q-&gt;ptr;
+    q-&gt;ptr = 0;
+    wakeup(q);  /* wake pcqwrite */
+    return p;
+}
+
+void
+pcqwrite(struct pcq *q, void *p)
+{
+    if(q-&gt;ptr != 0)
+        sleep(q);
+    q-&gt;ptr = p;
+    wakeup(q);  /* wake pcqread */
+    return p;
+}
+</pre>
+
+<p>
+That's better, but there is still a problem.
+What if the wakeup happens between the check in the if
+and the call to sleep?
+
+<p>
+We need the if and sleep to be atomic.
+Why can't we add locks around the if and sleep, e.g.
+
+<pre>
+    acquire(&amp;q->lock);
+    if(q-&gt;ptr == 0)
+        sleep(q);
+    release(&amp;q->lock);
+</pre>
+
+<p>So we need sleep() to know about the lock, like this:
+
+<pre>
+struct pcq {
+    void *ptr;
+    struct spinlock lock;
+};
+
+void*
+pcqread(struct pcq *q)
+{
+    void *p;
+
+    acquire(&amp;q->lock);
+    if(q-&gt;ptr == 0)
+        sleep(q, &amp;q->lock);
+    p = q-&gt;ptr;
+    q-&gt;ptr = 0;
+    wakeup(q);  /* wake pcqwrite */
+    release(&amp;q->lock);
+    return p;
+}
+
+void
+pcqwrite(struct pcq *q, void *p)
+{
+    acquire(&amp;q->lock);
+    if(q-&gt;ptr != 0)
+        sleep(q, &amp;q->lock);
+    q-&gt;ptr = p;
+    wakeup(q);  /* wake pcqread */
+    release(&amp;q->lock);
+    return p;
+}
+</pre>
+
+<p>
+The intent is that sleep somehow atomically give up the lock
+and put the process to sleep. We'll see how that works shortly.
+
+<p>
+This is okay, and now safer for multiple readers and writers,
+except that wakeup wakes up everyone who is asleep on chan.
+So all waiting threads will wake up, but only the first will
+see data; the others will malfunction.
+So we have to go back to looping:
+
+<pre>
+struct pcq {
+    void *ptr;
+    struct spinlock lock;
+};
+
+void*
+pcqread(struct pcq *q)
+{
+    void *p;
+
+    acquire(&amp;q->lock);
+    while(q-&gt;ptr == 0)
+        sleep(q, &amp;q->lock);
+    p = q-&gt;ptr;
+    q-&gt;ptr = 0;
+    wakeup(q);  /* wake pcqwrite */
+    release(&amp;q->lock);
+    return p;
+}
+
+void
+pcqwrite(struct pcq *q, void *p)
+{
+    acquire(&amp;q->lock);
+    while(q-&gt;ptr != 0)
+        sleep(q, &amp;q->lock);
+    q-&gt;ptr = p;
+    wakeup(q);  /* wake pcqread */
+    release(&amp;q->lock);
+    return p;
+}
+</pre>
+
+<p>
+Is it important that the wakeup() is inside the locked region?
+
+<p>
+The difference between this and our original is that
+the body of the while loop is a much more efficient way to pause.
+
+<p>Now we've figured out how to use sleep()/wakeup(), but we
+still need to figure out how to implement them.
+
+<h3>Sleep and wakeup - implementation</h3>
+<p>
+Simple implementation:
+
+<pre>
+void
+sleep(void *chan, struct spinlock *lk)
+{
+    struct proc *p = curproc[cpu()];
+    
+    release(lk);
+    p-&gt;chan = chan;
+    p-&gt;state = SLEEPING;
+    sched();
+    acquire(lk);
+}
+
+void
+wakeup(void *chan)
+{
+    for(each proc p) {
+        if(p-&gt;state == SLEEPING &amp;&amp; p-&gt;chan == chan)
+            p-&gt;state = RUNNABLE;
+    }	
+}
+</pre>
+
+<p>What's wrong?  What if the wakeup runs right after
+the release(lk) in sleep?
+It still misses the sleep.
+
+<p>Move the lock down:
+<pre>
+void
+sleep(void *chan, struct spinlock *lk)
+{
+    struct proc *p = curproc[cpu()];
+    
+    p-&gt;chan = chan;
+    p-&gt;state = SLEEPING;
+    release(lk);
+    sched();
+    acquire(lk);
+}
+
+void
+wakeup(void *chan)
+{
+    for(each proc p) {
+        if(p-&gt;state == SLEEPING &amp;&amp; p-&gt;chan == chan)
+            p-&gt;state = RUNNABLE;
+    }	
+}
+</pre>
+
+<p>Why wouldn't this work (as a part of xv6)?
+
+<p>But it almost works.  Recall from last lecture that one must acquire
+the proc_table_lock before setting p-&gt;state and calling sched().
+
+<p>
+Let's look at the real xv6 implementation on sheet 19:
+
+<ul>
+
+<li>Why does sleep() compare lk against proc_table_lock?
+
+<li>release(lk) will cause other thread to get lock and call
+wakeup(): why is it OK if wakeup is called now, before we
+have set the chan and state?
+
+<li>Why does wakeup() need to acquire proc_table_lock?
+
+</ul>
+
+<h3>Use example: exit and wait</h3>
+
+<p>API: Suppose process P1 has forked child process P2. If P1 calls
+wait(), it should return after P2 calls exit().
+
+<p>wait() in proc.c looks for any of its children that have already
+exited; if any exist, clean them up and return. If none, it
+calls sleep().
+
+<p>exit() calls wakeup(), marks itself as dead (ZOMBIE), and
+calls sched().
+
+<p>What lock protects wait() and exit() from missing each other?
+
+<p>What if exit is called before wait?
+
+<p>What if wait is called just after exit calls wakeup?
+
+<p>What is the channel convention?
+
+<p>What if some unrelated part of the kernel decides to sleep and
+wakeup on the same channel(s)?
+
+<p>Why does wait() free the child's memory, and not exit()?
+
+<h3>New feature: kill</h3>
+
+<p>What does setting p-&gt;killed do?
+
+<p>Where is killed checked?
+
+<p>Why not destroy the process right away?
+
+<p>Why is it safe to mark the process RUNNABLE if it was SLEEPING?
+
+<h3>ide again</h3>
+
+Let's look at how the IDE driver uses sleep and wakeup.  ide_rw()
+starts a disk operation and calls sleep().  ide_intr() calls wakeup()
+when disk interrupts to say that it's done.
+
+<p>Why does it work? What if the disk finishes and interrupts
+just before ide_rw() calls sleep()?
+
+<p>
+Why not check p-&gt;killed in the ide_rw() loop?
+
+<p>
+What's the sleep channel convention? Why does it make sense?

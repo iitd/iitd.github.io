@@ -1,0 +1,222 @@
+<html>
+    <head>
+	<title>Project 0</title>
+        <link rel="stylesheet" type="text/css" href="/~cs3204/spring2007/gback/css/vtdoopal.css" />
+    </head>
+<body>
+
+<h2>Project 0 - Version Spring 2009</h2>
+
+<b>Due date: Feb 1, 2009, 11:59pm</b>
+<p>
+<b>Introduction.</b>
+Pintos, despite being a state-of-the-art OS in most respects,
+currently lacks a user-level memory allocator.
+Programs running on Pintos cannot make use
+of <tt>malloc()</tt> and <tt>free()</tt> (the C equivalents of 
+C++'s <tt>new</tt> and <tt>delete</tt>), which obviously
+is a sad state of affairs.
+<p>
+In this project, you will implement a user-level memory allocator
+for Pintos.  Along the way, you will learn about user-level
+memory allocation strategies, you'll learn how to use some of
+Pintos's code, and you'll gain your first bit of exposure to 
+concurrent programming practices.
+<p>
+A memory allocator divvys up a large, continuous piece of memory 
+into smaller pieces, called blocks.  Blocks can be of different sizes.
+To allocate memory, an allocator needs to find a free block of sufficient
+size.  If memory is deallocated (freed), the block in which the
+memory was contained is returned to the pool of free memory.
+<p>
+<b>Using Lists.</b>
+You should use a linked list to keep track of free blocks.
+The free list should be sorted by address.
+Initially, all available memory is kept in a single, large block
+that is added to the free list.
+<p>
+You should use Pintos's list implementation in <tt>lib/kernel/list.c|h</tt>
+for this project.  You should read these two files to familiarize yourself
+with the API.  In particular, pay attention to the functions it 
+provides to maintain sorted lists.  You will use these lists in all
+future Pintos projects.
+<p>
+<img src="Project0Pic.png" />
+<br />
+<b>Figure 1: Free list for first-fit address-ordered allocator</b>
+<p>
+<b>Allocation and First-Fit.</b>
+Your allocator should use a "first-fit" strategy.  
+If a request is made to allocate a certain number of bytes, your allocator
+should look for the first available block that has a size large enough
+to accommodate the request.  If the block is larger than the memory
+that is requested, it must be split.  
+To split a block, you should shorten the block's length by the amount
+you'll need for the to-be-allocated memory.  The to-be-allocated memory
+comes from the end of the free block.
+In this way, you do not need to manipulate the free list when splitting -
+the block to-be-split stays in the free list.  
+
+To remember the length of the block you allocated, you should prepend
+a "used block" header to the block you are allocating.  This header contains
+the length of the block you are allocating.  Make sure you
+account for its size when computing how many bytes to cut out of a given
+block.
+
+A block is not split
+if the portion that would remain is too small to be kept on the free list.
+
+Allocated blocks must be at least as large as a free block header -
+otherwise, if a block is freed, it would be impossible to reinsert that
+block into the free list.  If an allocation request is small, you will
+have to round it up accordingly.
+
+<p>
+Be sure to keep the free list sorted in order of increasing addresses.
+Your allocator should return a pointer to the beginning of the usable
+memory inside the allocated block.
+Your allocator should return NULL if it cannot satisfy an allocation request.
+<p>
+Even though first-fit may seem like a strategy too simple to be useful, 
+it is actually a pretty good one.  
+Other strategies include "best-fit" and "next-fit".
+A next-fit allocator picks the next available block like first-fit, 
+but doesn't start over when a new request arrives.  Next-fit generally
+does worse than first-fit.  A "best-fit" strategy looks
+for the block that fits best, leaving the smallest remainder or none.  
+This can have the unfortunate consequence that a lot of small memory blocks 
+are returned to the free list.  Eventually, there are many small blocks on
+the free list, which creates fragmentation.  Fragmentation makes it
+impossible to satisfy a request for memory, even though the total amount
+of free memory is still larger than the requested amount.
+Different allocation strategies cause different amounts of fragmentation.
+Unfortunately, there is no universal best solution - for any strategy,
+you can construct a sequence of allocations and deallocations that
+creates fragmentation.
+In practice, for many types of workloads, best-fit and first-fit 
+perform roughly the same, so the added overhead of best-fit does not
+always pay off.
+<p>
+<b>Deallocation and Coalescing.</b>
+If memory is freed, you must find the beginning of the block of memory 
+that contains the address of the pointer passed to the free routine.  
+That block of memory must be added to the free list.
+In addition, you'll have to coalesce the free list: if the blocks to the
+left and/or right of the block being freed are also free, 
+they must be merged into a single block.
+<p>
+You should implement a function that reports the length of the free
+list.  
+<p>
+<b>Assumptions.</b>
+You may assume that the allocation function is called with a size that is a
+multiple of 4.
+<p>
+You may assume that <tt>mem_init()</tt> is called with a size that is a
+multiple of 4 and that is greater or equal to 16.
+<p>
+Our test harness will invoke your memory allocator and execute a series
+of allocation and deallocation requests.  Finally, it will deallocate
+all allocated memory and check that you properly coalesced the free memory
+into a single, large block.
+<p>
+<b>Thread Safety.</b>
+Your memory allocator should be thread-safe.  That is, it should be able
+to handle being invoked by multiple threads concurrently.  To accomplish
+this, you must protect its data structures so that only one thread can access them
+at any given point in time.  In the Pintos kernel, you would use
+<tt>lock_acquire()/lock_release()</tt> for this purpose.  For now, we will use
+the POSIX thread API which is provided by Linux.  You need to use
+the functions <tt>pthread_mutex_lock()</tt> and <tt>pthread_mutex_unlock()</tt>.
+You will also need to initialize the mutex or mutexes you will be using.  
+To see how to do that, read 
+the man pages for <tt>pthread_mutex_lock(P)</tt> and <tt>pthread_mutex_init(P)</tt>.
+These are the only pthread functions you will need to use.
+We recommend that you first develop and test your allocator with one thread,
+and then add the necessary protection to pass the multi-threaded part of
+the test harness.  (Tests 1, 2, and 4 are run by a single thread, only Test 3
+exercises the allocator concurrently by multiple threads.)
+<p>
+<b>Instructions.</b>
+You will work in the <tt>pintos/src/prep</tt> directory for this assignment.
+Copy the pintos source tree into a directory of your choice; read-protect
+the directory:
+<pre>
+cp -R ~cs3204/pintos/pintos pintos-project0
+chmod go-rwx pintos-project0
+cd pintos-project0/src/prep
+</pre>
+You must add a file called <tt>memalloc.c</tt> to that directory that 
+implements the memory allocator's interface, described in <tt>memalloc.h</tt>.
+Please read this file for specifics.  
+<tt>memalloc.h</tt> also contains <tt>struct free_block</tt> and
+<tt>struct used_block</tt> definitions you may use to represent 
+free and used blocks of memory, respectively.
+<p>
+You build the test harness using "make".  This will build the <tt>test_mem</tt>
+executable.  <tt>./test_mem</tt> will run it.
+<p>
+<b>Grading.</b>
+This assignment will count for 40 points.
+Unlike for future projects, you are not required to submit a 
+design document with this project.
+The points break down as follows:
+<pre>
+10 points: passing Test 1.
+ 5 points: passing Test 1 and 2.
+ 5 points: passing Test 1, 2, and 3 - (includes proper use of locks for thread safety)
+ 5 points: passing Test 1, 2, 3, and 4.
+ 5 points: proper use of Pintos's list implementation. 
+ 5 points: adherence to coding standards outlined in Pintos project documentation.
+ 5 points: code complexity
+</pre>
+<p>
+<b>Submission.</b>
+Submission instructions will be posted on the main project website.
+<p>
+<b>FAQ.</b>
+<p>
+<i>Q.:</i> A production version of first-fit wouldn't use a simple 
+	doubly-linked list, would it?
+<p>
+<i>A.:</i> No, it would probably use a more scalable data structure.  
+	But a linear list is acceptable for this project.
+<p>
+<i>Q.:</i> What extra credit is there?
+<p>
+<i>A.:</i> For extra credit, implement best fit and compare the fragmentation 
+	produced by first-fit to the fragmentation produced by best-fit for 
+	the test harness's workload.   Develop a reasonable measure
+	by which to capture fragmentation quantitatively.
+	Produce a report that outlines your results in a concise manner.
+<p>
+<i>Q.:</i> Can we make changes to <tt>test_mem.c</tt>?
+<p>
+<i>A.:</i> No.  We will use the <tt>test_mem.c</tt> that we provided.
+	Your implementation should be in <tt>memalloc.c</tt> which you'll write.
+	You may make changes to <tt>memalloc.h</tt> if you deem them necessary.
+<p>
+<i>Q.:</i> Given the void* pointer passed to <tt>mem_free</tt>, how do I get a 
+	pointer to the surrounding memory block?
+<p>
+<i>A.:</i> Consider using the <tt>offsetof</tt> macro, which is 
+	<a target="_top" href="http://www.acm.uiuc.edu/webmonkeys/book/c_guide/2.11.html">explained here.</a>
+	Other options exist as well, but make sure your code compiles 
+	without warnings.
+<p>
+<i>Q.:</i> I don't understand how comparators work in C, specifically the
+	list_less_func argument to some list* functions.
+	Where can I find an example?
+	Also, what does the auxiliary argument do?
+<p>
+<i>A.:</i> See the function <tt>value_less</tt> in 
+	<a target="_top"
+	href="../../../pintos/src/tests/internal/list.c">src/tests/internal/list.c.</a>
+	The auxiliary argument is simply passed back to the comparator
+	function. You'll likely pass NULL here since you do not need it,
+	and you'll annotate it with UNUSED in the actual comparator function.
+<p>
+
+<i>Version $Id: project0.html,v 1.3 2009/01/15 16:04:34 cs3204 Exp $.</i>
+</body>
+</html>

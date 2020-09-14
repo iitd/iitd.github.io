@@ -1,0 +1,328 @@
+<title>L25</title>
+<html>
+<body>
+<h3>Multiple producers and consumers</h3>
+<p>Interestingly, the producer-consumer code presented previously
+works if there is
+only one producer and
+one consumer thread. However, if there are multiple producers or multiple
+consumers, this code fails. For example, if two producers try to produce
+to a full queue, both of them may start waiting on <code>not_full</code>.
+If a consumer consumes one element, and calls <code>notify</code>, both
+producers will wakeup. Each of them will, in turn, try to acquire
+<code>qlock</code> and produce an element. However, the consumer only
+consumed one element, and the two producers will produce two elements,
+causing a queue overflow!
+
+<p>The problem is that the producer threads, do not check the condition
+after waking up from a <code>wait()</code>, and simply assume that the
+condition is true. This problem can be fixed by requiring the threads
+to check the condition again after returning from <code>wait</code>. This
+can be done by replacing the <code>if</code> condition with a <code>while</code>
+condition, as follows:
+<pre>
+char queue[MAX];  //global
+int head = 0, tail = 0; //global
+struct cv not_full, not_empty;
+struct lock qlock;
+
+void produce(char data) {
+  acquire(&amp;qlock);
+  while ((head + 1) % MAX  ==  tail) {
+    wait(&amp;not_full, &amp;qlock);
+  }
+  queue[head] = data;
+  head = (head + 1) % MAX;
+  notify(&amp;not_full);
+  release(&amp;qlock);
+}
+
+char consume(void) {
+  acquire(&amp;qlock);
+  while (tail == head) {
+    wait(&amp;not_empty, &amp;qlock);
+  }
+  e = queue[tail];
+  tail = (tail + 1) % MAX;
+  notify(&amp;not_empty);
+  release(&amp;qlock);
+  return e;
+}
+</pre>
+A thread that has just woken up from <code>wait()</code> will again
+check the condition (because of the <code>while</code> construct). If
+the condition is true, it will go back to sleep (by another call
+to <code>wait()</code>). If the condition is false, it will fall through
+and perform its operation. This code is correct, even for multiple
+producers and multiple consumers.
+
+<p>In general, usage of condition variables has the following pattern:
+<pre>
+struct lock mutex;
+struct cv condition_variable;
+
+acquire(&amp;mutex);
+while (!condition) {
+  wait(&amp;condition_variable, &amp;mutex);
+}
+...
+release(&amp;mutex);
+</pre>
+Here, the <code>condition_variable</code> is associated with the
+<code>condition</code> becoming true. The mutex variable is a lock used
+for mutual exclusion.
+<h2>Semaphores</h2>
+A common pattern in programming, as also seen in the producer-consumer
+example, is counting of resources. To simplify such patterns,
+Dijkstra proposed an abstraction called semaphores in 1965.
+
+<p>So far, we have studied locks, which are used for mutual
+exclusion, and condition variables, that are associated with conditions.
+Semaphores are usually used for "counting". Here are the semantics of
+a semaphore.
+<h3>Semantics</h3>
+A semaphore is defined by a stateful type (<code>struct sema;</code>) and
+three functions:
+<pre>
+void sema_init(struct sema *, int val);
+void P(struct sema *);   // also called wait()
+void V(struct sema *);   // also called signal()
+</pre>
+The names 'P' and 'V' stand for the dutch names of these operations. The
+semaphore type maintains an integer state, called <code>count</code>, which
+is a non-negative counter.
+
+<p>The <code>sema_init</code> function initializes the counter to <code>val</code>,
+which must be a non-negative integer.
+
+<p>The <code>P</code> function
+decrements the counter by one, if it is strictly positive. If the counter
+is 0 (before the decrement operation), then the <code>P</code> function
+waits for the counter to become
+positive (greater than zero), before decrementing it.
+
+<p>The <code>V</code> function increments the counter by one. Also, it
+wakes up one process that is waiting on the semaphore to become positive.
+
+<p>Most importantly, all these operations, <code>sema_init</code>,
+<code>P</code>, and <code>V</code> are atomic with respect to each other.
+
+<p>Here is a sample implementation of a semaphore using locks and condition
+variables:
+<pre>
+struct sema {
+  int count;
+  struct lock lock;
+  struct cv cv;
+};
+
+void sema_init(struct sema *sema, int val) {
+  sema->count = val;
+  lock_init(&amp;sema->lock);
+  cv_init(&amp;sema->cv);
+}
+
+void P(struct sema *sema) {
+  acquire(&amp;sema->lock);
+  while (sema->count == 0) {
+    wait(&amp;sema->cv, &amp;sema->lock);
+  }
+  sema->count--;
+  release(&amp;sema->lock);
+}
+
+void V(struct sema *sema) {
+  acquire(&amp;sema->lock);
+  sema->count++;
+  if (sema->count == 1) {
+    notify(&amp;sema->cv);
+  }
+  release(&amp;sema->lock);
+}
+</pre>
+
+<p>Notice that a semaphore maintains state. This is unlike a condition
+variable which maintains no state. For condition
+variables, the effect of a <code>notify()</code>
+operation is to wakeup any currently waiting threads. If a thread has
+not yet gone to sleep, <code>notify()</code> will have no effect. On
+the other hand, the <code>V()</code> operation (that is somewhat analogous
+to <code>notify()</code>) will increment the counter, even if no thread
+is currently waiting inside the <code>P()</code> operation (which is
+somewhat analogous to <code>wait()</code>). Let's see the implications
+of this using concrete examples.
+
+<h3>Producer-consumer example with semaphores</h3>
+The producer consumer problem involves ensuring that a producer does
+not produce to a full queue, and a consumer does not consume from an
+empty queue. This can be done by using two counters, one for the number
+of filled slots in the queue (<code>nchars</code>), and another for the
+number of empty slots in the queue (<code>nholes</code>). We use
+one semaphore for each counter, as follows.
+<pre>
+char q[MAX];
+int head = 0, tail = 0;
+struct sema nchars, nholes;
+struct lock mutex;
+
+sema_init(&amp;nchars, 0);
+sema_init(&amp;nholes, MAX);
+
+void produce(char c) {
+  P(&amp;nholes);
+  acquire(&amp;mutex);
+
+  //produce an element.
+
+  release(&amp;mutex);
+  V(&amp;nchars); 
+}
+
+char consume(void) {
+  P(&amp;nchars);
+  acquire(&amp;mutex);
+
+  //consume an element.
+
+  release(&amp;mutex);
+  V(&amp;nholes);
+}
+</pre>
+Notice that this code is much simpler, as it subsumes much of the counting
+and waiting logic within <code>P()</code> and <code>V()</code> functions.
+Because this pattern is common, semaphores are a convenient abstraction.
+<h3>Resource allocation with semaphores</h3>
+Semaphores are also a convenient abstraction for performing resource
+allocation. For example, if you have multiple threads that want to access
+a resource, and you only have N copies of that resource (e.g., N printers),
+then you could use a semaphore to restrict the number of concurrent accesses
+to N.
+
+<p>Here is an example where multiple threads may call the <code>print()</code>
+function, but you want to restrict the maximum number of concurrent
+prints to N.
+
+<pre>
+sema_init(&amp;nprinters, N);
+
+void print(void) {
+  P(&amp;nprinters);
+  //print command
+  V(&amp;nprinters);
+}
+</pre>
+This will ensure that the system has at most N simultaneous print requests.
+Also, as print requests get completed, they allow other print requests to
+be admitted.
+<h3>Locks as semaphores</h3>
+Locks can be trivially implemented as semaphores by initializing it to 1.
+<pre>
+struct lock {
+  struct sema sema;
+};
+
+void lock_init(struct lock *l) {
+  sema_init(&amp;l->mutex, 1);
+}
+
+void acquire(struct lock *l) {
+  P(&amp;l->sema);
+}
+
+void release(struct lock *l) {
+  V(&amp;l->sema);
+}
+</pre>
+<h3>Scheduling with semaphores</h3>
+Semaphores are also used for enforcing thread schedules. Consider
+the following example, where one thread computes <code>x</code>, a second
+thread computes <code>y</code>, a third thread computes
+<code>z = f(x, y)</code>,
+and finally a fourth thread prints <code>z</code>. You may want to enforce
+an execution order (schedule) such that the computation of <code>z</code>
+happens only after the computation of <code>x</code> and <code>y</code>.
+Similarly, the print statement should execute only after the computation
+of <code>z</code>. This can be achieved by using semaphores <code>sx</code>,
+<code>sy</code>, and <code>sz</code>, initialized to zero. A one value in
+these semaphore counters will be used to indicate that the corresponding
+value has been computed.
+
+<pre>
+thread1() {
+  ....
+  x = ...;
+  V(sx);
+}
+
+thread2() {
+  ....
+  y = ...;
+  V(sy);
+}
+
+thread3() {
+  ....
+  P(sx);
+  P(sy);
+  z = f(x, y);
+  V(sz);
+}
+
+thread4() {
+  P(sz);
+  print z;
+}
+</pre>
+
+<h2>Monitors</h2>
+All our abstractions for synchronization so far (locks, condition variables,
+semaphores) are implemented as types and functions on them. It is the
+responsibility of the programmer to ensure that the type objects are
+correctly used --- for example, a programmer must ensure that a lock
+is properly initialized before it is used; she should also ensure that
+a lock acquisition is always appropriately bracketed with a lock release.
+Notice that this is completely independent of the language in which the
+program is written.
+
+<p>Because concurrent programs are quite common, some languages provide
+intrinsic support for handling concurrency. One example of such support
+is a <em>monitor</em>. A monitor is defined as a type construct (e.g.,
+class), which may declare private shared-memory objects and routines
+that access those objects. The monitor enforces mutual exclusion between
+the monitor routines, by using an "implicit lock". Here is an example
+of the producer-consumer queue implemented as a monitor:
+<pre>
+monitor Q {
+	char buf[MAX];
+  int head = 0, tail = 0;
+
+  void produce(char c) {
+		while ((head + 1) % MAX == 0) {
+      wait(&amp;not_full);
+    }
+		q[head] = c;
+    head = (head + 1) % MAX;
+    notify(&amp;not_empty);
+  }
+
+	char consume(void) {
+    ...
+  }
+}
+</pre>
+Notice that because the monitor guarantees mutual exclusion between
+its routines (only one thread can be inside a monitor routine at any time),
+we did not have to use a mutex ourselves. Instead, the compiler will
+implicitly generate a mutex for us. One way to implement monitors, is for
+the compiler to instrument each function with <code>acquire()</code>
+and <code>release()</code> calls on the implicit lock, before and after
+the routine respectively. Also, notice that the <code>wait()</code>
+function does not need the second argument; instead the second argument
+is automatically understood to be the monitor's implicit lock, i.e., a thread
+calling wait() will internally release the monitor's implicit lock
+before going to sleep.
+
+<p>Monitors make it simpler to write concurrent programs, and avoid
+common bugs like unbracketed acquires or releases. In Java, the
+"synchronized" keyword can be used to specify a monitor.
+</body>

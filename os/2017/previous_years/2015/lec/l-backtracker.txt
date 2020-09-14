@@ -1,0 +1,173 @@
+Backtracking intrusions 
+Notes by Nickolai Zeldovich for 6.983
+=======================
+
+what's the problem this paper is trying to address?
+    machine compromises unavoidable
+    admins want to figure out what went wrong and recover
+
+how does backtracker help?
+    help admin look at dependencies between processes, files on their machine
+    prototypical workflow:
+	admin finds something isn't right (corrupted file, unexpected process)
+	    "detection point"
+	uses tool to figure out where that file/process came from
+	    must pick some time window, based on guess + available logs
+	looks at the information to guess how the attacker got in
+	    "entry point"
+	admin figures out what service was vulnerable?
+	    might need a replay facility to determine something more specific
+	    e.g. look at network packet logs to find initial attack packets?
+
+how would the admin detect that something isn't right?
+    tripwire points to a modified file (e.g. athena dialups do this)
+    network analysis tools point to a process sending unexpected traffic
+    false positives a big problem
+
+is this useful?
+    what would you do once you've found the entry point?
+	maybe prevent other similar compromises or audit other machines
+	assess the potential damage the attacker could have done?
+    does not directly help with recovery
+	although perhaps can track forward, tell what files were affected?
+
+do we need this tool?  what would you do without it?
+    look at disk state, system logs, network traffic logs
+    disk state might not have enough history to figure out what happened
+    system logs might only include initial network requests
+    system logs might also be deleted or falsified
+    network traffic logs might be encrypted (SSL, SSH)
+
+what does backtracker log?
+    objects: processes, files, file names
+	why track files and file names separately?
+    events: file read/write, rename/create/unlink, process fork/exec/kill/debug
+    how does it identify the objects?
+	pid + version#
+	device + inode + version#
+	pathname
+	[why version#?]
+
+what counts as a dependency?
+    process->process: fork, exec, signals, debug, ..
+    process->file: write, utime
+    process->filename: create, unlink, rename, ..
+    file->process: read, stat
+    filename->process: open, readdir, ..
+
+    affecting vs controlling
+    "high-control" vs "low-control" events
+
+    what about missing files?
+	attacker might remove some config files that enable protection measures
+
+    is it enough to track file names?
+	can rename/link/... files in a temporary directory
+	then somehow trick another process into renaming that dir
+	files in new dir don't seem to have come from the attacker
+	maybe a more accurate model: file names in each dir, named by inode
+
+    actually implemented: processes and files
+	process fork/exec, file read/write/mmap, network recv
+
+how does the VM-based backtracker avoid any guest OS changes?
+    things the eventlogger needs to know:
+	notification of events [intercept system calls]
+	what object is being accessed [track of version#s, peek inside fd/inode]
+	what process is running [look at the kernel memory to find current PID]
+
+why the limitations with memory-mapped files?
+    expensive to intercept every memory access
+    hard to figure out when a memory-mapped file has been unmapped entirely
+    so assume that a process will keep accessing memory-mapped files until exit
+
+why a VM
+    convenience: few guest changes
+    isolation: compromises contained hopefully within VM
+      handy for honeypot setup
+    security: logging in host
+    compatible with ReVirt
+
+what is ReVirt?
+    allows to go back in time and then replay
+    logging mode:
+      make checkpoint
+      log all inputs to virtual machine (interrupts, packets, keyboard, etc.)
+    recovery mode:
+      go to last checkpoint
+      deliver all inputs at the same instruction again
+    challenge: determinism
+      time
+      rdtsc()
+      etc.
+    handy for BackTracker because one can refine what OS events to log
+      for backtracking
+
+how does all this information help the admin track back the intrusion?
+    backtracker presents a dependency graph
+
+how to make the dependency graph manageable?
+    only include objects, events related to the detection point
+    use time to avoid dependencies on events that happened later
+    ignore well-known objects that many procs read/write (utmp, mtab, .history)
+    filter out low-control events
+    hide read-only files
+	seems like a special-case of a more general principle?
+	assumption is that attacker came from the network (socket)
+	ignore any graph branches that had no socket deps within time window
+    collapse multiple nodes into one
+	look for clusters of nodes that only interact with each other
+	common case: shell executes commands that don't read/write anything
+    several detection points
+	not evaluated at all?  sounds potentially promising..
+
+how could an attacker elude backtracker?
+    use "low-control" events
+    use events that backtracker does not monitor
+    indirect via the network (e.g. after stealing some passwords)
+	admin can track back to second login via network
+	can admin find the point where the password was stolen?
+	backtracker mostly focused on corrupted files, not leaked files
+    compromise the OS kernel
+	can be hard to prevent once attacker gets root
+    compromise the event logger
+	could be relatively hard to do with a VM-based design
+    intertwine attack actions with other normal events
+	write attack code to /var/log/utmp, then execute it?
+	read lots of files modified by others before doing the attack
+	hides true cause among irrelevant/benign dependencies
+    prolong intrusion, since it's hard to track back over long time periods
+	wait for a system update that replaces various system binaries?
+	wait for /etc/passwd to be legitimately changed?
+
+does backtracker live up to its goals?
+    easy to use?
+	can't really tell: need to stare at graph, change filters, make guesses
+	some evaluation: table 1
+	    why does dependency graph have many fewer objects/events than log?
+	    can you tell what the attack was from figures 6, 7, 8?
+	they were able to track back real intrusions on their honeypot
+    reliable/secure?
+	might be OK for simple compromises
+	determined attacker can likely bypass backtracker
+    practical?
+	lots of things already run in VM
+	could imagine amazon's EC2 or other VM-hosting services providing this
+	specific to a particular OS version
+	    would need to have monitoring hooks for every OS kernel version
+	    or modify kernel to export the right data (like paravirtualization)
+	not clear if kernel compromises are really that hard
+	9% CPU overhead, 1.2GB/day storage
+
+other interesting things you could do in a VM?
+    auditing kernel data structure integrity
+    replay for intrusion analysis
+    overshadow
+
+do you really need a VM?
+    probably enough to have some form of append-only log
+    once kernel is compromised, will not get reliable events
+    perhaps send events over network to a logging server
+    could use TPM with late-launch to sign events, but attacker could remove log
+	(but at least the log, if not removed, can be authenticated)
+

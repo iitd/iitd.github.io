@@ -1,0 +1,38 @@
+
+<html>
+<head>
+  <title>COL718 Lab 0 : Measuring Instruction latency & Throughput</title>
+</head>
+
+ 
+<body>
+  <h1><font color="blue">COL718 Lab 0 : Measuring Instruction Latency and Throughput</font></h1>
+
+  <h2>Due date - 23:55, 15 August 2019</h2>
+
+  <p>Latency and throughput are typically used as the basis for instruction performance on a microprocessor. 
+  In this assignment, we will measure the latency and throughput of different x86 instructions. This assignment would also give a gentle overview of x86 ISA.</p>
+
+ 
+  <h3>Instructions</h3>
+ 
+  <ul>
+    
+    <li>Go to this page for a general overview of what exactly Latency and Throughput of an instruction mean: <a href=
+    "https://software.intel.com/en-us/articles/measuring-instruction-latency-and-throughput">https://software.intel.com/en-us/articles/measuring-instruction-latency-and-throughput</a>.</li>
+    
+    <li>Download the latThpt.zip file from the References section of the course webpage.</a></li>
+    <li>First, try to compile the test program and see the latency and throughput of the instructions which are specified in that program.</a></li>
+    <li>The macros for the instructions are defined in 'macro_asm.h' and 'lathpt_gnu.h' file. See those to know
+        for which all operand types/addressing fomats macros are defined. Use new instructions(which are not there in the 
+        test program) to measure the latency and/or throughput of each of them. You could use some instructions which were
+        discussed in the class.</a></li>
+    <li>New instructions might, or might not have suitable macros defined for them. Try to use such instruction(s) for which
+        the macros are defined but not used. If possible, try to use some instruction(s) for which the macros are not defined.</a></li>
+    <li>Measure the load and store latencies for the general-purpose registers, floating-point registers, mmx, xmm and ymm
+        registers.</a></li>
+    <li>Express all your findings in a report. Why do you think two different metrics(latency & throughput) are required to
+        measure the performance? <font color="green">Also compare your measured latencies and throughputs against the Agner Fog's Manual which is provided in the reference section.</a></li>    
+  </ul>
+  </body>
+</html>

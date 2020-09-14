@@ -1,0 +1,265 @@
+
+<html>
+<head>
+<title>Homework: Processes, Interrupts, Exceptions, Context Switch</title>
+<link rel="stylesheet" href="../labs.css" type="text/css" />
+</head>
+<body>
+
+<h2><a href="..">Operating Systems</a></h2>
+<hr>
+
+<h1>Homework: Processes, Interrupts, Exceptions, Context Switch</h1>
+
+<p>
+<b>Hand-In Procedure</b>
+<p>
+You are to turn in this homework at the beginning of lecture.
+Please write up your answers to the exercises below and hand them in to a
+staff member at the beginning of the lecture. <b>Write your CSE login ID at
+	the top of your submission</b>
+<p>
+
+<h3>Assignment Part 1 (Zombies)</h3>
+In UNIX, a child process may terminate before a parent calls
+<code>wait()</code>. When the parent calls <code>wait()</code> eventually,
+it still expects to read the correct exitcode that the child returned.
+To support this functionality, UNIX does not completely remove the process
+till it's parent has called <code>wait()</code> on it.
+
+<p>
+Such processes that have completed execution but still have an entry
+in the process table are called <em>zombie processes</em>. Usually,
+the presence of zombie processes in the system for a long time indicates
+a bug in the program (it is a common error).
+
+<p>
+Read about Zombie process at this <a href=http://en.wikipedia.org/wiki/Zombie_process>wikipedia article</a>. Also read about the <a href=http://en.wikipedia.org/wiki/SIGCHLD>SIGCHLD</a> signal.
+
+<p>
+<b>Turn in:</b><br>
+In class we discussed that the shell implements "<code>&</code>" functionality
+by not calling <code>wait()</code> immediately. Should the shell
+never call <code>wait()</code>? When should it call
+<code>wait()</code>? Answer by providing short pseudo-code.
+
+<h3>Assignment Part 2 (memory and processes in xv6)</h3>
+
+<p>
+Be sure you have read <a href="../xv6-book/mem.pdf">xv6 chapter 2</a>
+and familiarized yourself with the xv6 code it refers to before lecture.
+
+<p>
+Use QEMU with GDB to trace through the free list creation
+and memory allocation process described in the first part of the chapter.
+Make sure you understand how the C pointer arithmetic
+in <code>kfree</code>'s <code>for</code> loop works:
+especially the relationship between the
+<samp>rp</samp>, <samp>r</samp>, and <samp>p</samp> variables.
+
+<p>
+Also step through
+the creation of the first process by <code>allocproc()</code>,
+and then step through the first context switch <i>into</i> that process
+via the assembly language <code>swtch()</code> code.
+
+<p>
+<b>Nothing to turn in for this part.</b>
+
+<h3>Assignment Part 3 (traps)</h3>
+
+<p>
+<b>Read</b>: xv6
+<code>trapasm.S</code>,
+<code>trap.c</code>,
+<code>syscall.c</code>,
+<code>initcode.S</code>,
+<code>usys.S</code>.
+Skim
+<code>vectors.pl</code>,
+<code>vectors.S</code>,
+<code>lapic.c</code>,
+<code>ioapic.c</code>,
+<code>picirq.c</code>.
+
+<p>
+<b>Introduction</b>
+
+<p>Try to understand xv6's
+<code>trapasm.S</code>,
+<code>trap.c</code>,
+<code>syscall.c</code>,
+<code>initcode.S</code>,
+<code>usys.S</code>.
+Skim
+<code>vectors.S</code>,
+<code>lapic.c</code>,
+<code>ioapic.c</code>,
+<code>picirq.c</code>.
+<p>
+The assigned chapter (chapter 3 of xv6 book) provides a commentary for
+these files, but you
+may find it useful to also consult:
+Chapter 5 of <a href="../ref/ia32-3.pdf">Intel's system programming
+guide</a>.
+Be aware
+that terms such as exceptions, traps, interrupts, faults and aborts
+have no standard meaning.
+
+<div class="required">
+<p><span class="header">Turn in:</span>
+In xv6, set a breakpoint at the beginning of <code>syscall()</code> to
+catch the very first system call.  What values are on the stack at
+this point?  Turn in the output of <code>x/37x $esp</code> at that
+breakpoint with each value labeled as to what it is (e.g.,
+saved <code>%ebp</code> for <code>trap</code>,
+<code>trapframe.eip</code>, scratch space, etc.).
+</div>
+
+<!--
+<p>
+As in Homework 3, you may find it easier to examine the appropriate
+stack when QEMU is simulating only one CPU instead of two.  To d
+this, make a copy of Makefile called Makefile.uni, find the line that
+starts with <tt>QEMUOPTS</tt>, and change <tt>-smp 2</tt> to <tt>-smp
+1</tt>, and write out the file. Then run
+<pre>
+make -f Makefile.uni qemu-gdb
+</pre>
+-->
+
+<h3>Assignment Part 4 (context switching)</h3>
+<p>
+<b>Read</b>: swtch.S and proc.c (focus on the code that switches
+between processes, specifically <code>scheduler</code> and <code>sched</code>).
+Also process creation: sys_fork() and copyproc().
+
+<p>
+In this part of the homework you will investigate how the
+kernel switches between
+two processes. 
+
+<p>
+<b>Assignment</b>:
+<p>
+
+Suppose a process that is running in the kernel
+calls <code>sched()</code>, which ends up jumping
+into <code>scheduler()</code>.
+
+<p>
+<b>Turn in</b>: 
+Where is the stack that <code>sched()</code> executes on?
+
+<p>
+<b>Turn in</b>: 
+Where is the stack that <code>scheduler()</code> executes on?
+
+<p>
+<b>Turn in:</b>
+When <code>sched()</code> calls <code>swtch()</code>,
+does that call to <code>swtch()</code> ever return? If so, when?
+
+<p>
+Now think back to <a href="../lec/l2.html">lecture 2</a> and the invariants
+that gcc expects any function, including <code>swtch</code>, to
+maintain.  Compare these invariants with what <code>swtch</code>
+actually implements, and the state that our kernel maintains in
+a <code>struct context</code>.
+
+<p>
+<b>Turn in</b>: Could <code>swtch</code> do less work and still be
+correct?  Could we reduce the size of a <code>struct context</code>?
+Provide concrete examples if yes, or argue for why not.
+
+<p>
+Surround the call to <code>swtch()</code> in <code>scheduler()</code> with calls
+to <code>cprintf()</code> like this:
+<pre>
+  cprintf("a");
+  swtch(&cpu->scheduler, &proc->context);
+  cprintf("b");
+</pre>
+<p>
+Similarly,
+surround the call to <code>swtch()</code> in <code>sched()</code> with calls
+to <code>cprintf()</code> like this:
+
+<pre>
+  cprintf("c");
+  swtch(&proc->context, cpu->scheduler);
+  cprintf("d");
+</pre>
+<p>
+Rebuild your kernel and boot it on QEMU.
+With a few exceptions
+you should see a regular four-character pattern repeated over and over.
+
+<p>
+<b>Turn in</b>: What is the four-character pattern?
+
+<p>
+<b>Turn in</b>: The very first characters are <code>ac</code>. Why does
+this happen?
+
+
+<h3>Assignment Part 5 (bootsector) : OPTIONAL</h3>
+This part of the assignment is optional. i.e., this part of the assignment
+carries no marks. It is just here to give you more insight into the bootsector
+code. You may choose to skip this part.
+
+<p>A bootsector is only 512 bytes which is a very short space to be able to
+fit any useful code. So typically a bootsector loads another "program"
+from disk and jumps to it. For example, the bootsector might load
+the bootloader code (e.g., GRUB, LILO) and jump to it. The bootloader, in
+turn, loads the actual OS.
+
+<p>xv6 bootsector contains a very simple IDE disk device driver to read
+the sectors from disk. An IDE disk has a very simple interface and hence
+it is possible to fit a device driver inside the bootsector. But what if
+the boot device (containing the bootloader and the kernel) was a CDROM,
+SCSI disk, USB disk, etc. All these devices have much more complex
+interfaces and it will be hard (if not impossible) to fit their device
+drivers in a bootsector. So how does the OS boot from these devices?
+
+<p>The answer is that BIOS helps in the boot process. BIOS supports
+certain "BIOS functions" that the bootsector (or bootloader) can
+call. Some examples of the functionality supported by these
+functions are: get the physical memory size, read the <em>n</em>th sector
+of the boot device, etc. This functionality is exposed using the
+interrupt interface and the <b>int</b> instruction (similar to how
+system calls are handled on 32-bit linux).
+
+Pintos is an OS that is capable of booting through a USB device. You
+can try booting your personal computer using pintos by using the
+following command:
+<pre>
+pintos --hardware --</pre>
+This will create a disk image called <code>os.dsk</code>. You can
+write this disk image to your USB device using:
+<pre>
+dd if=os.dsk of=/dev/sdb</pre>
+assuming your USB disk is at <code>/dev/sdb</code>.
+
+<p>Skim through information on "BIOS Interrupt calls" on Wikipedia <a href=http://en.wikipedia.org/wiki/BIOS_interrupt_call>here</a>, <a href=http://en.wikipedia.org/wiki/INT_10H>here</a>
+and <a href=http://en.wikipedia.org/wiki/INT_13H>here</a>.
+
+<p><b>Turn in:</b><br>
+Look
+at Pintos bootsector code and list all the BIOS
+interrupt calls used by Pintos and their corresponding functionality.
+
+<p>
+<b>This completes the homework.</b>
+
+
+
+<p><hr><p>
+
+<i>Based on MIT 6.828 materials
+	by Frans Kaashoek and others; and Yale OS course materials by Bryan Ford.</i>
+
+
+</body>
+</html>
+

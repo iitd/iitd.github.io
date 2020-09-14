@@ -1,0 +1,105 @@
+<html>
+<head>
+  <title>COL729 Lab 0 : Benchmarking</title>
+</head>
+
+<body>
+  <h1><font color="blue">COL729 Lab 0 : Benchmarking</font></h1>
+
+  <h2>Due date - 23:55, 14 January 2019</h2>
+
+  <p>In this assignment, we will benchmark a few common C/C++ applications and examine
+  the effect of different compilers and different compiler optimization levels on program
+  performance.</p>
+
+  <h3>Instructions</h3>
+
+  <ul>
+    <li>Install an Ubuntu 18.04 system</li>
+
+    <li>Install GCC and Clang
+      <pre> sudo apt-get install gcc clang </pre>
+    </li>
+
+    <li>Install ICC by obtaining the academic license: <a href=
+    "https://software.intel.com/en-us/qualify-for-free-software/student">Follow these
+    instructions</a>.</li>
+
+    <li>Install SPEC CPU 2017 benchmark suite (please note that this is an IITD-internal
+    link only; this benchmark suite is proprietary so please do not share it outside IIT
+    Delhi)
+
+      <ul>
+        <li>Download <a href=
+        "http://poorvi.cse.iitd.ac.in/~sbansal/isos/cpu2017-1_0_5.iso">http://poorvi.cse.iitd.ac.in/~sbansal/isos/cpu2017-1_0_5.iso</a></li>
+
+        <li>Follow instructions at <a href=
+        "https://www.spec.org/cpu2017/Docs/install-guide-unix.html">https://www.spec.org/cpu2017/Docs/install-guide-unix.html</a>
+        to install and run the CPU 2017 benchmark suite</li>
+
+        <li>Optional: you can use the commands in this file to run any benchmark
+        individually: <a href="cpu2017_cmdlines.sh">cpu2017_cmdlines.sh</a>.</li>
+      </ul>
+    </li>
+
+    <li style="list-style: none"><br /></li>
+
+    <li><b>Learn about benchmarking</b>: look at the video on "Benchmarking C++ Code" by
+    Bryce Adelstein-Lelbach posted on the <a href="../../references.html">references</a>
+    page.</li>
+
+    <li>Go through the <a href="https://www.spec.org/cpu2017/Docs/overview.html">SPEC-CPU
+    overview</a></li>
+
+    <li>Build SPEC CPU 2017 <i>SPEC-RATE</i> benchmarks <i>for Integers</i> with GCC,
+    Clang, ICC
+
+      <ul>
+        <li>Build with the unoptimised (may not be default) versions of GCC/Clang/ICC (on
+        Ubuntu 18.04) for 32-bit and 64-bit x86 architectures.</li>
+
+        <li>Build with different optimization options: -O1, -O2, -O3, etc.</li>
+
+        <li>Plot your runtime results, make conclusions
+
+          <ul>
+            <li>Plot Scores or Runtimes vs Optimisation levels</li>
+
+            <li>Make separate plots for each benchmark</li>
+
+            <li>A total of 10 graphs are expected, one per benchmark, containing plots
+            for each compiler (GCC/ICC/Clang 32 and 64-bits)</li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+  
+  <b>Prepare a report summarizing your findings</b>: Your report should be succinct yet
+  insightful. It should talk about the most consequential optimizations (to runtime) and
+  the least consequential optimizations.<br />
+
+  <ul>
+    <li>Which compilers are better in what aspects?</li>
+
+    <li>Which are faster: 32-bit or 64-bit executables? Why?</li>
+
+    <li>How are the various optimisation levels different? How do these differ accross
+    compilers?</li>
+
+    <li>Does the kind of benchmark influence the results between compilers? Why?</li>
+  </ul>
+<p>Submissions:
+<ul>
+<li>
+<a href=lab0_submissions/anz188387.pdf>anz188387.pdf</a>
+<a href=lab0_submissions/cs1150460.pdf>cs1150460.pdf</a>
+<a href=lab0_submissions/cs1150600.pdf>cs1150600.pdf</a>
+<a href=lab0_submissions/cs5150287.pdf>cs5150287.pdf</a>
+<a href=lab0_submissions/csz188011.pdf>csz188011.pdf</a>
+<a href=lab0_submissions/mcs182840.pdf>mcs182840.pdf</a>
+<a href=lab0_submissions/siy187504.pdf>siy187504.pdf</a>
+</li>
+</ul>
+</body>
+</html>

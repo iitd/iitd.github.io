@@ -1,0 +1,1535 @@
+
+Internet Source 1:  https://github.com/airbornemihir/PIOS
+Internet Source 2:  https://github.com/davehand/pios
+Internet Source 3:  https://github.com/feihuang/YaleOSLab
+
+
+
+List of students found cheating definitely
+--------------------------------------------------------------------
+     1  Login: cs1100242        Name: Rishav Binayak Das
+     2	Login: cs1100265        Name: Anant Mittal
+     3	Login: cs1110201        Name: Abdul Khalid
+     4	Login: cs1110204        Name: Akhil Kedia
+     5	Login: cs1110207        Name: Amit Saharana
+     6	Login: cs1110208        Name: Amitabh Saraswati
+     7	Login: cs1110210        Name: Ankit Thiranh
+     8	Login: cs1110212        Name: Basant Saini
+     9	Login: cs1110218        Name: Gujju Chandrakanth
+    10	Login: cs1110219        Name: Gujjula Nitin
+    11 	Login: cs1110221        Name: Himanshu Godara
+    12 	Login: cs1110225        Name: Kunal Chawla
+    13 	Login: cs1110226        Name: Lokesh Yadav
+    14 	Login: cs1110228        Name: Manjot Singh
+    15 	Login: cs1110229        Name: Manubolu Lakshman Kavish
+    16 	Login: cs1110230        Name: Mehul Katiyar
+    17 	Login: cs1110231        Name: Mohd Imran
+    18 	Login: cs1110234        Name: Neeraj
+    19 	Login: cs1110236        Name: Nikhil Kumar
+    20 	Login: cs1110239        Name: Palas
+    21 	Login: cs1110240        Name: Harsh Jirish Parikh
+    22 	Login: cs1110242        Name: Pittala Lakshmi Radhika
+    23 	Login: cs1110243        Name: Piyush Sharma
+    24 	Login: cs1110253        Name: Shantanu Dahiya
+    25 	Login: cs1110259        Name: VarunJay Varma
+    26 	Login: cs5110290        Name: Pawan Kumar Rajotiya
+    27 	Login: cs5110291        Name: Pillalamarri Sameer Chakravarthy
+    28 	Login: cs5110833        Name: Anuj Mahajan
+    29	Login: cs1110241        Name: Payoj Jain (Was under review: Claimed comments in backup file were present coz of debugging, and only one present in original file. Caught copied further. Has actually copied from internet source #3)
+    30	Login: cs1110203        Name: Abhishek Nimesh(Was under review: Proper copy)
+    31  Login: cs5110271        Name: Abhishek Bansal (Added)
+    32  Login: cs5110300        Name: Shubham Jindal (Added)
+    
+
+
+Students who have copied but copying magnitude is small/doubtful
+--------------------------------------------------------
+Marks for your demo component as well as viva component will be zero.
+
+    33	Login: cs1110206        Name: Aman Mathur(Copied, but reverted)
+    34	Login: cs1110214        Name: Dravyansh Sharma (Claim: had a bug, copied part2&part4 to debug, reverted. Verified bug, and the date, and his code.)
+    35  Login: cs5110279        Name: Guntash Singh Arora (Claim: started with another repo, got error in trapasm.S, copied trapasm.S, reverted changes: Verified)
+    36	Login: cs1110223        Name: Jatin Garg (Special case. )
+    37	Login: cs1110247        Name: Rhythm Gupta (Only one comment. Unable to conclusivly prove similarity for the rest of code )
+    38	Login: cs5110545        Name: Dhiraj Madan (Only one comment. Unable to conclusivly prove similarity for the rest of code )
+    39	Login: ee2100525        Name: Rahul Goel (Only one comment. Unable to find similarity for the rest of code )
+    40  Login: mcs132577        Name: Ravi Teja (Submitted 1a,1b,2. Only 1a,1b works. Claim: Submitted 2 by mistake)
+    41	Login: cs5110278        Name: Deepak Koli (Only one unwanted line. Claim: Copied but reverted. Unable to find similarity for the rest of code )
+    42	Login: cs1080175        Name: KUNIKA GOYAL(Confessed)
+
+
+
+Students who gave valid explaination (Students who copied but then try to revert the changes and submitted original code)
+-------------------------------------------------------------------------------------------------------------------------
+    43	Login: cs1100214        Name: Cherukuri Sesha Satya Chaitanya 
+        Explaination given: copied from internet, but then deleted the changes and submitted only 1a,1b: 
+        Accepted the explaination: Only backup files has copied contents, code was deleted from submitted code.
+
+
+
+Benefit of doubt: Students who copied for sure, but unable to prove conclusively
+--------------------------------------------------------------------------------
+    44  Login: cs1110202                        Name: Abhishek Ranjan (Note: Present in minor issues as well.)
+
+
+
+Minor issue: Caught attempting to modify the test criteria
+----------------------------------------------------------
+Following students have cheated by slightly modifying the testing function to get their tests passed
+
+    45  Login: cs5110296                        Name: Shiva Chandra
+    46  Login: cs5110292                        Name: Rohit Agarwal
+
+Note: Their code is syntatically transformed from each other
+
+
+
+Minor issue: Students who have same bug in their code: marks will be deducted for the bug
+-----------------------------------------------------------------------------------------
+    44  Login: cs1110202                        Name: Abhishek Ranjan
+    47  Login: cs1110205                        Name: Aman Gupta
+    48  Login: cs1110211                        Name: Ayush Lodhi
+    49  Login: cs1110217                        Name: Gautam Prem Jain
+    50  Login: cs5110276                        Name: Ankit Aggarwal
+    51  Login: cs5110294                        Name: Sai Praneeth Reddy K
+
+
+
+
+
+Details
+--------
+
+
+
+
+
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/init.c:	char *loc=user_stack-sizeof(trapframe);
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/init.c:	register int *sp asm ("esp");
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/init.c:	asm volatile ("mov %0 %1" : "=r"(sp) : "X"(loc));
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/init.c:	//register int *csreg asm ("cs");
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/init.c:	//tf.tf_cs=(*csreg)|3; //setting the privilege mode
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/init.c:	//tf.tf_ebp=read_ebp();
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/init.c~:	char *loc=user_stack-sizeof(trapframe);
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/init.c~:	register int *sp asm ("esp");
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/init.c~:	asm volatile ("mov %0 %1" : "=r"(sp) : "X"(loc));
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/init.c~:	//register int *csreg asm ("cs");
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/init.c~:	//tf.tf_cs=(*csreg)|3; //setting the privilege mode
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/init.c~:	//tf.tf_ebp=read_ebp();
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c:			//cprintf("i=0x%x taken.\n", i);
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c:		//Debugging a false pointer.
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c:		//cprintf("pp=0x%x, freepages=%d\n", pp, freepages);
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:	mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(pageinfo)); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:	//This flag is so that we can know when we are at the head of the freelist we are building and set mem_freelist accordingly.
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:	int headflag=1; 
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:			//cprintf("i=0x%x taken.\n", i);
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:			//Setting mem_freelist.
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:			//if (headflag==1) {headflag=0;mem_freelist=&mem_pageinfo[i];cprintf("i=%d, setting mem_freelist.\n", i);}
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:			//Trying to debug a mysterious NULL pointer.
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:			if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:			if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:	cprintf("Finished building the free list.\n");
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:	cprintf("MEM_IO=0x%x\n", MEM_IO);
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:	cprintf("MEM_EXT=0x%x\n", MEM_EXT);
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:	cprintf("extmem=0x%x\n", extmem);
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:	cprintf("mem_max=0x%x\n", mem_max);
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:	cprintf("PAGESIZE=0x%x\n", PAGESIZE);
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:	cprintf("mem_npage=0x%x\n", mem_npage);
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:	cprintf("sizeof(struct pageinfo)=0x%x\n", sizeof(struct pageinfo));
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:	cprintf("sizeof(pageinfo)=0x%x\n", sizeof(pageinfo));
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:		//Debugging a false pointer.
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/mem.c~:		//cprintf("pp=0x%x, freepages=%d\n", pp, freepages);
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/trapasm.S:		pushl %ds	# build trap frame
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/trapasm.S:		movw $CPU_GDT_KDATA,%ax # load kernel's data segment
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/trapasm.S:		xorl %ebp,%ebp	# don't let debug_trace() walk into user space
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/trapasm.S:		pushl %esp	# pass pointer to this trapframe
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/trapasm.S:		call trap	# and call trap (does not return)	
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/trapasm.S~:		pushl %ds	# build trap frame
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/trapasm.S~:		movw $CPU_GDT_KDATA,%ax # load kernel's data segment
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/trapasm.S~:		xorl %ebp,%ebp	# don't let debug_trace() walk into user space
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/trapasm.S~:		pushl %esp	# pass pointer to this trapframe
+CODE/lab1.grp.cs1100242.2014-2-11.19:39:39/kern/trapasm.S~:		call trap	# and call trap (does not return)	
+
+
+
+
+
+
+CODE/lab1.grp.cs1100265.2014-2-4.1:17:6/kern/mem.c:		int flag=(i!= 0) && (i!= 1)&&(i<MEM_IO/PAGESIZE || (i>=(MEM_EXT/PAGESIZE))) && ((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE));
+CODE/lab1.grp.cs1100265.2014-2-4.1:17:6/kern/mem.c:		//Debugging a false pointer.
+CODE/lab1.grp.cs1100265.2014-2-4.1:17:6/kern/mem.c:		//cprintf("pp=0x%x, freepages=%d\n", pp, freepages);
+
+how will you explain the comments?
+kern/mem.c, int flag lines are just joined. the expression has a bug.
+
+mem.c has similarities with cs1110240.
+
+
+
+
+CODE/lab1.grp.cs1110201.2014-2-3.23:30:45/kern/init.c:void inittests() {
+CODE/lab1.grp.cs1110201.2014-2-3.23:30:45/kern/init.c:cprintf("1024=%d\n", 1024);
+CODE/lab1.grp.cs1110201.2014-2-3.23:30:45/kern/mem.c:				((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110201.2014-2-3.23:30:45/kern/mem.c~:				((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110201.2014-2-3.23:30:45/kern/trapasm.S:	# pass pointer to this trapframe
+
+
+Original code has: int headflag=1; 
+
+But the student has: 
+
+int headflags=1;
+for (i = 0; i < mem_npage; i++) 
+		 {
+			if (
+				(i!=0) &&
+				(i!=1) &&
+				((i<(MEM_IO / PAGESIZE)) || (i>=(MEM_EXT/PAGESIZE))) &&
+				((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+)
+
+The above matches the structures.. and the whitespace in between.
+
+
+
+cs1110203:
+Unfortunate case: The backup file contains
+     void testify() {
+     	cprintf("1024=%d\n", 1024);
+     }
+Instead of changing the function name from inittests to testify, couldve deleted those lines, which he did in the final code
+Maybe he took the code from someone else?
+
+
+
+CODE/lab1.grp.cs1110203.2014-2-3.11:42:0/kern/init.c~:	cprintf("1024=%d\n", 1024);
+CODE/lab1.grp.cs1110203.2014-2-3.11:42:0/kern/mem.c:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110203.2014-2-3.11:42:0/kern/mem.c~:	//int headflag=1; 
+CODE/lab1.grp.cs1110203.2014-2-3.11:42:0/kern/mem.c~:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+
+
+And the same goes with backup file of mem.c~.
+
+Also the student's code:
+		if (
+			(i!=0) && 
+			(i!=1) && 
+			((i<(MEM_IO / PAGESIZE)) || (i>=(MEM_EXT/PAGESIZE))) && 
+			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+		) {
+
+matches the whitespace in between the expressions.
+
+
+
+
+
+Following are the comments present in students code matched. 
+This includes the whitespace between them, and there was no reason to write these.
+
+CODE/lab1.grp.cs1110204.2014-2-3.22:58:5/kern/init.c:	char *loc=user_stack-sizeof(trapframe);
+CODE/lab1.grp.cs1110204.2014-2-3.22:58:5/kern/init.c:	register int *sp asm ("esp");
+CODE/lab1.grp.cs1110204.2014-2-3.22:58:5/kern/init.c:	asm volatile ("mov %0 %1" : "=r"(sp) : "X"(loc));
+CODE/lab1.grp.cs1110204.2014-2-3.22:58:5/kern/init.c~:	char *loc=user_stack-sizeof(trapframe);
+CODE/lab1.grp.cs1110204.2014-2-3.22:58:5/kern/init.c~:	register int *sp asm ("esp");
+CODE/lab1.grp.cs1110204.2014-2-3.22:58:5/kern/init.c~:	asm volatile ("mov %0 %1" : "=r"(sp) : "X"(loc));
+
+
+
+
+
+
+CODE/lab1.grp.cs1110206.2014-2-3.23:20:30/kern/mem.c:mem_pageinfo=(pageinfo *)((int)end); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1110206.2014-2-3.23:20:30/kern/mem.c~:mem_pageinfo=(pageinfo *)((int)end); //The page table is now supposed to start from the beginning of memory.
+
+Added a bug in the code.. But retained the comment..
+There are other interesting observations:
+
+     trapf.tf_esp=(uintptr_t)user_stack;
+     trapf.tf_eflags=read_eflags();
+     trapf.tf_cs=read_cs();
+     
+     trapf.tf_cs = (CPU_GDT_UCODE) | 3;
+     trapf.tf_eflags = FL_IOPL_3;
+     trapf.tf_esp = (uintptr_t)user_stack + PAGESIZE;
+
+There was a redundancy in the student's code.. which is exact redundancy present in original copied code caught (though variable name has been changed)
+
+
+
+
+
+
+
+This is an interesting one. 
+Submitted an out.txt file which is diff between original copied code caught and original code.
+I would like to get an explanations for the same.
+
+Moreover, the trapasm.S comments matched another website
+
+
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/kern/mem.c:		if ((i!=0) && (i!=1) && ((i<(MEM_IO / PAGESIZE)) || (i>=(MEM_EXT/PAGESIZE))) && ((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/kern/mem.c~:		if ((i!=0) && (i!=1) && ((i<(MEM_IO / PAGESIZE)) || (i>=(MEM_EXT/PAGESIZE))) && ((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	//register int *csreg asm ("cs");
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	//tf.tf_cs=(*csreg)|3; //setting the privilege mode
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	//tf.tf_ebp=read_ebp();
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(pageinfo)); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	//This flag is so that we can know when we are at the head of the freelist we are building and set mem_freelist accordingly.
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	int headflag=1; 
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+			//cprintf("i=0x%x taken.\n", i);
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+			//Setting mem_freelist.
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+			//if (headflag==1) {headflag=0;mem_freelist=&mem_pageinfo[i];cprintf("i=%d, setting mem_freelist.\n", i);}
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+			//Trying to debug a mysterious NULL pointer.
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+			if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+			if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	cprintf("Finished building the free list.\n");
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	cprintf("MEM_IO=0x%x\n", MEM_IO);
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	cprintf("MEM_EXT=0x%x\n", MEM_EXT);
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	cprintf("extmem=0x%x\n", extmem);
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	cprintf("mem_max=0x%x\n", mem_max);
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	cprintf("PAGESIZE=0x%x\n", PAGESIZE);
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	cprintf("mem_npage=0x%x\n", mem_npage);
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	cprintf("sizeof(struct pageinfo)=0x%x\n", sizeof(struct pageinfo));
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	cprintf("sizeof(pageinfo)=0x%x\n", sizeof(pageinfo));
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	pushl %ds		# build trap frame
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	movl $CPU_GDT_KDATA,%eax # load kernel's data segment
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	xorl %ebp,%ebp		# don't let debug_trace() walk into user space
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	pushl %esp		# pass pointer to this trapframe 
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	call trap		# and call trap (does not return)
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	movl	4(%esp),%esp	// reset stack pointer to point to trap frame
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	popal			// restore general-purpose registers except esp
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	#popl	%gs		// restore data segment registers
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	addl	$8,%esp		// skip trapno and errcode
+CODE/lab1.grp.cs1110207.2014-2-3.23:59:0/out.txt:+	iret			// return from trap handler
+
+
+
+
+
+
+
+
+
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/debug.c~:	while ((ebp!=0x000000)&&(i<DEBUG_TRACEFRAMES)) {
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/init.c:	char *loc=user_stack-sizeof(trapframe);
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/init.c:	register int *sp asm ("esp");
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/init.c:	asm volatile ("mov %0 %1" : "=r"(sp) : "X"(loc));
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/init.c:	//register int *csreg asm ("cs");
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/init.c:	//tf.tf_cs=(*csreg)|3; //setting the privilege mode
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/init.c:	//tf.tf_ebp=read_ebp();
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c:	mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(pageinfo)); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c:	//This flag is so that we can know when we are at the head of the freelist we are building and set mem_freelist accordingly.
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c:	int headflag=1; 
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c:			//cprintf("i=0x%x taken.\n", i);
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c:			//Setting mem_freelist.
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c:			//if (headflag==1) {headflag=0;mem_freelist=&mem_pageinfo[i];cprintf("i=%d, setting mem_freelist.\n", i);}
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c:			//Trying to debug a mysterious NULL pointer.
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c:			if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c:			if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c:	cprintf("Finished building the free list.\n");
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c:	cprintf("MEM_IO=0x%x\n", MEM_IO);
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c:	cprintf("MEM_EXT=0x%x\n", MEM_EXT);
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c:	cprintf("extmem=0x%x\n", extmem);
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c:	cprintf("mem_max=0x%x\n", mem_max);
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c:	cprintf("PAGESIZE=0x%x\n", PAGESIZE);
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c:	cprintf("mem_npage=0x%x\n", mem_npage);
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c:	cprintf("sizeof(struct pageinfo)=0x%x\n", sizeof(struct pageinfo));
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c:	cprintf("sizeof(pageinfo)=0x%x\n", sizeof(pageinfo));
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c~:	mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(pageinfo)); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c~:	//This flag is so that we can know when we are at the head of the freelist we are building and set mem_freelist accordingly.
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c~:	int headflag=1; 
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c~:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c~:			//cprintf("i=0x%x taken.\n", i);
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c~:			//Setting mem_freelist.
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c~:			//if (headflag==1) {headflag=0;mem_freelist=&mem_pageinfo[i];cprintf("i=%d, setting mem_freelist.\n", i);}
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c~:			//Trying to debug a mysterious NULL pointer.
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c~:			if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c~:			if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c~:	cprintf("Finished building the free list.\n");
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c~:	cprintf("MEM_IO=0x%x\n", MEM_IO);
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c~:	cprintf("MEM_EXT=0x%x\n", MEM_EXT);
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c~:	cprintf("extmem=0x%x\n", extmem);
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c~:	cprintf("mem_max=0x%x\n", mem_max);
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c~:	cprintf("PAGESIZE=0x%x\n", PAGESIZE);
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c~:	cprintf("mem_npage=0x%x\n", mem_npage);
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c~:	cprintf("sizeof(struct pageinfo)=0x%x\n", sizeof(struct pageinfo));
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/mem.c~:	cprintf("sizeof(pageinfo)=0x%x\n", sizeof(pageinfo));
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/trap.c:		SETGATE(idt[i], 0, 1<<3, vectors[i], 0); //that 1<<3 corresponds to SEG_KCODE<<3 from xv6.
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/trap.c:	SETGATE(idt[3], 0, 1<<3, vectors[3], 3); //This is T_BRKPT, that 1<<3 corresponds to SEG_KCODE<<3 from xv6.
+CODE/lab1.grp.cs1110208.2014-2-3.22:14:20/kern/trap.c:	SETGATE(idt[4], 0, 1<<3, vectors[4], 3); //This is T_OFLOW, that 1<<3 corresponds to SEG_KCODE<<3 from xv6.
+
+
+
+
+
+
+
+
+
+
+CODE/lab1.grp.cs1110210.2014-2-3.23:32:27/kern/init.c:void inittests() {
+CODE/lab1.grp.cs1110210.2014-2-3.23:32:27/kern/init.c:cprintf("1024=%d\n", 1024);
+CODE/lab1.grp.cs1110210.2014-2-3.23:32:27/kern/mem.c:				((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110210.2014-2-3.23:32:27/kern/mem.c~:				((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110210.2014-2-3.23:32:27/kern/trapasm.S:	# pass pointer to this trapframe
+
+
+			if (
+				(i!=0) &&
+				(i!=1) &&
+				((i<(MEM_IO / PAGESIZE)) || (i>=(MEM_EXT/PAGESIZE))) &&
+				((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+){
+
+
+
+
+
+
+CODE/lab1.grp.cs1110212.2014-2-4.0:6:44/kern/mem.c:         mem_pageinfo=0x0; //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1110212.2014-2-4.0:6:44/kern/mem.c:            mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(pageinfo)); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1110212.2014-2-4.0:6:44/kern/mem.c:        int headflag=1; 
+CODE/lab1.grp.cs1110212.2014-2-4.0:6:44/kern/mem.c:                       ((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110212.2014-2-4.0:6:44/kern/mem.c:                    //Setting mem_freelist.
+CODE/lab1.grp.cs1110212.2014-2-4.0:6:44/kern/mem.c:            //Trying to debug a mysterious NULL pointer.
+CODE/lab1.grp.cs1110212.2014-2-4.0:6:44/kern/mem.c:			if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs1110212.2014-2-4.0:6:44/kern/mem.c:			if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+CODE/lab1.grp.cs1110212.2014-2-4.0:6:44/kern/mem.c~:         mem_pageinfo=0x0; //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1110212.2014-2-4.0:6:44/kern/mem.c~:            mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(pageinfo)); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1110212.2014-2-4.0:6:44/kern/mem.c~:        int headflag=1; 
+CODE/lab1.grp.cs1110212.2014-2-4.0:6:44/kern/mem.c~:                       ((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110212.2014-2-4.0:6:44/kern/mem.c~:                    //Setting mem_freelist.
+CODE/lab1.grp.cs1110212.2014-2-4.0:6:44/kern/mem.c~:            //Trying to debug a mysterious NULL pointer.
+CODE/lab1.grp.cs1110212.2014-2-4.0:6:44/kern/mem.c~:			if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs1110212.2014-2-4.0:6:44/kern/mem.c~:			if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+
+
+
+
+
+CODE/lab1.grp.cs1110214.2014-2-3.10:48:30/kern/init.c:	//register int *csreg asm ("cs");
+CODE/lab1.grp.cs1110214.2014-2-3.10:48:30/kern/init.c:	//tf.tf_cs=(*csreg)|3; //setting the privilege mode
+CODE/lab1.grp.cs1110214.2014-2-3.10:48:30/kern/init.c:	//tf.tf_ebp=read_ebp();
+CODE/lab1.grp.cs1110214.2014-2-3.10:48:30/kern/init.c~:	//register int *csreg asm ("cs");
+CODE/lab1.grp.cs1110214.2014-2-3.10:48:30/kern/init.c~:	//tf.tf_cs=(*csreg)|3; //setting the privilege mode
+CODE/lab1.grp.cs1110214.2014-2-3.10:48:30/kern/init.c~:	//tf.tf_ebp=read_ebp();
+CODE/lab1.grp.cs1110214.2014-2-3.10:48:30/kern/trapasm.S:	pushl %ds					// build trap frame
+CODE/lab1.grp.cs1110214.2014-2-3.10:48:30/kern/trapasm.S:	movl $CPU_GDT_KDATA,%eax 	// load kernel's data segment into %ds and %es
+CODE/lab1.grp.cs1110214.2014-2-3.10:48:30/kern/trapasm.S:	xorl %ebp,%ebp				// don't let debug_trace() walk into user space
+CODE/lab1.grp.cs1110214.2014-2-3.10:48:30/kern/trapasm.S:	pushl %esp					// pass pointer to this trapframe 
+CODE/lab1.grp.cs1110214.2014-2-3.10:48:30/kern/trapasm.S:	call trap					// and call trap (does not return)
+CODE/lab1.grp.cs1110214.2014-2-3.10:48:30/kern/trapasm.S~:	pushl %ds					// build trap frame
+CODE/lab1.grp.cs1110214.2014-2-3.10:48:30/kern/trapasm.S~:	movl $CPU_GDT_KDATA,%eax 	// load kernel's data segment into %ds and %es
+CODE/lab1.grp.cs1110214.2014-2-3.10:48:30/kern/trapasm.S~:	xorl %ebp,%ebp				// don't let debug_trace() walk into user space
+CODE/lab1.grp.cs1110214.2014-2-3.10:48:30/kern/trapasm.S~:	pushl %esp					// pass pointer to this trapframe 
+CODE/lab1.grp.cs1110214.2014-2-3.10:48:30/kern/trapasm.S~:	call trap					// and call trap (does not return)
+
+
+
+
+
+
+
+CODE/lab1.grp.cs1110218.2014-2-3.23:56:0/kern/init.c:void inittests() {
+CODE/lab1.grp.cs1110218.2014-2-3.23:56:0/kern/init.c:cprintf("1024=%d\n", 1024);
+CODE/lab1.grp.cs1110218.2014-2-3.23:56:0/kern/init.c:char *loc=user_stack-sizeof(trapframe);
+CODE/lab1.grp.cs1110218.2014-2-3.23:56:0/kern/init.c:register int *sp asm ("esp");
+CODE/lab1.grp.cs1110218.2014-2-3.23:56:0/kern/init.c:asm volatile ("mov %0 %1" : "=r"(sp) : "X"(loc));
+CODE/lab1.grp.cs1110218.2014-2-3.23:56:0/kern/init.c://register int *csreg asm ("cs");
+CODE/lab1.grp.cs1110218.2014-2-3.23:56:0/kern/init.c://tf.tf_cs=(*csreg)|3; //setting the privilege mode
+CODE/lab1.grp.cs1110218.2014-2-3.23:56:0/kern/init.c://tf.tf_ebp=read_ebp();
+
+
+
+
+
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/init.c:void inittests() {
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/init.c:	cprintf("1024=%d\n", 1024);
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/init.c:	char *loc=user_stack-sizeof(trapframe);
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/init.c:	register int *sp asm ("esp");
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/init.c:	asm volatile ("mov %0 %1" : "=r"(sp) : "X"(loc));
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/init.c:	//register int *csreg asm ("cs");
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/init.c:	//tf.tf_cs=(*csreg)|3; //setting the privilege mode
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/init.c:	//tf.tf_ebp=read_ebp();
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:	mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(pageinfo)); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:	//This flag is so that we can know when we are at the head of the freelist we are building and set mem_freelist accordingly.
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:	int headflag=1; 
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:			//cprintf("i=0x%x taken.\n", i);
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:			//Setting mem_freelist.
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:			//if (headflag==1) {headflag=0;mem_freelist=&mem_pageinfo[i];cprintf("i=%d, setting mem_freelist.\n", i);}
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:			//Trying to debug a mysterious NULL pointer.
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:			if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:			if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:	cprintf("Finished building the free list.\n");
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:	cprintf("MEM_IO=0x%x\n", MEM_IO);
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:	cprintf("MEM_EXT=0x%x\n", MEM_EXT);
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:	cprintf("extmem=0x%x\n", extmem);
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:	cprintf("mem_max=0x%x\n", mem_max);
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:	cprintf("PAGESIZE=0x%x\n", PAGESIZE);
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:	cprintf("mem_npage=0x%x\n", mem_npage);
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:	cprintf("sizeof(struct pageinfo)=0x%x\n", sizeof(struct pageinfo));
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:	cprintf("sizeof(pageinfo)=0x%x\n", sizeof(pageinfo));
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:		//Debugging a false pointer.
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/mem.c:		//cprintf("pp=0x%x, freepages=%d\n", pp, freepages);
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/trap.c:		SETGATE(idt[i], 0, 1<<3, vectors[i], 0); //that 1<<3 corresponds to SEG_KCODE<<3 from xv6.
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/trap.c:	SETGATE(idt[3], 0, 1<<3, vectors[3], 3); //This is T_BRKPT, that 1<<3 corresponds to SEG_KCODE<<3 from xv6.
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/trap.c:	SETGATE(idt[4], 0, 1<<3, vectors[4], 3); //This is T_OFLOW, that 1<<3 corresponds to SEG_KCODE<<3 from xv6.
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/trap.c:	register int *sp asm ("esp");
+CODE/lab1.grp.cs1110219.2014-2-3.22:59:41/kern/trap.c:	asm volatile ("movw %1 %0;jmp %2" : "=X" (sp): "X" (tf), "X" (tf->tf_eip));
+
+
+
+
+
+
+
+
+CODE/lab1.grp.cs1110223.2014-2-3.18:53:40/kern/trapasm.S:        movw $CPU_GDT_KDATA,%ax # load kernel's data segment
+CODE/lab1.grp.cs1110223.2014-2-3.18:53:40/kern/trapasm.S:        pushl %esp                # pass pointer to this trapframe
+CODE/lab1.grp.cs1110223.2014-2-3.18:53:40/kern/trapasm.S:        call trap                # and call trap (does not return)
+CODE/lab1.grp.cs1110223.2014-2-3.18:53:40/kern/trapasm.S:        addl $0x8,%esp                // skip trapno and errcode
+CODE/lab1.grp.cs1110223.2014-2-3.18:53:40/kern/trapasm.S~:        movw $CPU_GDT_KDATA,%ax # load kernel's data segment
+CODE/lab1.grp.cs1110223.2014-2-3.18:53:40/kern/trapasm.S~:        pushl %esp                # pass pointer to this trapframe
+CODE/lab1.grp.cs1110223.2014-2-3.18:53:40/kern/trapasm.S~:        call trap                # and call trap (does not return)
+CODE/lab1.grp.cs1110223.2014-2-3.18:53:40/kern/trapasm.S~:        addl $0x8,%esp                // skip trapno and errcode
+
+
+Comments matched a different code(internet source #2), including whitespace.
+
+
+
+
+
+
+CODE/lab1.grp.cs1110225.2014-2-3.20:34:27/kern/mem.c:			&&((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110225.2014-2-3.20:34:27/kern/mem.c:		//Debugging a false pointer.
+CODE/lab1.grp.cs1110225.2014-2-3.20:34:27/kern/mem.c:		//cprintf("pp=0x%x, freepages=%d\n", pp, freepages);
+CODE/lab1.grp.cs1110225.2014-2-3.20:34:27/kern/mem.c~:			&&((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110225.2014-2-3.20:34:27/kern/mem.c~:		//Debugging a false pointer.
+CODE/lab1.grp.cs1110225.2014-2-3.20:34:27/kern/mem.c~:		//cprintf("pp=0x%x, freepages=%d\n", pp, freepages);
+
+
+just look at the cprintf line which is commented. 
+and debugging a false pointer
+
+
+
+CODE/lab1.grp.cs1110226.2014-2-3.23:32:47/kern/init.c:void inittests() {
+CODE/lab1.grp.cs1110226.2014-2-3.23:32:47/kern/init.c:cprintf("1024=%d\n", 1024);
+CODE/lab1.grp.cs1110226.2014-2-3.23:32:47/kern/mem.c:			if ((i!=0) && (i!=1) &&	((i<(MEM_IO / PAGESIZE)) || (i>=(MEM_EXT/PAGESIZE))) &&	((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))){
+CODE/lab1.grp.cs1110226.2014-2-3.23:32:47/kern/mem.c~:				((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110226.2014-2-3.23:32:47/kern/trapasm.S:	# pass pointer to this trapframe
+CODE/lab1.grp.cs1110226.2014-2-3.23:32:47/kern/trapasm.S~:	# pass pointer to this trapframe
+
+in kern/mem.c, the original code lines were joined with vim's J(whitespace matched)
+Also: explain inittests!
+
+
+
+
+
+CODE/lab1.grp.cs1110228.2014-2-3.20:34:51/kern/init.c:	//register int *csreg asm ("cs");
+CODE/lab1.grp.cs1110228.2014-2-3.20:34:51/kern/init.c:	//tf.tf_cs=(*csreg)|3; //setting the privilege mode
+CODE/lab1.grp.cs1110228.2014-2-3.20:34:51/kern/mem.c:	mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(pageinfo)); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1110228.2014-2-3.20:34:51/kern/mem.c:int headflag=1; 
+CODE/lab1.grp.cs1110228.2014-2-3.20:34:51/kern/mem.c:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+
+
+
+
+
+CODE/lab1.grp.cs1110229.2014-2-3.23:28:15/kern/init.c:void inittests() {
+CODE/lab1.grp.cs1110229.2014-2-3.23:28:15/kern/init.c:	cprintf("1024=%d\n", 1024);
+CODE/lab1.grp.cs1110229.2014-2-3.23:28:15/kern/init.c~:void inittests() {
+CODE/lab1.grp.cs1110229.2014-2-3.23:28:15/kern/init.c~:	cprintf("1024=%d\n", 1024);
+CODE/lab1.grp.cs1110229.2014-2-3.23:28:15/kern/mem.c:		int headflag=1;
+CODE/lab1.grp.cs1110229.2014-2-3.23:28:15/kern/mem.c:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110229.2014-2-3.23:28:15/kern/mem.c:			if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs1110229.2014-2-3.23:28:15/kern/mem.c:			if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+CODE/lab1.grp.cs1110229.2014-2-3.23:28:15/kern/mem.c~:		int headflag=1;
+CODE/lab1.grp.cs1110229.2014-2-3.23:28:15/kern/mem.c~:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110229.2014-2-3.23:28:15/kern/mem.c~:			if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs1110229.2014-2-3.23:28:15/kern/mem.c~:			if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+
+
+
+
+
+CODE/lab1.grp.cs1110230.2014-2-3.23:3:38/kern/debug.c:	while ((ebp!=0x000000)&&(i<DEBUG_TRACEFRAMES)) {
+CODE/lab1.grp.cs1110230.2014-2-3.23:3:38/kern/debug.c~:	while ((ebp!=0x000000)&&(i<DEBUG_TRACEFRAMES)) {
+CODE/lab1.grp.cs1110230.2014-2-3.23:3:38/kern/init.c~:	//register int *csreg asm ("cs");
+CODE/lab1.grp.cs1110230.2014-2-3.23:3:38/kern/init.c~:	//tf.tf_cs=(*csreg)|3; //setting the privilege mode
+CODE/lab1.grp.cs1110230.2014-2-3.23:3:38/kern/init.c~:	//tf.tf_ebp=read_ebp();
+CODE/lab1.grp.cs1110230.2014-2-3.23:3:38/kern/mem.c:	mem_pageinfo=(pageinfo *)((int)end); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1110230.2014-2-3.23:3:38/kern/mem.c~:	mem_pageinfo=(pageinfo *)((int)end); //The page table is now supposed to start from the beginning of memory.
+
+
+
+
+CODE/lab1.grp.cs1110231.2014-2-3.23:58:6/kern/init.c:void inittests() {
+CODE/lab1.grp.cs1110231.2014-2-3.23:58:6/kern/init.c:cprintf("1024=%d\n", 1024);
+CODE/lab1.grp.cs1110231.2014-2-3.23:58:6/kern/mem.c:				((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110231.2014-2-3.23:58:6/kern/mem.c~:				((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110231.2014-2-3.23:58:6/kern/trapasm.S:	# pass pointer to this trapframe
+CODE/lab1.grp.cs1110231.2014-2-3.23:58:6/kern/trapasm.S~:	# pass pointer to this trapframe
+
+
+
+
+
+in kern/mem.c, the original code lines were joined with vim's J(whitespace matched)
+See the use of variable headflag=1
+
+CODE/lab1.grp.cs1110234.2014-2-4.0:12:51/kern/mem.c:        int headflag=1; 
+CODE/lab1.grp.cs1110234.2014-2-4.0:12:51/kern/mem.c:((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110234.2014-2-4.0:12:51/kern/mem.c~:        int headflag=1; 
+CODE/lab1.grp.cs1110234.2014-2-4.0:12:51/kern/mem.c~:((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+
+In kern/init.c: 
+   tf.tf_esp=(uintptr_t)user_stack;
+   tf.tf_eflags=read_eflags();
+   tf.tf_eflags = FL_IOPL_3;
+   tf.tf_esp = (uintptr_t)user_stack+PAGESIZE;
+those redundant lines matched with original as well
+
+        
+
+
+
+
+
+
+
+
+mem.c, lines were joined(whitespace matched)
+also explain inittests
+
+CODE/lab1.grp.cs1110236.2014-2-3.23:27:25/kern/init.c:void inittests() {
+CODE/lab1.grp.cs1110236.2014-2-3.23:27:25/kern/init.c:cprintf("1024=%d\n", 1024);
+CODE/lab1.grp.cs1110236.2014-2-3.23:27:25/kern/mem.c:		if ((i!=0) && (i!=1) && ((i<(MEM_IO / PAGESIZE)) || (i>=(MEM_EXT/PAGESIZE))) && ((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE)))
+CODE/lab1.grp.cs1110236.2014-2-3.23:27:25/kern/mem.c~:		if ((i!=0) && (i!=1) && ((i<(MEM_IO / PAGESIZE)) || (i>=(MEM_EXT/PAGESIZE))) && ((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE)))
+CODE/lab1.grp.cs1110236.2014-2-3.23:27:25/kern/trapasm.S:	# pass pointer to this trapframe
+CODE/lab1.grp.cs1110236.2014-2-3.23:27:25/kern/trapasm.S~:	# pass pointer to this trapframe
+
+
+
+
+
+
+
+
+CODE/lab1.grp.cs1110239.2014-2-3.11:41:43/kern/init.c~:cprintf("1024=%d\n", 1024);
+CODE/lab1.grp.cs1110239.2014-2-3.11:41:43/kern/mem.c:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110239.2014-2-3.11:41:43/kern/mem.c~:	int headflag=1; 
+CODE/lab1.grp.cs1110239.2014-2-3.11:41:43/kern/mem.c~:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+
+I would like you to explain me the presence of the following lines in your init.c backup file.
+You've changed the function name from inittests() to chkinit() as well.
+
+    void chkinit() {
+    cprintf("1024=%d\n", 1024);
+    }
+kern/mem.c is also copied.
+
+                if (
+                        (i!=0) &&
+                        (i!=1) &&
+                        ((i<(MEM_IO / PAGESIZE)) || (i>=(MEM_EXT/PAGESIZE))) &&
+                        ((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+                ) {
+This is exactly same as in the original code
+
+
+Also in kern/init.c: 
+trm.tf_esp=(uintptr_t)user_stack;
+trm.tf_eflags=read_eflags();
+//trm.tf_cs=read_cs();
+
+trm.tf_cs = (CPU_GDT_UCODE) | 3;
+trm.tf_eflags = FL_IOPL_3;
+trm.tf_esp = (uintptr_t)user_stack+PAGESIZE;
+
+The presence of unnecessary duplicates, which is present in original code, indicate you've copied the same as well.
+
+
+
+
+
+
+
+
+
+CODE/lab1.grp.cs1110240.2014-2-3.20:24:30/kern/mem.c:		if ( (i != 0) && (i != 1) &&((i<(MEM_IO / PAGESIZE)) || (i>=(MEM_EXT/PAGESIZE))) && ((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110240.2014-2-3.20:24:30/kern/mem.c:			//Setting mem_freelist
+CODE/lab1.grp.cs1110240.2014-2-3.20:24:30/kern/mem.c:		//Debugging a false pointer.
+CODE/lab1.grp.cs1110240.2014-2-3.20:24:30/kern/mem.c:		//cprintf("pp=0x%x, freepages=%d\n", pp, freepages);
+CODE/lab1.grp.cs1110240.2014-2-3.20:24:30/kern/mem.c~:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110240.2014-2-3.20:24:30/kern/mem.c~:			//cprintf("i=0x%x taken.\n", i);
+CODE/lab1.grp.cs1110240.2014-2-3.20:24:30/kern/mem.c~:			//Setting mem_freelist
+CODE/lab1.grp.cs1110240.2014-2-3.20:24:30/kern/mem.c~:			//Trying to debug a mysterious NULL pointer.
+CODE/lab1.grp.cs1110240.2014-2-3.20:24:30/kern/mem.c~:			if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs1110240.2014-2-3.20:24:30/kern/mem.c~:			if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+CODE/lab1.grp.cs1110240.2014-2-3.20:24:30/kern/mem.c~:		//Debugging a false pointer.
+CODE/lab1.grp.cs1110240.2014-2-3.20:24:30/kern/mem.c~:		//cprintf("pp=0x%x, freepages=%d\n", pp, freepages);
+
+
+
+Extra notes: C Syntatic transformation applied in debug.c
+        while(i<DEBUG_TRACEFRAMES){
+                if(ebp!=0x000000){
+
+His mem.c has a huge similarity with cs1100265's mem.c, who is also there in the defaulters list.
+
+
+if ( (i != 0) && (i != 1) &&((i<(MEM_IO / PAGESIZE)) || (i>=(MEM_EXT/PAGESIZE))) && ((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+
+Original:  
+
+                if (
+                        (i!=0) &&
+                        (i!=1) &&
+                        ((i<(MEM_IO / PAGESIZE)) || (i>=(MEM_EXT/PAGESIZE))) &&
+                        ((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+                ) {
+
+
+There is a bug in the original code.. which also got repeated.
+Code will match with whitespace once the lines are joined, fyi.
+
+
+
+
+
+
+CODE/lab1.grp.cs1110241.2014-2-3.23:58:41/kern/init.c:	//register int *csreg asm ("cs");
+CODE/lab1.grp.cs1110241.2014-2-3.23:58:41/kern/init.c:	//tf.tf_cs=(*csreg)|3; //setting the privilege mode
+CODE/lab1.grp.cs1110241.2014-2-3.23:58:41/kern/init.c~:	//register int *csreg asm ("cs");
+CODE/lab1.grp.cs1110241.2014-2-3.23:58:41/kern/init.c~:	//tf.tf_cs=(*csreg)|3; //setting the privilege mode
+CODE/lab1.grp.cs1110241.2014-2-3.23:58:41/kern/mem.c:           // obtain the current physical address
+CODE/lab1.grp.cs1110241.2014-2-3.23:58:41/kern/mem.c:        // check if the page has been reserved (see conditions in the above comment)
+CODE/lab1.grp.cs1110241.2014-2-3.23:58:41/kern/mem.c~:          // obtain the current physical address
+CODE/lab1.grp.cs1110241.2014-2-3.23:58:41/kern/mem.c~:        // check if the page has been reserved (see conditions in the above comment)
+
+Your mem part, is copied verbatim from internet source #3
+
+Code: 
+pageinfo mem_pageinfo_memory[1024 * 1024 * 1024 / PAGESIZE];
+
+Code: 
+        mem_pageinfo = &mem_pageinfo_memory[0];
+    memset (&mem_pageinfo_memory[0],0,sizeof(pageinfo)*1024*1024*1024/PAGESIZE);
+        pageinfo **freetail = &mem_freelist;
+        int i;
+
+        for (i = 0; i < mem_npage; i++) {
+                // A free page has no references to it.
+                mem_pageinfo[i].refcount = 0;
+        // obtain the current physical address
+        uint32_t paddr = mem_pi2phys(mem_pageinfo + i);
+        uint32_t p = paddr + PAGESIZE ;
+        // check if the page has been reserved (see conditions in the above comment)
+        if (!(i == 0 || i == 1 ||
+        (p >= MEM_IO && paddr < MEM_EXT) ||
+        (p >= (uint32_t) &start[0] && paddr < (uint32_t) &end[0]) ||
+        (p >= (uint32_t) &mem_pageinfo_memory[0] &&  paddr < (uint32_t) &mem_pageinfo_memory[mem_npage]) )) {
+                // Add the page to the end of the free list.
+                *freetail = &mem_pageinfo[i];
+                freetail = &mem_pageinfo[i].free_next;
+                }
+
+
+Also:
+        tf.tf_esp=(uintptr_t)user_stack;
+        tf.tf_cs=read_cs();
+        tf.tf_cs = (CPU_GDT_UCODE) | 3;
+        tf.tf_eflags = FL_IOPL_3;
+        tf.tf_esp = (uintptr_t)user_stack+PAGESIZE;
+        tf.tf_eip = (uint32_t)&user;
+The presence of duplicate ESP, CS and EFLAGS, which was the trademark of original source.
+
+
+
+
+
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/init.c:	char *loc=user_stack-sizeof(trapframe);
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/init.c:	register int *sp asm ("esp");
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/init.c:	asm volatile ("mov %0 %1" : "=r"(sp) : "X"(loc));
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/init.c:	//register int *csreg asm ("cs");
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/init.c:	//tf.tf_cs=(*csreg)|3; //setting the privilege mode
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/init.c~:	char *loc=user_stack-sizeof(trapframe);
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/init.c~:	register int *sp asm ("esp");
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/init.c~:	asm volatile ("mov %0 %1" : "=r"(sp) : "X"(loc));
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/init.c~:	//register int *csreg asm ("cs");
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/init.c~:	//tf.tf_cs=(*csreg)|3; //setting the privilege mode
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:	mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(pageinfo)); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:	//This flag is so that we can know when we are at the head of the freelist we are building and set mem_freelist accordingly.
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:	int headflag=1; 
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:			//cprintf("i=0x%x taken.\n", i);
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:			//Setting mem_freelist.
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:			//if (headflag==1) {headflag=0;mem_freelist=&mem_pageinfo[i];cprintf("i=%d, setting mem_freelist.\n", i);}
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:			//Trying to debug a mysterious NULL pointer.
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:			if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:			if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:	cprintf("Finished building the free list.\n");
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:	cprintf("MEM_IO=0x%x\n", MEM_IO);
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:	cprintf("MEM_EXT=0x%x\n", MEM_EXT);
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:	cprintf("extmem=0x%x\n", extmem);
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:	cprintf("mem_max=0x%x\n", mem_max);
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:	cprintf("PAGESIZE=0x%x\n", PAGESIZE);
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:	cprintf("mem_npage=0x%x\n", mem_npage);
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:	cprintf("sizeof(struct pageinfo)=0x%x\n", sizeof(struct pageinfo));
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:	cprintf("sizeof(pageinfo)=0x%x\n", sizeof(pageinfo));
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:		//Debugging a false pointer.
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c:		//cprintf("pp=0x%x, freepages=%d\n", pp, freepages);
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:	mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(pageinfo)); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:	//This flag is so that we can know when we are at the head of the freelist we are building and set mem_freelist accordingly.
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:	int headflag=1; 
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:			//cprintf("i=0x%x taken.\n", i);
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:			//Setting mem_freelist.
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:			//if (headflag==1) {headflag=0;mem_freelist=&mem_pageinfo[i];cprintf("i=%d, setting mem_freelist.\n", i);}
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:			//Trying to debug a mysterious NULL pointer.
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:			if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:			if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:	cprintf("Finished building the free list.\n");
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:	cprintf("MEM_IO=0x%x\n", MEM_IO);
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:	cprintf("MEM_EXT=0x%x\n", MEM_EXT);
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:	cprintf("extmem=0x%x\n", extmem);
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:	cprintf("mem_max=0x%x\n", mem_max);
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:	cprintf("PAGESIZE=0x%x\n", PAGESIZE);
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:	cprintf("mem_npage=0x%x\n", mem_npage);
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:	cprintf("sizeof(struct pageinfo)=0x%x\n", sizeof(struct pageinfo));
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:	cprintf("sizeof(pageinfo)=0x%x\n", sizeof(pageinfo));
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:		//Debugging a false pointer.
+CODE/lab1.grp.cs1110242.2014-2-3.20:37:29/kern/mem.c~:		//cprintf("pp=0x%x, freepages=%d\n", pp, freepages);
+
+
+
+
+
+
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/debug.c:	while ((ebp!=0x000000)&&(i<DEBUG_TRACEFRAMES)) {
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/debug.c~:	while ((ebp!=0x000000)&&(i<DEBUG_TRACEFRAMES)) {
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/init.c:	char *loc=user_stack-sizeof(trapframe);
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/init.c:	register int *sp asm ("esp");
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/init.c:	asm volatile ("mov %0 %1" : "=r"(sp) : "X"(loc));
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/init.c:	//register int *csreg asm ("cs");
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/init.c:	//tf.tf_cs=(*csreg)|3; //setting the privilege mode
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/init.c:	//tf.tf_ebp=read_ebp();
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c:	mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(pageinfo)); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c:	//This flag is so that we can know when we are at the head of the freelist we are building and set mem_freelist accordingly.
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c:	int headflag=1; 
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c:			//cprintf("i=0x%x taken.\n", i);
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c:			//Setting mem_freelist.
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c:			//if (headflag==1) {headflag=0;mem_freelist=&mem_pageinfo[i];cprintf("i=%d, setting mem_freelist.\n", i);}
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c:			//Trying to debug a mysterious NULL pointer.
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c:			if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c:			if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c:	cprintf("Finished building the free list.\n");
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c:	cprintf("MEM_IO=0x%x\n", MEM_IO);
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c:	cprintf("MEM_EXT=0x%x\n", MEM_EXT);
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c:	cprintf("extmem=0x%x\n", extmem);
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c:	cprintf("mem_max=0x%x\n", mem_max);
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c:	cprintf("PAGESIZE=0x%x\n", PAGESIZE);
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c:	cprintf("mem_npage=0x%x\n", mem_npage);
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c:	cprintf("sizeof(struct pageinfo)=0x%x\n", sizeof(struct pageinfo));
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c:	cprintf("sizeof(pageinfo)=0x%x\n", sizeof(pageinfo));
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c~:	mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(pageinfo)); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c~:	//This flag is so that we can know when we are at the head of the freelist we are building and set mem_freelist accordingly.
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c~:	int headflag=1; 
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c~:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c~:			//cprintf("i=0x%x taken.\n", i);
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c~:			//Setting mem_freelist.
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c~:			//if (headflag==1) {headflag=0;mem_freelist=&mem_pageinfo[i];cprintf("i=%d, setting mem_freelist.\n", i);}
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c~:			//Trying to debug a mysterious NULL pointer.
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c~:			if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c~:			if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c~:	cprintf("Finished building the free list.\n");
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c~:	cprintf("MEM_IO=0x%x\n", MEM_IO);
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c~:	cprintf("MEM_EXT=0x%x\n", MEM_EXT);
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c~:	cprintf("extmem=0x%x\n", extmem);
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c~:	cprintf("mem_max=0x%x\n", mem_max);
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c~:	cprintf("PAGESIZE=0x%x\n", PAGESIZE);
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c~:	cprintf("mem_npage=0x%x\n", mem_npage);
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c~:	cprintf("sizeof(struct pageinfo)=0x%x\n", sizeof(struct pageinfo));
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/mem.c~:	cprintf("sizeof(pageinfo)=0x%x\n", sizeof(pageinfo));
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/trap.c:		SETGATE(idt[i], 0, 1<<3, vectors[i], 0); //that 1<<3 corresponds to SEG_KCODE<<3 from xv6.
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/trap.c:	SETGATE(idt[3], 0, 1<<3, vectors[3], 3); //This is T_BRKPT, that 1<<3 corresponds to SEG_KCODE<<3 from xv6.
+CODE/lab1.grp.cs1110243.2014-2-3.22:21:20/kern/trap.c:	SETGATE(idt[4], 0, 1<<3, vectors[4], 3); //This is T_OFLOW, that 1<<3 corresponds to SEG_KCODE<<3 from xv6.
+
+
+
+
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/debug.c:	while ((ebp!=0x000000)&&(i<DEBUG_TRACEFRAMES)) {
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/debug.c~:	while ((ebp!=0x000000)&&(i<DEBUG_TRACEFRAMES)) {
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/init.c:	char *loc=user_stack-sizeof(trapframe);
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/init.c:	register int *sp asm ("esp");
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/init.c:	asm volatile ("mov %0 %1" : "=r"(sp) : "X"(loc));
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/init.c:	//register int *csreg asm ("cs");
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/init.c:	//tf.tf_cs=(*csreg)|3; //setting the privilege mode
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/init.c:	//tf.tf_ebp=read_ebp();
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c:	mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(pageinfo)); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c:	//This flag is so that we can know when we are at the head of the freelist we are building and set mem_freelist accordingly.
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c:	int headflag=1; 
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c:			//cprintf("i=0x%x taken.\n", i);
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c:			//Setting mem_freelist.
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c:			//if (headflag==1) {headflag=0;mem_freelist=&mem_pageinfo[i];cprintf("i=%d, setting mem_freelist.\n", i);}
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c:			//Trying to debug a mysterious NULL pointer.
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c:			if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c:			if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c:	cprintf("Finished building the free list.\n");
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c:	cprintf("MEM_IO=0x%x\n", MEM_IO);
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c:	cprintf("MEM_EXT=0x%x\n", MEM_EXT);
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c:	cprintf("extmem=0x%x\n", extmem);
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c:	cprintf("mem_max=0x%x\n", mem_max);
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c:	cprintf("PAGESIZE=0x%x\n", PAGESIZE);
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c:	cprintf("mem_npage=0x%x\n", mem_npage);
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c:	cprintf("sizeof(struct pageinfo)=0x%x\n", sizeof(struct pageinfo));
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c:	cprintf("sizeof(pageinfo)=0x%x\n", sizeof(pageinfo));
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c~:	mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(pageinfo)); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c~:	//This flag is so that we can know when we are at the head of the freelist we are building and set mem_freelist accordingly.
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c~:	int headflag=1; 
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c~:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c~:			//cprintf("i=0x%x taken.\n", i);
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c~:			//Setting mem_freelist.
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c~:			//if (headflag==1) {headflag=0;mem_freelist=&mem_pageinfo[i];cprintf("i=%d, setting mem_freelist.\n", i);}
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c~:			//Trying to debug a mysterious NULL pointer.
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c~:			if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c~:			if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c~:	cprintf("Finished building the free list.\n");
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c~:	cprintf("MEM_IO=0x%x\n", MEM_IO);
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c~:	cprintf("MEM_EXT=0x%x\n", MEM_EXT);
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c~:	cprintf("extmem=0x%x\n", extmem);
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c~:	cprintf("mem_max=0x%x\n", mem_max);
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c~:	cprintf("PAGESIZE=0x%x\n", PAGESIZE);
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c~:	cprintf("mem_npage=0x%x\n", mem_npage);
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c~:	cprintf("sizeof(struct pageinfo)=0x%x\n", sizeof(struct pageinfo));
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/mem.c~:	cprintf("sizeof(pageinfo)=0x%x\n", sizeof(pageinfo));
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/trap.c:		SETGATE(idt[i], 0, 1<<3, vectors[i], 0); //that 1<<3 corresponds to SEG_KCODE<<3 from xv6.
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/trap.c:	SETGATE(idt[3], 0, 1<<3, vectors[3], 3); //This is T_BRKPT, that 1<<3 corresponds to SEG_KCODE<<3 from xv6.
+CODE/lab1.grp.cs1110253.2014-2-4.19:47:5/kern/trap.c:	SETGATE(idt[4], 0, 1<<3, vectors[4], 3); //This is T_OFLOW, that 1<<3 corresponds to SEG_KCODE<<3 from xv6.
+
+
+
+
+
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/debug.c:	while ((ebp!=0x000000)&&(i<DEBUG_TRACEFRAMES)) {
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/debug.c~:	while ((ebp!=0x000000)&&(i<DEBUG_TRACEFRAMES)) {
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/init.c:	char *loc=user_stack-sizeof(trapframe);
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/init.c:	register int *sp asm ("esp");
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/init.c:	asm volatile ("mov %0 %1" : "=r"(sp) : "X"(loc));
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/init.c:	//register int *csreg asm ("cs");
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/init.c:	//tf.tf_cs=(*csreg)|3; //setting the privilege mode
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/init.c:	//tf.tf_ebp=read_ebp();
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c:	mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(pageinfo)); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c:	//This flag is so that we can know when we are at the head of the freelist we are building and set mem_freelist accordingly.
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c:	int headflag=1; 
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c:			//cprintf("i=0x%x taken.\n", i);
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c:			//Setting mem_freelist.
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c:			//if (headflag==1) {headflag=0;mem_freelist=&mem_pageinfo[i];cprintf("i=%d, setting mem_freelist.\n", i);}
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c:			//Trying to debug a mysterious NULL pointer.
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c:			if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c:			if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c:	cprintf("Finished building the free list.\n");
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c:	cprintf("MEM_IO=0x%x\n", MEM_IO);
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c:	cprintf("MEM_EXT=0x%x\n", MEM_EXT);
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c:	cprintf("extmem=0x%x\n", extmem);
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c:	cprintf("mem_max=0x%x\n", mem_max);
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c:	cprintf("PAGESIZE=0x%x\n", PAGESIZE);
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c:	cprintf("mem_npage=0x%x\n", mem_npage);
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c:	cprintf("sizeof(struct pageinfo)=0x%x\n", sizeof(struct pageinfo));
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c:	cprintf("sizeof(pageinfo)=0x%x\n", sizeof(pageinfo));
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c~:	mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(pageinfo)); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c~:	//This flag is so that we can know when we are at the head of the freelist we are building and set mem_freelist accordingly.
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c~:	int headflag=1; 
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c~:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c~:			//cprintf("i=0x%x taken.\n", i);
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c~:			//Setting mem_freelist.
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c~:			//if (headflag==1) {headflag=0;mem_freelist=&mem_pageinfo[i];cprintf("i=%d, setting mem_freelist.\n", i);}
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c~:			//Trying to debug a mysterious NULL pointer.
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c~:			if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c~:			if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c~:	cprintf("Finished building the free list.\n");
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c~:	cprintf("MEM_IO=0x%x\n", MEM_IO);
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c~:	cprintf("MEM_EXT=0x%x\n", MEM_EXT);
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c~:	cprintf("extmem=0x%x\n", extmem);
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c~:	cprintf("mem_max=0x%x\n", mem_max);
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c~:	cprintf("PAGESIZE=0x%x\n", PAGESIZE);
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c~:	cprintf("mem_npage=0x%x\n", mem_npage);
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c~:	cprintf("sizeof(struct pageinfo)=0x%x\n", sizeof(struct pageinfo));
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/mem.c~:	cprintf("sizeof(pageinfo)=0x%x\n", sizeof(pageinfo));
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/trap.c:		SETGATE(idt[i], 0, 1<<3, vectors[i], 0); //that 1<<3 corresponds to SEG_KCODE<<3 from xv6.
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/trap.c:	SETGATE(idt[3], 0, 1<<3, vectors[3], 3); //This is T_BRKPT, that 1<<3 corresponds to SEG_KCODE<<3 from xv6.
+CODE/lab1.grp.cs1110259.2014-2-3.22:5:3/kern/trap.c:	SETGATE(idt[4], 0, 1<<3, vectors[4], 3); //This is T_OFLOW, that 1<<3 corresponds to SEG_KCODE<<3 from xv6.
+
+
+
+
+
+
+
+
+
+CODE/lab1.grp.cs5110290.2014-2-3.22:28:8/kern/mem.c:		    ((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs5110290.2014-2-3.22:28:8/kern/mem.c~:		    ((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs5110290.2014-2-3.22:28:8/kern/mem.c~:		if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs5110290.2014-2-3.22:28:8/kern/mem.c~:			if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+
+
+
+
+
+
+CODE/lab1.grp.cs5110291.2014-2-3.23:30:43/kern/mem.c:	mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(pageinfo)); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs5110291.2014-2-3.23:30:43/kern/trap.c:register int *sp asm ("esp");
+CODE/lab1.grp.cs5110291.2014-2-3.23:30:43/kern/trap.c:asm volatile ("movw %1 %0;jmp %2" : "=X" (sp): "X" (tf), "X" (tf->tf_eip));
+
+
+Your mem.c comments matched,even though you've applied a && b && c --> if(a){ if(b) { if(c) { 
+Plese explain the presence of comment in mem.c
+
+Also: Please explain the presence of the following comments in kern/trap.c
+/*
+void gcc_noreturn trap_return (trapframe *tf) {
+//register int *e asm ("es");
+//register int *d asm ("ds");
+//asm volatile("popal");
+//asm volatile("popl %0" : "=X" (e));
+//asm volatile("popl %0" : "=X" (d));
+//asm volatile("iret");
+register int *sp asm ("esp");
+asm volatile ("movw %1 %0;jmp %2" : "=X" (sp): "X" (tf), "X" (tf->tf_eip));
+}
+*/
+
+
+
+
+
+
+CODE/lab1.grp.cs5110833.2014-2-13.2:45:1/kern/init.c:void inittests() {
+CODE/lab1.grp.cs5110833.2014-2-13.2:45:1/kern/init.c:cprintf("1024=%d\n", 1024);
+CODE/lab1.grp.cs5110833.2014-2-13.2:45:1/kern/init.c~:void inittests() {
+CODE/lab1.grp.cs5110833.2014-2-13.2:45:1/kern/init.c~:cprintf("1024=%d\n", 1024);
+CODE/lab1.grp.cs5110833.2014-2-13.2:45:1/kern/mem.c:		((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))){
+CODE/lab1.grp.cs5110833.2014-2-13.2:45:1/kern/mem.c~:		((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))){
+CODE/lab1.grp.cs5110833.2014-2-13.2:45:1/kern/trapasm.S:	# pass pointer to this trapframe
+CODE/lab1.grp.cs5110833.2014-2-13.2:45:1/kern/trapasm.S~:	# pass pointer to this trapframe
+
+
+=========================================================================================
+Internet source #3 mem part
+
+// allocate memory for mem_pageinfo array
+pageinfo mem_pageinfo_memory[1024 * 1024 * 1024 / PAGESIZE];
+
+        // init mem_pageinfo
+        mem_pageinfo = &mem_pageinfo_memory[0];
+
+        memset (&mem_pageinfo_memory[0],0,sizeof(pageinfo)*1024*1024*1024/PAGESIZE);
+
+        // add pageinfo structs
+        pageinfo **freetail = &mem_freelist;
+        int i;
+
+        for (i = 0; i < mem_npage; i++) {
+                // A free page has no references to it.
+                mem_pageinfo[i].refcount = 0;
+
+                // obtain the current physical address
+                uint32_t paddr = mem_pi2phys(mem_pageinfo + i);
+                // check if the page has been reserved (see conditions in the above comment)
+                if (!(i == 0 || i == 1 ||
+                     (paddr + PAGESIZE >= MEM_IO && paddr < MEM_EXT) ||
+                     (paddr + PAGESIZE >= (uint32_t) &start[0] && paddr < (uint32_t) &end[0]) || // kernel, 
+                     (paddr + PAGESIZE >= (uint32_t) &mem_pageinfo_memory[0] &&
+                      paddr < (uint32_t) &mem_pageinfo_memory[mem_npage]) // pageinfo array
+                   )) {
+                    // Add the page to the end of the free list.
+                    *freetail = &mem_pageinfo[i];
+                    freetail = &mem_pageinfo[i].free_next;
+                }
+        }
+        *freetail = NULL;       // null-terminate the freelist
+
+
+
+
+
+
+
+
+==========================================================================================
+
+
+
+
+CODE/lab1.grp.cs5110271.2014-2-3.22:7:50/kern/mem.c:		// obtain the current physical address
+CODE/lab1.grp.cs5110271.2014-2-3.22:7:50/kern/mem.c:		// check if the page has been reserved (see conditions in the above comment)
+CODE/lab1.grp.cs5110271.2014-2-3.22:7:50/kern/mem.c~:		// obtain the current physical address
+CODE/lab1.grp.cs5110271.2014-2-3.22:7:50/kern/mem.c~:		// check if the page has been reserved (see conditions in the above comment)
+
+You've copied mem part from internet source #3(above). Please explain why the code below matched internet source #3 including comments.
+
+pageinfo mem_pageinfo_memory[1024 * 1024 * 1024 / PAGESIZE]; // Allocate memory for page tables
+
+        mem_pageinfo = &mem_pageinfo_memory[0];
+        memset (&mem_pageinfo_memory[0],0,sizeof(pageinfo)*1024*1024*1024/PAGESIZE);
+
+        pageinfo **freetail = &mem_freelist;
+        int i;
+        for (i = 0; i < mem_npage; i++) {
+                // A free page has no references to it.
+                mem_pageinfo[i].refcount = 0;
+
+                // obtain the current physical address
+                uint32_t paddr = mem_pi2phys(mem_pageinfo + i);
+                // check if the page has been reserved (see conditions in the above comment)
+                if (!(i == 0 || i == 1 ||(paddr + PAGESIZE >= MEM_IO && paddr < MEM_EXT) ||
+                        (paddr + PAGESIZE >= (uint32_t) &start[0] && paddr < (uint32_t) &end[0]) || // kernel,
+                        (paddr + PAGESIZE >= (uint32_t) &mem_pageinfo_memory[0] &&
+                        paddr < (uint32_t) &mem_pageinfo_memory[mem_npage]))) { // pageinfo array
+
+                // Add the page to the end of the free list.
+                                *freetail = &mem_pageinfo[i];
+                                freetail = &mem_pageinfo[i].free_next;
+                }
+        }
+
+
+
+
+
+
+
+CODE/lab1.grp.cs5110300.2014-2-3.19:51:20/kern/mem.c:	// add pageinfo structs
+CODE/lab1.grp.cs5110300.2014-2-3.19:51:20/kern/mem.c:		// check if the page has been reserved (see conditions in the above comment)
+You've copied mem part from internet source #3 or similar ones. Please explain why the code below matched internet source #3 including comments.
+You've tried modify a little(You added a bug in that process fyi)
+
+pageinfo *mem_pageinfo_mem;
+
+        mem_pageinfo = &mem_pageinfo_mem[0];
+        memset (&mem_pageinfo_mem[0],0,sizeof(pageinfo)*mem_npage);
+        // add pageinfo structs
+        pageinfo **freetail = &mem_freelist;
+        int i;
+        for (i = 0; i < mem_npage; i++) {
+
+                // check if the page has been reserved (see conditions in the above comment)
+                if (!(i == 0 || i == 1 ||
+                        ((i+1) * PAGESIZE > MEM_IO && i*PAGESIZE < MEM_EXT) ||
+                        ((i+1) * PAGESIZE > (uint32_t) &start[0] && i * PAGESIZE < (uint32_t) &end[0]) ||  //kernel,
+                        ((i+1) * PAGESIZE > (uint32_t) &mem_pageinfo_mem[0] &&
+                                i * PAGESIZE < (uint32_t) &mem_pageinfo_mem[mem_npage]) // pageinfo array
+                )) {
+                        // Add the page to the end of the free list.
+                        mem_pageinfo[i].refcount = 0;
+                        *freetail = &mem_pageinfo[i];
+                        freetail = &mem_pageinfo[i].free_next;
+                }
+                else {
+                        mem_pageinfo[i].refcount = 1;
+                }
+        }
+
+
+
+
+
+
+
+CODE/lab1.grp.cs5110279.2014-2-4.0:37:49/kern/trapasm.S:  pushal                    # finish pushing values to make the stack like a trapframe
+CODE/lab1.grp.cs5110279.2014-2-4.0:37:49/kern/trapasm.S:  movw %ax, %es              # load CPU_GDT_KDATA 
+CODE/lab1.grp.cs5110279.2014-2-4.0:37:49/kern/trapasm.S:  pushl %esp                 # pass a pointer to the trapframe as an argument to trap()
+CODE/lab1.grp.cs5110279.2014-2-4.0:37:49/kern/trapasm.S:  popal  		     # if trap ever returns, restore the stack
+
+Please explain why your trapasm.S's comments matched internet source #3 including whitespace.
+Please explain why a visual comparison of your kern/trapasm.S and internet source #3's kern/trapasm.S is same.
+Moreover please explain why the comments matched exactly, including whitespace,
+and why their respective ordering is also same.
+
+
+FYI: "pass a pointer to the trapframe as an argument to trap()" is not part of my question, so you don't need to explain the same. But you've to explain the exact ordering, and the presence of other comments.
+
+
+
+
+
+
+=========================================================================
+
+
+
+
+CODE/lab1.grp.mcs132577.2014-2-5.13:23:47/kern/trapasm.S~:	pushl %ds		# build trap frame
+CODE/lab1.grp.mcs132577.2014-2-5.13:23:47/kern/trapasm.S~:	movl $CPU_GDT_KDATA,%eax # load kernel's data segment
+CODE/lab1.grp.mcs132577.2014-2-5.13:23:47/kern/trapasm.S~:	xorl %ebp,%ebp		# don't let debug_trace() walk into user space
+CODE/lab1.grp.mcs132577.2014-2-5.13:23:47/kern/trapasm.S~:	pushl %esp		# pass pointer to this trapframe 
+CODE/lab1.grp.mcs132577.2014-2-5.13:23:47/kern/trapasm.S~:	call trap		# and call trap (does not return)
+CODE/lab1.grp.mcs132577.2014-2-5.13:23:47/kern/trapasm.S~:	movl	4(%esp),%esp	// reset stack pointer to point to trap frame
+CODE/lab1.grp.mcs132577.2014-2-5.13:23:47/kern/trapasm.S~:	popal			// restore general-purpose registers except esp
+CODE/lab1.grp.mcs132577.2014-2-5.13:23:47/kern/trapasm.S~:	popl	%gs		// restore data segment registers
+CODE/lab1.grp.mcs132577.2014-2-5.13:23:47/kern/trapasm.S~:	addl	$8,%esp		// skip trapno and errcode
+CODE/lab1.grp.mcs132577.2014-2-5.13:23:47/kern/trapasm.S~:	iret			// return from trap handler
+
+
+
+Matches trapasm.S's backup file  with alternate code. 
+Please explain me the presence of this backup file.
+
+Apart from this: 
+Your implementation of trap_return is plain wrong.
+
+//	xor %ebp, %ebp
+
+The presence of this line commented in the trapasm.S submitted(not backup)
+(In the backup it was: 
+xorl %ebp,%ebp		# don't let debug_trace() walk into user space
+)
+
+Modifications - change in the order in which you pushed and poped  - added an extra bug in your code. Do you know the bug? 
+
+Summary:
+0. He has submitted part2
+1. He renamed interrupt handlers names,
+2. He removed comments
+3. Commented out 'xorl %ebp,%ebp'
+4. Changed 'movl    4(%esp),%esp' to 'addl $4,%esp'c
+
+he thought 'movl 4(%esp),%esp and addl $4, %esp are equivalent,
+Just because of the last change, his test case is not passing.
+
+He has submitted part 2. which is clearly a copy case.
+
+Just because it has a bug due to his misunderstanding of assembly, doesn't means that it shouldn't be counted as non-copy case.
+
+Since, he has even submitted partial code for part 3. I believe change#4 was done in the last minute.
+
+
+
+
+
+
+
+
+CODE/lab1.grp.cs1110247.2014-2-9.7:51:53/kern/mem.c:	mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(struct pageinfo)); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1110247.2014-2-9.7:51:53/kern/mem.c~:	mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(struct pageinfo)); //The page table is now supposed to start from the beginning of memory.
+
+
+
+
+
+
+
+
+
+
+
+CODE/lab1.grp.cs5110545.2014-2-3.10:32:49/kern/mem.c:	mem_pageinfo=(pageinfo *)addr; //The page table is now supposed to start from the beginning of memory.
+
+
+
+
+
+
+CODE/lab1.grp.ee2100525.2014-2-4.19:31:4/kern/mem.c:	mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(pageinfo)); //The page table is now supposed to start from the beginning of memory.
+
+
+
+
+=========================================================================
+
+
+
+CODE/lab1.grp.cs5110278.2014-2-3.22:41:16/kern/mem.c:   int headflag=1; 
+
+
+Please explain the presence of above ununsed line in your code.
+
+
+
+Also note that:
+ He has applied syntatic transformations:
+a && b&& c&& d  to: if(a) { if(b) { if (c) { if (d) {
+
+
+Also: note that he has a bug in his trapasm.S implementation
+Question says create a trapframe, then set ds and es
+
+He has reordered the lines:
+
+pushal
+set ds to KDATA
+set es to KDATA
+then push ds    <<< this reordering is wrong.
+
+
+Your marks will be deducted for this bug
+
+
+
+=========================================================================
+
+
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/debug.c:	while ((ebp!=0x000000)&&(i<DEBUG_TRACEFRAMES)) {
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/debug.c~:	while ((ebp!=0x000000)&&(i<DEBUG_TRACEFRAMES)) {
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/init.c:	cprintf("1024=%d\n", 1024);
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/init.c~:	cprintf("1024=%d\n", 1024);
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/mem.c:         mem_pageinfo=(pageinfo *)ROUNDUP(((int)end), sizeof(pageinfo)); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/mem.c:	int headflag=1; 
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/mem.c:                        ((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/mem.c:                        //cprintf("i=0x%x taken.\n", i);
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/mem.c:                        //Setting mem_freelist.
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/mem.c:                        //if (headflag==1) {headflag=0;mem_freelist=&mem_pageinfo[i];cprintf("i=%d, setting mem_freelist.\n", i);}
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/mem.c:                        //Trying to debug a mysterious NULL pointer.
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/mem.c:                        if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/mem.c:                        if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/mem.c~: 	mem_pageinfo=(pageinfo *)ROUNDUP(((uint32_t) end),(uint32_t) sizeof(pageinfo)); //The page table is now supposed to start from the beginning of memory.
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/mem.c~:			((i<((int)start / PAGESIZE)) || (i>(ROUNDUP((int)end,sizeof(pageinfo))+mem_npage*sizeof(pageinfo))/PAGESIZE))
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/mem.c~:			//Setting mem_freelist.
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/mem.c~:			//Trying to debug a mysterious NULL pointer.
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/mem.c~:			if ((int)freetail==0x10a000) {cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));}
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/mem.c~:			if(i == 513) cprintf("i=%d is the culprit! %x\n", i,(int)(freetail));;
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/trap.c~:                SETGATE(idt[i], 0, 1<<3, vectors[i], 0); //that 1<<3 corresponds to SEG_KCODE<<3 from xv6.
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/trap.c~:        SETGATE(idt[3], 0, 1<<3, vectors[3], 3); //This is T_BRKPT, that 1<<3 corresponds to SEG_KCODE<<3 from xv6.
+CODE/lab1.grp.cs1080175.2014-2-3.17:18:13/kern/trap.c~:        SETGATE(idt[4], 0, 1<<3, vectors[4], 3); //This is T_OFLOW, that 1<<3 corresponds to SEG_KCODE<<3 from xv6.
+
+
+
+
+
+=========================================================================
+
+=========================================================================
+
+=========================================================================
+
+=========================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+=========================================================================
+Additional Copy// Possibly copied in groups.
+=========================================================================
+
+CODE/lab1.grp.cs1110201.2014-2-3.23:30:45/kern/debug.c:cprintf("ebp: %x eip: %x args: %x %x %x %x %x \n", ebp , eips[i], *((uint32_t *) ebp + 2), *((uint32_t *) ebp + 3), *((uint32_t *) ebp + 4), *((uint32_t *) ebp + 5), *((uint32_t *) ebp + 6) );
+CODE/lab1.grp.cs1110210.2014-2-3.23:32:27/kern/debug.c:cprintf("ebp: %x eip: %x args: %x %x %x %x %x \n", ebp , eips[i], *((uint32_t *) ebp + 2), *((uint32_t *) ebp + 3), *((uint32_t *) ebp + 4), *((uint32_t *) ebp + 5), *((uint32_t *) ebp + 6) );
+CODE/lab1.grp.cs1110226.2014-2-3.23:32:47/kern/debug.c:cprintf("ebp: %x eip: %x args: %x %x %x %x %x \n", ebp , eips[i], *((uint32_t *) ebp + 2), *((uint32_t *) ebp + 3), *((uint32_t *) ebp + 4), *((uint32_t *) ebp + 5), *((uint32_t *) ebp + 6) );
+CODE/lab1.grp.cs1110231.2014-2-3.23:58:6/kern/debug.c:cprintf("ebp: %x eip: %x args: %x %x %x %x %x \n", ebp , eips[i], *((uint32_t *) ebp + 2), *((uint32_t *) ebp + 3), *((uint32_t *) ebp + 4), *((uint32_t *) ebp + 5), *((uint32_t *) ebp + 6) );
+CODE/lab1.grp.cs1110236.2014-2-3.23:27:25/kern/debug.c~://cprintf("ebp: %x eip: %x args: %x %x %x %x %x \n", ebp , eips[i], *((uint32_t *) ebp + 2), *((uint32_t *) ebp + 3), *((uint32_t *) ebp + 4), *((uint32_t *) ebp + 5), *((uint32_t *) ebp + 6) );
+CODE/lab1.grp.cs5110833.2014-2-13.2:45:1/kern/debug.c:cprintf("ebp: %x eip: %x args: %x %x %x %x %x \n", ebp , eips[i], *((uint32_t *) ebp + 2), *((uint32_t *) ebp + 3), *((uint32_t *) ebp + 4), *((uint32_t *) ebp + 5), *((uint32_t *) ebp + 6) );
+CODE/lab1.grp.cs5110833.2014-2-13.2:45:1/kern/debug.c~:cprintf("ebp: %x eip: %x args: %x %x %x %x %x \n", ebp , eips[i], *((uint32_t *) ebp + 2), *((uint32_t *) ebp + 3), *((uint32_t *) ebp + 4), *((uint32_t *) ebp + 5), *((uint32_t *) ebp + 6) );
+
+Please explain the same comments present in trapasm.S
+
+
+CODE/lab1.grp.cs1110201.2014-2-3.23:30:45/kern/trapasm.S:	# pass pointer to this trapframe
+CODE/lab1.grp.cs1110201.2014-2-3.23:30:45/kern/trapasm.S:	#pop all information pushed onto stack
+CODE/lab1.grp.cs1110201.2014-2-3.23:30:45/kern/trapasm.S:	#skip trap number and error code
+CODE/lab1.grp.cs1110201.2014-2-3.23:30:45/kern/trapasm.S:	iret   #returns from trap 
+
+
+CODE/lab1.grp.cs1110210.2014-2-3.23:32:27/kern/trapasm.S:	# pass pointer to this trapframe
+CODE/lab1.grp.cs1110210.2014-2-3.23:32:27/kern/trapasm.S:	#pop all information pushed onto stack
+CODE/lab1.grp.cs1110210.2014-2-3.23:32:27/kern/trapasm.S:	#skip trap number and error code
+CODE/lab1.grp.cs1110210.2014-2-3.23:32:27/kern/trapasm.S:	iret   #returns from trap 
+
+
+CODE/lab1.grp.cs1110221.2014-2-3.20:44:45/kern/trapasm.S:	# pass pointer to this trapframe
+CODE/lab1.grp.cs1110221.2014-2-3.20:44:45/kern/trapasm.S:	#pop all information pushed onto stack
+CODE/lab1.grp.cs1110221.2014-2-3.20:44:45/kern/trapasm.S:	#skip trap number and error code
+CODE/lab1.grp.cs1110221.2014-2-3.20:44:45/kern/trapasm.S:	iret   #returns from trap 
+
+
+CODE/lab1.grp.cs1110226.2014-2-3.23:32:47/kern/trapasm.S:	# pass pointer to this trapframe
+CODE/lab1.grp.cs1110226.2014-2-3.23:32:47/kern/trapasm.S:	#pop all information pushed onto stack
+CODE/lab1.grp.cs1110226.2014-2-3.23:32:47/kern/trapasm.S:	#skip trap number and error code
+CODE/lab1.grp.cs1110226.2014-2-3.23:32:47/kern/trapasm.S:	iret   #returns from trap 
+
+
+
+CODE/lab1.grp.cs1110231.2014-2-3.23:58:6/kern/trapasm.S:	# pass pointer to this trapframe
+CODE/lab1.grp.cs1110231.2014-2-3.23:58:6/kern/trapasm.S:	#pop all information pushed onto stack
+CODE/lab1.grp.cs1110231.2014-2-3.23:58:6/kern/trapasm.S:	#skip trap number and error code
+CODE/lab1.grp.cs1110231.2014-2-3.23:58:6/kern/trapasm.S:	iret   #returns from trap 
+
+
+
+CODE/lab1.grp.cs1110236.2014-2-3.23:27:25/kern/trapasm.S:	# pass pointer to this trapframe
+CODE/lab1.grp.cs1110236.2014-2-3.23:27:25/kern/trapasm.S:	#pop all information pushed onto stack
+CODE/lab1.grp.cs1110236.2014-2-3.23:27:25/kern/trapasm.S:	#skip trap number and error code
+CODE/lab1.grp.cs1110236.2014-2-3.23:27:25/kern/trapasm.S:	iret   #returns from trap 
+
+
+CODE/lab1.grp.cs5110833.2014-2-13.2:45:1/kern/trapasm.S:	# pass pointer to this trapframe
+CODE/lab1.grp.cs5110833.2014-2-13.2:45:1/kern/trapasm.S:	#pop all information pushed onto stack
+CODE/lab1.grp.cs5110833.2014-2-13.2:45:1/kern/trapasm.S:	#skip trap number and error code
+
+
+
+
+
+
+
+
+
+
+=========================================================================
+
+
+
+
+
+
+
+
+=========================================================================
+Valid explaination given 
+=========================================================================
+
+CODE/lab1.grp.cs1100214.2014-2-3.23:45:14/kern/trap.c~:register int *sp asm ("esp");
+CODE/lab1.grp.cs1100214.2014-2-3.23:45:14/kern/trap.c~:asm volatile ("movw %1 %0;jmp %2" : "=X" (sp): "X" (tf), "X" (tf->tf_eip));
+
+Please explain the presence of the following lines in your backup file
+/*
+void gcc_noreturn trap_return (trapframe *tf) {
+//register int *e asm ("es");
+//register int *d asm ("ds");
+//asm volatile("popal");
+//asm volatile("popl %0" : "=X" (e));
+//asm volatile("popl %0" : "=X" (d));
+//asm volatile("iret");
+register int *sp asm ("esp");
+asm volatile ("movw %1 %0;jmp %2" : "=X" (sp): "X" (tf), "X" (tf->tf_eip));
+}
+*/
+
+Explaination given: 
+(Claim: copied from internet, but then deleted the changes and submitted only 1a,1b: Agreed)
+
+
+
+
+
+
+
+
+=========================================================================
+Benefit of doubt
+=========================================================================
+
+
+Userid: cs1110202
+
+Benefit of doubt cases:
+Examples of 'Unable to conclusive prove cases'
+
+Exact match..including white spaces: while ((ebp!=0x000000)&&(i<DEBUG_TRACEFRAMES)) {
+
+
+Note the use of 0x000000 (6 zeros) in the code below and attempt to modify the original code 
+Note 2: Those places without modification has exact whitespaces but without initial indentation
+
+                                                                  	uint32_t eip=*(((uint32_t *)ebp)+1);
+int i=0;                                                          	int i=0;
+while ((ebp!=0x000000)&&(i<DEBUG_TRACEFRAMES)) {                  	while ((ebp!=0x000000)&&(i<DEBUG_TRACEFRAMES)) {     
+eips[i]=*((uint32_t *)(ebp+4));                                   		eips[i]=eip;
+ebp=*((uint32_t *)ebp);                                           		ebp=*((uint32_t *)ebp);
+                                                                  		eip=*(((uint32_t *)ebp)+1);
+i=i+1;                                                            		i=i+1;
+}                                                                 	}
+while (i<DEBUG_TRACEFRAMES) {                                     	while (i<DEBUG_TRACEFRAMES) {
+eips[i]=0x000000;                                                 		eips[i]=0x000000;
+i=i+1;                                                            		i=i+1;
+}                                                                 	}
+
+
+
+
+
+
+
+=========================================================================
+CLASSIC BUG (Benefit of doubt)
+=========================================================================
+	//	making it big enough to hold mem_npage entries.
+	// (2)	add all pageinfo structs in the array representing
+	//	available memory that is not in use for other purposes.
+	//
+                  
+               mem_pageinfo[mem_npage];
+
+	// For step (2), here is some incomplete/incorrect example code
+	// that simply marks all mem_npage pages as free.
+	// Which memory is actually free?
+	//  1) Reserve page 0 for the real-mode IDT and BIOS structures
+
+
+
+Following students have the above bug. 
+
+Login: cs1110202                        Name: Abhishek Ranjan
+Login: cs1110205                        Name: Aman Gupta
+Login: cs1110211                        Name: Ayush Lodhi
+Login: cs1110217                        Name: Gautam Prem Jain
+Login: cs5110276                        Name: Ankit Aggarwal
+Login: cs5110294                        Name: Sai Praneeth Reddy K
+
+
+Marks will be deducted for this bug.
+
+
+
+=========================================================================
+Caught attempting to modify the test criteria
+=========================================================================
+
+Following two students forgot to implement the following step
+        // (1)  allocate physical memory for the mem_pageinfo array,
+        //      making it big enough to hold mem_npage entries.
+
+Login: cs5110296                        Name: Shiva Chandra
+Login: cs5110292                        Name: Rohit Agarwal
+
+
+During the demo, one of them even argued that memset allocates memory and sets contents 
+
+and because of that mem and user tests were failing at that time.
+
+To get their test passed, both students have commented out the memset line
+in the function mem_check:
+        for (pp = mem_freelist; pp != 0; pp = pp->free_next) {
+                memset(mem_pi2ptr(pp), 0x97, 128); <<<< this line was commented out to get the tests passing
+                freepages++;
+
+
+Demo component have reran with memset line uncommented out. And marks have been awarded accordingly.
+(+25 marks is added extra for user component)
+So both of your demo component will be 75/100.
+
+
+Note: Their code is syntatically transformed from each other
+Could you also explain why this is the case?
+
+
+

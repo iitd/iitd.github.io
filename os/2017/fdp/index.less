@@ -1,0 +1,64 @@
+@import '../css/normalize.css';
+@import '../css/skeleton.css';
+@import '../css/menu.css';
+@import '../css/solarized-light.css';
+@import '../css/grid.less';
+
+
+//////////
+// GRID //
+//////////
+
+// Specify the number of columns and set column and gutter widths
+@columns: 12;
+@column-width: 60;
+@gutter-width: 20;
+
+// Remove the definition below for a pixel-based layout
+@total-width: 100%;
+
+
+////////////
+// LAYOUT //
+////////////
+
+// center the contents
+div#center {
+	margin: 0 auto;
+	overflow: hidden;
+}
+
+// header
+header{
+	margin-bottom: 1em;
+}
+
+section.level1{
+	.column(9);
+}
+//section.level2{
+//	.column(9);
+//}
+//section.level4{
+//	.column(9);
+//}
+//nav#TOC{
+//	.column(3);
+//}
+
+.title{
+  text-align: center;
+}
+
+
+.subtitle{
+  text-align: center;
+  font-size: 120%;
+}
+
+.date{
+  text-align: center;
+  font-size: 100%;
+}
+
+

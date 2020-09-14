@@ -1,0 +1,79 @@
+<h3> Assignment 5</h3>
+<ol>
+	<li>	
+<h4>Understanding Scope</h4>
+Consider the following program:
+<pre>
+#include &lt;iostream&gt;
+#include "simpio.h"
+using namespace std;
+int main()
+{
+  int p2n = 1;
+  int n = getInteger("n?");
+  for (int i = 0; i < n; i++) {
+    int tmp = p2n;
+    cout << "2^" << i << " = " << tmp << endl;
+    p2n = tmp * 2;
+  }
+  cout << "2^n = " << p2n << endl;
+}
+</pre>
+For this program above, what is printed for the following input values of <code>n</code>: 4, 7, 9?
+
+<p>Now, consider the following program:
+<pre>
+#include &lt;iostream&gt;
+#include "simpio.h"
+using namespace std;
+int main()
+{
+  int p2n = 1;
+  int n = getInteger("n?");
+  for (int i = 0; i < n; i++) {
+    int tmp = p2n;
+    cout << "2^" << i << " = " << tmp << endl;
+    int p2n = tmp * 2;
+  }
+  cout << "2^" << n << " = " << p2n << endl;
+}
+</pre>
+For this program above, what is printed for the following input values of <code>n</code>: 4, 7, 9?
+
+<p>What is the difference between the two programs?  Why are the outputs of the two programs so different?
+
+<p>Now consider the following program:
+<pre>
+#include &lt;iostream&gt;
+#include "simpio.h"
+using namespace std;
+int main()
+{
+  int p2n = 1;
+  int n = getInteger("n?");
+  for (int i = 0; i < n; i++)
+    int p2n = p2n * 2;
+  cout << "2^" << n << " = " << p2n << endl;
+}
+</pre>
+Notice that there are no curly braces <code>{ }</code> in the body of the for loop. What is the output that you get for different input values of <code>n</code>? Explain.
+<li> <h4> DrawBox: Functions with Multiple Arguments</h4>
+<ol>
+<li> Write a function drawBox(int height, int width) which takes two inputs height and width and draws a box of specified height and width on the console. For example, drawBox(4,5) should draw a structure of the following form:<br>
+<pre>
+*****
+*   * 
+*   *
+*****
+</pre>
+Think about what additional helper functions you would like to write to facilitate the above operation. For instance, you can write two additional functions drawLine(width) which draws a line of given width, and drawSide(width) which draws (a part of) the sides of the box for a given width, and then call these functions multiple times.
+<li> Write a main() function which repeatedly inputs two integers height and width from the user and makes use of the drawBox(height,width) function defined above to draw a box of the corresponding height and width. You should keep doing this until the user enters a non-positive value (i.e., 0 or less) for either height or width in which case you should exit the program.
+	
+</ol>
+
+<li><h4>Prime Numbers: Functions with Return Values</h4>
+<ol>
+<li> Recall that a number is prime if it is not divisible by any number other 1 and itself. Write a function checkPrime(int x) which takes as input a positive integer x, and returns true if the number is prime, and false otherwise. By convention, 1 is not considered to be prime, and your program should correctly handle this special case.
+<li> Write a main() function to input a positive integer n from the user, and print all the primes less than equal to n. Specifically, you should make use of checkPrime(x) function written in the part above.
+</ol>
+</ol>

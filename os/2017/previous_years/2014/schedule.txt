@@ -1,0 +1,223 @@
+Start: Jan 2, 2014
+Stop: May 1, 2014
+Schedule: Tuesday, Thursday, Friday
+
+HOLIDAY: Jan 26. Republic Day
+HOLIDAY: Jan 27. Maha Shivratri
+HOLIDAY: Feb 6. Minor Test 1
+HOLIDAY: Feb 7. Minor Test 1
+HOLIDAY: Feb 21. Midterm Presentations
+HOLIDAY: Feb 27. Mid-sem break
+HOLIDAY: Feb 28. Mid-sem break
+HOLIDAY: Mar 4. Mid-sem break
+HOLIDAY: Mar 6. Mid-sem break
+HOLIDAY: Mar 7. Mid-sem break
+HOLIDAY: Mar 11. No lecture
+HOLIDAY: Mar 17. Holi
+HOLIDAY: Mar 25. Minor Test 2
+HOLIDAY: Apr 10. Voting day
+HOLIDAY: Apr 13. Mahavir Jayanti
+HOLIDAY: Apr 18. Good Friday
+
+HEADER: Links to notes etc. on future days are <i>tentative only</i>. They are here only to give you an idea what the future will bring.<br>SG refers to the book by Silberschatz and Galvin<br>
+FOOTER: <i>Many course materials derived from <a href=http://pdos.csail.mit.edu/6.828/>6.828</a> by Frans Kaashoek and others at MIT; some derived from John Ousterhout's <a href=cs140.stanford.edu>cs140</a> course materials at Stanford</i>
+TITLE: CSL373 / CSL633 : Operating Systems : Schedule
+SEMESTER: Sem II, 2013-14
+
+==
+
+<a href=lab1>Lab 1: Initializing PC Hardware</a>
+OUT: Jan 2
+DUE: Feb 4
+
+==
+
+<a href=pintos/doc/pintos_3.html>Lab 2: Implementing User Processes</a>
+OUT: Feb 11
+DUE: Mar 7
+
+==
+
+
+LEC: <a href=lec/l1.html>Introduction to UNIX System Calls</a>
+PREP: Read <a href=bib/ritchie79evolution.pdf>The Evolution of the Unix Time-Sharing System</a>.
+OSC: chapter 1
+
+==
+
+LEC: <a href=lec/l2.html>Introduction to UNIX System Calls (2)</a>
+PREP: Read <a href=book-rev7.pdf>xv6 chapter 0</a>, <a href=http://linux.die.net/man/7/pipe>pipe</a> man page, <a href=http://www.gnu.org/s/hello/manual/libc/Interrupted-Primitives.html>Interrupted Primitives</a>.
+
+==
+
+LEC: <a href=lec/l3.html>Other OS Abstractions: Threads, Address Spaces, Filesystem, Devices</a> (<a href=slides/threads.pdf>illustrations</a>)
+PREP: do <a href=lec/l3-hw1.html>homework</a>.
+
+==
+
+LEC: <a href=lec/l4.html>PC Architecture</a> (<a href=slides/l4.pdf>slides</a>)
+PREP: read <a href=ref/pc-arch.html>IA-32 guide</a>
+
+==
+
+LEC: <a href=lec/l5.html>x86 Instruction Set, GCC Calling Conventions</a>
+
+==
+
+LEC: <a href=lec/l6.html>Physical Memory Map, I/O, Segmentation</a> [lecture held on Wed 15/01]
+
+==
+
+LEC: <a href=lec/l7.html>Segmentation, Trap Handling</a>
+PREP: do <a href=lec/l6-hw2.html>homework</>
+
+==
+
+LEC: <a href=lec/l8.html>Traps, Trap Handlers</a>
+
+==
+
+LEC: <a href=lec/l9.html>Kernel data structures, Memory Management</a>
+
+==
+
+LEC: <a href=lec/l10.html>Segmentation Review, Paging Intro</a> (<a href=lec/x86_translation_and_registers.pdf>diagrams</a>)
+PREP: read <a href=book-rev7.pdf>xv6 chapter 2</a>, optionally read <a href=ref/ia32-3.pdf>80386 chapter 3</a>, do <a href=lec/l10-hw3.html>homework</a> (<a href=lec/l10-hw3-pointers.c>l10-hw3-pointers.c</a>)
+
+==
+
+LEC: <a href=lec/l11.html>Paging</a> (<a href=lec/l4-mmu.pdf>MMU</a>)
+
+==
+
+LEC: <a href=lec/l12.html>Process Address Spaces using Paging</a>
+PREP: Read <a href=book-rev7.pdf>xv6 chapter 1</a>, <a href=http://duartes.org/gustavo/blog/post/anatomy-of-a-program-in-memory>Process Anatomy</a>;
+OSC: 3.1-3.3
+
+==
+
+LEC: <a href=lec/l13.html>TLBs, Large Pages, Boot sector</a>
+
+==
+
+
+LEC: <a href=lec/l14.html>Loading the kernel, Initializing the page table</a>
+
+==
+
+LEC: <a href=lec/l15.html>Setting up page tables for user processes</a>
+
+==
+
+LEC: <a href=lec/l16.html>Processes in Action</a>
+
+==
+
+LEC: <a href=lec/l17.html>Process Structure, Switching</a>
+
+==
+
+LEC: <a href=lec/l18.html>Process kstack, scheduler, fork, context-switch, PCB, trap entry and return</a>
+PREP: Read <a href=book-rev7.pdf>xv6 chapter 1</a>, do <a href=lec/l18-hw4.html>homework</a>
+
+==
+
+LEC: <a href=lec/l19.html>Creating the first process</a>
+PREP: Read <a href=book-rev7.pdf>xv6 chapter 5 through section "<i>Code: Scheduling</i>"</a> with proc.c, setjmp.S, and sys_fork (in sysproc.c)
+OSC: chapter 5
+
+==
+
+LEC: <a href=lec/l20.html>Handling User Pointers, Concurrency</a> (<a href=lec/idt.pdf>x86 IDT details</a>)
+PREP: Read <a href=book-rev7.pdf>xv6 chapter 3</a>, do <a href=lec/l20-hw5.html>homework</a>
+
+==
+
+LEC: <a href=lec/l21.html>Locking</a>
+PREP: Read <a href=book-rev7.pdf>xv6 chapter 4</a> with spinlock.c and skim mp.c<br><a href=http://stackoverflow.com/questions/187761/recursive-lock-mutex-vs-non-recursive-lock-mutex>Recursive vs. Non-Recursive Locks</a>
+
+==
+
+LEC: <a href=lec/l22.html>Fine-grained locking and its challenges</a>
+
+==
+
+LEC: <a href=lec/l23.html>Locking variations</a>
+
+==
+
+LEC: <a href=lec/l24.html>Condition variables</a>
+
+==
+
+LEC: <a href=lec/l25.html>Multiple producer, multiple consumer queue; semaphores; monitors</a>
+
+==
+
+LEC: <a href=lec/l26.html>Transactions (lock-free primitives), read-write locks</a>
+
+==
+
+LEC: <a href=lec/l27.html>Synchronization in xv6: acquire/release, sleep/wakeup, exit/wait</a>
+PREP: Read rest of <a href=book-rev7.pdf>xv6 chapter 5</a>; read remainder of proc.c and sys_wait, sys_exit, sys_kill.
+OSC: chapters 6, 7
+
+==
+
+LEC: <a href=lec/l28.html>More synchronization in xv6: kill, IDE device driver; demand paging</a>
+
+==
+
+LEC: <a href=lec/l29.html>Demand paging and replacement</a> (<a href=lec/lecture11.pdf>slides</a>)<br>[lecture held on Sat 29/03]
+OSC: chapter 9
+
+==
+
+LEC: <a href=lec/l30.html>Page Replacement, Thrashing</a> (<a href=lec/lecture12.pdf>slides</a>)<br>[lecture held on Mon 01/04]
+PREP: do <a href=lec/l30-hw6.html>homework</a>
+
+==
+
+LEC: <a href=lec/l31.html>Storage devices, Filesystem interfaces</a><br>[lecture held on Thu 03/04]
+
+==
+
+LEC: <a href=lec/l32.html>Filesystem Implementation</a><br>[lecture held on Fri 04/04]
+PREP: xv6 book <a href=book-rev7.pdf>chapter 6</a> and <a href=book-rev7.pdf>chapter 7</a>
+OSC: chapters 12, 13
+
+==
+
+LEC: <a href=lec/l33.html>Filesystem Operations</a><br>
+PREP: do <a href=lec/l33-hw7.html>homework</a>
+
+==
+
+LEC: <a href=lec/l34.html>Crash Recovery and Logging</a>
+
+==
+
+LEC: <a href=lec/l35.html>Logging in ext3</a>
+PREP: Read <a href=bib/tweedie98journaling.pdf>Journaling the Linux ext2fs Filesystem</a>
+
+==
+
+LEC: <a href=lec/l36.html>Protection and Security</a>
+
+==
+
+LEC: <a href=lec/l37.html>Scheduling Policies</a>
+
+==
+LEC: <a href=lec/l38.html>Multi-processor coordination: lock free</a>
+PREP: optionally read <a href=bib/mckenney01read.pdf>Read-Copy-Update</a>, <a href=bib/clements-bonsai.pdf>Address Space Using RCU Trees</a>
+
+==
+
+LEC: <a href=lec/l39.html>Microkernels, Exokernels, Multikernels</a>
+
+==
+
+LEC: <a href=lec/l40.html>Virtualization, Cloud Computing, Technology trends</a>
+
+==

@@ -1,0 +1,221 @@
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base
+END
+syn-write.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/syn-write.c
+END
+child-syn-wrt.c
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/child-syn-wrt.c
+END
+Rubric
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/Rubric
+END
+lg-seq-random.c
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/lg-seq-random.c
+END
+syn-write.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/syn-write.h
+END
+seq-block.inc
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/seq-block.inc
+END
+random.inc
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/random.inc
+END
+sm-seq-block.ck
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/sm-seq-block.ck
+END
+syn-write.ck
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/syn-write.ck
+END
+lg-full.ck
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/lg-full.ck
+END
+syn-remove.ck
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/syn-remove.ck
+END
+lg-random.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/lg-random.c
+END
+lg-seq-block.c
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/lg-seq-block.c
+END
+sm-seq-random.c
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/sm-seq-random.c
+END
+full.inc
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/full.inc
+END
+sm-create.ck
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/sm-create.ck
+END
+syn-read.ck
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/syn-read.ck
+END
+sm-random.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/sm-random.c
+END
+sm-seq-random.ck
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/sm-seq-random.ck
+END
+lg-full.c
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/lg-full.c
+END
+child-syn-read.c
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/child-syn-read.c
+END
+lg-create.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/lg-create.c
+END
+syn-remove.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/syn-remove.c
+END
+sm-random.ck
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/sm-random.ck
+END
+lg-create.ck
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/lg-create.ck
+END
+sm-full.c
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/sm-full.c
+END
+sm-create.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/sm-create.c
+END
+lg-seq-random.ck
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/lg-seq-random.ck
+END
+syn-read.c
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/syn-read.c
+END
+syn-read.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/syn-read.h
+END
+sm-full.ck
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/sm-full.ck
+END
+lg-random.ck
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/lg-random.ck
+END
+lg-seq-block.ck
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/lg-seq-block.ck
+END
+sm-seq-block.c
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/sm-seq-block.c
+END
+seq-random.inc
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/seq-random.inc
+END
+Make.tests
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/~cs1080167/pintos-repo/!svn/ver/1/src/tests/filesys/base/Make.tests
+END

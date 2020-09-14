@@ -1,0 +1,174 @@
+<html>
+<head>
+<title>L2</title>
+</head>
+<body>
+
+<h2>Outline</h2>
+<ul>
+<li>System Calls: fork, exec, exit, wait, open, read, write, close, dup, pipe
+<li>Case Study: Unix/xv6 shell (simplified)
+</ul>
+
+<h2>System Calls</h2>
+<ul>
+<li>UNIX's <code>fork()</code> and <code>exec()</code>
+versus Windows' <code>CreateProcess()</code></li>
+
+<li>UNIX process inheritance and file sharing</li>
+</ul>
+
+<h2>Case study: Unix/xv6 shell (simplified)</h2>
+<ul>
+<pre>
+	while (1) {
+	    write (1, "$ ", 2);			// 1 = STDOUT_FILENO
+	    readcommand (0, command, args);	// parse user input, 0 = STDIN_FILENO
+	    if ((pid = fork ()) == 0) {		// child?
+		exec (command, args, 0);
+	    } else if (pid > 0) {		// parent?
+		wait (0);			// wait for child to terminate
+	    } else {
+		perror ("Failed to fork\n");
+	    }
+	}
+</pre>
+
+
+<li>why call "wait"?  to wait for the child to terminate and collect
+    its exit status.  (if child finishes, child becomes a zombie until
+    parent calls wait.)
+
+<li>Example:
+<pre>
+	$ ls
+</pre>
+<li>How does the shell implement:
+<pre>
+     $ ls > tmp1
+</pre>
+just before exec insert:
+<pre>
+	close(1);
+	creat("tmp1", 0666);   // fd will be 1
+</pre>
+<p>The kernel always uses the first free file descriptor, 1 in this case.
+    Could use <code>dup2()</code> to clone a file descriptor to a new number.
+
+<li>Good illustration for why fork + exec vs. CreateProcess on Windows.
+    (CreateProcess takes 10 arguments.)
+<p>The split of process creation into fork and exec
+    turns out to have been an inspired choice, though that
+    might not have been clear at the time; see today's
+    <a href="../bib/ritchie79evolution.pdf">assigned paper</a>.
+
+
+<li>What if you run the shell itself with redirection?
+<pre>
+     $ sh < script > tmp1
+</pre>
+If for example the file <code>script</code> contains
+<pre>
+     echo one
+     echo two
+</pre>
+FD inheritance makes this work well.
+
+<li>What if we want to redirect multiple FDs (stdout, stderr)
+    for programs that print to both?
+<pre>
+    $ ls f1 f2 nonexistant-f3 > tmp1 2>&1
+</pre>
+after creat, insert:
+<pre>
+	close(2);
+	creat("tmp1", 0666);   // fd will be 2
+</pre>
+why is this bad?  illustrate what's going on with file descriptors.  better:
+<pre>
+	close(2);
+	dup(1);		       // fd will be 2
+</pre>
+(Read Section 3 of "Advanced Programming in the UNIX environment" by W. R. Stevens, esp. Section 3.10)
+or in bourne shell syntax,
+<pre>
+    $ ls f1 f2 nonexistant-f3 > tmp1 2>&1
+</pre>
+Read Chapter 3 of <em>Advanced Programming in the UNIX Environment</em> by
+W. Richard Stevens for a detailed understanding of how file descriptors
+are implemented. In particular, read Section 3.10 to understand how
+file sharing works.
+
+<li>how to run a series of programs on some data?
+<pre>
+	$ sort < file.txt > tmp1
+	$ uniq tmp1 > tmp2
+	$ wc tmp2
+	$ rm tmp1 tmp2
+</pre>
+can be more concisely done as:
+<pre>
+        $ sort < file.txt | uniq | wc
+</pre>
+<li>A pipe is a one-way communication channel.  Here is a simple example:
+<pre>
+        int fdarray[2];
+        char buf[512];
+        int n;
+
+        pipe(fdarray);
+        write(fdarray[1], "hello", 5);
+        n = read(fdarray[0], buf, sizeof(buf));
+        // buf[] now contains 'h', 'e', 'l', 'l', 'o'
+</pre>
+<li>file descriptors are inherited across <code>fork()</code>, so this also works:
+<pre>
+        int fdarray[2];
+        char buf[512];
+        int n, pid;
+
+        pipe(fdarray);
+        pid = fork();
+        if(pid > 0){
+          write(fdarray[1], "hello", 5);
+        } else {
+          n = read(fdarray[0], buf, sizeof(buf));
+        }
+</pre>
+<li>How does the shell implement pipelines (i.e., cmd 1 | cmd 2 |..)?
+We want to arrange that the output of cmd 1 is the input of cmd 2.
+The way to achieve this goal is to manipulate stdout and stdin.
+<li>The shell creates processes for each command in
+the pipeline, hooks up their stdin and stdout,
+and waits for the last process of the
+pipeline to exit.  Here's a sketch of what the shell does,
+in the child process of the <code>fork()</code> we already have,
+to set up a pipe:
+<pre>	    
+	    int fdarray[2];
+
+  	    if (pipe(fdarray) < 0) panic ("error");
+	    if ((pid = fork ()) == 0) {  child (left end of pipe)
+	       close (1);
+	       tmp = dup (fdarray[1]);   // fdarray[1] is the write end, tmp will be 1
+	       close (fdarray[0]);       // close read end
+	       close (fdarray[1]);       // close fdarray[1]
+	       exec (command1, args1, 0);
+	    } else if (pid > 0) {        // parent (right end of pipe)
+	       close (0);
+	       tmp = dup (fdarray[0]);   // fdarray[0] is the read end, tmp will be 0
+	       close (fdarray[0]);
+	       close (fdarray[1]);       // close write end
+	       exec (command2, args2, 0);
+	    } else {
+	       printf ("Unable to fork\n");
+            }
+</pre>
+<li>Who waits for whom? (draw a tree of processes)
+<li>Why close read-end and write-end? ensure that
+every process starts with 3 file descriptors, and that
+reading from the pipe returns end of file after the first command exits.
+</ul>
+</body>
+
+

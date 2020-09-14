@@ -1,0 +1,409 @@
+<html>
+<head>
+<title>Homework 4</title>
+<link rel="stylesheet" href="../labs.css" type="text/css" />
+</head>
+<body>
+
+<h2><a href="..">Operating Systems</a></h2>
+<hr>
+
+<h1>Homework 4</h1>
+[total 26 marks]
+<p>
+<b>Hand-In Procedure</b>
+<p>
+You are to turn in this homework before the lecture begins. Please
+drop your homework in a cardboard box near to the lecture podium. Your
+homework must be hand-written (typed homeworks will not be accepted).
+
+<p><h2>Assignment : Spin-locking </h2>
+[4 marks]
+<p>
+<b>Read</b>: spinlock.c
+
+In this part of the assignment we will explore some of the interaction
+between interrupts and locking.
+<p>
+
+Make sure you understand what would happen if the kernel executed
+the following code snippet:
+<pre>
+  struct spinlock lk;
+  initlock(&amp;lk, "test lock");
+  acquire(&amp;lk);
+  acquire(&amp;lk);
+</pre>
+(Feel free to use QEMU to find out.  <code>acquire</code> is in <code>spinlock.c</code>.)
+<p>
+
+An <code>acquire</code> ensures interrupts are off
+on the local processor using the <code>cli</code> instruction
+(via <code>pushcli()</code>),
+and interrupts remain off until the <code>release</code>
+of the last lock held by that processor
+(at which point they are enabled using <code>sti</code>).
+<p>
+
+Let's see what happens if we turn on interrupts while
+holding the <code>ide</code> lock.
+In <code>iderw</code> in <code>ide.c</code>, add a call
+to <code>sti()</code> after the <code>acquire()</code>,
+and a call to <code>cli()</code> just before the <code>release()</code>.
+Rebuild the kernel and boot it in QEMU.
+Chances are the kernel will panic soon after boot; try booting QEMU a few times
+if it doesn't.
+<p>
+
+<div class="required">
+<p><b>Turn in:</b>
+explain in a few sentences why the kernel panicked.
+You may find it useful to look up the stack trace
+(the sequence of <code>%eip</code> values printed by <code>panic</code>)
+in the <code>kernel.asm</code> listing.
+</p></div>
+
+Remove the <code>sti()</code> and <code>cli()</code> you added,
+rebuild the kernel, and make sure it works again.
+<p>
+
+Now let's see what happens if we turn on interrupts
+while holding the <code>file_table_lock</code>.
+This lock  protects the table of file descriptors,
+which the kernel modifies when an application opens or closes
+a file.
+In <code>filealloc()</code> in <code>file.c</code>, add
+a call to
+<code>sti()</code> after the call to <code>acquire()</code>,
+and a <code>cli()</code> just before <b>each</b> of the
+<code>release()</code>es.
+You will also need to add 
+<code>#include "x86.h"</code> at the top of the file after
+the other <code>#include</code> lines.
+Rebuild the kernel and boot it in QEMU.
+It will not panic.
+<p>
+
+<div class="required">
+<p><b>Turn in:</b>
+explain in a few sentences why the kernel didn't panic.
+Why do <code>file_table_lock</code> and <code>ide_lock</code> have
+different behavior in this respect?
+<p>
+You do not need to understand anything about the details of the IDE hardware
+to answer this question, but you may find it helpful to look 
+at which functions acquire each lock, and then at when those
+functions get called.
+</p></div>
+
+<p>
+(There is a very small but non-zero chance that the kernel will panic
+with the extra <code>sti()</code> in <code>filealloc()</code>.
+If the kernel <i>does</i> panic, make doubly sure that
+you removed the <code>sti()</code> call from 
+<code>iderw</code>.  If it continues to panic and the
+only extra <code>sti()</code> is in <code>filealloc()</code>,
+then email the staff
+and think about buying a lottery ticket.)
+<p>
+
+<div class="required">
+<p><b>Turn in:</b>
+Why does <code>release()</code> clear
+<code>lk-&gt;pcs[0]</code> and <code>lk-&gt;cpu</code>
+<i>before</i> clearing <code>lk-&gt;locked</code>?
+Why not wait until after? 
+</p></div>
+
+<!--Now look at the <code>lock_acquire()</code> and <code>sema_down</code>
+functions in <code>pintos</code> source code.
+The <code>sema_down()</code> function in <code>pintos</code> first disables
+interrupts and
+then re-enables interrupts (or sets them to their original status)
+before returning. Whereas xv6 <code>acquire()</code> function keeps interrupts
+disabled. Also, <code>sema_down()</code> blocks the thread, while
+<code>acquire()</code> busy waits.
+
+<div class="required">
+<p><b>Turn in:</b>
+Why does <code>sema_down()</code> need to disable (and re-enable) interrupts?
+Will this implementation work on a multiprocessor? If not, how will you
+change it so that it works on multiprocessors too? Provide code (or pseudo-code).
+</p></div>-->
+
+
+<h4>Uniprocessor Locking</h4>
+A uniprocessor OS does not require atomic instructions like
+<code>xchg</code> to implement locks (or other forms of
+synchronization). The concurrency on uni-processor systems
+is due to pre-emption of threads by the timer interrupt.
+Because the timer interrupt may pre-empt a thread at
+any point in program execution, instructions of two
+threads may interleave in any arbitrary order.
+<br><br>
+Synchronization primitives that work on multi-processor
+systems are guaranteed to work on uni-processor systems (reason
+it for yourself). On uniprocessor systems,
+it is also possible to implement critical
+sections by disabling interrupts.
+<br><br>
+Here are some (possibly incorrect) implementations
+of <code>lock()</code> and
+<code>unlock()</code> primitives using interrupt enable and
+disable mechanisms. Answer the associated questions.
+
+<pre>
+lock(L) {
+  cli();   //disable preemption
+  while (L==0) continue;
+  L = 0;
+  sti();   //enable preemption
+}
+
+unlock(L) {
+  L = 1;
+}
+</pre>
+Does this implementation of locks work on a uniprocessor? If not, why not?
+
+<pre>
+lock(L) {
+  int acquired = 0;
+  while (!acquired) {
+    cli();
+    if (L == 1) {
+        acquired = 1;
+        L = 0;
+    }
+    sti();
+   }
+}
+
+unlock(L) {
+  L = 1;
+}
+</pre>
+Does this implementation of locks work on a uniprocessor? If not, why not?
+
+<p><h2>Assignment : sleep and wakeup</h2>
+[2 marks]
+<p>
+Here is a version of the code for a single-queue, multiple-consumer,
+mutiple-producer problem.
+<pre>
+struct pcq {
+    void *ptr;
+    struct spinlock lock;
+};
+
+void*
+pcqread(struct pcq *q)
+{
+    void *p;
+
+    acquire(&amp;q->lock);
+    while(q-&gt;ptr == 0)
+        sleep(q, &amp;q->lock);
+    p = q-&gt;ptr;
+    q-&gt;ptr = 0;
+    wakeup(q);  /* wake pcqwrite */
+    release(&amp;q->lock);
+    return p;
+}
+
+void
+pcqwrite(struct pcq *q, void *p)
+{
+    acquire(&amp;q->lock);
+    while(q-&gt;ptr != 0)
+        sleep(q, &amp;q->lock);
+    q-&gt;ptr = p;
+    wakeup(q);  /* wake pcqread */
+    release(&amp;q->lock);
+    return p;
+}
+</pre>
+<div class="required">
+<p><b>Turn in:</b>
+Both producer (<code>pcqwrite</code>) and consumer (<code>pcqread</code>)
+are sleeping on the  same channel <code>q</code>. Is this correct? Why or
+why not? Should they sleep on different channels? For example, what happens
+if the producer calls
+<code>wakeup(q)</code>? Can some unrelated part of the code call wakeup
+a consumer thread?
+</p></div>
+
+
+
+<h2>Assignment : xv6 file system</h2>
+[8 marks]
+<p>
+<b>Read</b>: sysfile.c (create(), sys_unlink()),
+fs.c (readi(), writei(), dirlink(), ialloc(), iupdate(), iget(), ilock(), iunlock(),
+iput(), itrunc()), bio.c (bget(), bread(), bwrite(), brelse())
+
+<p>
+<b> Add the following line at the beginning of the log_write() function in log.c</b>
+<pre>
+cprintf("log_write %d\n", b->sector);
+</pre>
+This will record all writes to the file system along with the sector number.
+
+<p>
+Start a new session on xv6 with a fresh disk (using <code>make clean</code> followed
+by <code>make qemu</code>, and type the following command:
+<pre>
+$ echo > a
+</pre>
+This command creates a new file.
+You will see a series of disk writes (printed in log_write()).
+<div class="required">
+<p><span class="header">Turn in:</span>
+Report the printed output and explain what is being written in each disk write.
+What is the third disk write (to sector
+29)? You may want to insert <code>cprintf()</code> statements in xv6 code to
+see where the writes are coming from.
+</p></div>
+
+<p>
+Interrupt the previous command (leave the newly created file unchanged).
+Next, execute the following command to write data to this file:
+<pre>
+$ echo x > a
+</pre>
+<div class="required">
+<p><span class="header">Turn in:</span>
+Report the printed output and explain what is being written in each disk write.
+Why do you see writes to block 4 (and to 426) twice? You may want to
+insert <code>cprintf()</code> statements in xv6 code to
+see where the writes are coming from.
+</p></div>
+
+<p>
+Next, delete the file by typing the following command:
+<pre>
+$ rm a
+</pre>
+<div class="required">
+<p><span class="header">Turn in:</span>
+Report the printed output and explain what is being written in each disk write.
+</p></div>
+
+<h2>Assignment : ZCAV</h2>
+[12 marks]
+<p>
+This homework is based on the ZCAV tool: see ZCAV documentation <a href=http://www.coker.com.au/bonnie++/zcav/>here</a>.
+
+<h3>Background</h3>
+Given constant rotational speed
+(<em>constant angular velocity, CAV</em>) of a magnetic disk, the head can cover larger
+distance on the outer tracks in the same time, compared to the inner
+tracks.
+If the sector density on all tracks is same, this would cause space
+wastage on the outer tracks (as their density would be limited by the inner
+tracks).
+
+<p>To deal with this situation, modern disks divide their tracks into
+<em>zones</em>. The inner zones have lower angular sector density, while the outer
+zones have higher angular sector density. Effectively, this means that the disk
+throughput at the outer zones is higher. This is also called
+<em>zoned constant angular velocity</em> (ZCAV).
+
+<p>To take advantage of this, the disk controllers usually map the
+lower sector numbers (starting from sector number zero) on the outer
+tracks, while the higher sector numbers are mapped to inner tracks. The
+thinking being that the lower sector numbers are likely to have higher
+frequency of access. Notice that this is just an assumption and may not
+be true!
+
+<p>ZCAV program measures the disk throughput at different sector
+numbers. To do this, it reads/writes 256MB (default) worth of data starting
+at sector <code>X</code>, where <code>X</code> is varied from 0 to disk-size.
+
+<p>You can see the results of running ZCAV on some disk configurations
+<a href=http://www.coker.com.au/bonnie++/zcav/results.html>here</a>.
+
+<h4>Turn in</h4>
+Run ZCAV using the following command for the following types of disks:
+<ul>
+	<!--<li>A disk on a physical desktop in GCL. We will provide you with root
+  access on one of the desktops to perform this experiment.-->
+	<li>A disk on a physical laptop. If you have a laptop, report
+	its make and model, and published disk characteristics (seek, latency,
+	throughput). Then measure it using ZCAV and report. Also, report any
+	interesting conclustions (if any). If you do not
+	have access to a laptop, please borrow it from one of your friends or one of the TAs, and clearly specify whose laptop you borrowed.
+	<li>A USB (pen) drive. Report the make, model, and published characteristics
+	of the USB drive and compare with your obtained results. If you do not have a USB drive, please borrow one.
+	<!--<li>A disk mounted inside a Virtual Machine (VM).
+	We ran the experiment on a Baadal VM ourselves and here is the raw data
+	we obtained for two disks (main disk containing the OS image of 80GB size,
+	and an attached disk of 8GB size): <a href=main_80GB.txt>main_80GB.txt</a>,
+	<a href=attached_8GB.txt>attached_8GB.txt</a>. You can answer this part by
+	either interpreting this raw data, or generating data for yourself. Here
+	are the credentials required to access the Baadal VM:
+	<pre>
+  IP address: 172.16.3.16
+  user: root
+  password: zcav123
+  </pre>
+	To access this VM, you will first have to login to baadalcsegateway.cse.iitd.ernet.in
+	using your GCL credentials, and then SSH to 172.16.3.16 from there.<br>
+	The VM has 8 CPUs, and 8GB RAM, and a <a href=http://en.wikipedia.org/wiki/Qcow>qcow2-format mounted disk</a>. You may want to read a bit about how VMs are implemented 
+  (in particular, how disks are virtualized and how the qcow2 format works) to
+  answer this question.-->
+</ul>
+Report all results as graphs as at this <a href=http://www.coker.com.au/bonnie++/zcav/results.html>URL</a>. Feel free to use the GNUPlot scripts available
+at this URL (e.g., <a href=command.gnuplot.zcav>command.gnuplot.zcav</a>).
+In particular, how many zones do you find? What is the mapping between
+sector numbers and physical disk layout? What are the corresponding
+disk bandwidths? Anything else you notice?
+
+Finally, explain the different behaviour in different environments.
+
+<h3>Tips</h3>
+<ul>
+	<li>Downloading and Installing: download this <a href=bonnie++-1.03e.tgz>tarball</a>, and type the following commands:
+	<ul>
+		<li><pre>tar xzf bonnie++-1.03e.tgz</pre></li>
+	  <li><pre>cd bonnie++-1.03e</pre>
+		<li><pre>./configure</pre>
+		<li><pre>make</pre>
+	</ul>
+	<li><b>Running</b>: <code>sudo ./zcav /dev/sda</code> (replace <code>sda</code> with <code>sdb</code>, <code>hda</code>, etc. depending on the disk being tested).
+  <li>You only need to test the read performance (not write).
+	<li>You may first want to setup the experiment on your private machine
+	before experimenting on GCL. Note that one experiment can take hours to
+	complete, so plan in advance on accessing the GCL machine.
+	<li>While zcav is running, you may want to check that your CPU is not
+	bottlenecked (i.e., utilization is below 100\%) using <code>top</code>.
+	Also, you may want to check that no other IO-intensive operation is running
+	using <code>iotop</code>.
+</ul>
+
+<h3>Fun</h3>
+This part is optional. If you do these, feel free to submit your results.
+<ul>
+<li>Can you modify the ZCAV program to estimate the seek and latency of
+the magnetic disk? How? What were your results?
+<li>Try the same experiments for writes (instead of reads). Do your results
+differ? For which environments? Why? Warning: writes will overwrite your
+filesystem and can potentially make the FS unusable. So any write
+experiments should not be done on the disk containing the current FS.
+<li>Try the same experiments on <em>filesystems</em> (instead of raw
+disks as above). Here, you would need to create a large file, and then
+use the command:<code>./zcav filename</code>.
+<ul>
+<li>Try for different filesystems and different FS options: in particular,
+try for ext4 ordered mode vs. ext4 default mode.
+</ul>
+</ul>
+
+
+
+<p><hr><p>
+
+
+</body>
+</html>
+

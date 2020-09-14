@@ -1,0 +1,81 @@
+<h3> Assignment 8</h3>
+<h4>Lab assignment 8 is available on the moodle for your practice. Please note that this is an ungraded assignment.</h4>
+<h4>We encourage you to do these ungraded assignments by yourself until the end, as this will help you to improve your coding skills.</h4>
+<ol>
+<li><b>Strings</b>: What is the output of the following code?
+<pre>
+void mystery(string a, string &b)
+{
+  a.erase(0, 1);
+  b += a[0];
+  b.insert(3, "FOO");
+}
+
+int main()
+{
+  string a = "thomas";
+  string b = "edison";
+  mystery(a, b);
+  cout << a << " " << b << endl;
+  return 0;
+}
+</pre>
+Explain.
+</li>
+<li><b>Remove odd index characters</b>: Write a program that removes the characters at the odd indices. Examples:
+<ul>
+<li>Input: str = "ABCDEF"<br>
+Output: "ACE"</li>
+<li>Input: str = "12345AB"<br>
+Output: "135B"</li>
+</ul>
+Notice that only characters at the even indices remain in the output. The characters at the odd indices of the input have been removed in the output.
+</li>
+<li><b>Checking palindromes</b>: A palindrome is a string that is spelled the same when reversed. For example: <code>MALAYALAM</code> is a palindrome, because the reverse of this string is also <code>MALAYALAM</code>. Similarly, <code>madam</code> and <code>AbbA</code> are palindromes.
+
+<p>Write a method <code>checkPalindrome(string const &amp;s)</code> that takes a string parameter (<code>s</code>) and returns the boolean value TRUE if <code>s</code> is a palindrome; otherwise it returns FALSE. Also, write the <code>main</code> function similar to what is shown below to read user input repeatedly (until a sentinel value) and check if the input line is a palindrome or not.
+<pre>
+bool checkPalindrome(string const &amp;s)
+{
+  //your code here
+}
+
+int main()
+{
+  while (1) {
+    string line;
+    line = getLine("Enter next string to be checked: ");
+    if (line == "") {
+      break;
+    }
+    if (checkPalindrome(line)) {
+      cout << "Yes, " << line << " is a palindrome." << endl;
+    } else {
+      cout << "No, " << line << " is not a palindrome." << endl;
+    }
+  }
+}
+</pre>
+Test your program with multiple inputs. Also answer the following questions:
+<ol>
+<li>The string parameter to <code>checkPalindrome()</code> is a const parameter? Would it be okay to change this to pass-by-value?  Would it be okay to change this to (non-const) pass-by-reference?  What are the considerations which allow us to choose one over another?</li>
+</ol>
+</li>
+<li><b>Count substrings</b>: Given two strings, count the number of times the first string appears in the second (as a substring). It should also print the indices at which the first string appears in the second string. You also need to consider overlapping appearances. Examples:
+<ul>
+<li>Input: str1 = "AXY", str2 = "AXYDCPAXYAXZ"<br>
+Output: count = 2, indices = 0, 6
+</li>
+<li>Input: str1 = "AXA", str2 = "AXAXAXA"<br>
+Output: count = 3, indices = 0, 2, 4 (notice that here the appearances at index 0 and 2 are overlapping)
+</li>
+<li>Input: str1 = "AB", str2 = "ABRACADABRA"<br>
+Output: count = 2, indices = 0, 7
+</li>
+<li>Input: str1 = "ABC", str2 = "ABRACADABRA"<br>
+Output: count = 0
+</li>
+</ul>
+</li>
+
+</ul>

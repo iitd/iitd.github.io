@@ -1,0 +1,138 @@
+<html>
+<head>
+<title>Measuring disk throughput</title>
+<link rel="stylesheet" href="../labs.css" type="text/css" />
+</head>
+<body>
+
+<h2><a href="..">CSL373 : Operating Systems</a></h2>
+<hr>
+This homework is based on the ZCAV tool: see ZCAV documentation <a href=http://www.coker.com.au/bonnie++/zcav/>here</a>.
+
+<h3>Background</h3>
+Given constant rotational speed
+(<em>constant angular velocity, CAV</em>) of a magnetic disk, the head can cover larger
+distance on the outer tracks in the same time, compared to the inner
+tracks.
+If the sector density on all tracks is same, this would cause space
+wastage on the outer tracks (as their density would be limited by the inner
+tracks).
+
+<p>To deal with this situation, modern disks divide their tracks into
+<em>zones</em>. The inner zones have lower angular sector density, while the outer
+zones have higher angular sector density. Effectively, this means that the disk
+throughput at the outer zones is higher. This is also called
+<em>zoned constant angular velocity</em> (ZCAV).
+
+<p>To take advantage of this, the disk controllers usually map the
+lower sector numbers (starting from sector number zero) on the outer
+tracks, while the higher sector numbers are mapped to inner tracks. The
+thinking being that the lower sector numbers are likely to have higher
+frequency of access. Notice that this is just an assumption and may not
+be true!
+
+<p>ZCAV program measures the disk throughput at different sector
+numbers. To do this, it reads/writes 256MB (default) worth of data starting
+at sector <code>X</code>, where <code>X</code> is varied from 0 to disk-size.
+
+<p>You can see the results of running ZCAV on some disk configurations
+<a href=http://www.coker.com.au/bonnie++/zcav/results.html>here</a>.
+
+<h4>Turn in</h4>
+Run ZCAV using the following command for the following types of disks:
+<ul>
+	<li>A disk on a physical desktop in GCL. We will provide you with root
+	access on one of the desktops to perform this experiment.
+	<li>A disk on a physical laptop (optional). If you have a laptop, report
+	its make and model, and published disk characteristics (seek, latency,
+	throughput). Then measure it using ZCAV and report. Also, report any
+	interesting conclustions (if any). This part is optional; if you do not
+	have access to a laptop, you are not required to do this part.
+	<li>A USB (pen) drive. Report the make, model, and published characteristics
+	of the USB drive and compare with your obtained results.
+	<li>A disk mounted inside a Virtual Machine (VM).
+	We ran the experiment on a Baadal VM ourselves and here is the raw data
+	we obtained for two disks (main disk containing the OS image of 80GB size,
+	and an attached disk of 8GB size): <a href=main_80GB.txt>main_80GB.txt</a>,
+	<a href=attached_8GB.txt>attached_8GB.txt</a>. You can answer this part by
+	either interpreting this raw data, or generating data for yourself. Here
+	are the credentials required to access the Baadal VM:
+	<pre>
+  IP address: 172.16.3.16
+  user: root
+  password: zcav123
+  </pre>
+	To access this VM, you will first have to login to baadalcsegateway.cse.iitd.ernet.in
+	using your GCL credentials, and then SSH to 172.16.3.16 from there.<br>
+	The VM has 8 CPUs, and 8GB RAM, and a <a href=http://en.wikipedia.org/wiki/Qcow>qcow2-format mounted disk</a>. You may want to read a bit about how VMs are implemented 
+  (in particular, how disks are virtualized and how the qcow2 format works) to
+	answer this question.
+</ul>
+Report all results as graphs as at this <a href=http://www.coker.com.au/bonnie++/zcav/results.html>URL</a>. Feel free to use the GNUPlot scripts available
+at this URL (e.g., <a href=command.gnuplot.zcav>command.gnuplot.zcav</a>).
+In particular, how many zones do you find? What is the mapping between
+sector numbers and physical disk layout? What are the corresponding
+disk bandwidths? Anything else you notice?
+
+Finally, explain the different behaviour in different environments.
+
+<h3>Tips</h3>
+<ul>
+	<li>Downloading and Installing: download this <a href=bonnie++-1.03e.tgz>tarball</a>, and type the following commands:
+	<ul>
+		<li><pre>tar xzf bonnie++-1.03e.tgz</pre></li>
+	  <li><pre>cd bonnie++-1.03e</pre>
+		<li><pre>./configure</pre>
+		<li><pre>make</pre>
+	</ul>
+	<li><b>Running</b>: <code>sudo ./zcav /dev/sda</code> (replace <code>sda</code> with <code>sdb</code>, <code>hda</code>, etc. depending on the disk being tested).
+  <li>You only need to test the read performance (not write).
+	<li>You may first want to setup the experiment on your private machine
+	before experimenting on GCL. Note that one experiment can take hours to
+	complete, so plan in advance on accessing the GCL machine.
+	<li>While zcav is running, you may want to check that your CPU is not
+	bottlenecked (i.e., utilization is below 100\%) using <code>top</code>.
+	Also, you may want to check that no other IO-intensive operation is running
+	using <code>iotop</code>.
+</ul>
+
+<h3>Fun</h3>
+This part is optional. If you do these, feel free to submit your results.
+<ul>
+<li>Can you modify the ZCAV program to estimate the seek and latency of
+the magnetic disk? How? What were your results?
+<li>Try the same experiments for writes (instead of reads). Do your results
+differ? For which environments? Why? Warning: writes will overwrite your
+filesystem and can potentially make the FS unusable. So any write
+experiments should not be done on the disk containing the current FS.
+<li>Try the same experiments on <em>filesystems</em> (instead of raw
+disks as above). Here, you would need to create a large file, and then
+use the command:<code>./zcav filename</code>.
+<ul>
+<li>Try for different filesystems and different FS options: in particular,
+try for ext4 ordered mode vs. ext4 default mode.
+</ul>
+</ul>
+
+<!--
+Download IOmeter from <a href=http://www.iometer.org>www.iometer.org</a> and estimate the seek time, the rotational delay, and the disk transfer time of your laptop/desktop using varying sizes of workloads. Compare your estimates with the published numbers for your disk (by the manufacturer). Submit a written description of what you tried, and what were your results
+
+<h3>Tips</h3>
+<ul>
+	<li>Download the source tarball (not binary tarballs), and untar it.
+	<li>Ensure that you have the following packages installed (on Ubuntu)
+	<ul>
+		<li><pre>sudo apt-get install libaio1</pre>
+		<li><pre>sudo apt-get install libaio-dev</pre>
+	</ul>
+	If you are performing this experiment on a GCL machine, request updaters@cse
+	to install these packages (if not already installed).
+	<li>Type <pre>cd src &amp;&amp; make -f Makefile-Linux.x86_64 all</pre>. (If you are on 32-bit system, use  <pre>cd src &amp;&amp; make -f Makefile-Linux.i386 all</pre>
+</ul>
+-->
+<p><hr><p>
+
+
+</body>
+</html>
+

@@ -1,0 +1,135 @@
+
+<html>
+<head>
+<title>Homework: dynamic linking</title>
+<link rel="stylesheet" href="../labs.css" type="text/css" />
+</head>
+<body>
+
+<h2><a href="..">CPSC 422/522: Operating Systems</a></h2>
+<hr>
+
+<h1>Homework: dynamic linking</h1>
+
+
+
+<p>
+<b>Read</b>: <a href="../xv6-book/exec.pdf">xv6 chapter 9</a>
+and <a href="../ref/elf.pdf">ELF</a> chapter 2,
+especially the section on Dynamic Linking.
+
+<p>
+<b>Hand-In Procedure</b>
+
+<p>
+You are to turn in this homework during lecture. Please
+write up your answers to the exercises below and hand them in to a
+staff member at the beginning of lecture.
+
+<p><b>Assignment</b>
+
+<p>
+In this homework you will explore dynamic linking in the context of Linux,
+since xv6 does not support dynamic linking.
+
+<p>
+Enter the following trivial program <tt>test.c</tt>
+on a Linux x86 machine, such as any of the Zoo machines:
+
+<blockquote>
+<pre>
+#include &lt;stdio.h&gt;
+
+int main()
+{
+        printf("%p\n", stdin);
+}
+</pre>
+</blockquote>
+
+<p>
+First, compile it to both dynamically-linked and statically-linked executables,
+as follows:
+
+<pre>
+$ <samp>gcc -m32 -o test-dynamic test.c</samp>
+$ <samp>gcc -m32 -static -o test-static test.c</samp>
+$ <samp>ls -l test-*</samp>
+</pre>
+
+<p>
+<b>Turn in</b>:
+How big is each version of the program,
+and what accounts for this difference in executable size?
+Use the <tt>nm</tt> command to get a clearer picture
+of exactly what all each executable contains.
+Why are a few symbols marked 'U' in <tt>test-dynamic</tt>
+and 'T' in <tt>test-static</tt>?
+
+<p>
+Note that not all the contents of executables such as these
+actually get loaded into memory when running the program normally &mdash;
+a lot of space is typically consumed by symbol/debugging information
+that only debuggers and utilities like <tt>nm</tt> look at.
+You can remove this symbol/debugging information
+using the <tt>strip</tt> command 
+to get an idea of the sizes of the "bare-bones" executable content
+that actually <i>does</i> get loaded into memory when you run the program,
+but the difference between dynamically-linked and statically-linked executables
+should be quite apparent either way.
+
+<p>
+Now compile <tt>test.c</tt> to two different assembly language files
+(<i>not</i> <tt>.o</tt> files)
+with and without the <tt>-fPIC</tt> option,
+and compare the differences, as follows:
+
+<pre>
+$ <samp>gcc -m32 -S -o test.s test.c</samp>
+$ <samp>gcc -m32 -S -fPIC -o test-pic.s test.c</samp>
+$ <samp>diff -c test.s test-pic.s >test.diff</samp>
+</pre>
+
+<p>
+The <tt>-fPIC</tt> option tells GCC
+to create <i>position-independent code</i> (PIC),
+which is how ELF dynamic link libraries must be compiled
+so that they can be loaded at any virtual address
+instead of being fixed at a particular virtual address
+like normal ELF executables are.
+
+<p>
+Print the resulting <tt>test.diff</tt> and study it
+to see if you can figure out exactly what the compiler is doing
+to make the code position-independent.
+See the Dynamic Linking section of the ELF specification,
+particularly the part on the Global Offset Table (GOT)
+and the Procedure Linkage Table (PLT),
+for important clues.
+
+<p>
+<b>Turn in</b>:
+Annotate your printout with brief comments
+describing what is happening where in the PIC version of the code, and why.
+
+<p>
+<b>This completes the homework.</b>
+
+
+
+<p><hr><p>
+<address>
+<a href="http://www.cs.yale.edu/people/ford.html">Bryan Ford</a>,
+<a href="http://www.cs.yale.edu/">Department of Computer Science</a>,
+<a href="http://www.yale.edu/">Yale University</a>
+</address> 
+
+
+<i>Based on MIT 6.828 materials
+	by Frans Kaashoek and others</i>
+
+
+</body>
+</html>
+
+

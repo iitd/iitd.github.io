@@ -1,0 +1,203 @@
+<title>L31</title>
+<html>
+<body>
+	<h3>Storage Devices</h3>
+	<ul>
+		<li>Typical Characteristics of Magnetic Disk:
+		<ul>
+			<li>1-5 platters, magnetically coated on each surface.
+			<li>Actuator arm positions heads radially.
+			<li>Roughly 200,000 tracks per radial inch (today's technology)
+			<li>Overall disk package: 1-8 inches in height.
+			<li>Typical capacities today: 100GB-2TB.
+			<li>Typical rotational speeds: 5000-15000RPM. Larger disks tend to be
+			slower.
+			<li>Typical seek time: 2-10ms
+			<li>Average rotational latency (for half a revolution): 4ms (@7500RPM)
+			<li>Transfer: read or write data as it passes under the head.
+			Typical transfer rates: 100-150 MBytes/second
+			<li>Disk API:
+			<ul>
+				<li>read(startSector, sectorCount, buffer)</li>
+				<li>write(startSector, sectorCount, buffer)</li>
+			</ul>
+			<li>Direct Memory Access (DMA): device can copy data to and from memory,
+			without help from the CPU. This is the common case.
+		</ul>
+		<li>Flash Memory:
+		<ul>
+			<li>Solid state (semiconductor) storage, but non-volatile
+			<li>No moving parts, hence more shock-resistant
+			<li>Faster access than disk
+			<li>5-10x more expensive than disk
+			<li>Two methods of implementing: NAND and NOR. NAND more popular today.
+			<ul>
+				<li>Each device divided into blocks, which are subdivided into pages.
+				<li>Typical block size: 16-256KB
+				<li>Typical page size: 512-4096B. Page is the unit of reading/writing
+				<li>Total capacity: up to 16GB per chip
+				<li>Two significant quirks:
+				<ul>
+					<li>Before rewriting a page, its entire block must be <em>erased</em>;
+					this is a separate operation. This makes random-access updates
+					expensive.
+          <li>Wear-out: once a block has been erased about 100,000 times, it
+					no longer stores information reliably.
+				</ul>
+			</ul>
+			<li>Ideal Usage of flash:
+			<ul>
+				<li>Write entire blocks (do not update individual pages). Otherwise,
+				writes too slow, wears out blocks too quickly.
+				<li>Wear leveling: manage device so all blocks get erased at roughly
+				the same rate. Avoid hotspots.
+			</ul>
+		</ul>
+		<li>Older method: Magnetic tape
+		<ul>
+			<li>9 tracks acrosss tape (one byte plus parity)
+			<li>0.5 inch wide by 2400 feet long
+			<!--<li>Typical capacity: 180MBytes for a single tape-->
+			<li>Typical bandwidth: few Mbytes/sec
+	  </ul>
+	</ul>
+	<h3>Disk Scheduling</h3>
+	<ul>
+		<li>If there are several disk I/Os waiting to be executed, what is the
+		best order in which to execute them? The goal is to minimize seek time.
+		Some options:
+		<ul>
+			<li>First come first served (FCFS, aka FIFO): simple, but nothing to
+			optimize seeks.
+			<li>Shortest seek time first (SSTF):
+			<ul>
+				<li>Choose next request that is as close as possible to the previous
+				one.
+				<li>Good for minimizing seeks, but can result in starvation of some
+				requests.
+			</ul>
+			<li>Scan or elevator algorithm:
+			<ul>
+				<li>Choose a direction (inwards or outwards) based on FIFO order
+				<li>Keep moving in the chosen direction, reading the blocks on
+				the way, till you reach the last block. In other words, use
+				SSTF for all blocks that are accessible in the chosen direction.
+				<li>If no more blocks in the current chosen direction, change
+				direction.
+				<li>Similar to how an elevator works typically
+				(replace inwards/outwards with
+				up/down).
+			</ul>
+		</ul>
+  </ul>
+	<h3>UNIX Filesystem Interface</h3>
+	We will focus on magnetic disks, given their popularity. The interface
+	design and implementation heavily depends on the characteristics of
+	the underlying storage device. Most OSes today, have been optimized for
+	magnetic disks.
+
+  <p>The API for a minimal file system consists of: open, read, write,
+  seek, close, and stat.  Dup duplicates a file descriptor. For example:
+<pre>
+  fd = open("x/y", O_RDWR);
+  read (fd, buf, 100);
+  write (fd, buf, 512);
+  close (fd)
+</pre>
+
+	<p>Notice that this interface assumes that the file is a
+	stream of bytes. Alternatively, the data in a file could
+	have been organized in a structured way.
+  The structured variant is often called a database. Any particular
+structure is likely to be useful to only a small class of
+applications, and other applications will have to work hard to fit
+their data into one of the pre-defined structures. Besides, if you
+want structure, you can easily write a user-mode library program that
+imposes that format on any file (with performance penalties however
+because of layering of different abstractions one above another).
+<!--The end-to-end argument in action.-->
+(Databases have special requirements and support an important class of
+applications, and thus have a specialized plan.)
+
+<p>To allow users to remember where they stored a file, they can
+assign a symbolic name to a file, which appears in a directory.
+There's a couple of different things going on here.
+    <ul>
+	<li>Names: how do we get from the name "x/y" to the file
+	    we're actually talking about.
+	<li>Directories: provide a way of assigning user-meaningful
+	    names to files. This is a part of the kernel name interface.
+	<li>In Unix (and almost all other filesystems) there's
+	    some notion of an on-disk file that's independent
+	    of the file's name, called an "inode".  Seen by the
+	    user (e.g. stat) but cannot access a given inode.
+	<li>Disk blocks: the inode translates offsets in our
+	    conceptual file into concrete locations on disk.
+	    Not seen by the user.
+	<li>File descriptors: in Unix, the FD binds to the inode,
+	    rather than the pathname, so the pathname lookup is
+	    done only when the file is first opened.  Application
+	    handle for an inode in the Unix API.
+    </ul>
+
+<p>Maintaining the file offset behind the read/write interface is an
+  interesting design decision. The alternative is that the state of a
+  read operation should be maintained by the process doing the reading
+  (i.e., that the pointer should be passed as an argument to read).
+  This argument is compelling in view of the UNIX fork() semantics,
+  which clones a process which shares the file descriptors of its
+  parent.
+
+<p>With offsets in the file descriptor, a read by the parent of a
+    shared file descriptor (e.g., stdin) changes the read pointer
+    seen by the child.  This isn't always desirable: for example,
+    consider a data file, in which the program seeks around and
+    reads various records.  If we fork(), the child and parent
+    might interfere.  On the other hand, the alternative (no
+    offset in FD) would make it difficult to get
+    "(echo one; echo two) > x" right.  Easy to implement
+    separate-offsets if kernel provides shared-offsets
+    (re-open file, mostly), but not the other way around.
+
+<p>The file API turned out to be quite a useful abstraction.
+    Unix uses it for many things that aren't just files on local disk,
+    e.g. pipes, devices in /dev, network storage, etc.
+    Plan9 took this further, and a few of those ideas came back to Linux,
+    like the /proc filesystem.
+
+
+<p>Unix API doesn't specify that the effects of write are immediately
+  on the disk before a write returns. It is up to the implementation
+  of the file system within certain bounds. Choices include (that
+  aren't non-exclusive):
+
+<ul>
+<li>Before the write returns [most conservative, but bad for performance];
+<li>Before close returns [AFS];
+<li>At some point in the future, if the system stays up (e.g., after
+    30 seconds) [highest performance];
+<li>Application specified (e.g., before fsync returns) [requires
+    careful application coding];
+<li>Before external things (screen, network) indicate the write returned
+    [will read paper about this later].
+</ul>
+
+<p>Some examples of file systems:
+<ul>
+ <li>Contiguous Allocation: <code>file a = (base=10, len=12)</code>
+ <ul>
+	 <li>Pro: Fast sequential access, easy random access
+	 <li>Con: External Fragmentation/hard to grow files
+ </ul></li>
+ <li>Linked-list Allocation: <code>file = linked list of blocks</code>
+	 <ul>
+		 <li>Pro: Easy to grow file. Free list can be implemented as another
+		 file.</li>
+		 <li>Con: Bad sequential access performance! Unreliable: Loose block, loose
+		 rest of file</li>
+		 <li>Serious Con: Bad random access</li>
+	 </ul>
+	 </li>
+</ul>
+
+</body>

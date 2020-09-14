@@ -1,0 +1,181 @@
+<title>L1</title>
+<html>
+<head>
+</head>
+<body>
+
+<h1>O/S overview</h1>
+
+<h2>Overview</h2>
+
+<li>	Course goals:
+	<ul>
+		<li>	Understand OS principles and their low-level design and
+		implementation.</li>
+		<li> Exposure to non-trivial <i>Systems Programming</i></li>
+		<li>	Analyzing xv6, a small Unix-like system
+		comparable in structure to a common modern OS.</li>
+		<li>	Designing and implementing a small OS
+		with a somewhat different structure.</li>
+	</ul>
+	<li>	Build other skills crucial to effective programming, such as:
+		<ul>
+			<li>	Clear, precise thinking about how software works</li>
+		<li>	Reading, understanding, and building on code
+		written by others</li>
+		<li>	Collaborative design, development, and debugging</li>
+		<li>	Sleuthing skills: finding subtle, non-obvious bugs</li>
+	</ul></li>
+
+<li>	Why study operating systems?
+	<ul>
+		<li>	Aren't Operating Systems commodity. Shouldn't we just treat
+		them as black boxes?
+		<ul>
+			<li> High-performance servers are an OS issue</li>
+			<li> Resource consumption (CPU, Power, Memory, Disk) is an OS issue.
+			Is my system slow, how to make it faster?</li>
+			<li> Security is an OS issue</li>
+			<li> Reliability is an OS issue: what causes crashes and how to fix</li>
+			<li> Scalability is an OS issue</li>
+			<li> Embedded Software is an OS issue</li>
+		</ul>
+		</li>
+		<li>	Understand engineering of large event-driven systems in general</li>
+	</ul>
+</li>
+
+<li>	OS evolution: step 0 (slide) </li>
+<li>	OS evolution: step 1 (slide) </li>
+<li>	OS evolution: step 2 (slide) </li>
+
+<li> Protection
+<ul>
+	<li> Goal: Isolate bad programs and people</li>
+	<li> Main Idea: Preemption + Interposition + Privilege Separation </li>
+	<li> Preemption: Give app something, can always take it away </li>
+	<li> Interposition:
+	<ul>
+		<li>OS between application and reality</li>
+		<li>Track all pieces that app allowed to use (usually in a table)</li>
+		<li>On every access, check in the table to check if access is legal</li>
+	</ul></li>
+	<li> Privileged and Unprivileged mode
+	<ul>
+		<li> Apps unprivileged (peasant), OS privileged (god) </li>
+		<li> Protection operations can only be done in privileged mode. Can it be
+	 any other way?	</li>
+ </ul></li>
+
+  <li> Successful protection examples </li>
+	<ul>
+		<li> Protecting CPU: pre-emption
+		<ul>
+			<li>Clock Interrupt: hardware periodically "suspends" app, invokes OS</li>
+			<li>OS decides when to take CPU away (scheduling)</li>
+			<li>CPU can also be taken away if (examples)
+			<ul>
+				<li>Process blocks</li>
+				<li>I/O completes</li>
+				<li>System calls. e.g.,<pre>
+			fd = open("/dev/foo", 1);
+			write(fd, "hello\n", 6);
+			pid = fork();
+			</pre></li>
+				</ul>
+			</ul></li>
+	<li> Protecting Memory: Address translation
+	<ul>
+		<li> Every load and store checked for legality</li>
+		<li> Typically use this machinery to translate to a new value. Why?</li>
+		<li> (Protecting Disk memory similar) </li>
+</ul></li></ul></li>
+</ul></li>
+
+<li>	Translation allows Abstraction + Protection
+<ul>
+    <li>	<b>Thread:</b> abstract CPU</li>
+		<li>	<b>Virtual memory:</b> abstract memory
+		<li>	<b>File:</b> abstract disk/tape/flash/etc.
+		<li>	<b>Pipe, Socket:</b> abstract communication wire
+	</ul>
+</li>
+
+<li>	Why is OS design hard (and thus interesting)?
+	<ul>
+		<li>	Tradeoff between fast/efficient and abstract/modular</li>
+		<li>	Want to support many features with a few simple mechanisms</li>
+		<li>	Interactions: e.g., <code>fd = open(); ...; fork();</code></li>
+		<li>	Many open problems: security, multi-core, distribution</li>
+	</ul>
+	</li>
+
+</ul>
+
+<h2>Course structure</h2>
+
+<li>Lectures and Homeworks (20% of grade)
+	<ul>
+	<li>first, basic OS ideas
+	<li>then extended inspection of xv6, a traditional O/S
+	<li>finally, a series of recent topics
+	<li>preparatory homework assignments - see schedule
+		<ul>
+			<li>	due at beginning of lecture</li>
+			<li>	no late homework accepted</li>
+		</ul>
+	<li>	grade based on homeworks and class participation
+	</ul>
+
+	<li>Labs (30% of grade, 10% bonus component): build
+	a small 32-bit x86-based OS with
+	threads, user processes, virtual memory, and a file system.
+
+	<ul>
+		<li>You build it in four labs, final project of your
+		choice (bonus marks)</li>
+		<li>Kernel interface: only a few simple but powerful abstractions</li>
+		<li>Development environment: gcc, qemu, bochs</li>
+		<li>Extensive hacking: work in teams of up to 2</li>
+		<!--<li>Each lab assignment includes several <i>challenge problems</i>:
+		<ul>
+			<li>	CSL 373 (btech):
+			all challenge problems optional. </li>
+			<li>	CSL 633 (mtech, phd):
+			must complete at least <i>one</i>
+			challenge problem per team per lab.
+			Challenge problems of your own choice
+			allowed with instructor's permission. </li>
+		</ul></li>-->
+		<li>Labs due Thursdays at 11:59PM.</li>
+		<li>8 free late days, no credit for any lab more than 3 days late</li>
+	</ul></li>
+
+	<li>Only Minor-1, no Minor-2 (20% of grade)
+	<ul>
+		<!--<li>	In-class</li>-->
+		<li>	Open book, open notes</li>
+	</ul></li>
+
+	<li>Major (30% of grade)
+	<ul>
+		<li> Open book, open notes</li>
+	</ul></li>
+
+	<li>Reference materials
+	<ul>
+		<li>	primary: draft xv6 book, <a href="../reference.html">online</a>
+		or from photocopy shop.</a></li>
+	<li>	secondary: "Operating System Concepts"
+	<li>	other: see Reference section on home page
+	</ul>
+
+</body>
+
+
+<!--  LocalWords:  Symbian JavaOS VxWorks pSOS IPC rfork min exokernel gcc CE
+ -->
+<!--  LocalWords:  bochs PalmOS PDA printf readcommand args pid perror ls buf
+ -->
+<!--  LocalWords:  bufsize strlen tmp fd
+ -->

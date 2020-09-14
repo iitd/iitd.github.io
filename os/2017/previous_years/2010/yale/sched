@@ -1,0 +1,488 @@
+
+<HTML>
+<HEAD>
+	<TITLE>CPSC 422/522: Operating Systems, Spring 2010
+		
+		&mdash Schedule
+		
+	</TITLE>
+	<LINK REL="stylesheet" HREF="stylesheet.css">
+</HEAD>
+<BODY>
+
+<table cellspacing="2" cellpadding="10" width="100%">
+<tbody>
+<tr>
+
+<td bgcolor="white" align="left">
+<H1>CS422/522: Operating Systems, Spring 2010
+	
+	&mdash Schedule
+	
+</H1>
+
+<table cellpadding="5" bgcolor="blue">
+<tr><td bgcolor="white" align="center">
+<a href="index">Home</a> &nbsp;&ndash;&nbsp;
+<a href="info">Overview</a> &nbsp;&ndash;&nbsp;
+<a href="sched">Schedule</a> &nbsp;&ndash;&nbsp;
+<a href="reference">Reference</a> &nbsp;&ndash;&nbsp;
+<a href="reading">Reading List</a> &nbsp;&ndash;&nbsp;
+<a href="tools">Tools</a> &nbsp;&ndash;&nbsp;
+<a href="../pios">PIOS</a> &nbsp;&ndash;&nbsp;
+<a href="prior">Prior Years</a>
+</table>
+
+</td>
+
+<td align="center" valign="center" width="80" bgcolor="white">
+<a href="http://www.yale.edu/">
+<img border="0" src="images/yaleclr.jpg" width="70" height="79">
+</a>
+</td>
+
+</tr>
+</tbody>
+</table>
+
+<hr>
+
+
+  <style>
+table.calendar {
+    font-family: arial, helvetica;
+    font-size: 10pt;
+    empty-cells: show;
+    border: 1px solid #000000;
+}
+table.calendar tr td {
+    border: 1px solid #aaaaaa;
+}
+table.calendar tr {
+   vertical-align: top;
+   height: 75px;
+   background: #EEEEEE;
+}
+table.calendar tr.header {
+    text-align: center;
+    background: #8888FF;
+    height: auto;
+    font-weight: bold;
+}
+.lecture {
+    background: #DDDDFF;
+}
+.holiday {
+    background: #ccFFcc;
+}
+.special {
+    background: #AAAAFF;
+}
+.lab {
+    background: #00CCCC;
+}
+.important {
+    background: #FFAAAA;
+}
+.reading {
+    color: #FF8800;
+}
+.textbook {
+    color: #008800;
+}
+.handout {
+    color: #009900;
+}
+.deadline {
+    color: #FF0000;
+}
+.note {
+    color: #888800;
+}
+.assignment {
+  color: #0000FF;
+}
+.date {
+  color: #444444
+}
+  </style>
+
+<table border="0" cellspacing="1" cellpadding="0" width="100%">
+<tr>
+<td width="50%" rowspan="5">
+Items listed for future dates are <i>tentative only</i>
+to provide a rough guide to the course.
+Check this and the <a href="index">home page</a> regularly for updates.
+<td> &nbsp;
+<td>
+<b>LEC</b> <td>lecture topic<br>
+<tr><td><td>
+<font class="reading"><b>PREP</b></font> <td>lecture preparation homework<br>
+<tr><td><td>
+<font class="textbook"><b>OSC</b></font> <td>recommended reading in
+	<i><a href="reference">Operating System Concepts</a></i><br>
+<tr><td><td>
+<font class="assignment"><b>OUT</b></font> <td>lab assignment handed out<br>
+<tr><td><td>
+<font class="deadline"><b>DUE</b></font> <td>lab assignment due date<br>
+</table>
+
+<p>
+<table class="calendar" cellspacing="0" cellpadding="6" width="100%">
+ <colgroup width="30%"></colgroup>
+ <colgroup width="5%"></colgroup>
+ <colgroup width="30%"></colgroup>
+ <colgroup width="5%"></colgroup>
+ <colgroup width="30%"></colgroup>
+ <thead>
+  <tr style="font-weight:bold; font-size:13px; background-color:#444444; color:#ffffff; height: 25px; text-align: center;">
+   <td>Monday</td><td>Tuesday</td><td>Wednesday</td><td>Thursday</td><td>Friday</td>
+  </tr >
+ </thead>
+ <tbody>
+
+<tr> <!-- week 1 -->
+
+     <td class="lecture"><font class="date">jan 11</font><br>
+      <b>LEC 1:</b> <a href="lec/l1">Introduction, OS Abstractions</a><br>
+      <font class="reading"><b>PREP</b></font>:
+		Read <a href="bib/ritchie79evolution.pdf"
+			>The Evolution of the Unix Time-Sharing System</a><br>
+	<font class="textbook"><b>OSC</b></font>: chapter 1
+     <td><font class="date">jan 12</font>
+     <td class="lecture"><font class="date">jan 13</font><br>
+      <b>LEC 2:</b>
+		<a href="lec/l2">Operating System Structure</a><br>
+      <font class="reading"><b>PREP</b></font>:
+		Read <a href="xv6-book/unix.pdf">xv6 chapter 0</a>;
+		do <a href="lec/l2-hw">Homework</a></font><br>
+	<font class="textbook"><b>OSC</b></font>: chapter 2
+     <td><font class="date">jan 14</font>
+     <td class="lecture"><font class="date">jan 15</font><br>
+      <b>LEC 3:</b> <a href="lec/l3">x86 Processor Basics</a><br>
+      <font class="reading"><b>PREP</b></font>:
+      		Read <a href="xv6-book/boot.pdf">xv6 chapter 1</a> and
+			<a href="ref/pc-arch">IA32 guide</a>;
+		do <a href="lec/l3-hw">Homework</a><br>
+      <font class="assignment"><b>OUT</b>:
+		<a href="lab1">
+		Lab 1: Booting and Managing CPUs</a></font>
+</tr>
+
+<tr> <!-- week 2 -->
+
+     <td class="holiday"><font class="date">jan 18</font><br>
+	Martin Luther King, Jr. Day
+     <td><font class="date">jan 19</font></td>
+     <td class="lecture"><font class="date">jan 20</font><br>
+      <b>LEC 4:</b> <a href="lec/l4">Processes and
+		Memory Allocation</a>
+		(<a href="lec/l4-mmu.pdf">handout</a>)<br>
+      <font class="reading"><b>PREP</b></font>:
+      		Read <a href="xv6-book/mem.pdf">xv6 chapter 2</a>; do
+		do <a href="lec/l4-hw">Homework</a><br>
+	<font class="textbook"><b>OSC</b></font>: 3.1-3.3
+     <td><font class="date">jan 21</font><BR>
+     <td><font class="date">jan 22</font></td>
+</tr>
+
+<tr> <!-- week 3 -->
+
+     <td class="lecture"><font class="date">jan 25</font><br>
+      <b>LEC 5:</b> <a href="lec/l5">Modes, Stacks, and Traps</a>
+               <a href="lec/l5-idt.pdf">(handout)</a><br>
+      <font class="reading"><b>PREP</b></font>:
+		Read <a href="xv6-book/trap.pdf">xv6 chapter 3</a>;
+		do <a href="lec/l5-hw">Homework</a><br>
+     <td><font class="date">jan 26</font></td>
+     <td class="lecture"><font class="date">jan 27</font><br>
+      <b>LEC 6:</b> <a href="lec/l6">Multiprocessors and Locking</a><br>
+      <font class="reading"><b>PREP</b></font>:
+      		Read <a href="xv6-book/lock.pdf">xv6 chapter 4</a>;
+		do <a href="lec/l6-hw">Homework</a></font><br>
+	<font class="textbook"><b>OSC</b></font>: 6.1-6.4<br>
+     <td class="important"><font class="date">jan 28</font><br>
+       <font class="deadline"><b>DUE</b>:<br>Lab 1</font></td>
+     <td><font class="date">jan 29</font><br>
+      <font class="assignment"><b>OUT</b>:
+		<a href="lab2">
+		Lab 2: Processes and Synchronization</a></font></td>
+</tr>
+
+<tr> <!-- week 4 -->
+
+     <td class="lecture"><font class="date">feb 1</font><br>
+	<b>LEC 7:</b> <a href="lec/l7">Scheduling</a><br>
+	<font class="reading"><b>PREP</b></font>:
+      		Read <a href="xv6-book/sched.pdf">xv6 chapter 5</a>
+		through section "<i>Code:&nbsp;Scheduling</i>";
+		do <a href="lec/l7-hw">Homework</a></font><br>
+	<font class="textbook"><b>OSC</b></font>: chapter 5<br>
+     <td><font class="date">feb 2</font></td>
+     <td class="lecture"><font class="date">feb 3<font><br>
+      <b>LEC 8:</b>
+		<a href="lec/l8">Process Coordination</a><br>
+      <font class="reading"><b>PREP</b></font>:
+      		Read the rest of <a href="xv6-book/sched.pdf">xv6 chapter 5</a>;
+		do <a href="lec/l8-hw">Homework</a></font><br>
+	<font class="textbook"><b>OSC</b></font>: chapters 6, 7<br>
+     <td><font class="date">feb 4</font><br>
+     <td><font class="date">feb 5</font></td>
+</tr>
+
+<tr> <!-- week 5 -->
+
+     <td class="holiday"><font class="date">feb 8</font><br>
+      <b>LEC 9:</b>
+	Cancelled - Hacking Day
+     <td><font class="date">feb 9</font></td>
+     <td class="lecture"><font class="date">feb 10</font><br>
+      <b>LEC 10:</b>
+		<a href="lec/l11">Address Translation</a><br>
+	<font class="reading"><b>PREP</b></font>:
+		Read <a href="ref/ia32-3.pdf">80386 chapter 3</a><br>
+	<font class="textbook"><b>OSC</b></font>: chapter 8<br>
+     <td class="important"><font class="date">feb 11</font><br>
+	<font class="deadline"><b>DUE</b>:<br>Lab 2</font>
+     <td><font class="date">feb 12</font><br>
+      <font class="assignment"><b>OUT</b>:
+      		<a href="lab3">
+		Lab 3: Virtual Memory</a></font></td>
+</tr>
+
+<tr> <!-- week 6 -->
+
+     <td class="lecture"><font class="date">feb 15</font><br>
+      <b>LEC 11:</b>
+		<a href="lec/l11">Virtual Memory Management</a><br>
+	<font class="textbook"><b>OSC</b></font>: chapter 9<br>
+     <td><font class="date">feb 16</font></td>
+     <td class="lecture"><font class="date">feb 17</font><br>
+      <b>LEC 12:</b>
+		<a href="lec/l12">Files and Disk I/O</a><br>
+      <font class="reading"><b>PREP</b></font>:
+		Read <a href="xv6-book/disk.pdf">xv6 chapter 6</a>
+		and <a href="xv6-book/fsdata.pdf">chapter 7</a>;
+		do <a href="lec/l12-hw">Homework</a><br>
+      <font class="textbook"><b>OSC</b></font>: chapters 12, 13<br>
+     <td><font class="date">feb 18</font><br>
+     <td><font class="date">feb 19</font></td>
+</tr>
+
+<tr> <!-- week 7 -->
+
+     <td class="lecture"><font class="date">feb 22</font><br>
+      <b>LEC 13:</b>
+		<a href="lec/l13">File Naming</a></b><br>
+      <font class="reading"><b>PREP</b></font>:
+		Read <a href="xv6-book/fsdata.pdf">xv6 chapter 7</a>
+		and <a href="xv6-book/fscall.pdf">xv6 chapter 8</a>;
+		do <a href="lec/l13-hw">Homework</a></font><br>
+     <td><font class="date">feb 23</font></td>
+     <td class="lecture"><font class="date">feb 24</font><br>
+      <b>LEC 14:</b>
+		<a href="lec/l14-loading">Program Loading and Dynamic Linking</a></b><br>
+      <font class="reading"><b>PREP</b></font>:
+		Read <a href="xv6-book/exec.pdf">xv6 chapter 9</a>;
+		do <a href="lec/l14-hw">Homework</a></font><br>
+     <td class="important"><font class="date">feb 25</font><br>
+     	<font class="deadline"><b>DUE</b>:<br>Lab 3</font>
+     <td class="date"><font class="date">feb 26</font><br>
+</tr>
+
+<tr> <!-- week 8 -->
+
+     <td class="lecture"><font class="date">mar 1</font><br>
+      <b>LEC 15:</b>
+	<a href="lec/l15-journal">File system performance and reliability</a><br>
+      <font class="reading"><b>PREP</b></font>:
+		Read <a href="bib/tweedie98journaling.pdf">
+			Journaling the Linux ext2fs Filesystem</a>.
+     <td><font class="date">mar 2</font></td>
+     <td class="important"><font class="date">mar 3</font><br>
+      <font class="deadline"><b>MIDTERM</b></font>:
+		<b>open book and notes</b><br>
+     <td><font class="date">mar 4</font><br>
+     <td><font class="date">mar 5</font><br>
+</tr>
+
+<tr> <!-- (spring break) -->
+     <td class="holiday"><font class="date">mar 8</font><br>Spring Break</td>
+     <td class="holiday"><font class="date">mar 9</font>
+     <td class="holiday"><font class="date">mar 10</font>
+     <td class="holiday"><font class="date">mar 11</font>
+     <td class="holiday"><font class="date">mar 12</font>
+</tr>
+
+<tr> <!-- (spring break) -->
+     <td class="holiday"><font class="date">mar 15</font><br>Spring Break</td>
+     <td class="holiday"><font class="date">mar 16</font>
+     <td class="holiday"><font class="date">mar 17</font>
+     <td class="holiday"><font class="date">mar 18</font>
+     <td class="holiday"><font class="date">mar 19</font><br>
+      <font class="assignment"><b>OUT</b>:
+      		<a href="lab4">
+		Lab 4: Files and I/O</a></font></td>
+</tr>
+
+<tr> <!-- week 9 -->
+
+     <td class="lecture"><font class="date">mar 22</font><br>
+      <b>LEC 16:</b>
+	<a href="lec/l-sync">Performance and durability</a><br>
+	<font class="reading"><b>PREP</b></font>:
+		Read <a href="bib/nightingale06rethink.pdf"
+			>Rethink the sync</a>;
+		no homework
+     </td>
+     <td><font class="date">mar 23</font></td>
+     <td class="lecture"><font class="date">mar 24</font><br>
+      <b>LEC 17:</b>
+	<a href="lec/l-ver">Replicated state management</a><br>
+	<font class="reading"><b>PREP</b></font>:
+		Read <a href="bib/parker83detection.pdf">Detection of
+			Mutual Inconsistency in Distributed Systems</a>
+     <td><font class="date">mar 25</font><br>
+     <td><font class="date">mar 26</font><br>
+</tr>
+
+<tr> <!-- week 10 -->
+
+     <td class="lecture"><font class="date">mar 29</font><br>
+      <b>LEC 18:</b>
+		<a href="lec/l-microkernel">Microkernels and
+		capabilities</a><br>
+	<font class="reading"><b>PREP</b></font>:
+		Read <a href="bib/bomberger92keykos.pdf">KeyKOS</a>,
+		    <a href="bib/hardy88confused.pdf">Confused deputy</a>;
+		no homework<br>
+     	<font class="deadline"><b>DUE</b>: Lab 4 "Rough Cut"</font>
+    </td>
+     <td class="date"><font class="date">mar 30</font></td>
+     <td class="lecture"><font class="date">mar 31</font><br>
+      <b>LEC 19:</b>
+	<a href="lec/l-singularity">Language/OS co-design</a><br>
+	<font class="reading"><b>PREP</b></font>:
+      		Read <a href="bib/hunt07singularity.pdf">Singularity</a>
+		and <a href="bib/fahndrich06language.pdf"
+			>Language Support for Message-based Communication</a>;
+		no homework<br>
+     <td class="important"><font class="date">apr 1</font><br>
+     	<font class="deadline"><b>DUE</b>:<br>Lab 4</font>
+     </td>
+     <td class="day"><font class="date">apr 2</font><br>
+	<font class="assignment"><br><b>OUT</b>:
+	<a href="lab5">
+	Lab 5: Distributed Computing</a></font><br>
+</tr>
+
+<tr> <!-- week 11 -->
+
+     <td class="lecture"><font class="date">apr 5</font><br>
+      <b>LEC 20:</b>
+	<a href="lec/l-bugsv2">Bugs</a><br>
+	<font class="reading"><b>PREP</b></font>:
+      		Read <a href="bib/engler08klee.pdf">Klee</a>;
+		no homework
+     </td>
+
+     <td class="date"><font class="date">apr 6</font></td>
+     <td class="lecture"><font class="date">apr 7</font><br>
+      <b>LEC 21:</b>
+	<a href="lec/l-schedule">Scheduling</a><br>
+	<font class="reading"><b>PREP</b></font>:
+      		Read <a href="bib/mogul96eliminating.pdf">
+			Eliminating Receive Livelock</a>;
+		no homework
+     </td>
+     <td><font class="date">apr 8</font>
+     <td><font class="date">apr 9</font>
+     </td>
+</tr>
+
+<tr> <!-- week 12 -->
+
+     <td class="lecture"><font class="date">apr 12</font><br>
+      <b>LEC 22:</b>
+	<a href="lec/l-mcs">Multi-processor coordination:
+	scalable locks</a><br>
+      <font class="reading"><b>PREP</b></font>:
+	Read <a href="bib/mcs91algorithms.pdf">MCS</a>;
+        do <a href="homework/mcs">Homework</a>
+     <td><font class="date">apr 13</td>
+     <td class="lecture"><font class="date">apr 14</font><br>
+      <b>LEC 23:</b>
+	<a href="lec/l-rcu">Multi-processor coordination: lock free</a><br>
+      <font class="reading"><b>PREP</b></font>:
+	Read <a href="bib/mckenney01read.pdf">Read-Copy Update</a>;
+        do <a href="homework/rcu">Homework</a><br>
+     <td class="important"><font class="date">apr 15</font><br>
+     <td class="date"><font class="date">apr 16</font><br>
+      <font class="assignment"><b>OUT</b>:
+      		<a href="labs/lab6/lab6">
+      		Lab 6: Final Project</a></font><br>
+</tr>
+
+<tr> <!-- week 13 -->
+
+     <td class="lecture"><font class="date">apr 19</font><br>
+      <b>LEC 24:</b>
+	<a href="lec/l-vm">Virtual Machines</a><br>
+      <font class="reading"><b>PREP</b></font>:
+		Read <a href="bib/adams06comparison.pdf"
+			>Software vs Hardware Virtualization</a>;
+		<a href="homework/proposal">Homework: final project proposal</a></font><br>
+     	<font class="deadline"><b>DUE</b>: Lab 5</font>
+     </td>
+     <td class="day"><font class="date">apr 20</font><BR></td>
+     <td class="lecture"><font class="date">apr 21</font><br>
+      <b>LEC 25:</b> <a href="lec/l-backtracker.txt">Using virtual machines</a><br>
+      <font class="reading"><b>PREP</b></font>:
+      		Read <a href="bib/king05backtracking.pdf"
+			>Backtracking Intrusions</a>;
+        do <a href="homework/backtracking">Homework</a>
+		</font></td>
+     <td class="day"><font class="date">apr 22</font><br></td>
+     <td><font class="date">apr 23</font><br>
+</tr>
+
+<tr> <!-- week 14 (reading period)-->
+
+     <td class="holiday"><font class="date">apr 26</font><br>Reading Period
+     <td class="holiday"><font class="date">apr 27</font><br>
+</td>
+     <td class="holiday"><font class="date">apr 28</font><br>
+     <td class="important"><font class="date">apr 29</font><br>
+      <font class="deadline"><b>DUE</b>:<br>Lab 6</font>
+     <td class="holiday"><font class="date">apr 30</font><br>
+</tr>
+
+<tr> <!-- week 15 (finals week) -->
+
+     <td><font class="date">may 3</font><br>Finals Week
+     <td class="important"><font class="date">may 4</font><br>
+      <font class="deadline"><b>OS Bakeoff</b></font>: 2-5pm<br>
+     <td><font class="date">may 5</font><br></td>
+     <td><font class="date">may 6</font><br></td>
+     <td><font class="date">may 7</font><br></td>
+</tr>
+
+ </tbody>
+</table>
+
+
+<P><HR><P>
+<ADDRESS>Copyright (c) 2000-2010
+<a href="http://www.cs.yale.edu/users/shao-zhong/">Zhong Shao</a>
+and
+<a href="http://www.cs.yale.edu/people/ford.html">Bryan Ford</a>,
+<a href="http://www.cs.yale.edu/">Department of Computer Science</a>,
+<a href="http://www.yale.edu/">Yale University</a><br>
+Many course materials derived from
+<a href="http://pdos.csail.mit.edu/6.828/">6.828</a>
+by Frans Kaashoek and others at MIT.
+</ADDRESS> 
+
+</BODY>
+</HTML>
+

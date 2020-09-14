@@ -1,0 +1,128 @@
+<ul>
+<li>Inorder pipeline : Fetch, Decode, Execute, Memory access, Register writeback.</li>
+<li>Hazards
+<ul>
+<li>Structural hazards: two instructions contend for the same resource, e.g., ALU (not possible in an inorder pipeline)</li>
+<li>Data hazards: the consumer instruction needs to wait for the producer instruction to generate the data. e.g., arithmetic instruction followed by a memory load; even with pipelining and forwarding, the arithmetic instruction needs to <em>stall</em> for the memory load to finish.</li>
+<li>Control hazards: Do not know which branch to fetch instructions from; need to wait for the control instruction to finish before the next instruction is fetched. Example: conditional branch followed by arithmetic instruction; we know the result of the branch instruction only after the execute stage; two clock cycles wasted or stalled in this case</li>
+</ul>
+</li>
+</ul>
+
+<p>Performance is always with respect to a program. e.g., program 1 runs faster on computer A than computer B. program 2 runs faster on computer B than computer A.
+
+<p>Time equation: Time = num-instns/program * num-cycles/instn * seconds/cycle
+
+<p>Performance equation: Speed = program/num-instns * instn/num-cycles * cycle/seconds
+
+<p>num-instns/program depends on the programmer and on the compiler
+
+<p>seconds/cycle is the frequency and depends on the physical designer of the processor. It is also possible to increase frequency by making the cycles/instruction bigger, that is the operation performed in each cycle smaller (and making the pipeline longer). But we are limited by the slowest operation. Typically frequency is a direct function of transistor technology (out of scope for this course). Further, increasing frequency increases power by a cubic factor. Similarly the thermal power dissipation increases proportionally to consumed power. Shorter pipeline stages would also require more forwarding logic
+<ul>
+<li>In the limit, we are constrained by the delay imposed by a latch that is needed to transfer the contents of one stage to another.</li>
+</ul>
+
+<p>cycles/instruction depends on the architecture, also called CPI (cycles per instruction), or more commonly its reciprocal IPC (instructions per cycle)
+
+<p>Inorder pipeline: IPC = 1 if there are no stalls. In general, CPI = CPI_ideal + stall_rate*stall_penalty
+<ul>
+<li>With increasing number of pipeline stages, the stall penalty increases. Stall rate remains largely similar</li>
+</ul>
+
+<p>Increasing IPC:
+<ul>
+<li>Issue more instructions per cycle: 2, 4, or 8 instructions</li>
+<li>Make it a superscalar processor: a processor that can execute multiple instructions per cycle. Show diagram with parallel five-stage pipelines</li>
+<li>Different instructions may be executing on different resources
+<ul>
+<li>The processor needs to schedule and track data and control dependencies.</li>
+</ul>
+</ul>
+
+<li>In-order superscalar processor
+<ul>
+<li>There can be dependencies between instructions.</li>
+<li>Have O(n^2) forwarding paths for a n-issue processor.</li>
+<li>Complex logic for detecting dependencies, hazards and forwarding.</li>
+<li>However
+<ul>
+<li>Even with all this, all stages are idle if consecutive n instructions have dependencies.</li>
+<li>In fact, this is the common case, as usually instructions that are dependent are close to each other (often consecutive).</li>
+</ul>
+</ul>
+
+<p>Out of order superscalar processor
+<pre>
+movl %r1,%r2
+addl %r2,%r3
+subl (%r3),%r4
+movl %r5,%r6
+subl $1,%r6
+addl %r7,(%r6)
+</pre>
+The last three instructions can execute in parallel with the first three instructions.
+
+<p>Basic idea:
+<ul>
+<li>Create a pool of instructions</li>
+<li>Find instructions that are mutually independent and have all their operands ready.</li>
+<li>Execute them out of order</li>
+</ul>
+
+<p>Out of order superscalar processor basics
+<ul>
+<li>Fetch a pool of instructions in a buffer, also known as the <em>reorder buffer</em>.</li>
+<li>The reorder buffer (ROB) size needs to be large enough so that the desired number of mutually independent instructions can be found. Typical sizes 64 to 192. Larger ROB size means greater parallelism but more complex circuitry</li>
+</ul>
+
+<p>Problem: how do we create a large pool of instructions in a program with branches? We need to be sure that the instructions are on the correct path.
+<pre>
+for (i = 1; i &lt; m; i++) {
+	for (j = 1; j &lt; i; j ++ ) {
+		if (j % 2 == 0) continue;
+		....
+	}
+}
+</pre>
+
+<p>Typically: one in five instructions is a branch. Solution: predict the direction of the branches, and their targets. (will discuss more later).
+
+<p>Dependencies
+<ul>
+<li>RAW</li>
+<li>WAW : output dependency</li>
+<li>WAR : anti dependency</li>
+<li>Control</li>
+</ul>
+
+<p>Inorder processors respect program order, so they automatically respect all data and control dependencies.  Out of order processors do not respect program order, and hence need to ensure that they respect data and control dependencies.
+
+<p>Output and anti-dependencies can be handled by creating extra "registers" on the fly, also called register renaming
+<ul>
+<li>Every time there is a write, just create a new register; all reads will now read from this new register.</li>
+</ul>
+Slowly recycle these extra registers (if you are sure that they are not used; or commit them to their original register).  Need to have a limit on the number of these extra <em>virtual</em> registers.  If there are enough virtual registers, all WAW and WAR hazards are eliminated; but RAW still remain.
+
+<p>Semantics vs. implementation:
+<ul>
+<li>The programmer should not care (from a correctness standpoint) whether the processor is inorder or OOO. The meaning of the program should remain identical</li>
+<li>What if there is an interrupt or an exception in the middle of execution?</li>
+</ul>
+Consider the following example:
+<pre>
+add ...
+div ... //causes an exception
+sub ...
+</pre>
+Consider another example where an external interrupt is received. What are some valid responses?
+
+<p>Precise exceptions
+
+
+<p>Branch prediction: general structure is a function that takes the PC as input and returns a bool (taken/not-taken) as output. For indirect branches, it also predicts the branch target. Basic idea: past = future
+<ul>
+<li>Remember the type of branch: unconditional, conditional, function call, function return.</li>
+<li>Make a fast hardware structure to remember (say 10x faster than actual execution): can give wrong answers but should have a high probability of giving the right answer.</li>
+<li>Example: use the last n bits of the PC value</li>
+</ul>
+

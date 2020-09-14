@@ -1,0 +1,54 @@
+<html>
+<head>
+  <title>COL718 Lab 2 : Comparative Study of the Performance of SPEC Benchmarks Running on Different Types of Cores: SMT, CMP & SMP</title>
+</head>
+
+ 
+<body>
+  <h1><font color="blue">COL718 Lab 2 : Comparative Study of Performance of SPEC Benchmarks Running on Different Types of Cores: SMT, CMP & SMP</font></h1>
+
+  <h2>Due date - 23:55, 26 September 2019</h2>
+
+  <p>The ideas of Chip Multiprocessing(CMP), Symmetric Multiprocessing(SMP) and Simultaneous Multithreading/Hyperthreading (SMT) are 
+     discussed in class. Each of these employ different extents of Resource Sharing. In this assignment we will try to observe their 
+     comparative imapacts on the peformance of standard applications selected from the SPEC 2017 Benchmarks Suit.</p>
+
+ 
+  <h3>Instructions</h3>
+ 
+  <ul>
+    
+    <li> Install SPEC CPU 2017 benchmark suite. (please note that this is an IITD-internal
+    link only; this benchmark suite is proprietary so please do not share it outside IIT
+    Delhi)
+    <ul>
+        <li>Download <a href=
+        "http://poorvi.cse.iitd.ac.in/~sbansal/isos/cpu2017-1_0_5.iso">http://poorvi.cse.iitd.ac.in/~sbansal/isos/cpu2017-1_0_5.iso</a></li>
+      
+        <li>Follow instructions at <a href=
+        "https://www.spec.org/cpu2017/Docs/install-guide-unix.html">https://www.spec.org/cpu2017/Docs/install-guide-unix.html</a>
+        to install and run the CPU 2017 benchmark suite</li>
+      
+        <li>you can use the commands in this file to run any benchmark
+        individually: <a href="cpu2017_cmdlines.sh">cpu2017_cmdlines.sh</a>.</li>
+    </ul>
+    </li>
+    
+    <li>Run two copies of the same benchmarks on different SMT Cores, different CMP Cores and Different SMP Cores.</a></li>
+    
+    <li>As a baseline of performance comparison, run the benchmarks in a stand-alone mode, giving them accesses to all the necessary system resources.
+        These stand-alone performance values could be used as references to observe how much slowdown each benchmarks experience in each case.</a></li>
+    
+    <li>Does the types/characteristics of benchmarks have an impact on the performance differences(or, slowdowns)?</a></li>
+    
+    <li>Do comparative study of performances for the aforementioned four cases with possible explanations.
+        Analyze how these slowdowns varies across different benchmarks. If possible, try to argue why does they vary that way.</a></li>
+
+    <li>Your Report should be succinct. It should suitably captures the essence of all your findings.</a></li>
+
+    
+   
+
+  </ul>
+  </body>
+</html>

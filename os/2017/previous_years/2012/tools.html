@@ -1,0 +1,354 @@
+<title>CSL373 : Operating Systems : Tools</title>
+<h1><font color=blue>CSL373 : Operating Systems : Tools</font></h1>
+
+This page describes how to install the tools used in the Operating Systems
+class. The tools are already installed in the department cluster, so you
+will need to follow these instructions if you want to do assignments on
+other machines. We cannot
+guarantee that these tools will run on your computer,
+but they should run on recent versions of Linux.
+
+</p><p>
+It should be possible to get this development environment running
+under windows with the help of 
+<a href="http://www.cygwin.com/">Cygwin</a>.  Install cygwin, and be
+sure to install the <samp>flex</samp> and <samp>bison</samp> packages
+(they are under the development header).  Another alternative is to
+use virtualization software like VMware and install Linux in a VM.
+
+</p>
+<!--For an overview of useful commands in the tools used in CSL373, see the
+<a href="lab/labguide.html">lab tools guide</a>.-->
+
+<h3>Compiler Toolchain</h3>
+
+<p>Most modern Linuxes and BSDs have an ELF toolchain compatible with
+the labs. That is, the system-standard <tt>gcc</tt>,
+<tt>as</tt>, <tt>ld</tt> and <tt>objdump</tt> should just work.  The
+lab makefile should automatically detect this.  However, if your
+machine is in this camp and the makefile fails to detect this, you can
+override it by adding the following line to <tt>conf/env.mk</tt>:
+
+</p><pre>GCCPREFIX=
+</pre>
+
+<p>
+If you are using something other than standard x86
+Linux or BSD, you will need the GNU C compiler toolchain, configured
+and built as a cross-compiler for the target
+'<samp>i386-csl373-elf</samp>', as well as the GNU debugger, configured
+for the <samp>i386-csl373-elf</samp> toolchain.  You can download the
+specific versions we used via these links, although any recent
+versions of gcc, binutils, and GDB should work:
+
+</p><ul>
+<li>	<a href="http://ftpmirror.gnu.org/binutils/binutils-2.20.1.tar.bz2">
+	http://ftpmirror.gnu.org/binutils/binutils-2.20.1.tar.bz2</a>
+</li><li>	<a href="http://ftpmirror.gnu.org/gcc/gcc-4.5.1/gcc-core-4.5.1.tar.bz2">
+	http://ftpmirror.gnu.org/gcc/gcc-4.5.1/gcc-core-4.5.1.tar.bz2</a>
+</li><li>	<a href="http://ftpmirror.gnu.org/gdb/gdb-6.8.tar.gz">
+	http://ftpmirror.gnu.org/gdb/gdb-6.8.tar.gz</a>
+</li></ul>
+
+
+<p>Once you've unpacked these archives, run the following commands as root:
+
+</p><pre># cd binutils-2.20.1
+# ./configure --target=i386-csl373-elf --disable-nls
+# make
+# make install
+# cd ../gcc-4.5.1
+# ./configure --target=i386-csl373-elf --disable-nls --without-headers \
+              --with-newlib --disable-threads --disable-shared \
+              --disable-libmudflap --disable-libssp
+# make
+# make install
+# cd ../gdb-6.8
+# ./configure --target=i386-csl373-elf --program-prefix=i386-csl373-elf- \
+              --disable-werror
+# make
+# make install
+</pre>
+
+<p>Then you'll have in <samp>/usr/local/bin</samp> a bunch of binaries
+with names like <samp>i386-csl373-elf-gcc</samp>.  The lab makefile
+should detect this toolchain and use it in preference to your
+machine's default toolchain.  If this doesn't work, there are
+instructions on how to override the toolchain inside the GNUmakefile
+in the labs.
+
+
+<h3>Installing QEMU</h3>
+<a href=http://qemu.org>QEMU</a> is a modern and fast PC emulator.
+QEMU version 1.0 is set up on the department cluster for x86 machines.
+You can use GDB (or other graphical frontends) with QEMU for debugging.
+If you are unable to find <code>qemu</code> on the command line, ensure that
+the following is added to your <code>PATH</code> environment
+variable: <code>/misc/research/teaching/sbansal/csl373/bin</code>.
+<p>
+We highly recommend you use a patched
+version of QEMU instead of the stock version that may come
+with your distribution. The version installed on the deparment
+cluster is already patched. To build your own patched version of QEMU:
+<ol>
+	<li> Download and unpack the pre-patched 1.0 source <a href=qemu/qemu-1.0-CSL373.tar.gz>tarball</a></li>
+	<li> On Linux, you may need to install the SDL development libraries to get
+	a graphical VGA window. On Debian/Ubuntu, this is the <TT>libsdl1.2-dev</TT>
+	package.</li>
+	<li> Configure the source code:<br>
+	Linux: <TT>./configure --disable-kvm [--prefix=PFX] [--target-list="i386-softmmu x86_64-softmmu"]</TT><br>
+	OS X: <TT>./configure --disable-kvm --disable-sdl [--prefix=PFX] [--target-list="i386-softmmu x86_64-softmmu"]</TT><br>
+	The <TT>prefix</TT> argument specifies where to install QEMU; without it
+	QEMU will install to <TT>/usr/local</TT> by default. The <TT>target-list</TT>
+	<li> Run <TT>make && make install</TT></li>
+</ol>
+Alternatively, you can download the official 0.12.5 source tarball from the
+QEMU homepage and apply the following patch series:
+<table>
+	<tr>
+		<td> <a href=qemu/patches/debug-seg>debug-seg</a></td>
+		<td>Use DS-relative virtual addresses instead of linear addresses in the GDB stub.</td>
+	</tr>
+	<tr>
+		<td><a href="qemu/patches/info-pg">info-pg</a></td>
+		<td>Add "info pg" in the QEMU monitor that prints the page table.</td>
+	</tr>
+	<tr>
+		<td><a href="qemu/patches/triple">triple</a></td>
+		<td>On triple fault, dump state and halt for inspection instead of resetting.</td>
+	</tr>
+</table>
+<br><br>
+
+<h3>Installing <b>Bochs</b></h3>
+<a href=http://bochs.sourceforge.net/>Bochs</a> is an open-source IA-32
+emulator, and is another alternative to run your OS. Bochs comes with
+a very useful internal debugger. See a local (and slightly augmented) copy of the <a href=bochs/internal-debugger.html>documentation</a> here. All additions in the local copy over the original documentation are in a different colour. The documentation is
+useful for trying the commands provided in the lecture notes and book draft. The original documentation can be found <a href=http://bochs.sourceforge.net/cgi-bin/topper.pl?name=New+Bochs+Documentation&url=http://bochs.sourceforge.net/doc/docbook>here</a> (go to &quot;User Guide&quot; and
+then &quot;Using Bochs internal debugger&quot;).
+<p>
+You can access Bochs on the department cluster by ensuring that your <code>PATH</code>
+environment variable contains the following path:
+<code>/misc/research/teaching/sbansal/csl373/bin</code>.
+<p>
+We highly recommend you use a patched version of Bochs instead of the stock
+version to allow reproducible executions. The version installed on the
+department cluster is already patched. There are two executables that
+need to be built: <code>bochs</code> (which is compiled with
+an internal debugger) and <code>bochs-gdb</code> (which is compiled with
+a <code>gdb-stub</code> for debugging with <code>gdb</code>). Both
+these executables have been pre-built on the department cluster.
+To build your own patched version
+of Bochs:
+<ol>
+	<li> Download and unpack the pre-patched 2.4.5 source <a href=bochs/bochs-2.4.5-CSL373.2010-12-25.tar.gz>tarball</a></li>
+	<li> Configure the source code:<br>
+	<TT>./configure [--prefix=/path/to/bochs-install] --enable-disasm --enable-smp --enable-debugger --enable-new-pit --enable-all-optimizations --enable-4meg-pages --disable-reset-on-triple-fault --with-all-libs --with-x --with-x11 --with-nogui</TT><br>
+The X, terminal, and &quot;no GUI&quot; interfaces
+can be configured, by passing <Q><SAMP>--with-x --with-x11 --with-term
+--with-nogui</SAMP></Q> to <CODE>configure</CODE>.
+	</li>
+	<li> Run <TT>make && make install</TT></li>
+	<li>This command builds the <code>bochs</code> binary with SMP support
+	that can be used with both <code>xv6</code> and <code>pintos</code>. This
+	bochs binary supports an internal debugger shipped with bochs.</li>
+  <li>To debug pintos using gdb, you will need to build another binary.
+	To do this, configure the source code in the following way:<br>
+	<TT>./configure [--prefix=/path/to/bochs-gdb-install] --enable-disasm --enable-gdb-stub --enable-new-pit --enable-all-optimizations --enable-4meg-pages --disable-reset-on-triple-fault --with-all-libs --with-x --with-x11 --with-nogui</TT><br>
+	Use a different prefix <code>/path/to/bochs-gdb-install</code> for the install directory to
+	avoid overwriting the previous installation.
+	<li> Run <TT>make && make install</TT>. This will create another
+	binary called bochs in <code>/path/to/bochs-gdb-install/bin</code> directory. Go to this
+	directory and rename the <code>bochs</code> executable to
+	<code>bochs-gdb</code> using <code>mv bochs bochs-gdb</code>.</li>
+	<li>Set your PATH variable to include both <code>/path/to/bochs-install</code> and
+	<code>/path/to/bochs-gdb-install</code> directories.
+</ol>
+If you would like to patch and build <code>bochs</code> from
+scratch (instead of using our custom tarball), you can download the
+official 2.4.5 source tarball from
+the Bochs homepage and apply the following patch series:
+These patches are designed for use with Bochs 2.4.5:
+<table>
+	<tr>
+		<td> <a href=bochs/patches/bochs-2.4.5-jitter.patch>jitter</a></td>
+		<td>Adds the &quot;jitter&quot; feature, in which timer interrupts are
+			delivered at random (but reproducible) intervals.</td>
+	</tr>
+	<tr>
+		<td> <a href=bochs/patches/bochs-2.4.5-att.patch>att</a></td>
+		<td>Sets the default disassembly mode to <code>AT&T</code> (also
+			used in the handouts and class).</td>
+	</tr>
+</table>
+<br>
+To apply all the patches, <CODE>cd</CODE> into the Bochs directory, then
+type:
+<table>
+	<tr>
+    <td>&nbsp;</td>
+		<td>
+			<code>patch -p1 &lt; bochs-2.4.5-jitter.patch</code>
+		</td>
+	</tr>
+	<tr>
+    <td>&nbsp;</td>
+		<td>
+			<code>patch -p1 &lt; bochs-2.4.5-att.patch</code>
+		</td>
+	</tr>
+</table>
+You can
+use <CODE>patch</CODE>'s <Q><SAMP>--dry-run</SAMP></Q> option if you want to test
+whether the patches would apply cleanly before trying to apply them.
+<P>
+<h3>xv6</h3>
+Fetch <a href=xv6-rev6.tar.gz>xv6-rev6.tar.gz</a>. Change the first line in xv6/Makefile to:
+<pre>
+QEMU=/path/to/qemu-1.0-CSL373-install/bin/qemu-system-i386
+</pre>
+(or ensure that <code>qemu</code> is in your path).
+<br>
+Ensure that <code>bochs</code> is in your executable search path.
+<br>
+Go to the xv6 directory. Run
+<pre>
+make qemu
+</pre>
+to run xv6 inside Qemu.<br>
+Run
+<pre>
+make bochs
+</pre>
+to run xv6 inside Bochs. 
+Remember to type <TT>ldsym "kernel.sym"</TT> at the prompt after running
+<code>make bochs</code>. This will load all the symbol to address mappings to
+help you in debugging.
+
+<h3>Other tools</h3>
+A very good tool to help you browse your source code: <a href=http://cscope.sourceforge.net/>cscope</a><br>
+Index your source code using <a href=http://ctags.sourceforge.net/>ctags</a><br>
+Use <code>cscope/ctags</code> with vi: <a href=http://cscope.sourceforge.net/cscope_vim_tutorial.html>Vim/cscope tutorial</a>, <a href=http://oreilly.com/catalog/vi6/chapter/ch08.html#ch08_05.htm>Vim/ctags tutorial</a><br>
+
+<h3>Subversion</h3>
+Subversion (SVN) is installed on all machines in the department cluster. You
+can install it on your machine using
+"<code>apt-get install subversion</code>".
+<br>
+The <a href=http://www.cc.iitd.ernet.in/CSC>Computer Services Center</a>
+provides a subversion server. To create a repository called
+"<code>pintos-repo</code>":
+<pre>
+$ ssh ssh1.iitd.ernet.in   # use your proxy password
+$ mkdir svn
+$ cd svn
+$ svnadmin create pintos-repo
+</pre>
+You should see a subdirectory called <code>pintos-repo</code>
+in the <code>svn</code>
+directory. Read <code>pintos-repo/README.txt</code>. Do not add, delete,
+or modify any files in this subdirectory.
+
+Edit the <code>svn/authz</code> file to
+provide read-write permissions to <code>pintos-repo</code> to
+yourself and your partners, and read permissions to <code>sbansal</code>.
+
+For example, if users <code>cs1012345</code> and <code>cs1067890</code>
+are partners and user <code>cs1012345</code> is currently logged in, here
+is a sample authz file to use:
+<pre>
+[/]
+[pintos-repo:/]
+cs1012345@IITD.ERNET.IN = rw
+cs1067890@IITD.ERNET.IN = rw
+sbansal@IITD.ERNET.IN = r
+</pre>
+Notice that your username should be suffixed with <code>@IITD.ERNET.IN</code>
+and <em>not</em> <code>cse.iitd.ernet.in</code>. These statements provide
+read/write access to the group partners and read access to the instructor.
+Read access to the instructor is necessary for submission of assignments.
+
+<p>Set the directory permissions so that they look like the following:
+<ul>
+	<li><code>drwx-----x</code> for <code>$HOME</code>. (The permission of individual files in <code>$HOME</code> should be restricted only to the users, so that others can't peep into user's home)</li>
+	<li><code>drwx------</code> for <code>$HOME/svn</code></li>
+</ul>
+The responsibility of maintaining the security of your repository lies with you. You will be penalized if your repository is found to be readable by other unauthorized people.
+
+<p>Go to one of the machines in the department cluster (or your local machine).
+Use the following command to checkout the files from your repository:
+<pre>
+$ svn checkout https://svn.iitd.ernet.in/~cs1012345/pintos-repo
+</pre>
+You will be prompted for your CSC password. Do not offer to save
+the password in plaintext format in your home directory as that is
+insecure. You can add the following line to <code>~/.subversion/servers</code>
+to avoid getting prompted for saving passwords in future:
+<pre>
+store-plaintext-passwords = no
+</pre>
+This should create a directory called <code>pintos-repo</code>.
+Type the following commands to add the base pintos files to the
+repository:
+<pre>
+$ cd pintos-repo/
+$ cp -r /path/to/pintos/src .
+$ svn add src
+$ svn commit
+</pre>
+
+"<code>svn add</code>" adds the files to your local checked-out copy of
+the repository. "<code>svn commit</code>" commits the changes in your
+local repository to the main repository. You will be prompted for your
+CSC proxy password each time you access the main repository. At this
+point, you have successfully setup your repository. Your partner
+can use
+<code>svn checkout https://svn.iitd.ernet.in/~cs1012345/pintos-repo</code>
+to checkout a copy of the code. Just like you, your partner
+is also authorized to make changes and commit
+them to the main repository.
+
+<p>If this does not work, carefully study the instructions given at the
+<a href=http://www.cc.iitd.ernet.in/CSC/index.php?option=com_content&view=article&id=99&Itemid=126>CSC Webpage</a> on
+creating, accessing, and securing your repositories. Report any missing instructions that you find to the course staff so that we can fix the documentation.
+
+<p>Here are some more useful commands:
+<ul>
+	<li><code>svn status</code><br>
+	Show the status of each file (whether added to the repository or not).
+	</li>
+	<li><code>svn add</code><br>
+	Add a file to the local repository. You need to do this for any new file
+	that you create since the last update. Do this for files which
+	shows "<code>?</code>" in the <code>status</code> command and which you
+	would like to add to the repository.
+	</li>
+	<li><code>svn delete</code><br>
+	Delete a file from the local repository.</li>
+	<li><code>svn update</code><br>
+	Update the local repository with the contents of the main repository
+	if they have changed since the last commit. It is possible that this
+	command reports certain conflicts as your partner's changes may
+	conflict with your changes. You will need to fix these conflicts
+	manually.
+	</li>
+	<li><code>svn commit</code><br>
+	Reflect the changes in your local repository to the main repository.
+	You may have to do <code>svn update</code> before this if your partner
+	has committed some changes after your last update. If some of your
+	changes conflict with your partner's changes, you may have to resolve
+	them manually and then use <code>svn resolved filename</code>.
+	<li><code>svn log https://svn.iitd.ernet.in/~cs1012345/pintos-repo</code><br>
+	To see the commit log
+	<li><code>svn help [status|add|update|commit]</code><br>
+	Get help
+</ul>
+
+Version Control Software is used in almost all modern software
+development environments. Read this
+<a href=http://en.wikipedia.org/wiki/Revision_control>wikipedia article</a>
+to know more about the theory. <a href=http://www.cc.iitd.ernet.in/CSC/index.php?option=com_content&view=article&id=99&Itemid=126>Here</a> is a brief
+tutorial by the Computer Services Center on using the IITD Subversion
+repository.
+<a href=http://www.cs.put.poznan.pl/csobaniec/Papers/svn-refcard.pdf>Here</a>
+is a quick start document for basic SVN commands.

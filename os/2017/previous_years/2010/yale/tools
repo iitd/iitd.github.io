@@ -1,0 +1,176 @@
+
+<HTML>
+<HEAD>
+	<TITLE>CPSC 422/522: Operating Systems, Spring 2010
+		
+		&mdash Tools
+		
+	</TITLE>
+	<LINK REL="stylesheet" HREF="stylesheet.css">
+</HEAD>
+<BODY>
+
+<table cellspacing="2" cellpadding="10" width="100%">
+<tbody>
+<tr>
+
+<td bgcolor="white" align="left">
+<H1>CS422/522: Operating Systems, Spring 2010
+	
+	&mdash Tools
+	
+</H1>
+
+<table cellpadding="5" bgcolor="blue">
+<tr><td bgcolor="white" align="center">
+<a href="index">Home</a> &nbsp;&ndash;&nbsp;
+<a href="info">Overview</a> &nbsp;&ndash;&nbsp;
+<a href="sched">Schedule</a> &nbsp;&ndash;&nbsp;
+<a href="reference">Reference</a> &nbsp;&ndash;&nbsp;
+<a href="reading">Reading List</a> &nbsp;&ndash;&nbsp;
+<a href="tools">Tools</a> &nbsp;&ndash;&nbsp;
+<a href="../pios">PIOS</a> &nbsp;&ndash;&nbsp;
+<a href="prior">Prior Years</a>
+</table>
+
+</td>
+
+<td align="center" valign="center" width="80" bgcolor="white">
+<a href="http://www.yale.edu/">
+<img border="0" src="images/yaleclr.jpg" width="70" height="79">
+</a>
+</td>
+
+</tr>
+</tbody>
+</table>
+
+<hr>
+ 
+
+<p>
+If you use the Linux-based Zoo machines, then all the
+software tools you will need for this course are
+already installed on the machines and ready to use.
+If you would like to compile and run the tools on your own machine,
+however, here is the information you need.   We cannot
+guarantee that these tools will run on your computer,
+but they should run on recent versions of Linux.
+
+<p>
+It should be possible to get this development environment running
+under Windows with the help of 
+<a href="http://www.cygwin.com">Cygwin</a>.  Install cygwin, and be
+sure to install the <samp>flex</samp> and <samp>bison</samp> packages
+(they are under the development header).  
+
+
+<h2>Compiler Toolchain</h2>
+
+<p>Most modern Linuxes and BSDs have an ELF toolchain compatible with
+the CPSC 422 labs. That is, the system-standard <tt>gcc</tt>,
+<tt>as</tt>, <tt>ld</tt> and <tt>objdump</tt> should just work.  The
+lab makefile should automatically detect this.  However, if your
+machine is in this camp and the makefile fails to detect this, you can
+override it by adding the following line to <tt>conf/env.mk</tt>:
+
+<pre>
+GCCPREFIX=
+</pre>
+
+<table align="right" width="50%" border="2" cellpadding="10"><tr><td>
+<b>Mac OS X:</b>
+<p>
+You'll first have to install gmp and mpfr.
+To use Mac Ports versions, do this:
+
+<pre>
+# sudo port install gmp mpfr
+# sudo mkdir -p /usr/local/include /usr/local/lib
+# sudo ln -sf /opt/local/include/gmp* /usr/local/include/
+# sudo ln -sf /opt/local/include/mpfr* /usr/local/include/
+# sudo ln -sf /opt/local/lib/libgmp* /usr/local/lib/
+# sudo ln -sf /opt/local/lib/libmpfr* /usr/local/lib/
+</pre>
+
+You could also persuade the configure script to get gmp and mpfr
+directly out of the /opt/local tree, but
+other libraries, such as the Mac Ports version of iconv,
+may get mixed up with the Apple-provided version of iconv
+and mess up other parts of the build process.
+These considerations may or may not apply to Mac Fink.
+</table>
+
+<p>
+If you are using something other than standard x86
+Linux or BSD, you will need the GNU C compiler toolchain, configured
+and built as a cross-compiler for the target
+'<samp>i386-elf</samp>', as well as the GNU debugger,
+similarly configured for <samp>i386-elf</samp>.
+You can download specific versions we recently verified to work
+via these links, although more recent
+versions of gcc, binutils, and GDB should work too:
+
+<ul>
+<li>	<a href="http://ftp.gnu.org/gnu/binutils/binutils-2.20.tar.bz2">
+	http://ftp.gnu.org/gnu/binutils/binutils-2.20.tar.bz2</a>
+<li>	<a href="http://ftp.gnu.org/gnu/gcc/gcc-4.4.2/gcc-core-4.4.2.tar.bz2">
+	http://ftp.gnu.org/gnu/gcc/gcc-4.4.2/gcc-core-4.4.2.tar.bz2</a>
+<li>	<a href="http://ftp.gnu.org/gnu/gdb/gdb-7.0.tar.bz2">
+	http://ftp.gnu.org/gnu/gdb/gdb-7.0.tar.bz2</a>
+</ul>
+
+<p>Once you've unpacked these archives,
+run the following commands
+(the <code>make install</code> commands must be run as root):
+
+<pre>
+$ cd binutils-2.20
+$ ./configure --target=i386-elf --disable-nls --disable-werror
+$ make
+$ make install
+$ cd ../gcc-4.4.2
+$ ./configure --target=i386-elf --enable-languages=c --disable-nls \
+	--without-headers --with-newlib --disable-threads --disable-shared \
+	--disable-libmudflap --disable-libssp
+$ make
+$ make install
+$ cd ../gdb-7.0
+$ ./configure --target=i386-elf --program-prefix=i386-elf- --disable-werror
+$ make
+$ make install
+</pre>
+
+<p>Then you'll have in <samp>/usr/local/bin</samp> a bunch of binaries
+with names like <samp>i386-elf-gcc</samp>.  The lab makefile
+should detect this toolchain and use it in preference to your
+machine's default toolchain.  If this doesn't work, there are
+instructions on how to override the toolchain inside the GNUmakefile
+in the labs.
+
+
+
+<P><HR><P>
+<ADDRESS>Copyright (c) 2000-2010
+<a href="http://www.cs.yale.edu/users/shao-zhong/">Zhong Shao</a>
+and
+<a href="http://www.cs.yale.edu/people/ford.html">Bryan Ford</a>,
+<a href="http://www.cs.yale.edu/">Department of Computer Science</a>,
+<a href="http://www.yale.edu/">Yale University</a><br>
+Many course materials derived from
+<a href="http://pdos.csail.mit.edu/6.828/">6.828</a>
+by Frans Kaashoek and others at MIT.
+</ADDRESS> 
+
+</BODY>
+</HTML>
+ 
+
+<!--  LocalWords:  Cygwin cygwin Toolchain Linuxes BSDs toolchain gcc ld jos cd
+ -->
+<!--  LocalWords:  objdump conf GCCPREFIX linux binutils libstdc GNUmakefile sh
+ -->
+<!--  LocalWords:  Bochs athena scp username bochs prebuilt wget xzvf
+ -->
+<!--  LocalWords:  disasm
+ -->

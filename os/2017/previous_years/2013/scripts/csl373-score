@@ -1,0 +1,286 @@
+#!/usr/bin/perl -w
+
+use strict;
+use warnings;
+use lib "/home/faculty/sbansal/public_html/csl373/scripts";
+use Switch;
+use POSIX;
+require "LibSubmit.pl";
+use csl373 qw(%assignments @ec_assignments %weights %max_marks $grade_file %deadlines $num_free_late_days %max_late_day_penalty);
+
+my $SUBMISSION_DIRECTORY = get_submission_directory();
+my $user;
+
+if ($#ARGV == 0) {
+	$user = $ARGV[0];
+} else {
+	$user = $ENV{'USER'};
+}
+
+open(my $grades_fp, "<$grade_file") or die "open grade_file failed: $!\n";
+
+my %marks_list;
+
+while (my $line = <$grades_fp>) {
+	if ($line =~ /^(\S+) (\S+) (\d+)/) {
+		my $uname = $1;
+		my $assignment_id = $2;
+		my $marks = $3;
+
+		my $uname_marks_list_ptr = $marks_list{$uname};
+		my %uname_marks_list;
+		if (defined $uname_marks_list_ptr) {
+			%uname_marks_list = %$uname_marks_list_ptr;
+		}
+		$uname_marks_list{$assignment_id} = $marks;
+
+		$marks_list{$uname} = \%uname_marks_list;
+	}
+}
+
+
+my %total_list;
+my $user_marks_list_ptr = $marks_list{$user};
+if (!(defined $user_marks_list_ptr)) {
+	print "Your marks have not been entered yet.\n";
+	exit(0);
+}
+my %user_marks_list = %$user_marks_list_ptr;
+my $num_late_hours_used = 0;
+my $user_ec_total = 0;
+print "=============================================================================\n";
+print "W. Marks = Weighted Marks;  Af.Pen. = Weighted marks after Late Day Penalty.\n";
+print "Note: The individual homework weightage is tentative and may be changed.\n";
+print "=============================================================================\n";
+print "Assn.\tWeight\tMarks\tW.marks\tLateHr.\tAf.Pen.\tRank\t[Max / Mean / Median]\n";
+foreach my $ass_id (sort (keys %user_marks_list)) {
+	my $ass_marks = $user_marks_list{$ass_id};
+	my $ass_weight = get_weight($ass_id, \%user_marks_list);
+	my $ass_wmarks = roundoff($ass_marks*$ass_weight/$max_marks{$ass_id});
+	my $ass_wmarks_before_penalty = $ass_wmarks;
+	(my $ass_penalty, $num_late_hours_used, my $late_day_penalty) = account_for_late_hours($user, $ass_id, $ass_wmarks, $num_late_hours_used);
+	$ass_wmarks *= ($ass_weight != 0)?($ass_weight - $ass_penalty)/$ass_weight:1;
+	$ass_wmarks = roundoff($ass_wmarks);
+	my $ass_sum = 0, my @ass_array;
+	foreach my $uname (keys %marks_list) {
+		my $uname_marks_list_ptr = $marks_list{$uname};
+		my %uname_marks_list = %$uname_marks_list_ptr;
+	  my $uname_ass_weight = get_weight($ass_id, \%uname_marks_list);
+		my $uname_ass_marks = $uname_marks_list{$ass_id};
+		my $uname_num_late_hours_used = 0;
+		if (!(defined $uname_ass_marks)) {
+			next;
+		}
+		my $uname_ass_wmarks = roundoff($uname_ass_marks * $uname_ass_weight/$max_marks{$ass_id});
+		my $uname_ass_wmarks_before_penalty = $uname_ass_wmarks;
+		my $uname_late_day_penalty;
+		(my $uname_ass_penalty, $uname_num_late_hours_used, $uname_late_day_penalty) = account_for_late_hours($uname, $ass_id, $uname_ass_wmarks, $uname_num_late_hours_used);
+	  $uname_ass_wmarks *= ($uname_ass_weight != 0)?($uname_ass_weight - $uname_ass_penalty)/$uname_ass_weight:1;
+	  $uname_ass_wmarks = roundoff($uname_ass_wmarks);
+		$ass_sum += $uname_ass_wmarks;
+		push(@ass_array, $uname_ass_wmarks);
+	
+		$total_list{$uname} = compute_total(\%uname_marks_list, \%uname_marks_list);
+	}
+	@ass_array = sort {$b <=> $a} @ass_array;
+	my $ass_num_submissions = $#ass_array + 1;
+	my $ass_avg = roundoff($ass_sum/$ass_num_submissions);
+	my $ass_max = $ass_array[0];
+	my $ass_median = $ass_array[int($ass_num_submissions/2)];
+	my $ass_rank = find_rank(\@ass_array, $ass_wmarks);
+	my $ass_max_marks = $max_marks{$ass_id};
+	my $trunc_ass_id = substr $ass_id, 0, 7;
+	print "$trunc_ass_id\t$ass_weight\t$ass_marks/$ass_max_marks\t$ass_wmarks_before_penalty\t$late_day_penalty\t$ass_wmarks\t$ass_rank/$ass_num_submissions\t[$ass_max / $ass_avg / $ass_median]\n";
+	if (belongs_to_ec($ass_id)) {
+		$user_ec_total += $ass_wmarks;
+	}
+}
+
+my $user_total = compute_total(\%user_marks_list, \%user_marks_list);
+my $max_marks_total = compute_total(\%max_marks, \%user_marks_list);
+my $total_sum = 0, my @total_array;
+foreach my $uname (keys %total_list) {
+	$total_sum += $total_list{$uname};
+	push(@total_array, $total_list{$uname});
+}
+@total_array = sort {$b <=> $a} @total_array;
+my $num_totals = $#total_array + 1;
+my $total_rank = find_rank(\@total_array, $user_total);
+my $total_avg = $total_sum/$num_totals;
+my $total_max = $total_array[0];
+my $total_median = $total_array[int($num_totals/2)];
+print "-----------------------------------------------------------------------------\n";
+printf("Total: %.2f/%.2f  (Rank: $total_rank/$num_totals)  [Max: %.2f, Mean: %.2f, Median: %.2f]\n", $user_total, $max_marks_total, $total_max, $total_avg, $total_median);
+print "-----------------------------------------------------------------------------\n";
+
+my $num_late_days_used = int($num_late_hours_used/24);
+my $num_late_hours_minus_days_used = $num_late_hours_used % 24;
+print "Num late hours used: $num_late_days_used days $num_late_hours_minus_days_used hours.\n";
+if ($user_ec_total != 0) {
+	print "Extra Credit: $user_ec_total\n";
+}
+#my $num_free_late_hours = $num_free_late_days * 24;
+#if ($num_late_hours_used > $num_free_late_hours) {
+#	my $penalty = ($num_late_hours_used - $num_free_late_hours)/24;
+#	print "Late submission penalty so far: $penalty.\n";
+#}
+exit;
+
+sub account_for_late_hours
+{
+	my $user = shift;
+	my $ass_id = shift;
+	my $ass_marks = shift;
+	my $num_late_hours_used = shift;
+
+	my $deadline = $deadlines{$ass_id};
+	if (!(defined $deadline)) {
+		return (0, $num_late_hours_used, 0);
+	}
+	my $student_subdir = "$SUBMISSION_DIRECTORY/$ass_id/$user";
+	my ($group_names_ref, $timestr) = get_submission_details($student_subdir);
+
+	my $late_hours = timestr_diff_hours($timestr, $deadline);
+	my $num_free_late_hours = $num_free_late_days * 24;
+
+	my $num_penalty_hours = signum($late_hours - signum($num_free_late_hours - $num_late_hours_used));
+
+	$num_late_hours_used += $late_hours;
+
+	my $ass_penalty = min($num_penalty_hours/24, $max_late_day_penalty{$ass_id});
+
+	return ($ass_penalty, $num_late_hours_used, $num_penalty_hours);
+}
+
+sub max {
+	my $a = shift;
+	my $b = shift;
+	if ($a > $b) {
+		return $a;
+	}
+	return $b;
+}
+
+sub min {
+	my $a = shift;
+	my $b = shift;
+	if ($a < $b) {
+		return $a;
+	}
+	return $b;
+}
+
+
+
+sub signum {
+	my $x = shift;
+	if ($x >= 0) {
+		return $x;
+	}
+	return 0;
+}
+
+sub belongs_to_ec
+{
+	my $ass_id = shift;
+	foreach my $ec_assn (@ec_assignments) {
+		if ($ec_assn eq $ass_id) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
+sub compute_total
+{
+	my $my_marks_list_ref = shift;
+	my $keys_list_ref = shift;
+	my %my_marks_list = %$my_marks_list_ref;
+	my %keys_list = %$keys_list_ref;
+	my $total = 0;
+	foreach my $ass_id (keys %keys_list) {
+		my $my_marks = $my_marks_list{$ass_id};
+		if (belongs_to_ec($ass_id)) {
+			next;
+		}
+		if (!(defined $my_marks)) {
+			next;
+		}
+		my $max_marks = $max_marks{$ass_id};
+		my $weight = get_weight($ass_id, \%my_marks_list);
+		$total += ($my_marks * $weight)/$max_marks;
+	}
+	return $total;
+}
+
+sub find_rank
+{
+	my $arr_ptr = shift;
+	my $val = shift;
+	my @arr = @$arr_ptr;
+	my $rank;
+	my $num_elems = $#arr + 1;
+	for ($rank = 0; $rank < $num_elems; $rank++) {
+		if ($arr[$rank] <= $val) {
+			last;
+		}
+	}
+	return $rank+1;
+}
+
+sub is_best_in_group {
+	my $ass_id = shift;
+	my $bestnum = shift;
+	my $group_ref = shift;
+	my $marks_list_ref = shift;
+
+	my @group = @$group_ref;
+	my $count = 0;
+	my %subgroup;
+	foreach my $aid (@group) {
+		if (defined $$marks_list_ref{$aid}) {
+		  $subgroup{$aid} = $$marks_list_ref{$aid}/$max_marks{$aid};
+    }
+	}
+	foreach my $aid (sort { ($subgroup{$b} <=> $subgroup{$a}) } keys %subgroup) {
+		if ($aid eq $ass_id) {
+			return 1;
+		}
+		$count++;
+		if ($count == $bestnum) {
+			last;
+		}
+  }
+	return 0;
+}
+
+sub get_weight
+{
+	my $ass_id = shift;
+	my $marks_list_ref = shift;
+	my %marks_list = %$marks_list_ref;
+	my $weight_id = $weights{$ass_id};
+	if ($weight_id =~ /^best(\d+)-/) {
+	  my $bestnum = $1;
+		my @group = ();
+		my $group_weight = -1;
+    foreach my $wid (keys %weights) {
+			if ($weights{$wid} eq $weight_id) {
+				push(@group, $wid);
+			}
+			if ($wid eq $weight_id) {
+				$group_weight = $weights{$wid};
+      }
+		}
+		$group_weight != -1 or die;
+		my $ret;
+	  if (is_best_in_group($ass_id, $bestnum, \@group, \%marks_list)) {
+			$ret = roundoff($group_weight/$bestnum);
+		} else {
+			$ret = 0;
+    }
+		return $ret;
+	} else {
+		return $weights{$ass_id};
+	}
+}

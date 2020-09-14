@@ -1,0 +1,186 @@
+<title>L36</title>
+<html>
+<head>
+</head>
+<body>
+<h2>ext3 modes</h2>
+<p>
+disks usually have write caches and re-order writes, for performance
+<ul>
+	<li>sometimes hard to turn off (the disk lies)
+	<li>people often leave re-ordering enabled for speed, out of ignorance
+</ul>
+bad news if disk writes commit block before preceding stuff
+<ul>
+	<li>then recovery replays "descriptors" with random block #s!
+  and writes them with random content!
+	<li>Solution: have a checksum in the commit record. Ext3 does not support this though.
+</ul>
+
+<p>
+ordered vs journaled
+<ul>
+	<li>journaling file content is slow, every data block written twice
+	<li>perhaps not needed to keep FS internally consistent
+	<li>can we just lazily write file content blocks?
+	<li>no:
+    if metadata updated first, crash may leave dangling pointers from file inodes
+	<li>
+	ext3 ordered mode:
+	<ul>
+		<li>write content block to disk before commiting inode w/ new block #
+    thus won't see stale data if there's a crash
+	</ul>
+	<li>most people use ext3 ordered mode
+</ul>
+
+<!--
+correctness challenges w/ ordered mode:
+  A. rmdir, re-use block for file, ordered write of file,
+       crash before rmdir or write committed
+     now scribbled over the directory block
+     fix: defer free of block until freeing operation forced to log on disk
+  B. rmdir, commit, re-use block in file, ordered file write, commit,
+       crash, replay rmdir
+     file is left w/ directory content e.g. . and ..
+     fix: revoke records, prevent log replay of a given block
+
+final tidbit
+  open a file, then unlink it
+  unlink commits
+  file is open, so unlink removes dir ent but doesn't free blocks
+  crash
+  nothing interesting in log to replay
+  inode and blocks not on free list, also not reachably by any name
+    will never be freed! oops
+  solution: add inode to linked list starting from FS superblock
+    commit that along with remove of dir ent
+  recovery looks at that list, completes deletions
+
+does ext3 fix the xv6 log performance problems?
+  only one transaction at a time -- yes
+  synchronous write to on-disk log -- yes, but 5-second window
+  tiny update -> whole block write -- yes (indirectly)
+  synchronous writes to home locations after commit -- yes
+-->
+
+<p>
+ext3 very successful
+<ul>
+	<li>but: no checksum -- ext4
+	<!--<li>but: not efficient for applications that use fsync() -->
+</ul>
+
+<h3>What are the persistence guarantees for the user?</h3>
+None, except that her data will be persistent after 30 seconds. But can
+use <code>fsync()</code> to ensure that the data has become persistent.
+How will fsync() be implemented in ext3? enough to close commit the current
+transaction? or do we need to apply the log to the FS tree also?
+
+<p>Databases provide persistence guarantees, and so make extensive
+use of fsync() if implemented in userspace. Makes filesystem performance
+much worse. Better to expose raw disk to database than layering it on
+top of a file system.
+
+<h2>Protection and Security</h2>
+Protection involves mechanisms that prevent accidental or intentional
+misuse of the system. There are three aspects to a protection mechanism:
+<ul>
+	<li>Authentication: identify a responsible party (<em>principal</em>) behind
+	each action.
+	<li>Authorization: determine which principals are allowed to perform which
+	actions.
+	<li>Access enforcement: Combine authentication and authorization to control
+	access.
+</ul>
+A tiny flaw in any of these areas can compromise the entire protection
+mechanism.
+
+<h3>Authentication</h3>
+<ul>
+	<li>Typically done with passwords:
+	<ul>
+		<li>A secret piece of information used to establish user identity
+		<li>Must not be stored in directly-readable form: one-way transformations
+		<li>Passwords should be relatively long and obscure, to prevent brute-force
+		attacks.
+	</ul>
+	<li>Alternate form of authentication: badge or key
+	<ul>
+		<li>Does not have to be kept secret
+		<li>Should not be forgable or copyable
+		<li>Can be stolen, but owner will know if it is
+		<li>Paradox: key must be cheap to make, hard to duplicate
+	</ul>
+	<li>Once authentication is complete, the identity of the principal must
+	be protected from tampering
+	<li>Once you log in, your user ID is associated with every process executed
+	under that login: each process inherits user ID of its parent
+</ul>
+
+<h3>Authorization</h3>
+Goal: determine which principals can perform which operations on which objects
+<ul>
+	<li>Logically, authorization information represented as an <em>access matrix</em>
+	<ul>
+		<li>One row per principal
+		<li>One column per object
+		<li>Each entry indicates what that principal can do to that object
+	</ul>
+	<li>In practice, a full access matrix would be too bulky, so it gets
+	stored in one of two compressed ways: access control lists and capabilities.
+	<li><em>Access Control Lists</em> (ACLs): organize by columns.
+	<ul>
+		<li>With each object, store information about which users are allowed to
+		perform which operations
+		<li>Most general form: list of (user, privilege) pairs
+		<li>For simplicity, users can be organized into groups, with a single ACL
+		entry for an entire group
+		<li>ACLs can be very general (Windows) or simplified (Unix)
+		<li>UNIX: 9 bits per file:
+		<ul>
+			<li>user/owner, group, others
+			<li>read, write, execute for each of the above
+			<li>"root" has all permissions for everything
+			<li>additional setuid bit to allow any user to execute file with
+			owner privileges, i.e., you can execute "os-submit-lab" with your
+			instructor's privileges to allow copying of your files to his directory
+		</ul>
+	</ul>
+	<li><em>Capabilities</em>: organize by rows.
+	<ul>
+		<li>With each user, indicate which objects may be accessed, and in what
+		ways.
+		<li>Store a list of (object, privilege) pairs with each user. This is called
+		a capability list.
+		<li>Typically, capabilities also act as names for objects: can't even
+		name objects not referred to in your capability list.
+		<li>As if there was no root directory in UNIX and no "..". Another example
+		is file descriptors or page tables
+		for processes (here processes are the principals).
+	</ul>
+	<li>Systems based on ACLs encourage visibility of objects: shared public
+	namespace
+	<li>Capability systems discourage visibility; namespaces are private by
+	default
+	<li>Capabilities have been used in experimental systems attempting to be
+	very secure. However they have proven to be clumsy to use (painful to share
+	things), so they have mostly fallen out of favour for
+	managing objects such as files.
+</ul>
+<h3>Access Enforcement</h3>
+<ul>
+	<li>Some part of the system must be responsible for enforcing access controls
+	and protecting authentication and authorization info
+	<li>This portion of the system has total power, so it should be as simple
+	and small as possible.
+	<li>Examples: OS kernel, tamper-proof code to check cryptographic keys, etc.
+</ul>
+
+Common attacks involve <em>Trojan Horses</em>, where a useful
+program is
+tricked or modified into doing something that it is not supposed to do, but
+has the privilege of doing. Example: if there is a bug in the "submit-lab"
+script, you can trick it to execute anything with the instructor
+privileges.
+</ul>

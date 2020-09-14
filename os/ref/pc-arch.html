@@ -1,0 +1,1116 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft FrontPage 5.0">
+   <meta name="Template" content="C:\Program Files\Microsoft Office\Office\Dictdoc.dot">
+   <meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+   <title>Pentium and Pentium Pro Architectures</title>
+</head>
+<body link="#0000FF">
+
+<h1>
+A Guide to Programming Intel IA32 PC Architecture</h1>
+<font size="4">Kai Li, Princeton University<br>
+First draft, 1999<br>
+Revised 2003</font><p><a href="#IA32">1 Intel IA32 Processors</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#modes">1.1 Modes</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#register">1.2 Register Set</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#addressing">1.3 Addressing</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#reset">1.4 Processor Reset</a></p>
+<p><a href="#assembly">2 Assembly Programming</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#syntax">2.1 Instruction Syntax</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#memory">2.2 Memory Operands</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#instructions">2.3 Frequently Used Instructions</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#directives">2.4 Assembler Directives</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#inline">2.5 Inline Assembly</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#program">2.6 Program Structure and Calling Convention</a></p>
+<p><a href="#BIOS">3 BIOS Services</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#display memory">3.1 Display Memory</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#write to display">3.2 Write to Display at Current
+Cursor</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#read diskette">3.3 Read from Diskette</a></p>
+<p><font size=+0 face="Times New Roman">The goal of this documentation is to
+provide a brief  description of the Intel IA32 PC architecture, a brief introduction to assembly programming using the Gnu
+assembler, and a small set of BIOS services that can be used in the course
+projects.</font>
+<h4><font face="Times New Roman">References:</font></h4>
+<ul>
+  <li><i>IA32 Intel Architecture Software Developer's Manual, Volume 2: 
+  Instruction Set Reference Manual</i>, Intel Corporation, 2003</li>
+  <li><i>IA32 Intel Architecture Software Developer's Manual, Volume 3: 
+  Operating System Writer's Manual</i>,&nbsp; Intel Corporation, 2003.</li>
+  <li><a href="http://www.gnu.org/manual/gas-2.9.1/html_mono/as.html">
+  http://www.gnu.org/manual/gas-2.9.1/html_mono/as.html</a></li>
+  <li><i>The Undocumented PC: A Programmer's Guide to I/O, CPUs, and Fixed
+    Memory Areas, 2nd Edition</i>, Frank van Gilluwe, Addison-Wesley Developers
+    Press, 1997.</li>
+</ul>
+<h2>
+<b><font face="Arial"><a name="IA32"></a>1&nbsp; Intel </font></b>IA32
+<b><font face="Arial">Processor</font></b></h2>
+
+<p>
+Intel uses IA32 to refer to Pentium processor family, in order to distinguish 
+them from their 64-bit architectures.</p>
+
+<h2>
+<b><font size=+1><a name="modes"></a>1.1 Modes</font></b></h2>
+<font size=+0>The 1A32 processor has three operating modes:</font>
+<ul>
+<li>
+<font size=+0><b>Real-address mo</b>d<b>e.</b> This mode lets the processor to 
+address &quot;real&quot; memory address. It can address up to 1Mbytes of memory (20-bit of 
+address). It can also be called &quot;unprotected&quot; mode since operating system (such 
+as DOS) code runs in the same mode as the user applications. 1A32 processors have this mode to be compatible with
+early Intel processors such as 8086. The processor is set to this mode
+following by a power-up or a reset and can be switched to protected mode
+using a single instruction.</font></li>
+
+<li>
+<font size=+0><b>Protected mode.</b> This is the preferred mode for a modern
+operating system. It allows applications to use virtual memory addressing
+and supports multiple programming environment and protections.</font></li>
+
+<li>
+<b>System<font size=+0> management mode</font>. </b>This mode is designed for 
+fast state snapshot and resumption. It is useful for power management</li>
+</ul>
+There is also a virtual-8086 mode that allows the processor to execute
+8086 code software in the protected, multi-tasking environment.
+<h2>
+<b><font size=+1><a name="register"></a>1.2 Register Set</font></b></h2>
+<font size=+0>There are three types of registers: general-purpose data
+registers, segment registers, and status and control registers. The following
+figure shows these registers:</font>
+<p><img SRC="Image7.gif" height=382 width=607>
+<h4>
+<b><font face="Arial"><font size=+0>General-purpose Registers</font></font></b></h4>
+<font size=+0>The eight <font face="Times-Roman">32-bit general-purpose
+data registers are used to hold operands for logical and arithmetic operations,
+operands for address calculations and memory pointers. The following shows
+what they are used for:</font></font>
+<ul>
+<li>
+<font size=+0>EAX—Accumulator for operands and results data.</font></li>
+<li>
+<font size=+0>EBX—Pointer to data in the DS segment.</font></li>
+<li>
+<font size=+0>ECX—Counter for string and loop operations.</font></li>
+<li>
+<font size=+0>EDX—I/O pointer.</font></li>
+<li>
+<font size=+0>ESI—Pointer to data in the segment pointed to by the DS register;
+source pointer for string operations.</font></li>
+<li>
+<font size=+0>EDI—Pointer to data (or destination) in the segment pointed
+to by the ES register; destination pointer for string operations.</font></li>
+<li>
+<font size=+0>EBP—Pointer to data on the stack (in the SS segment).</font></li>
+<li>
+<font size=+0>ESP—Stack pointer (in the SS segment).</font></li>
+</ul>
+
+<font size=+0>The following figure shows the lower 16 bits of the general-purpose
+registers can be used with the names AX, BX, CX, DX, BP, SP, SI, and DI
+(the names for the corresponding 32-bit ones have a prefix "E" for "extended").
+Each of the lower two bytes of the EAX, EBX, ECX, and EDX registers can
+be referenced by the names AH, BH, CH, and DH (high bytes) and AL, BL,
+CL, and DL (low bytes).</font>
+<p><img SRC="Image8.gif" BORDER=0 height=307 width=523>
+<h4>
+<b><font face="Arial"><font size=+0>Segment Registers</font></font></b></h4>
+<font face="Times-Roman"><font size=+0>There are six segment registers
+that hold 16-bit segment selectors. A segment selector is a special pointer
+that identifies a segment in memory. The six segment registers are:</font></font>
+<ul>
+<li>
+<font face="Times-Roman"><font size=+0>CS: code segment register</font></font></li>
+
+<li>
+<font face="Times-Roman"><font size=+0>SS: stack segment register</font></font></li>
+
+<li>
+<font face="Times-Roman"><font size=+0>DS, ES, FS, GS: data segment registers</font></font></li>
+</ul>
+<font face="Times-Roman"><font size=+0>Four data segment registers provide
+programs with flexible and efficient ways to access data.</font></font>
+<p><font size=+0><font face="Times-Roman">Modern operating system and applications
+use the (unsegmented) memory model</font><font face="Symbol">&frac34;</font><font face="Times-Roman">
+all the segment registers are loaded with the same segment selector so
+that all memory references a program makes are to a single linear-address
+space.</font></font>
+<p>When writing application code, you generally create segment selectors
+with assembler directives and symbols. The assembler and/or linker then
+creates the actual segment selectors associated with these directives and
+symbols. If you are writing system code, you may need to create segment
+selectors directly. (A detailed description of the segment-selector data
+structure is given in Chapter 3, Protected-Mode Memory Management, of the
+
+<i>IA32 Intel Architecture Software Developer's Manual, Volume 3</i>).
+<p>Project 1, 2, 3, and 4 all use&nbsp; <font face="Times-Roman"><font size=+0>the real-address
+mode and needs to set up the segment registers properly.</font></font> Project 5 
+and 6 will use unsegmented memory model.<h4>
+<b><font face="Arial"><font size=+0>EFLAGS Register</font></font></b></h4>
+<font face="Times-Roman"><font size=+0>The 32-bit EFLAGS register contains
+a group of status flags, a control flag, and a group of system flags. The
+following shows the function of EFLAGS register bits:</font></font>
+<br>&nbsp;
+<center><table BORDER CELLPADDING=4 WIDTH="550" HEIGHT="600" >
+<tr>
+<td VALIGN=TOP WIDTH="48%">
+<center><b><font size=-1>Function</font></b></center>
+</td>
+
+<td VALIGN=TOP WIDTH="48%">
+<center><b><font size=-1>EFLAG Register bit or bits</font></b></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="52%">
+<center><font size=-1>ID Flag (ID)</font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="48%">
+<center><font size=-1>21 (system)</font></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="52%">
+<center><font size=-1>Virtual Interrupt Pending (VIP)</font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="48%">
+<center><font size=-1>20 (system)</font></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="52%">
+<center><font size=-1>Virtual Interrupt Flag (VIF)</font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="48%">
+<center><font size=-1>19 (system)</font></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="52%">
+<center><font size=-1>Alignment check (AC)</font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="48%">
+<center><font size=-1>18 (system)</font></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="52%">
+<center><font size=-1>Virtual 8086 Mode (VM)</font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="48%">
+<center><font size=-1>17 (system)</font></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="52%">
+<center><font size=-1>Resume Flag (RF)</font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="48%">
+<center><font size=-1>16 (system)</font></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="52%">
+<center><font size=-1>Nested Task (NT)</font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="48%">
+<center><font size=-1>14 (system)</font></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="52%">
+<center><font size=-1>I/O Privilege Level (IOPL)</font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="48%">
+<center><font size=-1>13 to 12 (system)</font></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="52%">
+<center><font size=-1>Overflow Flag (OF)</font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="48%">
+<center><font size=-1>11 (system)</font></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="52%">
+<center><font size=-1>Direction Flag (DF)</font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="48%">
+<center><font size=-1>10 (system)</font></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="52%">
+<center><font size=-1>Interrupt Enable Flag (IF)</font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="48%">
+<center><font size=-1>9 (system)</font></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="52%">
+<center><font size=-1>Trap Flag (TF)</font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="48%">
+<center><font size=-1>8 (system)</font></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="52%">
+<center><font size=-1>Sign Flag (SF)</font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="48%">
+<center><font size=-1>7 (status)</font></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="52%">
+<center><font size=-1>Zero Flag (ZF)</font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="48%">
+<center><font size=-1>6 (status)</font></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="52%">
+<center><font size=-1>Auxiliary Carry Flag (AF)</font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="48%">
+<center><font size=-1>4 (status)</font></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="52%">
+<center><font size=-1>Parity Flag (PF)</font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="48%">
+<center><font size=-1>2 (status)</font></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="52%">
+<center><font size=-1>Carry Flag (CF)</font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="48%">
+<center><font size=-1>0 (status)</font></center>
+</td>
+</tr>
+</table></center>
+
+<p><font size=+0>Bits 1, 3, 5, 15, and 22 through 31 of this register are
+reserved.&nbsp; To understand what these fields mean and how to use them,
+please see Section 3.6.3 and 3.6.4 in&nbsp;</font> <i>IA32 Intel Architecture 
+Software Developer's Manual, Volume 1.</i><h4>
+<b><font face="Arial"><font size=+0>EIP Register (Instruction Pointer)</font></font></b></h4>
+<font size=+0>The EIP register (or instruction pointer) can also be called
+"program counter." It <font face="Times-Roman">contains the offset in the
+current code segment for the next instruction to be executed. It is advanced
+from one instruction boundary to the next in straight-line code or it is
+moved ahead or backwards by a number of instructions when executing JMP,
+Jcc, CALL, RET, and IRET instructions. The EIP cannot be accessed directly
+by software; it is controlled implicitly by control-transfer instructions
+(such as JMP, J</font><i><font face="Times-Italic">cc</font></i><font face="Times-Roman">,
+CALL, and RET), inter-rupts, and exceptions. The EIP register can be loaded
+indirectly by modifying the value of a return instruction pointer on the
+procedure stack and executing a return instruction (RET or IRET).</font></font>
+<p><font size=+0>Note that the value of the EIP may not match with the
+current instruction because of instruction prefetching. The only way to
+read the EIP is to execute a CALL instruction and then read the value of
+the return instruction pointer from the procedure stack.</font>
+<p><font size=+0>The IA32 processors also have control registers, which can be 
+found in the Intel/manuals.</font><h2>
+<b><font size=+1><a name="addressing"></a>1.3 Addressing</font></b></h2>
+
+<h4>
+<b><font face="Arial,Helvetica">Bit and Byte Order</font></b></h4>
+<font size=+0>IA32 processors use "little endian" as
+their byte order. This means that the bytes of a word are numbered starting
+from the least significant byte and that the least significant bit starts
+of a word starts in the least significant byte.</font>&nbsp;
+<h4>
+<b><font size=+0 face="Arial">Data Types</font></b></h4>
+<font size="0">IA32</font><font size=+0> provides four data types: a byte (8
+bits), a word (16 bits), a double-word (32 bits), and a quad-word (64 bits).
+Note that a word is &quot;word&quot; in Gnu assembler and a double-word is equivalent to "long" in Gnu assembler.</font>
+<h4>
+<b><font face="Arial"><font size=+0>Memory Addressing</font></font></b></h4>
+One can use either flat memory model or segmented memory mode.&nbsp; With
+the flat memory model, memory appears to a program as a single, continuous
+address space, called a linear address space. Code (a program’s instructions), data, and the procedure stack are all contained in this address space.
+The linear address space is byte addressable, with addresses running contiguously
+from 0 to 2<sup><font size=-1> 32 - 1</font></sup>.
+<p>With the segmented memory mode, memory appears to a program as a group of 
+independent address spaces called segments. When using this model, code, data, 
+and stacks are typically contained in separate segments. To address a byte in a 
+segment, a program must issue a logical address, which consists of a segment 
+selector and an offset. (A logical address is often referred to as a far 
+pointer.) The segment selector identifies the segment to be accessed and the 
+offset identifies a byte in the address space of the segment. The programs 
+running on an IA32 processor can address up to 16,383 segments of different sizes and
+types. Internally, all the segments that are defined for a system are mapped
+into the processor’s linear address space. So, the processor translates
+each logical address into a linear address to access a memory location.
+This translation is transparent to the application program.
+<h2>
+<font face="Arial" size="4"><a name="reset"></a>1.4 Processor Reset</font></h2>
+<font size=+0>A cold boot or a warm boot can reset the CPU.&nbsp; A cold
+boot is powering up a system whereas a warm boot means that when three
+keys CTRL-ALT-DEL are all pressed together, the keyboard BIOS will set
+a special flag and resets the CPU.</font>
+<p><font size=+0>Upon reset, the processor sets itself to real-mode with
+interrupts disabled and key registers set to a known state.&nbsp; For example,
+the state of the EFLAGS register is 00000002H and the memory is unchanged.&nbsp;
+Thus, the memory will contain garbage upon a cold boot.&nbsp; The CPU will
+jump to the BIOS (Basic Input Output Services) to load the bootstrap loader
+program from the diskette drive or the hard disk and begins execution of
+the loader.&nbsp; The BIOS loads the bootstrap loader into the fixed address
+0:7C00 and jumps to the starting address.</font>
+<h2>
+<b><font face="Arial"><a name="assembly"></a>2 Assembly Programming</font></b></h2>
+<font size=+0>It often takes a while to master the techniques to program
+in assembly language for a particular machine. On the other hand, it should
+not take much time to assembly programming on IA32 processors
+if you are familiar with assembly programming for another processor.</font>&nbsp;&nbsp; <font size=+0>This section assumes that you are already familiar with
+Gnu assembly syntax (learned from the course <i>Introduction to Programming
+Systems </i>or its equivalent). </font>
+<h3>
+<font face="Times-Roman"><a name="syntax"></a>2.1 Instruction Syntax</font></h3>
+<font size=+0>There are two conventions about their syntax and representations: 
+Intel and AT&amp;T. Most documents
+use the Intel convention, whereas the Gnu assembler uses the AT&amp;T convention.&nbsp;
+The&nbsp;main differences are:</font>
+<br>&nbsp;
+<table BORDER CELLPADDING=5 WIDTH="811" HEIGHT="400" >
+<tr>
+<td VALIGN=TOP WIDTH="246" HEIGHT="10">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="256">
+<center><b>Gnu Syntax (AT&amp;T)</b></center>
+</td>
+
+<td VALIGN=TOP WIDTH="263">
+<center>
+<p><b>Intel</b></p>
+</center>
+</td>
+
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="246">Immediate operands</td>
+
+<td VALIGN=TOP WIDTH="256">Preceded by "$"&nbsp;
+<br>e.g.<font face="Courier New,Courier">:push $4</font>
+<br><font face="Courier New,Courier">&nbsp;&nbsp; movl $0xd00a, %eax</font></td>
+
+<td VALIGN=TOP WIDTH="263">Undelimited&nbsp;
+<br>e.g.: <font face="Courier New,Courier">push 4</font>
+<br><font face="Courier New,Courier">&nbsp;&nbsp; mov ebx, d00ah</font></td>
+
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="246">Register operands</td>
+
+<td VALIGN=TOP WIDTH="256">Preceded by "<font face="Arial">%</font>"&nbsp;
+<br>e.g.: <font face="Courier New,Courier">%eax</font></td>
+
+<td VALIGN=TOP WIDTH="263">Undelimited&nbsp;
+<br>e.g.: <font face="Courier New,Courier">eax</font></td>
+
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="246">Argument order (e.g. adds the address of C variable
+"foo" to register EAX)</td>
+
+<td VALIGN=TOP WIDTH="256">source1, [source2,] dest&nbsp;
+<br>e.g.: <font face="Courier New,Courier">addl $_foo, %eax</font></td>
+
+<td VALIGN=TOP WIDTH="263">dest, source1 [, source2]&nbsp;
+<br>e.g.: <font face="Courier New,Courier">add eax, _foo</font></td>
+
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="246" HEIGHT="68">Single-size operands</td>
+
+<td VALIGN=TOP WIDTH="256" HEIGHT="68">Explicit with operand sizes<br>
+opcode{b,w,l}&nbsp;
+<br>e.g.:<font face="Courier New,Courier"> movb foo, %al</font></td>
+
+<td VALIGN=TOP WIDTH="263" HEIGHT="68">Implicit with register name, <b>byte
+ptr</b>, <b>word ptr</b>, or <b>dword ptr</b>
+<br>e.g.: <font face="Courier New,Courier">mov al, foo</font></td>
+
+</tr>
+
+<tr>
+<td width="246">Address a C variable "foo"</td>
+
+<td width="256"><font face="Courier New,Courier">_foo</font></td>
+
+<td width="263"><font face="Courier New,Courier">[_foo]</font></td>
+
+</tr>
+
+<tr>
+<td width="246">Address memory pointed by a register (e.g. EAX)</td>
+
+<td width="256"><font face="Courier New,Courier">(%eax)</font></td>
+
+<td width="263"><font face="Courier New,Courier">[eax]</font></td>
+
+</tr>
+
+<tr>
+<td width="246">Address a variable offset by a value in the register</td>
+
+<td width="256"><font face="Courier New,Courier">_foo(%eax)</font></td>
+
+<td width="263"><font face="Courier New,Courier">[eax + _foo]</font></td>
+
+</tr>
+
+<tr>
+<td width="246">Address a value in an array "foo" of 32-bit integers</td>
+
+<td width="256"><font face="Courier New,Courier">_foo(,%eax,4)</font></td>
+
+<td width="263"><font face="Courier New,Courier">[eax*4+foo]</font></td>
+
+</tr>
+
+<tr>
+<td width="246">Equivalent to C code *(p+1)</td>
+
+<td width="256"><font face="Courier New,Courier">1(%eax)</font></td>
+
+<td width="263">If EAX holds the value of p, then<font face="Courier New,Courier">
+[eax+1]</font></td>
+
+</tr>
+</table>
+
+<p>&nbsp;
+<h3>
+<a name="memory"></a>
+2.2 Memory operands</h3>
+<p>IA32 processors use segmented memory architecture.&nbsp;
+It means that the memory locations are referenced by means of a segment
+selector and an offset: </p>
+<ul>
+<li>
+The segment selector specifies the segment containing the operand, and</li>
+
+<li>
+The offset (the number of bytes from the beginning of the segment to the
+first byte of the operand) specifies the linear or effective address of
+the operand.</li>
+</ul>
+<p>The segment selector can be specified either implicitly or explicitly.
+The most common method of specifying a segment selector is to load it in
+a segment register and then allow the processor to select the register
+implicitly, depending on the type of operation being performed. The processor
+automatically chooses a segment according to the following rules: </p>
+<ul>
+<li>
+Code segment register CS for instruction fetches</li>
+
+<li>
+Stack segment register SS for stack pushes and pops as well as references
+using ESP or EBP as a base register</li>
+
+<li>
+Data segment register DS for all data references except when relative to
+stack or string destination</li>
+
+<li>
+Data segment register ES for the destinations of string instructions</li>
+</ul>
+<p>
+<font size=+0><font face="Times-Roman">The offset part of the memory address
+can be specified either directly as a static value (called a </font><i><font face="Times-Italic">displacement</font></i><font face="Times-Roman">)
+or through an address computation made up of one or more of the following
+components:</font></font> </p>
+<ul>
+<li>
+<font size=+0>Displacement—An 8-, 16-, or 32-bit value.</font></li>
+
+<li>
+<font size=+0>Base—The value in a general-purpose register.</font></li>
+
+<li>
+<font size=+0>Index—The value in a general-purpose register except EBP.</font></li>
+
+<li>
+<font size=+0>Scale factor—A value of 2, 4, or 8 that is multiplied by
+the index value.</font></li>
+</ul>
+<p>
+<font size=+0>An effective address is computed by:</font> </p>
+<dir>
+<dir>
+  <p><i><font size=+0>Offset = Base + (Index <font face="Symbol">&acute;</font>
+Scale) + displacement</font></i></p>
+</dir>
+</dir>
+<p>
+<font size=+0><font face="Times-Roman">The offset which results from adding
+these components is called an </font><font face="Times-Italic"><i>effective
+address </i>of the selected segment<i>.</i></font><font face="Times-Roman">
+Each of these components can have either a positive or negative (2's complement)
+value, with the exception of the scaling factor.</font></font> </p>
+<h3><a name="instructions"></a>2.3. Frequently Used Instructions</h3>
+<p>The following is a small set of frequently used instructions:</p>
+<table border="1" style="border-collapse: collapse" bordercolor="#111111" width="75%" id="AutoNumber1" height="277" cellspacing="1">
+  <tr>
+    <td width="15%" align="center" height="19"><b>Category</b></td>
+    <td width="35%" align="center" height="19"><b>Instructions</b></td>
+    <td width="50%" align="center" height="19"><b>Explanations</b></td>
+  </tr>
+  <tr>
+    <td width="15%" align="left" rowspan="5" height="117">
+    <p style="margin-left: 4; margin-right: 4"><b>Data Transfer</b></td>
+    <td width="35%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">mov{l,w,b} 
+    source, dest</font></td>
+    <td width="50%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4">Move from source to dest</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">xchg{l,w,b} 
+    dest1, dest2</font></td>
+    <td width="50%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4">Exchange </td>
+  </tr>
+  <tr>
+    <td width="35%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">
+    cmpxchg{l,w,b} dest1, dest2</font></td>
+    <td width="50%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4">Compare and exchange</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">push/pop{l,w}</font></td>
+    <td width="50%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4">Push onto / pop off the stack</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left" height="1">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">movsb</font></td>
+    <td width="50%" align="left" height="1">
+    <p style="margin-left: 4; margin-right: 4">Move bytes at DS:(E)SI to address 
+    ES:(E)DI, typically prefix with rep </td>
+  </tr>
+  <tr>
+    <td width="15%" align="left" rowspan="5" height="111">
+    <h4 style="margin-left: 4; margin-right: 4">Arithmetic</h4>
+    </td>
+    <td width="35%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">add/sub{l,w,b} 
+    source, dest</font></td>
+    <td width="50%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4">Add/subtract</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left" height="15">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">imul/mul{l,w,b} 
+    formats</font></td>
+    <td width="50%" align="left" height="15">
+    <p style="margin-left: 4; margin-right: 4">Signed/unsigned multiply</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">idiv/div{l,w,b} 
+    dest</font></td>
+    <td width="50%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4">Signed/unsigned divide</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">inc/dec/neg{l,w,b} 
+    dest</font></td>
+    <td width="50%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4">Increment/decrement/negate</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">cmp{l,w,b} 
+    source1, source2</font></td>
+    <td width="50%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4">Compare</td>
+  </tr>
+  <tr>
+    <td width="15%" align="left" height="54" rowspan="3">
+    <h4 style="margin-left: 4; margin-right: 4">Logic</h4>
+    </td>
+    <td width="35%" align="left" height="16">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">and/or/xor/not{l,w,b} 
+    source, dest</font></td>
+    <td width="50%" align="left" height="16">
+    <p style="margin-left: 4; margin-right: 4">Logic and/or/xor/not operation</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">sal/sar{l,w,b} 
+    formats </font></td>
+    <td width="50%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4">Arithmetic shift left/right</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">shl/shr{l,w,b} formats</font></td>
+    <td width="50%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4">Logic shift left/right</td>
+  </tr>
+  <tr>
+    <td width="15%" align="left" height="255" rowspan="9">
+    <h4 style="margin-left: 4; margin-right: 4">Control transfer</h4>
+    <p style="margin-left: 4; margin-right: 4">&nbsp;</p>
+    <p style="margin-left: 4; margin-right: 4">&nbsp;</td>
+    <td width="35%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">jmp address</font></td>
+    <td width="50%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4">Unconditional jump</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">call address</font></td>
+    <td width="50%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4">Save EIP on the stack jump to 
+    address</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">ret</font></td>
+    <td width="50%" align="left" height="19">
+    <p style="margin-left: 4; margin-right: 4">Return to the EIP location saved 
+    by call</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left" height="1">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">leave</font></td>
+    <td width="50%" align="left" height="1">
+    <p style="margin-left: 4; margin-right: 4">Restore EBP from the 
+    stack; pop off the stack frame</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left" height="1">
+    <p style="margin-left: 4; margin-right: 5"><font face="Centaur">j{e,ne,l,le,g,ge} address</font></td>
+    <td width="50%" align="left" height="1">
+    <p style="margin-left: 4; margin-right: 5">Jump to address if 
+    {=,!=,&lt;,&lt;=,&gt;,&gt;=}</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left" height="1">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">loop address</font></td>
+    <td width="50%" align="left" height="1">
+    <p style="margin-left: 4; margin-right: 4">Decrement ECX or CX; jump if = 0</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left" height="1">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">rep</font></td>
+    <td width="50%" align="left" height="1">
+    <p style="margin-left: 4; margin-right: 4">Repeat string operation prefix</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left" height="1">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">int number</font></td>
+    <td width="50%" align="left" height="1">
+    <p style="margin-left: 4; margin-right: 4">Software interrupt</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left" height="1">
+    <p style="margin-left: 4; margin-right: 4"><font face="Centaur">iret</font></td>
+    <td width="50%" align="left" height="1">
+    <p style="margin-left: 4; margin-right: 4">Return from interrupt; pop 
+    EFLAGS from the stack</td>
+  </tr>
+</table>
+<p>In addition, the name for a long JUMP is
+<font face="Courier New,Courier">ljmp</font><tt>
+</tt><font size=+1>and</font> long CALL is<font size=+1> </font><font face="Courier New,Courier">lcall.</font> </p>
+<p>This is again a small set of instructions.&nbsp; Section 3.2 of <i>IA32 Intel Architecture Software Developer's Manual, Volume 
+2 </i><font size="0">provides</font><font size=+0> a complete set of the IA32 
+instructions and the detailed description for each instruction.</font> The instruction names 
+in the Intel manual uses the Intel convention (obviously) and you need to 
+convert them to the AT&amp;T syntax.&nbsp; </p>
+<h3>
+<a name="directives"></a>
+2.4 Assembler Directives</h3>
+The Gnu assembler directive names begin with a period "." and the rest are letters
+in lower case.&nbsp; Here are some examples of commonly used directives:
+<ul><font face="Courier New,Courier">.ascii &quot;string foo&quot; </font>defines an ASCII 
+  string <font face="Courier New,Courier">&quot;string foo&quot;</font>
+  <p><font face="Courier New,Courier">.asciz "string foo" </font>defines an
+ASCII string <font face="Courier New,Courier">"string foo"</font> with a zero at 
+  the end</p>
+  <p><font face="Courier New,Courier">.string &quot;string foo&quot; is the same as .asciz 
+  &quot;string foo&quot;</font></p>
+  <p><font face="Courier New,Courier">.align 4 </font>aligns the memory at 
+  double-word boundary </p>
+<p><font face="Courier New,Courier">.byte 10, 13, 0 </font>defines three
+bytes
+<p><font face="Courier New,Courier">.word 0x0456, 0x1234 </font>defines
+two words
+<p><font face="Courier New,Courier">.long 0x001234, 0x12345 </font>defines
+two long words
+<p><font face="Courier New,Courier">.equ STACK_SEGMENT, 0x9000 </font>sets
+symbol <font face="Courier New,Courier">STACK_SEGMENT</font> the value
+<font face="Courier New,Courier">0x9000</font>
+<p><font face="Courier New,Courier">.globl symbol </font>makes "<font face="Courier New,Courier">symbol</font>"
+global (useful for defining global labels and procedure names)
+<p><font face="Courier New,Courier">.code16 </font>tells the assembler
+to insert the appropriate override prefixes so the code will run in real
+mode.</ul>
+When using directives to define a string, bytes or a word, you often want
+to make sure that they are aligned to 32-bit long word by padding additional
+bytes.
+<h3>
+<a name="inline"></a>
+2.5 Inline Assembly</h3>
+The most basic format of inline assembly code into your the assembly code
+generated by the gcc compiler is to use
+<ul><font face="Courier New,Courier">asm volatile ( "assembly-instruction" );</font></ul>
+where <font face="Courier New,Courier">assembly-instruction</font> will
+be inlined into where the <font face="Courier New,Courier">asm</font> statement
+is.&nbsp; The key word <font face="Courier New,Courier">volatile </font>
+<font face="Times New Roman">is optional.&nbsp; It tells the gcc compiler not to 
+optimize this instruction away.&nbsp; This</font> is a very convenient way to inline assembly instructions
+that require no registers.&nbsp; For example, you can use
+<ul><font face="Courier New,Courier">asm volatile( "cli" );</font></ul>
+to clear interrupts and
+<ul><font face="Courier New,Courier">asm volatile( "sti" );</font></ul>
+to enable interrupts.
+<p>The general format to write inline assembly code in C is:
+<ul><font face="Courier New,Courier">asm [volatile]( "statements": output_regs: input_regs:
+used_regs);</font></ul>
+where <font face="Courier New,Courier">statements</font> are the assembly
+instructions.&nbsp; If there are more than one instruction, you can use
+"<font face="Courier New,Courier">\n\t</font>" to separate them to make
+them look pretty.&nbsp;&nbsp;&nbsp; "<font face="Courier New,Courier">input_regs</font>"
+tells gcc compiler which C variables move to which registers.&nbsp; For
+example, if you would like to load variable "foo" into register EAX and
+"bar" into register ECX, you would say
+<ul><font face="Courier New,Courier">: "a" (foo), "c" (bar)</font></ul>
+gcc uses single letters to represent all registers:
+<p>&nbsp;</p>
+<table BORDER WIDTH="500" HEIGHT="100" >
+<tr ALIGN=CENTER VALIGN=CENTER>
+<td>
+<center><b>Single Letters</b></center>
+</td>
+
+<td>
+<center><b>Reigsters</b></center>
+</td>
+</tr>
+
+<tr>
+<td>
+<center><font face="Courier New,Courier">a</font></center>
+</td>
+
+<td>
+<center><font face="Courier New,Courier">eax</font></center>
+</td>
+</tr>
+
+<tr ALIGN=CENTER VALIGN=CENTER>
+<td ALIGN=CENTER VALIGN=CENTER>
+<center><font face="Courier New,Courier">b</font></center>
+</td>
+
+<td>
+<center><font face="Courier New,Courier">ebx</font></center>
+</td>
+</tr>
+
+<tr>
+<td>
+<center><font face="Courier New,Courier">c</font></center>
+</td>
+
+<td>
+<center><font face="Courier New,Courier">ecx</font></center>
+</td>
+</tr>
+
+<tr>
+<td>
+<center><font face="Courier New,Courier">d</font></center>
+</td>
+
+<td>
+<center><font face="Courier New,Courier">edx</font></center>
+</td>
+</tr>
+
+<tr>
+<td>
+<center><font face="Courier New,Courier">S</font></center>
+</td>
+
+<td>
+<center><font face="Courier New,Courier">esi</font></center>
+</td>
+</tr>
+
+<tr>
+<td>
+<center><font face="Courier New,Courier">D</font></center>
+</td>
+
+<td>
+<center><font face="Courier New,Courier">edi</font></center>
+</td>
+</tr>
+
+<tr>
+<td>
+<center><font face="Courier New,Courier">I</font></center>
+</td>
+
+<td>
+<center>constant value (0 to 31)</center>
+</td>
+</tr>
+
+<tr>
+<td>
+<center><font face="Courier New,Courier">q</font></center>
+</td>
+
+<td>allocate a register from EAX, EBX, ECX, EDX</td>
+</tr>
+
+<tr>
+<td>
+<center><font face="Courier New,Courier">r</font></center>
+</td>
+
+<td>
+<center>allocate a register from EAX, EBX, ECX, EDX, ESI, EDI</center>
+</td>
+</tr>
+</table>
+Note that you cannot specify register AH or AL this way.&nbsp; You need
+to get to EAX first and then go from there.
+<p>"<font face="Courier New,Courier">output_regs</font>" provides output
+registers.&nbsp; A convenient way to do this is to let gcc compiler to
+pick the registers for you.&nbsp; You need to say "<font face="Courier New,Courier">=q</font>"
+or "<font face="Courier New,Courier">=r</font>"&nbsp; to let gcc compiler
+pick registers for you.&nbsp;&nbsp; You can refer to the first allocated
+register with "<font face="Courier New,Courier">%0</font>", second with
+"<font face="Courier New,Courier">%1</font>", and so on, in the assembly
+instructions.&nbsp; If you refer to the registers in the input register
+list, you simply say "<font face="Courier New,Courier">0</font>" or "<font face="Courier New,Courier">1</font>"
+without the "<font face="Courier New,Courier">%</font>" prefix.
+<p>"<font face="Courier New,Courier">used_regs</font>" lists the registers
+that are used (or clobbered) in the assembly code.
+<p>To understand exactly how to do this, please try to use gcc to compile
+a piece of C code containing the following inline assembly:
+<ul><font face="Courier New,Courier">asm ("leal (%1,%1,4), %0"</font>
+<br><font face="Courier New,Courier">&nbsp;&nbsp;&nbsp;&nbsp; : "=r" (x_times_5)</font>
+<br><font face="Courier New,Courier">&nbsp;&nbsp;&nbsp;&nbsp; : "r" (x)
+);</font></ul>
+and
+<ul><font face="Courier New,Courier">asm ("leal (%0,%0,4), %0"</font>
+<br><font face="Courier New,Courier">&nbsp;&nbsp;&nbsp; : "=r" (x)</font>
+<br><font face="Courier New,Courier">&nbsp;&nbsp;&nbsp; : "0" (x) );</font></ul>
+<h3><a name="program"></a>2.6 Program Structure and Calling Conventions</h3>
+<p><font size=+0>The simplest way to learn assembly programming is to compile a 
+simple C program into its assembly source code as a template.&nbsp;&nbsp; The 
+source code will tell you common opcodes, directives and
+addressing syntax.</font>&nbsp;&nbsp; This is an efficient way to learn assembly 
+programming.</p>
+<p>The following is an example to show the program structure and calling 
+conventions.&nbsp; Consider the following C program hello.c:</p>
+<p><font size="0" face="Courier New">#include &lt;stdio.h&gt;</font><p>
+<font face="Courier New">static char buf[ 4096 ];</font><p>
+<font face="Courier New">int foo( int n )<br>
+{<br>
+&nbsp;&nbsp;&nbsp; return n - 1;<br>
+}</font><p>
+<font face="Courier New" size="3">int main (void) <br>
+{<br>
+&nbsp;&nbsp;&nbsp; printf( &quot;Hello world\n&quot; );<br>
+&nbsp;&nbsp;&nbsp; return foo( 5);<br>
+}</font><p>Issue the command on a shell:</p>
+<p>&nbsp;&nbsp;&nbsp; <font face="Courier New">gcc -S hello.c</font></p>
+<p>gcc compiler will compile hello.c into its assembly source file in the same 
+directory called hello.s.&nbsp; After reading this document, you should find the
+assembly code self-explantory.&nbsp; In case you have questions, following
+provides some comments on the instructions 
+related to calling conventions.</p>
+<table class="LISTING" cellSpacing="2" cellPadding="4" width="839" bgColor="#ffffff" border="1">
+  <tr>
+    <td width="823">
+    <div>
+      <p class="MsoPlainText"><font face="Courier New">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .file &quot;hello.c&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .text&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+      .globl foo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+      # &quot;foo&quot; is a global name<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .type foo,@function&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # &quot;foo&quot; is a 
+      function type<br>
+      foo:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pushl %ebp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+      # push ebp onto stack <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; movl&nbsp; %esp, %ebp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+      # move stack pointer to ebp<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; movl&nbsp; 8(%ebp), %eax<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; decl&nbsp; %eax<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; leave&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+      # restore esp and ebp<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ret&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+      # return to caller<br>
+      .Lfe1:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .size foo,.Lfe1-foo<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .section&nbsp;&nbsp;&nbsp; .rodata<br>
+      .LC0:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .string&nbsp;&nbsp;&nbsp;&nbsp; &quot;Hello world\n&quot;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .text<br>
+      .globl main<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .type main,@function<br>
+      main:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pushl %ebp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+      # push ebp onto stack<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; movl&nbsp; %esp, %ebp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+      # move stack pointer esp to ebp<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; subl&nbsp; $8, %esp<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; andl&nbsp; $-16, %esp<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; movl&nbsp; $0, %eax<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; subl&nbsp; %eax, %esp<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; subl&nbsp; $12, %esp<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pushl $.LC0<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; call&nbsp; printf<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; addl&nbsp; $16, %esp<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; subl&nbsp; $12, %esp<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pushl $5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+      # push arg to stack<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; call&nbsp; foo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+      # call foo function<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; addl&nbsp; $16, %esp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; leave&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+      # restore esp and ebp<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ret&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+      # return<br>
+      .Lfe2:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .size main,.Lfe2-main<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .local&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; buf&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .comm buf,4096,32&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .ident&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &quot;GCC: (GNU) 3.2.2 20030222 (Red Hat Linux 3.2.2-5)&quot;<br>
+&nbsp;</font></div>
+    </td>
+  </tr>
+</table>
+<p>You should try to create a few 
+program examples in C and use gcc to compile them into assembly as case studies.<p>&nbsp;<h2><a name="BIOS"></a>3
+BIOS Services</h2>
+<p>The book <i>Undocumented PC</i> provides detailed BIOS (Basic Input/Output
+System) services.&nbsp; This document presends a very small set of services used
+in our course projects.
+<h3><a name="display memory"></a>3.1 Display Memory</h3>
+PC's display RAM is mapped into memory space.&nbsp; One can write directly to
+the screen by writing to the display RAM starting at 0xb800:0000. Each location
+on the screen requires two bytes---one to specify the attribute (Use<b> <font face="Courier New">0x07</font><font face="Times New Roman">
+</font></b><font face="Times New Roman">for white color</font>) and the second
+for the character itself. The text screen has 25 lines and 80 characters per
+line.&nbsp; So, to write to i-th<tt> </tt>row and j-th column, you write the 2
+bytes starting at offset <tt><b>((i-1)*80+(j-1))*2</b></tt>.
+<p>So, the following code sequence writes the character 'K' (ascii 0x4b) to the
+top left corner of the screen.<br>
+<tt>&nbsp;&nbsp;&nbsp;</tt>&nbsp; <tt>movw 0xb800,%bx<br>
+&nbsp;&nbsp;&nbsp; movw %bx,%es<br>
+&nbsp;&nbsp;&nbsp; movw $0x074b,%es:(0x0)</tt>
+<p>This code sequence is useful for debugging programs during booting.
+<h3><a name="write to display"></a>3.2 Write to Display at Current Cursor</h3>
+To send a character to the display at the current cursor position on the active
+display, one can use the BIOS service:
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><font face="Courier New">int
+0x10</font></b></p>
+<p>with the following parameters</p>
+<ul>
+  <li><font face="Courier New">ah</font> = 0x0e, indicating this is function
+    0x0e</li>
+  <li><font face="Courier New">al</font> = holding the character to write</li>
+  <li><font face="Courier New">bh</font> = active page number (Use 0x00)</li>
+  <li><font face="Courier New">bl</font> = foreground color (graphics mode only)
+    (Use 0x02)</li>
+</ul>
+<p>The service returns the character displayed.&nbsp; Note that the linefeed
+character is 0x0a and carriage return is 0x0d.</p>
+<p>This service call automatically wraps lines, scrolls and interprets some
+control characters for specific actions. </p>
+<h3><a name="read diskette"></a>3.3 Read from Diskette</h3>
+The BIOS service call for reading 512-byte diskette sectors from a specified
+location uses the software interrupt 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><font face="Courier New">int
+0x13</font></b></p>
+<p>with the following parameters set up:</p>
+<ul>
+  <li><font face="Courier New">ah</font> = 2, to indicate this is function 2</li>
+  <li><font face="Courier New">al</font> = number of sectors to read, 1 to 36</li>
+  <li><font face="Courier New">ch</font> = track number, 0 to 79</li>
+  <li><font face="Courier New">cl</font> = sector number, 1 to 36</li>
+  <li><font face="Courier New">dh</font> = head number, 0 or 1</li>
+  <li><font face="Courier New">dl</font> = drive number, 0 to 3</li>
+  <li><font face="Courier New">es:bx</font> = pointer where to place information
+    read from diskette</li>
+</ul>
+<p>This service call will return the following:
+<ul>
+  <li><font face="Courier New">ah</font> = return status (0 if successful)</li>
+  <li><font face="Courier New">al</font> = number of sectors read</li>
+  <li>carry = 0 successful, = 1 if error occurred</li>
+</ul>
+<p>The data read is placed into RAM at the location specified by ES:BX. The
+buffer must be sufficiently large to hold the data and must not cross a 64K
+linear address boundary.</p>
+<p>&nbsp;</body></html>

@@ -1,0 +1,259 @@
+Start: Jan 4, 2011
+Stop: Apr 30, 2011
+Schedule: Tuesday, Thursday, Friday
+
+HOLIDAY: Jan 14. Makar Sakranti
+HOLIDAY: Jan 26. Republic Day
+HOLIDAY: Feb 16. Milad-Un-Nabi
+HOLIDAY: Mar 2. Maha Shivratri
+HOLIDAY: Apr 12. Ram Navmi
+HOLIDAY: Apr 14. Ambedkar Jayanti
+HOLIDAY: Apr 16. Mahavir Jayanti
+HOLIDAY: Apr 22. Good Friday
+HOLIDAY: Mar 1. Mid-sem break
+HOLIDAY: Mar 3. Mid-sem break
+HOLIDAY: Mar 4. Mid-sem break
+
+SKIP: Feb 8. MINOR1 TESTS (<a href="Minor 1  2010-1.pdf">exam</a>, <a href="Minor 1  2010-1 Solutions.pdf">solutions</a>)
+SKIP: Mar 24. MINOR2 TESTS (<a href=lec/l9-hw.html>Practice Questions</a>)
+SKIP: Mar 25. MINOR2 TESTS
+EVENT: Feb 15. Return of Minor-1 scripts
+HEADER: Links to notes etc. on future days are <i>tentative only</i>. They are here only to give you an idea what the future will bring.<br>SG refers to the book by Silberschatz and Galvin<br>
+FOOTER: <i>Many course materials derived from <a href=http://pdos.csail.mit.edu/6.828/>6.828</a> by Frans Kaashoek and others at MIT; some derived from Dawson Engler's <a href=cs140.stanford.edu>cs140</a> course materials at Stanford</i>
+TITLE: CSL373 : Operating Systems : Schedule
+SEMESTER: Sem II, 2010-11
+
+==
+
+<a href=pa1>Lab 1: Interprocess Communication</a>
+OUT: Jan 4
+DUE: Jan 13
+
+==
+
+<a href=pintos/doc/pintos_2.html>Lab 2: Pintos Threads Assignment</a>
+OUT: Jan 13
+DUE: Feb 11
+
+==
+
+<a href=pintos/doc/pintos_3.html>Lab 3: Pintos Userprog Assignment</a>
+OUT: Feb 10
+DUE: Feb 25
+
+==
+
+<a href=pintos/doc/pintos_4.html>Lab 4: Pintos VM Assignment</a>
+OUT: Feb 25
+DUE: Mar 28
+
+==
+
+<a href=pintos/doc/pintos_5.html>Lab 5: Pintos Filesys Assignment</a>
+OUT: Mar 22
+DUE: Apr 22
+
+==
+
+
+LEC: <a href=lec/l1.html>Introduction, OS Abstractions</a> (<a href=slides/l1.pdf>slides</a>)
+PREP: Read <a href=bib/ritchie79evolution.pdf>The Evolution of the Unix Time-Sharing System</a>, optionally read <a href=http://pubs.opengroup.org/onlinepubs/009695399/functions/fork.html>Multi-threading and Fork</a>.
+OSC: chapter 1, <a href=http://linux.die.net/man/7/pipe>pipe</a> man page, <a href=http://www.gnu.org/s/hello/manual/libc/Interrupted-Primitives.html>Interrupted Primitives</a>
+
+==
+
+LEC: <a href=lec/l2.html>Operating System Structure</a> (<a href=slides/l2.pdf>slides</a>)
+PREP: Read <a href=xv6-book/unix.pdf>xv6 chapter 0</a>.
+OSC: chapter 2
+
+==
+
+LEC: ..continued
+
+==
+
+LEC: <a href=lec/threads.html>System Calls and Threads</a> (<a href=slides/threads.pdf>slides</a>)
+PREP: do <a href=lec/l2-hw.html>homework</a>
+
+==
+
+LEC: ..continued.
+
+==
+
+LEC: <a href=lec/l-scheduling-policies.html>Scheduling Policies</a> (<a href=lec/l-scheduling-policies.pdf>slides</a>)
+PREP: do <a href=lec/threads-hw.html>homework</a>
+OSC:
+
+==
+
+LEC: <a href=lec/l3.html>x86 Processor Basics</a> (<a href=slides/l3.pdf>slides</a>, <a href=lec/l3-handout.html>handout</a>)
+PREP: Read <a href=xv6-book/boot.pdf>xv6 chapter 1</a> and optionally <a href=ref/pc-arch.html>IA-32 guide</a>
+
+==
+
+LEC: ..continued
+PREP:
+
+==
+
+LEC: ..continued
+PREP:
+
+==
+
+LEC: <a href=lec/l4.html>Processes and Memory Allocation</a> (<a href=lec/l4-mmu.pdf>MMU</a>, <a href=lec/x86_translation.pdf>paging</a>)
+PREP: Read <a href=xv6-book/mem.pdf>xv6 chapter 2</a>, <a href=http://duartes.org/gustavo/blog/post/anatomy-of-a-program-in-memory>Process Anatomy</a>;  do <a href=lec/l3-hw.html>homework</a> (<a href=lec/l3-pointers.c>l3-pointers.c</a>)
+OSC: 3.1-3.3
+
+==
+
+LEC: ..continued
+PREP:
+
+==
+
+LEC: <a href=lec/l5.html>Modes, Stacks, and Traps</a> (<a href=lec/l5-idt.pdf>handout</a>)
+PREP: Read <a href=xv6-book/trap.pdf>xv6 chapter 3</a>
+
+==
+
+LEC: ..continued
+PREP:
+
+==
+
+LEC: ..continued
+PREP: do <a href=lec/l5-hw.html>homework</a>
+
+==
+
+LEC: <a href=lec/l7.html>Context Switching</a>
+PREP: Read <a href=xv6-book/sched.pdf>xv6 chapter 5 through section "<i>Code: Scheduling</i>"</a> with proc.c, setjmp.S, and sys_fork (in sysproc.c)
+OSC: chapter 5
+
+==
+
+LEC: ..continued
+
+==
+
+LEC: <a href=lec/l11.html>Address Translation</a> (<a href=slides/l11.pdf>slides</a>)
+PREP: Read <a href=ref/ia32-3.pdf>80386 chapter 3</a>
+OSC: chapter 8
+
+==
+
+LEC: ..continued
+OSC: chapter 9
+
+==
+
+LEC: <a href=lec/l6.html>Multiprocessors and Locking</a>
+PREP: Read <a href=xv6-book/lock.pdf>xv6 chapter 4</a> with spinlock.c and skim mp.c; do <a href=lec/l7-hw.html>homework</a><br><a href=http://stackoverflow.com/questions/187761/recursive-lock-mutex-vs-non-recursive-lock-mutex>Recursive vs. Non-Recursive Locks</a>
+OSC: 6.1-6.4
+
+==
+
+LEC: ..continued
+
+==
+
+LEC: ..continued
+
+==
+
+LEC: <a href=lec/l8.html>Process Coordination</a>
+PREP: Read rest of <a href=xv6-book/sched.pdf>xv6 chapter 5</a>, <a href=http://poorvi.cse.iitd.ernet.in/~sbansal/csl373/resources/kaashoek-concurrency.ps>Kaashoek's concurrency notes</a> (internal link); read remainder of proc.c and sys_wait, sys_exit, sys_kill
+OSC: chapters 6, 7
+
+==
+
+LEC: ..continued
+PREP: do <a href=lec/l8-hw.html>homework</a>
+
+==
+
+LEC: NO LECTURE
+
+==
+
+LEC: <code>virtperf</code> talk by Prof. Umesh Bellur (IITB)
+
+==
+
+LEC: <a href=lec/l9.pdf>Abstracting Synchronization</a>
+PREP:
+
+==
+
+LEC: Pintos VM Assignment
+
+==
+
+LEC: VM Swapping and Page Replacement (<a href=lec/lecture10.pdf>l10</a>, <a href=lec/lecture11.pdf>l11</a>).<br>Advanced Reading: "CAR: CLOCK with Adaptive Replacement" (<a href=http://www.cse.iitd.ernet.in/~sbansal/pubs/fast04.pdf>PDF</a>, <a href=http://www.cse.iitd.ernet.in/~sbansal/pubs/fast04ppt.pdf>PDF of Presentation</a>)
+OSC: chapter 9
+
+==
+
+LEC: Page Replacement, Thrashing (<a href=lec/lecture12.pdf>l12</a>, <a href=lec/lecture13.pdf>l13</a>)
+
+==
+
+LEC: <a href=lec/l12.html>Files and Disk I/O</a>
+PREP: readi, writei, filewrite, fileread, dirlink, create, and code related to these system calls in fs.c, bio.c, ide.c, sysfile.c, and file.c. Commentary on these functions in <a href=xv6-book/disk.pdf>xv6 chapter 6</a> and <a href=xv6-book/fsdata.pdf>chapter 7</a><br><a href=lec/lecture17.pdf>2009 Lecture Slides</a><br>Posted: <a href="Minor 2  2010-1.pdf">MINOR 2</a><br><a href=http://www.perlfect.com/articles/chmod.shtml>UNIX File Permissions</a><br><a href=http://en.wikipedia.org/wiki/Sticky_bit>Sticky Bit</a>
+OSC: chapters 12, 13
+
+==
+
+LEC: <a href=lec/l-name.html>File Naming</a> (<a href=lec/l13>exercise</a>)
+PREP: Read namei in fs.c (and remainder of fs.c), sysfile.c, file.c. Commentary on these functions in <a href=xv6-book/fsdata.pdf>xv6 chapter 7</a> and <a href=xv6-book/fscall.pdf>chapter 8</a>
+OSC: chapters 10, 11
+
+==
+
+LEC: ..contd
+
+==
+
+LEC: <a href=lec/l15-journal.html>File system performance and reliability</a>
+PREP: Read <a href=bib/tweedie98journaling.pdf>Journaling the Linux ext2fs Filesystem</a>
+
+==
+
+LEC: <a href=lec/l14.pdf>Program Loading and Dynamic Linking</a>
+PREP: Read <a href=xv6-book/exec.pdf>xv6 chapter 9</a>
+
+==
+
+LEC: <a href=lec/l-sync.html>Performance and durability</a>
+PREP: Read <a href=bib/nightingale06rethink.pdf>Rethink the sync</a>; do <a href=lec/l12-hw.html>homework</a>
+
+==
+
+LEC: <a href=lec/l-schedule.html>Scheduling</a>
+PREP: Read <a href=bib/mogul96eliminating.pdf>Eliminating Receive Livelock</a>
+
+==
+
+LEC: <a href=lec/l-vm.html>Virtual Machines</a> (<a href="lec/Virtual Machines.pdf">slides</a>)
+PREP: Read <a href=bib/adams06comparison.pdf>Software vs Hardware Virtualization</a> (optional)
+
+==
+
+LEC: ..contd.
+
+==
+
+LEC: <a href=lec/l-rcu.html>Multi-processor coordination: lock free</a>
+PREP: Read <a href=bib/mckenney01read.pdf>Read-Copy-Update</a>
+
+==
+
+LEC: ..contd.
+
+==
+
+LEC: Summary lecture
+
+==

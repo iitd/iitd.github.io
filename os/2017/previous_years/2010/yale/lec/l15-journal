@@ -1,0 +1,260 @@
+<title>File System Performance and Recovery</title>
+<html>
+<head>
+</head>
+<body>
+
+<h2>File system performance and crash recovery</h2>
+
+<pre>
+this lecture
+ tocttou
+ crash recovery for xv6
+ logging / ext3
+
+time-of-check-to-time-of-use-bugs
+ In early versions of Unix there was no mkdir() system call. here's
+ the source for /bin/mkdir (from v7 unix):
+   if ((mknod(d, 040777, 0)) < 0) {
+       fprintf(stderr,"mkdir: cannot make directory %s\n", d);
+       ++Errors;
+       return;
+   }
+   chown(d, getuid(), getgid());
+ mkdir was setuid to root -- it ran as root even if started by
+   an ordinary user, since mknod() is a privileged call.
+ what's the problem?
+ how to exploit it?
+   cd /tmp
+   mkdir foo && ./exploit
+   exploit waits for foo to appear, then removes it,
+     substitutes a link to e.g. /etc/passwd
+
+unix used to be full of such bugs. e.g. mail delivery command
+appended to /usr/spool/mail/rtm, running as root:
+ stat(/usr/spool/mail/rtm)
+ if owned by rtm
+   open and write
+
+how do people fix tocttou bugs?
+ atomic mkdir() call
+ f-calls:
+   fd = open(file)
+   fstat(fd)
+   if(ok)
+     fchown(fd)
+ don't run as root: structure s/w to drop privileges when possible
+   e.g. setuid(rtm) before delivering mail
+
+what is crash recovery?
+ crash = kernel panic, power failure, fixable h/w failure
+   assume fail-stop: no wild writes to disk
+   assume disk content preserved, except maybe last write incomplete
+ goal: after reboot, recover to a correct state
+
+crash recovery is hard because some syscalls involve multiple writes
+ example: mark block as not-free, add block # to inode
+   in that order, crash causes missing free blocks
+   in the other order, crash leaves a free block in a file
+     soon, two files will share a block!
+ example: mkdir allocates inode, make dirent in parent, then adds .  
+and ..
+   crash may leave new dir without its . and ..
+
+we'll discuss two approaches:
+ synchronous meta-data update + fsck (xv6 + imaginary fsck)
+ logging (linux ext3)
+
+what can we say about an xv6 FS after a crash?
+ xv6 strategy: carefully order disk writes to avoid dangling refs
+   1. initialize a new inode before creating dirent
+   2. delete dirent before marking inode free
+   3. mark block in-use before adding it to inode addrs[]
+   4. remove block from addrs[] before marking free (oops)
+   5. zero block before marking free
+ xv6 uses "synchronous meta-data update"
+   enforces these orders by waiting for each write to complete on disk
+   ordering does two things:
+     1. prevents dangling references from confusing FS after reboot
+     2. helps fsck reason about what was happening at time of crash
+ FS immediately after crash isn't quite consistent:
+   . and .. during mkdir(), link counts, sizes
+   may leak freed blocks and inodes
+ thus:
+   mostly internally consistent; FS unlikely to panic immediately  
+after reboot
+     no reachable dangling references
+   not quite "atomic", since you can see partial operations after  
+crash
+   but it is "durable": syscall returns => data will be on disk  
+after crash
+
+xv6 needs an fsck
+ to restore internal consistency after a crash
+   complete or roll back partial system calls
+ how would you make it correct?
+   look at each syscall's sequence of synchronous writes
+   have a story for a crash at each point
+ how would fsck work?
+   scan inodes, build in-memory table of which are marked free
+   scan free block table, build in-memory table
+   descend directory hierarchy from root
+     i.e. look at all dirs and files a program could access
+     count dir references to each inode
+     count dir/file references to each block
+ what inconsistencies could exist?
+   inode not free, but not referenced by any dir
+     crash during create
+     crash during delete
+     ok to simply mark the inode free (rolls back create, or  
+completes delete)
+   block not free, but not referenced by any file/dir
+     crash during append
+     crash during unlink/truncate
+     in both cases, ok to mark the block free (rolls back append,  
+completes truncate)
+   reachable directory w/o . or ..
+     crash during mkdir
+     remove directory (since must be new+empty), or create . and ..
+   incorrect link count?
+     crash during link or unlink
+     fix the link count to match # of references in reachable dir  
+hierarchy
+   lots of "can't happen" inconsistencies:
+     block in two files? cycle in dir hierarchy?
+     fsck asks for human assistance
+
+good news:
+ xv6 could be made to have good crash recovery, w/ fsck
+bad news:
+ xv6 very slow during normal operation
+ xv6 very slow during fsck
+
+how long would fsck take?
+ a read from a random place on disk takes about 10 milliseconds
+ descending the directory hierarchy might involve a random read per  
+inode
+ so maybe (n-inodes / 100) seconds?
+ faster if you read all inodes (and dir blocks) sequentially,
+   then descend hierarchy in memory
+ my server: fsck takes 10 minutes per 70GB disk w/ 2 million inodes
+   clearly reading many inodes sequentially, not seeking
+   still a long time, probably linear in disk size
+
+how about xv6 normal FS performance?
+ creating a file and writing a few bytes takes 8 writes, probably 80  
+ms
+   (ialloc, init inode, write dirent, alloc data block, add to inode,
+    write data, set length in inode, one other mystery write to data)
+ so can create only about a dozen small files per second
+ think about un-tar or rm *
+
+how to get better performance?
+ RAM is cheap
+ disk sequential throughput is high, 50 MB/sec
+ (maybe someday solid state disks will change the landscape)
+ we'll talk about big memory, then sequential disk throughput
+
+why not change xv6 to use a big write-back disk cache?
+ bwrite() *only* modifies in-memory buf (no disk write)
+   so creat(), unlink(), write() &c return almost immediately
+ bufs written to disk later
+   if cache is full, write LRU dirty block
+   write all dirty blocks every 30 seconds, to limit loss if crash
+ would write-back cache improve performance? why, exactly?
+ what problems will write-back cause?
+
+what can go wrong w/ write-back cache?
+ example: crash soon after xv6 file creation
+   1. ialloc/iupdate initialize new inode (in use, zero length, &c)
+   2. writei adds new directory entry with file's name and i-number
+   both just go into buffer cache, not disk
+   performance is good -- no disk seeks
+   suppose eventually cache manager decides to write block #2 to disk
+     then crash
+   now FS not useable after a crash (dirent -> free inode)
+   easy for fsck to detect and fix, since i-node is marked free
+ example: unlink() followed by create()
+   an existing file x with some content, all safely on disk
+   one user runs unlink(x)
+     1. delete x's dir entry **
+     2. put blocks in free bitmap
+     3. mark x's inode free
+   another user then runs create(y)
+     4. allocate a free inode
+     5. initialize the inode to be in-use and zero-length
+     6. create y's directory entry **
+   again, all writes initially just to disk buffer cache
+   suppose only ** writes forced to disk, then crash
+   what is the problem?
+   can fsck detect and fix this?
+
+problem: no mechanism to make unlink(), create(), &c atomic
+ with respect to crashes
+ and (unlike sync metadata update) no ordering hints for fsck
+
+most popular solution: logging (== journaling)
+ goal: atomic system calls w.r.t. crashes
+ goal: fast recovery (no hour-long fsck)
+ goal: speed of write-back cache for normal operations
+
+simple 6.033-style logging scheme:
+ [diagram: buffer cache, FS tree on disk, log on disk]
+ FS has a log on disk
+ syscall describes all the writes it wants to do in the log on disk
+   and only then modifies the real FS
+   if crash during FS modification, recovery s/w can use log to  
+complete the sys call
+ syscall:
+   append BEGIN record to disk log
+   for each modification (inode, dir block, free bitmap, &c)
+     make modification in buffer cache, but pin that buffer
+     append copy of modified block to log
+   append a COMMIT record to log on disk
+   un-pin the buffers
+ don't write buffers to disk until after COMMIT goes to disk
+   "write-ahead logging"
+ after crash+reboot, recovery scans log
+   iff sees COMMIT, re-do all modifications in that xaction
+   if no COMMIT, ignore that syscall's modifications in log
+ so if crash during a system call
+   if no COMMIT, syscall has no effect at all
+     since we held write-back until after COMMIT on disk
+   if COMMIT, syscall has all effects
+
+what's wrong with this simple logging scheme?
+ log traffic will be huge: every file create -> many blocks of records
+ sys calls still need to wait for disk i/o, so write-back cache not  
+much help
+ some details missing: GC of log, find start/end of log after reboot
+
+Linux's ext3 design
+ case study of the details required to add logging to a file system
+ main source: Stephen Tweedie 2000 talk transcript "EXT3, Journaling  
+Filesystem"
+ ext3 adds a log to ext2, a previous xv6-like log-less file system
+ has many modes, I'll described "journaled data"
+   log contains both metadata and file content blocks
+
+ext3 structures:
+ in-memory write-back block cache
+ in-memory list of blocks to be logged
+ on-disk FS
+ on-disk circular log file
+
+what's in the ext3 log?
+ descriptor: magic, seq, block #s
+ data blocks (as described by descriptor)
+ commit: magic, seq
+
+ext3 logs entire blocks
+ expensive: one little change -> 4096 bytes in log
+
+how does ext3 get good performance despite logging entire blocks?
+ batches many syscalls per commit
+ defers copying cache block to log until it commits log to disk
+ hopes multiple sycalls modified same block
+   thus many syscalls, but only one copy of block in log
+
+to be continued...
+</pre>

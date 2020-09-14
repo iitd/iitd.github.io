@@ -1,0 +1,409 @@
+<title>L39</title>
+<html>
+<head>
+</head>
+<body>
+
+	<!--
+<pre>
+    strawman solution for specific problem (actually used by some systems):
+	type-stable memory (stack-elements never become non-stack-elements)
+	each stack element has a reuse counter
+	include generation# along with each pointer (so that cmpxchg notices)
+
+    but for more complex data structures this becomes hard to solve
+	for example, readers must check that data structure hasn't been freed
+	we'll see shortly how RCU can help us reuse memory
+</pre>
+
+<p><a href="http://www.cl.cam.ac.uk/netos/papers/2007-cpwl.pdf">This
+ paper by Fraser and Harris</a> compares lock-based implementations
+ versus corresponding non-blocking implementations of a number of data
+ structures.
+
+<p>It is not possible to make every operation lock-free, and there are
+  times we will need an implementation of acquire and release.
+  Research on lock-free data structures is active; the last word
+  isn't said on this topic yet.
+	-->
+
+<h2>Read-Copy-Update (RCU)</h2>
+(..contd)
+<p>
+RCU differs from read-write locks, in that, it allows the read-path to
+execute without any synchronization, i.e., at full speed, and yet
+ensure correct behaviour in presence of occasional concurrent updates.
+
+<p>As we saw in our last lecture, this can be achieved by ensuring
+that updates are done in an atomic fashion, e.g., if the updates can
+be written as one value swap, then atomic CAS instructions can be used.
+
+<p>However, even if updates to a
+global data structure can be written through a single CAS
+instruction, there may be other operations, such as free() (memory
+reuse) that may be
+required to complete the operation. In the searchable stack example,
+<code>free()</code> can only be called once we are sure that no other
+thread could be holding a reference to the location being freed.
+
+<p>One way to ensure this is through reference counting, wherein each time
+a thread holds a pointer, it increments its reference count. However
+maintaining reference counts involve write operations, and suffer from the
+same problems as those suffered by read-write locks.
+
+<p>The other approach is to use information about the software (of which
+this data structure is a part). For example, if this data structure were
+implemented as part of the Linux kernel, and if we know that the Linux
+kernel is non-preemptible (i.e., a thread cannot be preempted while it is
+executing in kernel space), then we could devise an algorithm.
+
+<p>First, let's understand what we mean by the Linux kernel being
+non-preemptible. This means that a thread cannot be context switched-out in
+the middle of kernel execution. Even if a timer interrupt occurs in the
+middle of thread execution, the timer interrupt is recorded but the execution
+of the current thread is resumed (till it reaches a safe point), before
+context switching to another thread.
+
+<p>Assuming that the searchable stack structure is a part
+of the Linux kernel and that a thread cannot be context switched out in the
+middle of the <code>search()</code> procedure, we can be sure of the following
+things after a <code>pop()</code> update:
+<ul>
+	<li>Only threads currently running in kernel mode on other CPUs could be
+	holding a pointer to the <code>oldtop</code>
+	<ul>
+		<li>Threads that are in ready list or in user mode are definitely not inside
+		the <code>search()</code> procedure. If they ever call <code>search()</code>
+		(e.g., in future), they will start at <code>newtop</code>.
+	</ul>
+	<li>After executing <code>pop()</code> using CAS, we just need to wait for
+	all other executing CPUs to execute a context switch. After a context switch,
+	that CPU cannot be holding a reference to <code>oldtop</code> (as it must have
+	exited <code>search()</code>).
+</ul>
+The RCU algorithm waits for all other CPUs to perform a context switch before
+freeing the old <code>top</code>. One way to accomplish this is to schedule
+a small dummy thread on each CPU. If all the dummy threads execute, a context
+switch has definitely taken place.
+
+<p>In a way, RCU trades space for time. It allows the common case (read
+accesses) to execute faster, by allowing unused locations to not get freed
+for an extended period of time (i.e., for time greater than what it strictly
+needs to be). This is a useful approach only if the memory is plentiful, which
+is true for modern hardware environments.
+
+<h3>Applications of RCU</h3>
+RCU requires information about software and so can be used in special environments,
+like the kernel. Here are two compelling examples where RCU is used in
+the Linux kernel:
+<ul>
+	<li>Network routing table: If a Linux machine is used for routing, the routing
+	table is dereferenced on every incoming packet (read-only access). Occasionally,
+	however, the routing table may be updated by the network-level route-discovery
+	protocols.
+	<p>
+	Using read-write locks would penalize routing table lookups. However, RCU allows
+	lookups to execute unsynchronized (full speed) and yet maintains correctness
+	with respect to occasional updates.
+	<li>Loadable Modules: Linux kernel modules are object files that can be loaded
+	into the kernel at runtime. The module object files contain code (callable
+	functions) and data that can be reached from the kernel.
+	At the same time, it is possible for users to load or unload modules at will.
+	We need to ensure that a module that is currently being referenced (e.g., a
+	CPU is executing a function inside it) is not unloaded.
+	<p>This can be accomplished using read-write locks, but that would mean that
+	all module accesses (e.g., function calls) are preceded by a read-acquire. A
+	much faster method would be to use RCU, where function calls can execute
+	without synchronization, but updates (loading/unloading) will need to be done
+	carefully (CAS, wait for other CPUs to context switch before freeing).
+</ul>
+
+<h2>OS Organizations</h2>
+The UNIX-like abstractions that we have studied so far, are also grouped
+into what are called <em>monolithic kernels</em>, wherein all kernel services
+live in one shared address space (of the kernel), and the applications invoke
+system calls to access these services.
+
+<p>Figure showing monolithic kernel and Apps. The monolithic kernel has subsystems
+like filesystem, virtual memory, scheduler, device drivers, etc.
+
+<p>The primary weaknesses of the monolithic organization are:
+<ul>
+	<li>All subsystems share the same protection domain. A bug or security hole in
+	one subsystem can bring down the entire machine. For example, bugs in device
+	drivers are fairly common, and can completely compromise the system's security.
+	<li>The subsystems have to be shared by all applications, and thus they need to
+	cater to all types of applications. For example, the same cache replacement policy
+	or filesystem layout and routines will be used for all applications. This
+	can cause performance problems, if the application needs do not match the kernel
+	policies.
+</ul>
+
+<p>There are alternate OS organizations that have been proposed to alleviate these
+limitations of the monolithic kernel, two of which are called the <em>microkernel</em>
+and the <em>exokernel</em>.
+
+<h3>Microkernels</h3>
+Microkernels organize the kernel subsystems as "servers", each running in isolated
+address spaces (or processes). The kernel only provides fast interprocess communication
+and protection mechanisms between various processes.
+
+<p>Figure showing microkernel (IPC+protection), servers (FS, VM, Drivers, Scheduler,
+TCP/IP, etc.), and apps.
+
+<p>The kernel becomes much thinner, and isolated from all the other services. A
+bug or a security hole in one service does not affect the other services or the
+kernel. Also, different implementations of subsystems can be used for different
+applications: e.g., different FS implementations can co-exist (as executables and
+processes) and different apps can use different FS implementations (perhaps tuned
+for themselves), assuming that the FS implementations are operating on different
+parts of the disk. While monolithic kernels also support multiple filesystems, the
+flexibility of a microkernel is far greater. For example, a database-like application
+that cares about persistence and has structured records, can choose its own
+filesystem where a file looks very similar to a database table and has stronger
+persistence
+guarantees.
+
+<p>The downside of the microkernel architecture is performance: IPC, no matter how
+fast, is decidedly slower than direct interaction with the kernel. For example,
+monolithic kernels allow communication between application and the kernel service
+through pointer exchanges. Such communication will now require marshalling and
+unmarshalling of data structures across address space boundaries.
+
+<p>While microkernels are not very popular in modern desktop and
+server environments, microkernels (e.g., L4) are often used in embedded environments
+that require strong isolation, reliability, and security guarantees.
+
+<h3>Exokernel</h3>
+The philosophy of the exokernel is to abstract at a very low level (e.g., at the
+hardware level). Instead of executing the kernel services inside the kernel,
+the services should run as a part of the application, and the kernel should allow
+these services to be implemented at the user-level by exporting a rich-enough
+system call API.
+
+<p>Figure showing App with FS, VM, scheduler subsystems within the App, and the
+kernel providing low-level syscall API.
+
+<p>Exokernel example for virtual memory:
+<br>Here are the set of kernel abstractions:
+<ul>
+	<li>Downcalls (system calls)
+	<ul>
+		<li><code>pa = AllocPage()</code>
+		<li><code>DeallocPage(pa)</code>
+		<li><code>CreateMapping(va, pa)</code>
+	</ul>
+	<li>Upcalls (kernel-&gt;app calls, similar to UNIX signals but more general)
+	<ul>
+		<li><code>PageFault(va)</code>
+		<li><code>PleaseReleaseAPage()</code>
+	</ul>
+</ul>
+Notice that unlike UNIX, an application is fully aware of the physical
+address space, and uses <code>AllocPage()</code> and <code>DeallocPage()</code>
+to control its physical memory footprint. The <code>Createmapping()</code> syscall
+is used for creating a mapping from a process-private virtual address to
+a physical address. The process must be authorized to
+map the physical address for the CreateMapping() call to succeed.
+
+<p>Similarly, there are upcalls which allows the kernel to invoke
+process-registered functions (similar to signal handlers on UNIX) for
+a page fault and for requesting the process to release a page. On a
+page fault, the process's page fault handler gets called (unlike UNIX
+where the page fault handler was inside the kernel), and decides what
+to do: e.g., choose a physical page for replacement, create a new mapping,
+etc. This allows a process to decide its own replacement policy and other
+mechanisms, thus providing far greater flexibility. Also, the
+<code>PleaseReleaseAPage()</code> upcall can be used by the kernel to
+request the process to release a page (using DeallocPage()). The kernel
+may expect the process to respond to an upcall within a bounded time, after
+which it may take coercive action (e.g., forcibly take a page away, kill
+the process, etc.).
+
+
+<!--
+<pre>
+lock-free data structures are good for readers, but fairly tricky for updaters
+    lock-free updates were serving two purposes:
+	atomically change state seen by readers
+	    relatively easy -- swap pointers
+	detect and prevent conflicts with other updaters
+	    requires a lot more thought, makes spinlocks seem good again?
+    RCU separates these two purposes
+	make updates appear atomic to readers
+	    allows readers to run without any special synchronization
+	use any other scheme to coordinate between updaters
+	    locks are easy, but can use lock-free updates, or a single writer
+	    performance-wise, doesn't matter -- cacheline bounce going to happen either way
+
+how will this work?
+    key idea: leave old data for readers, don't update in-place
+	no need for reader locks if they don't see changes in-place
+	fundamentally removes need for feedback from readers to updaters!
+    instead, update by copying data items, atomically change pointers
+	makes need for memory reuse mechanism even more acute, more on that in a bit
+    benefits
+	reader code simpler, avoids locking issues and bus ops to notify updaters
+	writer code simpler than lock-free data structures
+	good performance for read-heavy workloads
+
+example: linked list
+    section 2 in paper
+    what's the performance like for the locking+refcounted case (fig 4,5,6)?
+	search: 3 shared memory writes, even though not modifying anything
+	delete: 5 memory writes
+    what if we make the list lock more optimized for readers?
+	search: still 1 shared memory write, due to refcount for reclaiming memory
+	delete: 3+NCPU memory writes
+    what's the RCU plan?
+	figures 8, 9, 10
+	illustrate what happens with diagram
+	unusual semantics -- reader sees old data, as we don't update in-place
+	paper argues this is OK in some cases
+	    when does this occur?  reader concurrent with update
+	    since they are concurrent, order often not strictly defined
+	    so OK to make reader execute on old data as if before update
+
+	search: no shared memory writes, going to be really fast
+	delete: 4 memory writes (2 maybe local to deleting CPU?), plus RCU stuff
+    paper makes RCU seem very natural here; what wouldn't have worked?
+	in-place list modifications
+	would need to translate into insert of a new element, removal of older one
+	hold mutex for the list during update
+
+what's the problem, again?
+    when can we reuse memory from an old element?
+    .. so that we don't crash readers accessing it
+    .. so that we don't see weird cmpxchg behavior
+
+cool observation: CPUs go through cyclical activity
+    get a system call, interrupt, etc
+    process that event, perhaps issuing other operations, and go to sleep/run user code
+    once we're done, kernel code likely not holding any pointers of interest
+    reuse memory once every possible reader has reached such a quiescent state
+    kernels are good workload: kernel code never runs for a long time
+    diagram: quiescent states, grace period
+
+how to make this work?
+    need to figure out what's a quiescent state
+    need to detect when every reader has been through a quiescent state
+
+quiescent states
+    on Linux, idling or context-switching indicates a quiescent state
+    paper claims Linux is "non-preemptible": what does this mean?
+	will not idle or yield if kernel code wants to run
+    kernel not allowed to hold pointer to an RCU-managed element when blocking
+    what could happen on xv6?
+	kernel could be pre-empted, context-switched elsewhere while holding ptr
+	what would be a quiescent state and grace period in xv6?
+
+detection algorithm
+    simple alg: use scheduler to wait for a quiescent period on each CPU
+    figure 17 illustrates how the detection algorithm works
+    code in figure 18
+
+    better alg: figure 29
+	basically, put code from figure 18 into scheduler, and parallelize
+	global bitmask tracks CPUs that need to reach a quiescent state
+	when CPU notices its bit set, waits for a quiescent state and clears it
+	when bitmask=0 (all CPUs have quiesced), we've quiesced
+
+tricks to making RCU work well
+    batch deferred RCU work to only run one instance of detection alg at a time
+    pre-allocate space for batching linked list entry, to defer-free from intr
+    avoiding global data structures in RCU itself
+	keep callbacks (e.g. memory freeing) local to each CPU
+	bump a global generation counter for each time we quiesce
+	for each new generation, CPU can run callbacks from previous generation
+	    must keep track of when a callback was entered
+	    cannot run a callback too soon
+
+so what did RCU buy us?
+    good scalability for read-heavy workloads -- reading incurs no bus writes
+    updates locking overhead similar, but perhaps more data copying
+    cost: memory isn't freed immediately, grace period detection running in background
+
+    paper doesn't talk a whole lot about performance: 30% better on 4 CPUs?
+	other works: 4-CPU system RCU microbenchmark wins by factor of 2-4
+	    assuming <20% updates
+	unclear if the paper's suggested 1/NCPU fraction is relevant or not
+	seems to depend more on the cost of update-in-place vs copy-update
+</pre>
+
+<h2>RCU applications</h2>
+
+<pre>
+widely used in Linux: about 200 files using RCU
+
+network routing table
+    OK to have stale data because external state won't wait for our spinlock anyway
+    entries not updated in-place -- instead, insert and delete operations
+    often many more packets than route updates
+
+module unloading
+    kernel module:
+	loads code into kernel's memory (e.g. /dev/random)
+	registers function pointers (e.g. open for /dev/random's major/minor numbers)
+    problem: if we're unloading, when can we free module's memory?
+	other CPUs might be holding references to module code, or be executing it
+    strawman: refcount on module tracks saved pointers or active function calls
+	very expensive for short calls, e.g. stat(/dev/random)
+    RCU allows us to avoid refcounts for short-lived use that doesn't span quiescence
+    still use refcounts when we go to sleep or save a pointer for later use..
+
+    two-phase unloading:
+	wait for refcount to reach zero (no long-term holders)
+	remove function pointers from major/minor number table: prevent new threads
+	wait for short-term holders to go away (grace period)
+	unload module for real
+
+    similar design comes up in many other cases, e.g. event processing
+	want to register for input events (keyboard, mouse)
+	when is it safe to unregister and free memory?
+	not a performance problem
+	instead, RCU helps avoid read-locking, potential deadlock, etc
+
+    NMI processing
+	a particular case of the event processing workload
+	but there's no way to mask interrupts!
+	could not have done this with locks even if we wanted to
+
+FD flags
+    effectively an existence lock
+    why is it safe to let other CPUs access an old FD flags array?
+	presumably updates grab a lock, so therefore ordered w.r.t. updates?
+	order for reads not well-defined anyway, so doesn't matter
+
+CPU array
+    what's cool about this case?
+    without RCU, pervasive changes: locks or other changes for each access to CPU array
+    with RCU, almost no work outside of the update code
+
+RCU on a single CPU in Linux
+    slight performance win from pointless locking
+    simplifies locking complexity, esp. in interrupt context
+    do we need quiescent state detection on a single CPU?  can we free memory right away?
+	still need quiescent state detection due to interrupts
+
+RCU in xv6
+    due to preemption, must reach quiescent state in each kernel thread
+    how would we find a grace period?
+	look at threads running something other than wait() or user code
+	wait for them to go through a quiescent state
+    where might RCU come in useful?
+	read-only access to inodes, buffer cache entries?
+	is it ok to use stale copy?  order undefined for concurrent read+update anyway.
+	single array of structs would not work so well -- requires update-in-place
+	would need a separate linked list of "active" inodes, bufs
+	so we could avoid acquire/release in fstat, for example
+
+would we use RCU in pintos?
+    no SMP support -- not going to get any SMP benefits.
+    no preemption or interrupts while in kernel -- not needed even for single CPU.
+
+so when is RCU a good technique?
+    perhaps if we don't need immediate feedback from readers to updaters
+    provides performance, simplicity for these readers
+</pre>
+-->
+</body>

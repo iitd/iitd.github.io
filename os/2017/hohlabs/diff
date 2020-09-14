@@ -1,0 +1,123 @@
+1600c1600
+< <li>You need to implement elf loader:
+---
+> <li>You need to implement elf loader(elf_load function):
+1602,1604c1602,1604
+< <li>You shall only support Position Independent Executable.</li>
+< <li>The entire program memory address space specified by the program shall be read only. You can safely ignore the flags in ELF and override with ‘WRITE’ flags in page table.</li>
+< <li>The entire program memory address space shall fit into a single large page.</li>
+---
+> <li>You shall only support loading of Position Independent Executable.</li>
+> <li>The entire program memory code address space shall be read only. You can safely ignore the flags in ELF and override with ‘WRITE’ = 0 flags in page table for code segments.</li>
+> <li>The entire program memory address space shall fit into a single large page.(This is already done for you)</li>
+1608,1609c1608
+< <li>allocate new memory for the process.</li>
+< <li>copy the contents at right location</li>
+---
+> <li>copy the contents at right location(only loadable program segments need to be loaded, refer xv6 elf loading for help)</li>
+1612,1618c1611,1616
+< <li>register values</li>
+< <li>page table</li>
+< <li>allocate memory for kernel &lt;-&gt; process communication.</li>
+< <li>setup the emergency stack layout correctly.</li>
+< </ul></li>
+< </ul></li>
+< <li>kernel interrupts if occurred when CPU is in ring3, traphandlers are executed with esp=main_stack_end. So no need to save esp when you switch to ring 3.</li>
+---
+> <li>Integers and FPU/SIMD register values to 0</li>
+> <li>Startip and eip to correct virtual address</li>
+> <li>IOPL= 3 and in Eflags make IF =1 and IOPL =3</li>
+> <li>allocate a large page for used for both process stack and kernel &lt;-&gt; process communication</li>
+> <li>Stackend = end of stack page(assume growing downwards, also refer xv6)</li>
+> <li>esp as shown in the figure below(Stackend + PG_SIZE - 4KB)</li>
+1622,1624c1620
+< <li>You need to load the program’s page table.</li>
+< <li>We’ll implement exit system call later. We’ll verify correctness by looking at qemu’s instruction trace.</li>
+< <li>Emergency Stack layout:
+---
+> <li>set up page table (Code page as read only, Stack page as R/W  -- Refer devices/mmu32.h for helper functions)
+1626,1630c1622
+< <li><p>type of _start is:</p>
+< <div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c">  <span class="dt">void</span> _start(<span class="dt">uint32_t</span> rank, <span class="dt">uint32_t</span> masterro, <span class="dt">uint32_t</span> masterrw, <span class="dt">uint32_t</span> sharedrw)</code></pre></div>
+< <ul>
+< <li>masterrw: address of page shared between kernel and user</li>
+< <li>value of rank, masterro, sharedrw shall be zero.</li>
+---
+> <li>Identity mapped - please make sure pages you tried are identity mapped, and use page table only for protection.</li>
+1632c1624,1626
+< <li>Emergency Stack:
+---
+> <li>In process structure masterrw: address of page shared between kernel and user, value of rank, masterro, sharedrw shall be zero.</li>
+> <li>setup the emergency stack(stack area used for kernel/process communication in case of Upcall/Downcall) layout correctly as shown below</li>
+> <li>Emergency Stack layout(write the value in order shown below starting from esp and above):
+1639d1632
+< </ul></li>
+1643,1645c1636
+< <li>Page table:
+< <ul>
+< <li>Identity mapped - please make sure pages you tried are identity mapped, and use page table only for protection.</li>
+---
+> </ul></li>
+1662a1654
+> <div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> <span class="kw">inline</span> <span class="dt">void</span> elf_load(addr_t from, <span class="dt">size_t</span> fromsize, process_t&amp; proc, bitpool_t&amp; pool4M);</code></pre></div>
+1669c1661
+< <div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> <span class="kw">inline</span> <span class="dt">void</span> elf_load(addr_t from, <span class="dt">size_t</span> fromsize, process_t&amp; proc, bitpool_t&amp; pool4M);</code></pre></div>
+---
+> <div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> <span class="kw">inline</span> <span class="dt">void</span> ring3_step(preempt_t&amp; preempt, process_t&amp; proc, dev_lapic_t&amp; lapic);</code></pre></div>
+1671c1663
+< <li>restore process’s state from proc.
+---
+> <li>restore process’s state from proc structure.
+1673,1675c1665,1670
+< <li>you need to restore all the registers</li>
+< <li>you need to switch to process’s page table.</li>
+< <li>switch to user mode.</li>
+---
+> <li>you need to switch to process’s page table(Refer devices/mmu32.h).</li>
+> <li>you need to restore all the registers(Integer, FPU/SIMD) to CPU State</li>
+> <li>similar to xv6 first process create a trapframe in stack with(process ss, esp, eflags, cs, eip).</li>
+> <li>refer devices/gdt32.h for user code and data segment number.</li>
+> <li>switch to user mode(iret).</li>
+> <li>kernel interrupts if occurred when CPU is in ring3, traphandlers are executed with esp=main_stack_end. So no need to save esp when you switch to ring 3.</li>
+1677c1672
+< <li>This function shall not return. So you don’t need to save current stack pointer or local variables.</li>
+---
+> <li>This function shall not return. So you don’t need to save current stack pointer or local variables or old CPU Registers.</li>
+1679c1674
+< <div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> <span class="kw">inline</span> <span class="dt">void</span> ring3_step(preempt_t&amp; preempt, process_t&amp; proc, dev_lapic_t&amp; lapic);</code></pre></div>
+---
+> <div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> <span class="kw">inline</span> <span class="dt">void</span> ring3_step_done(process_t&amp; proc, dev_lapic_t&amp; lapic);</code></pre></div>
+1683d1677
+< <div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> <span class="kw">inline</span> <span class="dt">void</span> ring3_step_done(process_t&amp; proc, dev_lapic_t&amp; lapic);</code></pre></div>
+1701c1695
+< <li>You need to verify user program execution by looking at qemu.log</li>
+---
+> <li>You need to verify user program execution by looking at console messages(Hello from ring3 shell and no upcall message)</li>
+1724a1719,1721
+> <li>Floats and SIMDs(SSE) instructions are allowed in our kernel. ring3_preempt macro shall save FPU/SIMD registers (context) as well during the preemption.</li>
+> <li>To save eip, eflags and esp to proc structure, take the value from the trap frame present in the stack(as shown in the figure below with current esp pointing to relative_num)</li>
+> <li>start timer in ring3.h(ring3_step) and stop in ring3.h(ring3_step_done)/</li>
+1727d1723
+< <li>Floats and SIMDs(SSE) instructions are allowed in our kernel. ring3_preempt macro shall save FPU/SIMD registers (context) as well during the preemption.</li>
+1779c1775
+< <p>In this part, we’ll learn about upcalls by letting the user process manage the exceptions(like INT3, page faults etc).</p>
+---
+> <p>In this part, we’ll learn about upcalls(passing information to the exception handler running in user mode) by letting the user process manage the exceptions(like INT3, page faults etc).</p>
+1783,1784c1779,1780
+< <li>allocate emergency stack at the end of the page shared between kernel and user</li>
+< <li>setup the emergency stack layout correctly</li>
+---
+> <li>we had already allocated emergency stack at the end of the page shared between kernel and user in 4.1</li>
+> <li>setup the emergency stack layout correctly(as explained below) at the end of this page</li>
+1842a1839,1847
+> <li>To generate exception, 
+> <ul>
+> <li>"make clean" in the hohlabs</li>
+> <li>modify in ring3/app1/labs.cc.</li>
+> <li>"make" in ring3/app1</li>
+> <li>"make qemu" in the hohlabs</li>
+> </ul></li>
+> 
+> 
+2262a2268
+> 

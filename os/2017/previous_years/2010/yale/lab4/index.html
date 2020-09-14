@@ -1,0 +1,1308 @@
+<html>
+<head>
+<title>CPSC 422 Spring 2010 Lab 4: Files and I/O</title>
+<link rel="stylesheet" href="../labs.css" type="text/css" />
+</head>
+<body>
+<h1>CPSC 422 Spring 2010 Lab 4: Files and I/O</h1>
+<p>
+<b>Handed out Friday, March 19, 2010<br />
+Due Thursday, April 1, 2010 (no joke!)</b>
+
+</p>
+
+<h2>Introduction</h2>
+
+<p>
+In this lab,
+you will add support for interactive console input/output
+and a file system abstraction to PIOS,
+enabling the implementation of basic Unix-style shells
+and other command-line programs.
+Unlike conventionl Unix-like operating systems, however,
+PIOS's file system will be implemented mostly in user mode,
+as part of the minimal C library that gets linked into PIOS applications.
+Each PIOS process will effectively contain its own file system,
+whose state resides in the process's virtual address space
+rather than on disk,
+and different PIOS processes will use file synchronization techniques
+to propagate file system updates among processes,
+much as if each process were a separate node in a small distributed system.
+Contrary to one of the basic purposes of file systems
+in a conventional operating system,
+PIOS's file system for now will <i>not</i> provide persistence &mdash;
+the ability for state to survive crashes or reboots &mdash;
+although we will add persistence of sorts to PIOS in Lab 5.
+
+<p>
+This lab contains the following parts:
+
+<ol>
+<li>	<b>A Per-Process File System in User Space:</b>
+	Filling out the implementation of a simple Unix-like file system
+	whose state resides in the same process as the application using it.
+
+<li>	<b>Console Input/Output:</b>
+	Adding interrupt-driven console input support to the PIOS kernel,
+	and giving the root process access to console I/O
+	via its file system API.
+
+<li>	<b>Fork/Exec and Command-Line Arguments:</b>
+	Enabling one user-level PIOS program to load and execute another,
+	and pass command-line arguments to the new program.
+
+<li>	<b>File System Reconciliation:</b>
+	Synchronizing file system state between processes,
+	so that processes can interact through a common logical file system
+	and share the root process's file-based console access.
+</ol>
+
+<h3>Software Setup</h3>
+<p>
+
+In this lab you will build on the kernel from lab 3.
+Use the same procedure as in the previous lab
+to create a <tt>lab4</tt> branch in your Git repository,
+fetch our skeleton source code for lab 3 from the master Git repository,
+and merge your lab3 solutions into it as your starting point for lab 4:
+</p>
+<pre>
+$ <kbd>cd lab</kbd>
+$ <kbd>git commit -am 'my solution to lab3'</kbd>
+$ <kbd>git pull</kbd>
+$ <kbd>git checkout -b lab3 origin/lab4</kbd>
+$ <kbd>git merge lab3</kbd>
+</pre>
+
+<p>
+Lab 4 contains a number of new source files.
+The following are the most important ones,
+which contain the skeletons for the Unix-style
+file system and process management facilities
+you will be working on in this lab;
+you should first look through them carefully:
+</p>
+
+<blockquote>
+<table> <tr>
+<tr><td><tt>inc/file.h</tt>
+	<td>Definitions describing file system and process management metadata.
+<tr><td><tt>kern/file.{c,h}</tt>
+	<td>Kernel module to set up the root process's file system
+	    and synchronize it to provide general-purpose I/O.
+<tr><td><tt>lib/file.c</tt>
+	<td>Core functions for user-level file system management.
+<tr><td><tt>lib/fork.c</tt>
+	<td>User-level implementation of Unix-style fork/wait
+		and file system reconciliation.
+<tr><td><tt>lib/exec.c</tt>
+	<td>User-level implementation of Unix-style
+		program loading and execution.
+</table>
+</blockquote>
+
+<p>
+The other new files mostly consist of additional C library infrastructure
+and some user-level programs to run on your kernel;
+you should browse through them briefly to get a sense
+for what's there and how they relate to each other:
+
+<ul>
+<li><p>	<b>C library header files:</b>
+	<table> <tr>
+	<tr><td><tt>inc/stdlib.h</tt>
+		<td>C standard library functions.
+	<tr><td><tt>inc/unistd.h</tt>
+		<td>Unix API functions.
+	<tr><td><tt>inc/dirent.h</tt>
+		<td>Unix directory scanning functions.
+	<tr><td><tt>inc/stat.h</tt>
+		<td>Unix file status definitions and functions.
+	<tr><td><tt>inc/errno.h</tt>
+		<td>C/Unix error number definitions.
+	<tr><td><tt>inc/args.h</tt>
+		<td>Simple command-line argument parsing macros.
+	</table>
+
+<li><p>	<b>C library support code:</b>
+	<table> <tr>
+	<tr><td><tt>lib/dir.c</tt>
+		<td>Directory scanning.
+	<tr><td><tt>lib/stdio.c</tt>
+		<td>C standard file I/O functions.
+	<tr><td><tt>lib/fprintf.c</tt>
+		<td>Formatted file I/O functions.
+	<tr><td><tt>lib/stdlib.c</tt>
+		<td>C standard library functions.
+	<tr><td><tt>lib/unistd.c</tt>
+		<td>Unix API file I/O functions.
+	<tr><td><tt>lib/readline.c</tt>
+		<td>Interactive console input line reading and editing.
+	</table>
+
+<li><p>	<b>User programs:</b>
+	<table> <tr>
+	<tr><td><tt>user/testfs.c</tt>
+		<td>File system testing code for lab 4.
+	<tr><td><tt>user/sh.c</tt>
+		<td>A simple interactive command-line shell.
+	<tr><td><tt>user/echo.c</tt>
+		<td>Program to echo the command line to standard output.
+	<tr><td><tt>user/cat.c</tt>
+		<td>Program to copy files to standard output.
+	<tr><td><tt>user/ls.c</tt>
+		<td>Program to list a directory.
+	<tr><td><tt>user/wc.c</tt>
+		<td>Program to count the bytes, words, and lines in a file.
+	</table>
+</ul>
+
+
+<h2>Part 1: A Per-Process File System in User Space</h2>
+
+<p>
+In conventional operating systems,
+the file system is a primary kernel storage abstraction
+that is globally shared by all processes,
+which programs can use both to store persistent state across crashes or reboots
+and as a channel for interprocess communication
+(i.e., one process writes a file, then another process reads it).
+PIOS takes a radically different approach:
+the PIOS kernel provides <i>no</i> file-related system calls,
+and the "file system" as seen by PIOS applications
+is really just some state in a portion of
+a given process's virtual address space,
+together with some C library functions
+that know how to access and manipulate that state
+so as to make it look roughly like a Unix-style file system API.
+PIOS adopts the philosophy,
+<i>a file system is whatever looks to applications like a file system</i>:
+i.e., what matters directly to most applications
+is that a conventional-looking file API is available
+providing functions like
+<tt>open</tt>, <tt>close</tt>, <tt>read</tt>, and <tt>write</tt>,
+and not how exactly that API is implemented.
+
+<table align="right" cellpadding=10>
+<tr><td align="center"><img src="fsorg.png">
+<tr><td align="center"><b>File system architecture in
+	conventional monolothic systems, conventional microkernels,
+	and PIOS's "distributed system in one machine."</b>
+</table>
+
+<p>
+To provide some background perspective,
+many microkernel-based operating systems have made the design choice
+of implementing the file system in user space rather than in the kernel
+as it is in Unix: e.g.,
+<a href="../bib/accetta86mach.pdf">Mach</a>,
+<a href="../bib/bomberger92keykos.pdf">KeyKOS</a>,
+etc.
+In such microkernel designs,
+the file system still generally acts as a globally shared service,
+usually implemented by a special process or group of processes
+and accessed by other, "normal" application processes
+via interprocess communication (IPC).
+
+<p>
+PIOS takes this decentralization of the classic file system abstraction
+still one step further,
+such that processes no longer share access
+to a global file system at all.
+Instead, each PIOS process contains its own local copy
+of all file system state,
+and changes that one process makes to its local copy of the file system
+are not seen at all by other processes
+until two processes explicitly synchronize with each other
+and propagate or <i>reconcile</i> their file system updates.
+In effect, each PIOS process behaves like its own "node"
+in a small "distributed system",
+with all of these process/nodes crammed into one physical machine.
+Each process/node maintains its own file system replica
+for local use by the process itself,
+and propagates its changes from one replica to another
+only when processes synchronize via events
+such as <tt>fork</tt> and <tt>wait</tt>.
+See the figure for an illustration
+contrasting the Unix/xv6 approach, the conventional microkernel approach,
+and the PIOS "distributed system in a system" approach.
+
+<div class="required">
+<p><span class="header">Exercise 1.</span>
+	Study <tt>inc/vm.h</tt> and <tt>inc/file.h</tt>
+	to understand how file system state is structured
+	within each process's address space.
+	In particular, make sure you understand
+	exactly what the '<tt>files</tt>' global variable points to
+	(this variable never changes, although what it points to does),
+	where it is located in each process's virtual address space,
+	and where the actual content of a given file
+	(as opposed to the file's inode metadata such as size mode)
+	resides in a process's address space.
+</p></div>
+
+The structure of PIOS's in-memory file system and file API
+is simplified in several respects from that of a Unix file system,
+even discounting the huge difference that PIOS's file system
+doesn't actually read or write a real disk.
+For one thing, PIOS does not implement file descriptor sharing
+in the same way that Unix does:
+you can duplicate a file descriptor via <tt>dup()</tt> or <tt>dup2()</tt>
+as in Unix (see <tt>lib/unistd.c</tt>),
+but in PIOS each of the duplicated file descriptors
+will have its own file offset and other state from that point on,
+unlike Unix in which duplicated file descriptors
+continue to share per-open state such as the file offset.
+Another difference is that in PIOS,
+a file's name is contained in the file's inode ('<tt>fileinode</tt>' struct)
+rather than in the data content of a "directory file" as in Unix.
+Also, each PIOS inode has a '<tt>dino</tt>' element (<i>directory inode</i>)
+containing the inode number of the directory containing this file.
+The <tt>dino</tt> essentially acts as a "back-link" to the directory
+containing <i>any</i> entry, whether directory or reguler file.
+(The root directory's <tt>dino</tt> back-link just points back to itself,
+as if the root directory "contains itself.")
+These structural differences effectively mean that
+PIOS cannot support Unix-style hard links,
+since a hard linked file can have several "containing directories" in Unix,
+and possibly different filenames in each.
+Make sure you understand
+how the <tt>fileinode</tt> and <tt>filedesc</tt> structs work,
+and the implications of these design decisions
+in contrast with xv6's file system design.
+
+
+<h3>Giving the Root Process an Initial File System</h3>
+
+Your first programming task in this lab is to give the root process &mdash;
+the one and only process that the PIOS kernel itself starts
+in <tt>init()</tt> &mdash;
+with an initial file system image,
+from which the root process can read a few files
+that we have arranged to be bundled into the kernel on bootstrap.
+The files populating this initial file system
+will simply come from binary "blobs" linked into the kernel itself,
+in the same way the <tt>user/testvm</tt> program was in lab 3.
+
+<p>
+Since we will want to include several files in the initial file system,
+and this list of files will grow in subsequent labs,
+we need a more automated way to link copies of these files into the kernel
+and implement the kernel logic to populate the initial file system.
+We have provided a bit of magic in <tt>kern/Makefrag</tt>
+to create an automatically-generated header file <tt>obj/kern/initfiles.h</tt>,
+which just contains a series of statements of the form
+<tt>INITFILE(<i>filename</i>)</tt>,
+one for each file that the root process's initial file system should contain.
+The kernel's <tt>Makefrag</tt> links these files into the kernel automatically,
+and the top of <tt>kern/file.c</tt> contains
+some ugly but useful preprocessor magic
+that uses the automatically-generated <tt>obj/kern/initfiles.h</tt>
+to build a table listing the names of each of these initial files,
+and the start and end addresses at which they are linked into the kernel.
+
+<div class="required">
+<p><span class="header">Exercise 2.</span>
+	Carefully examine, then complete the <tt>file_initroot()</tt> function
+	in <tt>kern/file.c</tt>.
+	This function sets up the root file system image for the root process.
+	We have provided most of its implementation for you,
+	including code to set up several "special" files and file descriptors,
+	such as the console input/output files described later
+	and the inode representing the root directory.
+	You'll need to write only one small piece of code,
+	to populate the root process's initial file system
+	from the <tt>initfiles</tt> table
+	so that the root process has some regular files to start with.
+
+	<p>
+	To check the contents of your initial file system,
+	modify your <tt>init()</tt> function in <tt>kern/init.c</tt>
+	to use the preprocessor symbol <tt>ROOTEXE_START</tt>,
+	instead of the hard-coded symbol
+	<tt>_binary_obj_user_testvm_start</tt> as in the last lab,
+	to find the ELF executable to load and run in the root process.
+	You'll notice that at the top of <tt>kern/init.c</tt>
+	we've made <tt>ROOTEXE_START</tt> default to
+	running a new program, <tt>user/testfs</tt>,
+	in the root process.
+	Once you've written the code to populate the initial file system,
+	<tt>user/testfs</tt> should dump a list of the files
+	in the initial file system,
+	and then report '<tt>initfilecheck passed</tt>'.
+</p></div>
+
+
+<h3>File I/O via a Unix-Compatible API</h3>
+
+The <tt>initfilecheck()</tt> function in <tt>user/testfs</tt>
+checks the root process's initial file system
+simply by digging directly into the file system metadata
+via the global <tt>files</tt> pointer.
+While accessing the file system this way
+happens to be easy given that all the file system's state
+is in the root process's virtual memory,
+the main point of having a file system abstraction
+is to allow applications to access that abstraction
+through a familiar, standard, well-defined API,
+such as Unix's <tt>open</tt>/<tt>close</tt>/<tt>read</tt>/<tt>write</tt> API.
+We have implemented most of this API for you,
+mainly in <tt>lib/file.c</tt> and <tt>lib/dir.c</tt>,
+with some supporting "wrapper" functions
+in <tt>lib/unistd.c</tt> and <tt>lib/stdio.c</tt>.
+You'll need to implement only a few small but key functions:
+reading or writing a file's content given the file's inode number,
+seeking within a file,
+and scanning the contents of a directory.
+
+<div class="required">
+<p><span class="header">Exercise 3.</span>
+	Implement the functions
+	<tt>fileino_read()</tt> and <tt>fileino_write()</tt>
+	in <tt>lib/file.c</tt>,
+	which respectively read from and write to files
+	in the per-process file system.
+	Notice that these are in fact just "helper functions"
+	called by <tt>filedesc_read()</tt> and <tt>filedesc_write()</tt>
+	further down in the same source file,
+	and those functions are called in turn
+	by the "real" file system API functions,
+	<tt>read()</tt> and <tt>write()</tt> in <tt>lib/unistd.c</tt>,
+	and <tt>fread()</tt> and <tt>fwrite()</tt> in <tt>lib/stdio.c</tt>.
+	Be sure you understand the relationship between all these functions
+	and exactly what the "top-level" functions are supposed to do
+	(type <samp>man read</samp>, etc., under Linux
+	for a detailed description),
+	before you implement them.
+
+	<p>
+	<i>Hint:</i>
+	When implementing <tt>filedesc_write()</tt>,
+	note that you're responsible for managing the permissions
+	of the virtual address region containing the file's content.
+	Each file's 4MB data area starts with no permissions on any page,
+	so you'll have to adjust these page permissions
+	in order to read and write file data.
+	While you can manage page permissions any way that works,
+	one approach amenable to catching accidental bugs might be
+	to maintain the invariant that <i>only</i> pages containing
+	actual file data ever have non-zero permissions;
+	the implementation of <tt>fileino_truncate()</tt> we provided
+	follows this invariant.
+
+	<p>
+	Once you have the reading and writing implemented and working,
+	you should be able to pass the <tt>readwritecheck</tt>
+	in <tt>user/testfs</tt>.
+</p></div>
+
+<div class="required">
+<p><span class="header">Exercise 4.</span>
+	Implement the function <tt>filedesc_seek()</tt>
+	in <tt>lib/file.c</tt>.
+	This function is called by both
+	<tt>lseek()</tt> in <tt>lib/unistd.c</tt>
+	and <tt>fseek()</tt> in <tt>lib/stdio.c</tt>.
+	Again, refer to the Linux or other Unix man pages
+	for precise details on how these API functions should work.
+
+	<p>
+	Once you have seek implemented,
+	you should be able to pass the <tt>seekcheck</tt>
+	in <tt>user/testfs</tt>.
+</p></div>
+
+<div class="required">
+<p><span class="header">Exercise 5.</span>
+	Implement the function <tt>readdir()</tt>
+	in <tt>lib/dir.c</tt>,
+	which scans a directory and returns the entries it contains,
+	one at a time.
+	You'll need to use the <tt>ofs</tt> field
+	of the <tt>filedesc</tt> structure (aka <tt>DIR</tt>)
+	to keep track of the current "position" in the directory,
+	although in this case it does not represent a byte offset
+	as it would in a file descriptor for a regular file.
+
+	<p>
+	Once you have directory scanning implemented,
+	you should be able to pass the <tt>readdircheck</tt>
+	in <tt>user/testfs</tt>.
+</p></div>
+
+
+<h2>Part 2: Console Input/Output</h2>
+
+In this part of the lab we will make it possible
+for processes running on PIOS &mdash;
+starting with the root process &mdash;
+to interact with the user via simple text-based console input/output.
+PIOS already provides the <tt>cputs</tt> system call
+for console output, of course,
+but we intend this system call to be used purely for debugging:
+output written this way always goes directly to the console
+and cannot be redirected to a file or intercepted by a parent process,
+for example.
+We would like a more general-purpose device input/output facility.
+In particular, when applications are performing normal input/output,
+we would like them to follow the Unix tradition of API consistency:
+providing a single, common file system API for file and device I/O,
+regardless of whether a particular read or write
+happens to be to or from a device such as the console,
+or a flat file such as an input script or output log file.
+
+<p>
+For general-purpose I/O, therefore,
+PIOS processes will use the user-level <tt>read</tt>/<tt>write</tt> API
+you started filling out above.
+But since regular files in PIOS's file system
+are just part of the process's address space,
+how can they provide any capability for communication
+with entities <i>outside</i> the process's address space,
+such as the console device drivers in the PIOS kernel?
+The answer is that they don't provide any external I/O capability at all
+while the process is just running on its own normally &mdash;
+but when a process forks or synchronizes with a child
+or with its parent process,
+at <i>those specific synchronization points</i>
+we will arrange for I/O to propagate
+across these parent/child relationships,
+essentially by copying file data from the file system in one process
+to the file system in its immediate parent or child process.
+
+<table align="right" cellpadding=10>
+<tr><td align="center"><img src="consio.png">
+<tr><td align="center"><b>File system architecture in
+	Propagation of console input/output among PIOS processes</b>
+</table>
+
+<p>
+To support console I/O, we've reserved two file inodes,
+<tt>FILEINO_CONSIN</tt> and <tt>FILEINO_CONSOUT</tt>
+for "special" console input and output files
+to provide external I/O capability.
+All of the processes in the PIOS system will "agree upon"
+the special meanings of these two special files.
+We have given these special files the names
+'<tt>consin</tt>' and '<tt>consout</tt>' in the file system's root directory:
+you should see them in the root directory listings you got above
+while implementing directory scanning.
+Like regular files, the content of these files
+will reside in the 4MB address region reserved for that file's inode slot
+in a given process.
+The <tt>consin</tt> file in a given process will accumulate
+all the input that process or any of its children have ever received
+from the console,
+and the <tt>consout</tt> file in a process will accumulate
+all the output that process and its children have written to the console.
+In particular, all console input for the whole system
+is first delivered by the PIOS kernel
+to the root process's special <tt>consin</tt> file,
+and the root process may either "consume" that console input itself
+or deliver some or all of it in turn to the <tt>consin</tt> files
+of its child processes.
+Similarly,
+any process's console output first collects
+in the process's own <tt>consout</tt> file;
+then when the process returns to or synchronizes with its parent,
+the parent copies any new console output from the child
+into its own <tt>consout</tt> file,
+and console output propagates in this way toward the root process
+and eventually to the external world via the PIOS kernel.
+The figure to the right illustrates this propagation of I/O
+in among the processes in a PIOS system.
+
+<p>
+In this part of the lab,
+we will for now be concerned only with
+console I/O interaction between the PIOS kernel and the root process.
+We will take care of console I/O propagation
+between processes later in part 4 of the lab.
+
+<h3>Explicit Parent/Child Synchronization</h3>
+
+<p>
+Up to this point,
+processes have generally returned to their parent process
+(or to the PIOS kernel in the case of the root process)
+when they were "done", for better or worse &mdash;
+i.e., when they completed their assigned task and wish to terminate,
+or when they encounter a fatal exception
+and are "forced" by the PIOS kernel to return to their parent.
+There is no reason in PIOS why such a "return"
+necessarily has to be fatal to the child, however.
+
+<p>
+We will now change this convention,
+so that a process may "return" to its parent
+any time it wishes to perform I/O or interact with its parent for any reason.
+Normally the expectation will be that on such a return,
+the parent process synchronizes and propagates any outstanding I/O
+between itself and the child,
+then restarts execution in the child from where it left off.
+In the special case where the child actually <i>wants</i> to exit permanently,
+it sets the <tt>exited</tt> flag in its <tt>filestate</tt> structure
+and sets the <tt>status</tt> field in the same structure
+to the process's Unix-style exit status:
+see our (fairly trivial) implementation
+of <tt>exit()</tt> in <tt>lib/stdlib.c</tt>.
+
+<div class="required">
+<p><span class="header">Exercise 6.</span>
+	Study the <tt>file_io()</tt> function in <tt>kern/file.c</tt>
+	and make sure you understand how it works.
+	Then change your implementation of <tt>proc_ret()</tt>
+	in <tt>kern/proc.c</tt>
+	to call <tt>file_io()</tt> instead of panicking,
+	whenever the root process "returns" explicitly
+	via the RET system call.
+	(You probably still want a panic
+	if the root process returns due to a trap, however.)
+
+	<p>
+	Once you do this, <tt>user/testfs</tt>
+	should get through the <tt>consoutcheck()</tt> function,
+	printing '<tt>consoutcheck done</tt>' at the end &mdash;
+	although you won't yet see the console output
+	this function is trying to print via the file I/O API.
+</p></div>
+
+<h3>Console Output</h3>
+
+Console input and output are essentially independent
+and may be implemented in either order,
+we will first address console output
+since it is simpler and requires no hardware interrupt handling.
+
+<p>
+Whenever the root process returns to the PIOS kernel,
+the kernel's <tt>file_io()</tt> function
+calls <tt>cons_io()</tt> in <tt>kern/console.c</tt>
+to see if any console I/O needs to be propagated
+between the root process's <tt>consin</tt> and <tt>consout</tt> files
+and the "real" console hardware (the screen and keyboard).
+If so, <tt>cons_io()</tt> handles this I/O and returns nonzero
+indicating some I/O has been performed,
+which indicates that <tt>file_io()</tt>
+should resume execution of the root process immediately
+since the root process may have returned purely to perform this I/O.
+If <tt>cons_io()</tt> can find no outstanding "work" to do,
+it returns 0.
+
+<div class="required">
+<p><span class="header">Exercise 7.</span>
+	Implement the code in <tt>cons_io()</tt> required
+	to detect if the root process has appended any new data
+	to its <tt>consout</tt> file since it last synchronized,
+	and output that data to the console via <tt>cons_putc()</tt>,
+	using proper spinlock synchronization in the kernel
+	to ensure that the root process's console writes are atomic
+	and will not mingle with concurrent debugging output
+	from other processors.
+
+	<p>
+	<i>Hint:</i>
+	Remember the root process's <tt>consout</tt> file only grows,
+	accumulating all data that has <i>ever</i> been sent to the console,
+	and doesn't shrink when console output is delivered;
+	the kernel just checks for <i>new</i> data appended
+	to the <tt>consout</tt> file each time the root process returns.
+	Since there is currently no mechanism for "garbage collecting"
+	old console output,
+	the root process can produce at most 4MB of console output &mdash;
+	the size of the <tt>consout</tt> file's data area &mdash;
+	before the system will need to be rebooted.
+	This is obviously an unfortunate limitation
+	that would have to be rectified in a production OS.
+
+	<p>Once this exercise is done,
+	<tt>consoutcheck()</tt> should not only complete
+	but its output should be correct:
+	i.e., you should see three lines of console output
+	between the '<tt>should NOT have appeared yet</tt>'
+	and '<tt>SHOULD have appeared now</tt>' lines,
+	followed by the string '<tt>123456789</tt>' on the next line.
+</p></div>
+
+<h3>Console Input</h3>
+
+To add console input support,
+we will need to make the PIOS kernel take console interrupts.
+In the case of PIOS, the "console" is really an abstract device
+that sends output to both the display and serial port,
+and receives input from both the keyboard and serial port,
+so that our grade scripts can easily interact with your kernel
+via QEMU's virtual serial port.
+Therefore, the PIOS kernel will need to handle
+both keyboard and serial interrupts.
+We've provided all the "device driver" code to handle these interrupts
+and pull characters from the keyboard and serial devices,
+interpreting them as necessary
+(e.g., converting scan codes into ASCII characters in the case of the keyboard)
+and then placing them into the console input buffer
+<tt>cons</tt> in <tt>kern/console.c</tt>.
+You just need to make your kernel call <tt>cons_intr()</tt>
+whenever the processor receives a keyboard interrupt (<tt>IRQ_KBD</tt>)
+or serial interrupt (<tt>IRQ_SERIAL</tt>).
+
+<div class="required">
+<p><span class="header">Exercise 8.</span>
+	Add trap entrypoints
+	for the <tt>IRQ_SERIAL</tt> and <tt>IRQ_KBD</tt> hardware interrupts,
+	just like you did for <tt>IRQ_TIMER</tt> in lab 2.
+	Modify your <tt>trap()</tt> function to handle these interrupts:
+	it should EOI the local APIC
+	and call <tt>cons_intr()</tt>
+	whenever it receives a keyboard or serial interrupt.
+	Make sure <tt>cons_intr()</tt>
+	uses your console spinlock correctly
+	to serialize access to the console input buffer.
+	Finally, uncomment the <tt>cons_intenable()</tt> call
+	in <tt>kern/init.c</tt> to allow the serial port and keyboard hardware
+	to start producing interrupts.
+</p></div>
+
+At this point, the kernel should be prepared to handle console interrupts,
+but there is one more problem.
+PIOS currently takes interrupts only while running in user mode &mdash;
+which was fine when the only external device interrupt it ever needs to take
+is the timer interrupt,
+to perform a context switch when a user process runs too long
+(in which case the user process is obviously running in user mode
+where the processor can take the interrupt).
+When the system is waiting for console input, however,
+it is likely that <i>no</i> user-mode process is running
+(because all processes are waiting for input!),
+and instead the processor is stuck in <tt>proc_sched()</tt>'s idle loop.
+Since this idle loop runs in kernel mode,
+interrupts are disabled during the idle loop,
+and so the kernel won't receive notifications of console input
+even though it has nothing better to do.  Oops.
+
+<p>
+There are many solutions to this issue.
+One is to design the kernel so that most kernel code is interruptible,
+like xv6 is designed.
+Another approach is to keep the kernel non-interruptible,
+but create a set of dedicated "idle processes,"
+one for each physical CPU,
+whose purpose is solely to spin in user mode (with interrupts enabled)
+whenever a given CPU has nothing better to do.
+The JOS kernel takes this approach.
+PIOS adopts a somewhat ugly but simple middleground approach:
+we retain the convention that interrupts must remain disabled
+any time the processor is executing in kernel mode,
+<i>except</i> in one specific place: namely the idle loop.
+
+<div class="required">
+<p><span class="header">Exercise 9.</span>
+	Modify <tt>proc_sched()</tt>
+	to enable interrupts while within the idle loop,
+	and then disable them again before leaving the idle loop.
+	Then modify <tt>trap()</tt> as necessary
+	to account for the new, slightly modified convention
+	that device interrupts can come in either from user mode
+	or from the idle looop in the kernel.
+
+	<p>
+	<i>Hint:</i>
+	Think carefully about what existing code may be affected:
+	for example, what should you do (and NOT do)
+	if a timer interrupt comes in while in the kernel's idle loop?
+	Also, make sure you're not enabling interrupts too early
+	or leaving them enabled too long in <tt>proc_sched()</tt>:
+	what would happen if interrupts are enabled
+	while <tt>proc_sched()</tt> is holding a spinlock, for example?
+
+	<p>
+	Once you have completed this exercise,
+	verify that you are indeed getting console interrupts
+	by adding a <tt>cprintf()</tt> to <tt>cons_intr()</tt>.
+	You should be able to see characters appearing in the input buffer
+	whenever you press a key in QEMU's display window
+	<i>or</i> in the terminal window from which you ran QEMU.
+	Be careful about where you put the <tt>cprintf()</tt>, though,
+	to avoid recursion on the console's lock.
+</p></div>
+
+Now that the kernel can receive input characters from the console devices,
+we just need to make it pass them on to the root process
+whenever the root process synchronizes by "returning" to the kernel.
+As explained above,
+the <tt>file_io()</tt> function calls <tt>cons_io()</tt>
+whenever the root process returns;
+this function should both send new output from the root process to the console
+and copy any new input from the console to the root process,
+returning 1 if any I/O was accomplished and 0 otherwise.
+Notice that if <tt>cons_io()</tt> returns 0,
+<tt>file_io()</tt> just puts the root process to sleep,
+in order to wait for some future input that is not yet available.
+Once woken up,
+the root process will simply "return" again
+until the input it's waiting for has appeared in its <tt>consin</tt> file.
+Therefore, to make console input work correctly,
+the <tt>cons_io()</tt> function needs to propagate
+console input as well as output,
+and an incoming console interrupt needs to awaken the root process
+if it's asleep waiting for console I/O.
+
+<div class="required">
+<p><span class="header">Exercise 10.</span>
+	Add console input support to <tt>cons_io()</tt>,
+	and make <tt>cons_intr()</tt>
+	call the function <tt>file_wakeroot()</tt> we have provided
+	to awaken the root process from an I/O-related slumber.
+</p></div>
+
+The final missing piece is in user space.
+Your implementation of <tt>fileino_read()</tt>
+probably assumes that the file it is reading from is "complete",
+its total size is accounted for
+by the <tt>fileinode</tt>'s <tt>size</tt> field,
+and if the caller attempts to read past the end of the file
+it should just return a short read.
+These assumptions are true of normal files,
+but not of the special <tt>consin</tt> file,
+because this special file's size reflects only the number of bytes
+that have been received from the console <i>so far</i>,
+not the total number of bytes that may eventually be received
+(which may in theory be infinite).
+That is, the <tt>consin</tt> file is not a "complete" file
+but a <i>partial</i> file that grows dynamically
+whenever more input becomes available from the parent.
+Our initial file system setup code in the kernel's <tt>file_initroot()</tt>
+reflects this fact in the <tt>consin</tt> file's inode
+by setting the <tt>S_IFPART</tt> ("partial") flag in the inode's <tt>mode</tt>.
+
+<div class="required">
+<p><span class="header">Exercise 11.</span>
+	Modify <tt>fileino_read()</tt>
+	to check for the <tt>S_IFPART</tt> flag
+	whenever the caller tries to read past the end of the file,
+	and if it's a partial file such as <tt>consin</tt>,
+	just return to the parent via <tt>sys_ret()</tt>
+	and then try reading again until the required data is available.
+
+	<p>
+	You should now be able to enter characters interactively
+	into the <tt>readline()</tt> input loop
+	called from <tt>consincheck()</tt> in <tt>user/testfs</tt>.
+</p></div>
+
+
+<h2>Part 3: Fork/Exec and Command-Line Arguments</h2>
+
+Now before attacking inter-process file and I/O reconciliation,
+we'll need a brief diversion into process management territory.
+The PIOS kernel already provides
+all the process management primitives we'll need for now
+via its GET/SET system call API;
+we would merely like a more high-level, friendly, and familiar way to use them.
+To this end, we have provided mostly-complete implementations of Unix-like
+<tt>fork()</tt>, <tt>wait()</tt>, <tt>waitpid()</tt>,
+and <tt>exec*()</tt> functions
+in <tt>lib/fork.c</tt> and <tt>lib/exec.c</tt>.
+
+<h3>Fork</h3>
+
+<p>
+The implementation of <tt>fork()</tt> we have provided is complete,
+and does pretty much the same thing
+as the <tt>fork()</tt> function in <tt>user/testvm</tt> from Lab 3,
+except with a bit of bookkeeping logic
+to search for and allocate a process ID for the new child process.
+Unlike Unix, where process IDs are global,
+process IDs in PIOS are local to a given process,
+and correspond directly to the child process numbers from 0-255
+supported by the PIOS kernel's API.
+The Unix-compatible <tt>fork()</tt> function arranges never to use child 0,
+since process ID zero is an invalid process ID in Unix
+(although it's a reasonable child process number
+as far as the PIOS kernel is concerned).
+Our implementation of <tt>fork()</tt>
+also sets up some state that will be used later in reconciliation
+during part 4 of this lab.
+
+<h3>Exec</h3>
+
+<p>
+Since you already went through the torture
+of implementing the ELF loader the kernel uses to load the root process,
+we won't subject you to the further torture
+of writing the ELF loader that one process uses to <tt>exec()</tt> another.
+But since the kernel doesn't pass any command-line arguments
+to the root process,
+you missed out on that important part of program loading,
+and we'll catch up on that now in this context.
+
+<p>
+First study the functions in <tt>lib/exec.c</tt>,
+as well as the new assembly language <tt>exec_start()</tt> function
+in <tt>lib/entry.S</tt>,
+until you understand how the execution process works.
+According to the normal semantics of a Unix-like <tt>exec</tt>,
+the executed process should <i>replace</i> the process currently executing.
+But unlike Unix, which implements <tt>exec</tt> in the kernel
+as a system call,
+under PIOS we're trying to implement <tt>exec</tt> completely in user space,
+<i>within the C library of the process to be replaced</i>.
+The key technical challenge is loading the new process
+and getting it all set up and ready to go,
+<i>without</i> destroying the old process (in which we're still executing)
+until the new process is entirely ready
+and we're sure we can complete the transition.
+
+<p>
+Our user-level <tt>exec</tt> implementation solves this challenge
+by setting up the new process's address space in a child process
+(child 0 specifically),
+and then calling the assembly language function <tt>exec_start()</tt>
+in <tt>lib/entry.S</tt>,
+which uses the GET system call
+to replace the current process's address entire space
+with that of the child,
+and then start the new executable's <tt>main()</tt> function
+running on a "fresh" stack for the new program.
+Study <tt>exec_start()</tt>,
+and make sure you understand why this transition will only work reliably
+if both the new and old programs have <i>exactly</i>
+the same <tt>lib/entry.S</tt> code with exactly the same size
+and linked at exactly the same location in both programs.
+
+<p>
+To set up the new program's address space in child 0,
+we'll need to set up the appropriate data in our own address space
+and then use the PUT system call to copy it into child 0.
+Our <tt>exec_readelf()</tt> function does this for the ELF executable itself,
+loading the executable into a 4MB "scratch" address region
+from <tt>VM_SCRATCHLO</tt> to <tt>VM_SCRATCHLO+PTSIZE</tt>
+and then copying that region into the child's address space.
+
+<p>
+Setting up the new program's stack and copying the command-line arguments to it
+follows the same pattern.
+Since the new program's stack will reside at virtual addresses
+that are probably the same as those
+currently occupied by <i>our</i> stack in the current program,
+and our stack is still very much in use,
+we have to set up the new stack at another virtual address
+in our address space
+and then copy it to the correct location in the address space
+of child 0.
+The code we've provided again uses the area
+from <tt>VM_SCRATCHLO</tt> to <tt>VM_SCRATCHLO+PTSIZE</tt>
+for this purpose,
+setting up a 4MB stack
+to reside from <tt>VM_STACKHI-PTSIZE</tt> to <tt>VM_STACKHI</tt>
+in the new program's address space.
+
+<div class="required">
+<p><span class="header">Exercise 12.</span>
+	Modify <tt>exec_copyargs()</tt> in <tt>lib/exec.c</tt>
+	to copy the <tt>argv</tt> array, and the strings it points to,
+	onto the new stack to be used by the executed program.
+	Be very careful with your pointer arithmetic:
+	you'll need to create a logical copy of the <tt>argv</tt> array,
+	which is an array of pointers (to strings) in the current program,
+	into an array of programs
+	that the <i>new</i> program will be able to follow
+	within its own, <i>new</i> address space.
+	This means you'll have to compute the values
+	of all pointers you write into the new program's stack
+	so that they'll be valid in the stack's <i>final</i> location
+	from <tt>VM_STACKHI-PTSIZE</tt> to <tt>VM_STACKHI</tt>,
+	rather than at its <i>temporary</i> location
+	from <tt>VM_SCRATCHLO</tt> to <tt>VM_SCRATCHLO+PTSIZE</tt>.
+
+	<p>
+	The <tt>execcheck()</tt> function in <tt>user/testfs</tt>
+	should now be able to fork a child process
+	and have that child process execute the simple <tt>echo</tt> program,
+	which simply echoes its command-line arguments to the console.
+	The <tt>-c</tt> parameter
+	that <tt>execcheck()</tt> passes to <tt>echo</tt>
+	instructs <tt>echo</tt> to use
+	the "debugging console" output function <tt>cnprintf()</tt>
+	instead of the general-purpose <tt>printf()</tt> function,
+	which will not be fully functional until part 4 of this lab.
+</p></div>
+
+
+<h2>Part 4: File System Reconciliation</h2>
+
+Now that the root process can interact with the "external world"
+through the special console I/O files in its file system,
+we just need to add the ability for other processes
+to interact with the external world &mdash; and each other &mdash;
+by reconciling changes to their file systems at synchronization points.
+
+<p>
+The problem maintaining consistency among multiple replicas
+of a file system or other state repository
+is a well-studied topic in distributed systems:
+see, for example, <a href="../bib/parker83detection.pdf">
+Parker et al.,
+<i>Detection of Mutual Inconsistency in Distributed Systems</i></a>.
+Since each PIOS process maintains its own copy or "replica"
+of a Unix-like file system within the process's own virtual address space,
+this collection of PIOS processes is in some ways
+more similar to a distributed file system replicated across several machines
+than to the standard, single-machine file systems we find in Linux or xv6.
+In particular,
+for synchronizing and propagating file system changes among processes,
+PIOS will use a simplified analog
+of the <i>version vector</i> technique presented in the above paper,
+so the first thing you should do is read and familiarize yourself
+with this paper if you haven't already.
+
+<h3>File Versioning</h3>
+
+When we wish to allow two or more separate entities
+(PIOS processes in our case)
+to maintain separate replicas of an object such as a file
+and be able to read and modify them independently and concurrently,
+it is crucial to be able to tell the difference between:
+
+<ol>
+<li>	Changes to the file that occured <i>before</i> it was replicated,
+	or before the two processes last reconciled their changes.
+<li>	Changes that process A made to the file
+	<i>after</i> it was replicated or last reconciled,
+	independently of process B.
+<li>	Changes that process B made to the file
+	<i>after</i> it was replicated or last reconciled,
+	independently of process A.
+</ol>
+
+<p>
+Suppose for example that process A creates two files,
+<tt>foo</tt> and <tt>bar</tt>,
+then forks a child process B,
+which inherits copies of both <tt>foo</tt> and <tt>bar</tt>.
+Now suppose process A modifies <tt>foo</tt>
+(but leaves <tt>bar</tt> untouched),
+while process B independently modifies <tt>bar</tt>
+(while leaving <tt>foo</tt> untouched).
+Finally, process B terminates,
+and A synchronizes with B via <tt>waitpid()</tt>.
+Besides just collecting B's exit status,
+A also needs to obtain whatever changes B made to its copy of the file system:
+for example, B might be a compiler
+and <tt>bar</tt> may be an ELF executable it produced.
+But at the time of the <tt>waitpid()</tt>,
+A and B each have files named <tt>foo</tt> and <tt>bar</tt>,
+A's <tt>foo</tt> is different from B's <tt>foo</tt>, and
+A's <tt>bar</tt> is different from B's <tt>bar</tt>.
+A needs to end up with only one copy each of <tt>foo</tt> and <tt>bar</tt>;
+but how does A know which is the <i>right</i> one.
+The standard answer is to track file <i>versions</i>.
+
+<p>
+As part of the <tt>fileino</tt> metadata for each file,
+we maintain a <i>version number</i> in the <tt>fileino.ver</tt> member.
+A file's version number starts at zero when the file is first created,
+and then incremented by 1 each time the file is modified in some way,
+such as by writing to the file.
+Whenever some process A forks a child B,
+the child copies the file's version number at the time of fork
+into its <i>reference version number</i> field, <tt>fileino.rver</tt>.
+The parent and child then continue running normally,
+incrementing the inode's version number field if and when they modify the file.
+Later, when the time comes to reconcile A's and B's file systems
+(because B terminates, wishes to perform I/O, etc.),
+A checks <i>both</i> the parent's and child's "latest" inode version numbers
+against the child's reference version number
+to see what happened to the file, if anything, since the last reconciliation.
+There are essentially four cases:
+
+<ol>
+<li>	Neither the parent nor the child modified the file
+	since the last reconciliation,
+	in which case both the parent's and child's current version numbers
+	are equal to the child's reference version number.
+<li>	The parent modified the file but the child did not,
+	in which case the parent's version number
+	is greater than the child's reference version number,
+	but the child's current version number is equal to the reference.
+<li>	The child modified the file but the parent did not,
+	in which case the parent's version number
+	is equal to the child's reference version number,
+	but the child's current version number is greater than the reference.
+<li>	Both the parent and child modified the file,
+	in which case both the parent's and the child's
+	current version numbers
+	are greater than the child's reference version number.
+</ol>
+
+<p>
+Why do we store the reference version number in the child and not the parent?
+Because the parent can synchronize with many children,
+whereas the child can synchronize with only one parent:
+by storing the reference version number in the child,
+we only need one reference version number field.
+If we stored the reference version numbers in the parent,
+then the parent would need one reference version number for each child,
+since different children may have been forked off or last reconciled
+at different points in the parent's execution.
+In general, when one process can synchronize with many other processes,
+a reference version stamp is needed for each <i>synchronizing pair</i>.
+This is why for distributed systems replication problem
+in which any node can potentially synchronize with any other,
+as in the LOCUS system described in the paper referenced above,
+each node requires a reference <i>version vector</i>
+and not just one reference version number.
+
+<h3>Reconciliation and Conflicts</h3>
+
+When process A is reconciling its file system with child B,
+it is fairly clear what it should do in cases 1-3 above,
+but case 4 introduces the possibility of a <i>conflict</i>.
+To lay out the appropriate actions in each case explicitly:
+
+<ol>
+<li>	If neither parent or child modify the file,
+	the parent need do nothing on reconciliation.
+<li>	If only the parent modified the file,
+	then the parent copies its most recent version into the child,
+	overwriting the child's older version.
+<li>	If only the child modified the file,
+	the parent copies the child's new version of the file into itself,
+	overwriting the parent's older version.
+<li>	If both the parent and child modified the file,
+	then a <i>conflict</i> occurs
+	and automatic reconciliation may not be possible.
+</ol>
+
+The risk of conflicts is a fundamental property
+of replicated systems that allow concurrent, independent writes
+to the same object:
+it is the price of true parallel independence, so to speak.
+Fortunately, it is often easy to avoid conflicts in practice,
+either manually &mdash;
+e.g., by editing a given file only via the machine (or PIOS process)
+you know to hold the most recent or "definitive" version &mdash;
+or by designing parallel software systems
+so that cooperating processes do not attempt to modify
+the same file in parallel.
+
+<p>
+PIOS leaves it largely to the user or application developer
+to avoid conflicting parallel writes to the same file,
+and provides only a simple <i>conflict detection</i> mechanism.
+Whenever PIOS detects a conflict on a particular file during reconciliation,
+instead of actually reconciling the two versions of the file,
+it simply sets a special, PIOS-specific flag bit,
+<tt>S_IFCONF</tt> ("conflicted"),
+in <i>both</i> conflicting versions of the file
+(i.e., in both the parent's and child's inode for the file).
+When a file is marked conflicted,
+<tt>filedesc_open()</tt> will subsequently refuse to open the file,
+returning an error instead,
+in order to provide an indication of the conflict to the user or application
+instead of simply allowing things to proceed using an inconsistent,
+potentially corrupt version of the file.
+The user can "resolve" the conflict simply by deleting the file,
+or by explicitly clearing the <tt>S_IFCONF</tt> bit of the file's mode
+(via a <tt>chmod</tt> function that doesn't exist yet
+but should be easy to add).
+
+<div class="required">
+<p><span class="header">Exercise 13.</span>
+	Carefully study the reconciliation code we have provided
+	in <tt>waitpid()</tt>, <tt>reconcile()</tt>,
+	and the skeleton function <tt>reconcile_inode()</tt>
+	and make sure you understand how it works.
+	The <tt>reconcile()</tt> function
+	is the main "driver" for reconciling two processes:
+	it scans through both the parent's and child's inode tables,
+	matching up corresponding inodes,
+	and when a new inode has appeared in one
+	that doesn't yet exist in the other,
+	it creates the missing inode to complete the pair.
+	It then calls <tt>reconcile_inode()</tt>
+	on each matched pair of inodes,
+	to compare and reconcile the contents of those inodes.
+
+	<p>
+	Complete the implementation of <tt>reconcile_inode</tt>
+	according to the reconciliation rules above,
+	overwriting the old version of the file with the newer
+	when only one process has modified the file since the reference point,
+	or marking both files conflicted if both have been modified.
+	Once you have this functionality working,
+	<tt>reconcilecheck()</tt> in <tt>user/testfs</tt>
+	should print '<tt>basic file reconciliation successful</tt>'.
+</p></div>
+
+<h3>Append-Only Writes and Automatic Merging</h3>
+
+<p>
+Not all concurrent modifications to the same object
+always necessarily need to constitute a conflict:
+sometimes there is a sensible way
+to <i>merge</i> multiple independent modifications to the same object,
+so that no true conflict occurs.
+For example, if a file contains an address book,
+the reconciliation mechanism knows the format of this address book,
+and two nodes or processes concurrently modify
+different "cards" in the same address book &mdash;
+or even different fields in the same card
+(e.g., phone number and E-mail address) &mdash;
+then it should be possible to merge those changes automatically
+without complaining to the user that anything bad happened.
+The <a href="../bib/terry95managing.pdf">Bayou</a> storage system
+pioneered the development of mechanisms
+for automatic reconciliation mechanisms of this variety.
+
+<p>
+In PIOS, fortunately,
+there is only one relatively straightforward class of concurrent writes
+that we care about reconciling automatically:
+namely, writes made by processes
+when they are attempting to print to standard output.
+These standard output writes generally go
+either to the special console output file, <tt>consout</tt>,
+for display to the user,
+or get written in append mode (<tt>O_APPEND</tt>)
+to some other text file if the user redirects a program's output.
+In either case, the important point
+is that these writes are <i>append-only</i>:
+they only add to the end of the file and never modify anything already written.
+
+<p>
+The traditional Unix semantics for console output or log files
+is that multiple processes may concurrently write to the same output file,
+and when they do,
+all of the processes' writes get intermingled in the output file
+in some arbitrary order dependent on the processes' execution times.
+If PIOS were to provide 
+only the basic file-granularity reconciliation mechanism above,
+however,
+then in the common situation in which multiple processes
+write to the same standard output file,
+that standard output file would <i>always</i> become conflicted:
+an especially bad result if that common output file
+happens to be <tt>consout</tt>.
+Therefore, we need to enhance PIOS to handle
+this case of concurrent append-only writes more gracefully.
+
+<p>
+The solution we adopt is to classify file modifications
+into two categories:
+<i>inclusive</i> and <i>exclusive</i>.
+Append-only writes via file descriptors opened with <tt>O_APPEND</tt>
+are inclusive changes;
+all other writes, as well as other modifications
+such as file truncation or deletion,
+are exclusive changes.
+Only exclusive changes cause the file's version number to increase:
+inclusive, append-only writes cause only the file's <i>length</i> to increase.
+Concurrent writes by two processes (e.g., parent and child)
+conflict if and only if at least one of those writes is exclusive.
+If all writes by both processes are inclusive,
+then only the additional <i>file content</i> written by each process
+gets merged into the other process's copy of the file.
+Merging content in this way requires that we save
+not only a <i>reference version number</i>, <tt>fileinfo.rver</tt>,
+but also a <i>reference file length</i>, <tt>fileinfo.rlen</tt>,
+when forking a child and at each reconciliation point,
+so that we know how much of the original file was common
+to both parent and child at reconciliation time.
+
+<p>
+Suppose for example that process A
+appends '<tt>X</tt>' to standard output, then forks process B.
+B's reference length (<tt>rlen</tt>) for standard output will be 1,
+since standard output contains only the one character '<tt>X</tt>'
+at this point.
+Process A now appends '<tt>Y</tt>'
+while process B concurrently appends '<tt>Z</tt>'
+to the same file.
+Processes A and B now synchronize and reconcile their changes.
+At this point, process A's copy of the standard output file
+contains '<tt>XY</tt>',
+while process B's copy contains '<tt>XZ</tt>'.
+We reconcile these two files
+by appending A's writes since the last reconciliation
+(i.e., since it forked B) &mdash;
+namely '<tt>Y</tt>' &mdash;
+to the end of B's file,
+and we append B's writes since the last reconciliation &mdash;
+namely '<tt>Z</tt>' &mdash;
+to the end of A's file.
+A's and B's output files are now the same length
+and contain the same collection of appends,
+although in a different order:
+A's output file contains '<tt>XYZ</tt>'
+while B's contains '<tt>XZY</tt>'.
+
+<p>
+Thus, like Unix, PIOS ensures that all concurrent writes
+will eventually get aggregated into a common output file in <i>some</i> order;
+but unlike Unix, PIOS doesn't guarantee
+that this will be a single, <i>total order</i> 
+agreed upon by all processes in the system.
+This loss of total ordering
+is not a problem for common "output logging" scenarios &mdash;
+especially if the child process terminates immediately after reconciling
+and hence its version of the reconciled file is never seen by anyone &mdash;
+but loss of total ordering could be an issue for some applications
+and might require applications to be redesigned to run on PIOS
+(or PIOS to be redesigned to provide total ordering).
+
+<div class="required">
+<p><span class="header">Exercise 14.</span>
+	Modify <tt>reconcile_inode()</tt>
+	to call <tt>reconcile_merge()</tt> in the special case
+	when only inclusive changes (appends) occurred in both processes.
+	Also, ensure that your conflict detection code
+	detects and correctly handles the case in which
+	one process makes an exclusive change (e.g., non-append write)
+	and the other process makes an inclusive change (append-only write),
+	which constitutes a true conflict.
+	<p>
+
+	Then fill out the implementation of <tt>reconcile_merge()</tt>,
+	according to the semantics described above
+	and the hints provided in the comments in the source file.
+	Once you have this working,
+	you should be able to get all the way through <tt>reconcilecheck</tt>,
+	and see the console output that <tt>reconcilecheck</tt>
+	and the <tt>echo</tt> command it forks off
+	write concurrently to the <tt>consout</tt> file before reconciling.
+</p></div>
+
+<p>
+After <tt>user/testfs</tt> completes,
+it launches a simple Unix-like shell we provided,
+which you should be able to use interactively to enter commands
+like <tt>ls</tt>, <tt>echo</tt>, <tt>cat</tt>, and <tt>wc</tt>.
+The shell supports basic input and output redirection,
+and you can launch sub-shells with input redirected from a script file
+and/or output redirected to a log file.
+Have fun, and feel free to improve the shell further!
+
+<p>
+<b>This completes the lab.</b>
+
+
+</body>
+</html>
+
+
+
+
+Challenge problem ideas:
+- implement a garbage collection or ring buffering mechanism for console I/O.
+- implement symlinks
+- implement large files by storing file contents in child processes
+- implement proper Unix fd sharing semantics for dup'd descriptors
+- keep file inodes and data areas permission-free
+	except during file/process operations,
+	preventing app from accidentally corrupting it with wild writes.
+- implement ownership and permissions:
+	make a parent process refuse to provide data
+	for an inode to a child with the wrong user id,
+	and refuse to accept data from a child whose user id
+	should not have write access to that file.
+

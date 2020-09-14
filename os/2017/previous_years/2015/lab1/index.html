@@ -1,0 +1,1444 @@
+<html>
+<head>
+<title>CSL373 Lab 1: PC Initializing PC Hardware</title>
+<link rel="stylesheet" href="../labs.css" type="text/css" />
+</head>
+<body>
+<h1>CSL373 Lab 1: Initializing PC Hardware</h1>
+<!--<p>
+<b>Handed out Thursday, January 10, 2013<br />
+	Due Monday, February 4, 2013</b>-->
+<p>
+<i>PIOS lab materials have been taken from Bryan Ford's CS422 at Yale University.</i>
+</p>
+
+<p><b>This lab is to be done individually.</b></p>
+
+<h2>Introduction</h2>
+<p>
+In this lab,
+you will start building a kernel called PIOS,
+for <i>Parallel Instructional Operating System</i>.
+PIOS uses some of the same source code as xv6,
+and is also derived from JOS,
+the <a href="http://pdos.csail.mit.edu/6.828/2009/overview.html"
+	>6.828 kernel</a>,
+but is structured quite differently from either xv6 or JOS.
+Like xv6, PIOS supports multiprocessor and multicore systems.
+While xv6 closely follows a classic Unix design
+and JOS follows an <a href="../ref/engler95exokernel.pdf">exokernel</a> philosophy,
+PIOS combines concepts from classic microkernels
+like <a href="../bib/liedtke95micro.pdf">L4</a>
+with new ideas inspired by the growing need
+to support large-scale parallelism on modern computers.
+You will learn more about the design of PIOS gradually
+as you work through this course.
+
+<p>
+This first lab focuses on getting a skeleton PIOS kernel up and running
+to a point where it provides
+a basic, functional kernel development environment.
+The lab contains four parts:
+<ol>
+<li>	Making the kernel produce useful output:
+	i.e., printing to the console.
+	Most of this somewhat boring I/O code is done for you;
+	you will just have to fill in a couple short missing pieces.
+
+<li>	Setting up the processor so that any traps the kernel causes,
+	such as an illegal instruction or memory accesses
+	(usually indicating a bug in the kernel)
+	will be caught by the kernel and yield a useful "panic" message
+	instead of just causing the machine to reboot mysteriously.
+
+<li>	Implement <i>protected control transfer</i>,
+	enabling the kernel to run application code in a less privileged mode
+	and safely recover control when the application makes a system call
+	or a trap occurs during its execution.
+
+<li>	Determining the amount of physical memory available
+	and implementing a dynamic memory allocator for it,
+	so that code in future labs will be able to allocate and free memory.
+</ol>
+
+<h3>Software Setup</h3>
+The files you will need for this and subsequent lab assignments in this course
+are distributed using the <a href=http://git-scm.org>Git</a> version control system.
+To learn more about Git, take
+a look at the Git
+<a href=http://www.kernel.org/pub/software/scm/git/docs/gittutorial.html>tutorial</a>
+and
+<a href=http://www.kernel.org/pub/software/scm/git/docs/user-manual.html>user's manual</a>.
+Or if you are already familiar with other version control systems, you may find this
+<a href=http://eagain.net/articles/git-for-computer-scientists/>CS-oriented overview of Git</a> useful.
+
+The Git repository is in <code>/misc/research/teaching/sbansal/csl373/pios.git</code>
+on the GCL machines. To install the files in your own account, you need to
+clone the sourse repository, like this:
+<pre>
+$ git clone /misc/research/teaching/sbansal/csl373/pios.git lab
+Initialized empty Git repository in .../lab/.git/
+$ cd lab
+$ 
+</pre>
+
+If you want to clone the repository remotely onto a non-GCL machine, you can do so
+over ssh by using
+<code>ssh://username@palasi.cse.iitd.ernet.in/misc/research/teaching/sbansal/csl373/pios.git</code>
+as the
+source pathname.
+
+Git allows you to keep track of the changes you make to the code. For example, if you are finished with one of the exercises, and want to checkpoint your progress, you can commit your changes by running:
+
+<pre>
+$ git commit -am 'my solution for lab1 exercise9'
+Created commit 60d2135: my solution for lab1 exercise9
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+$ 
+</pre>
+
+You can keep track of your changes by using the <code>git diff</code> command. Running
+<code>git diff</code> will display the changes to your code since your last commit,
+and <code>git diff origin/lab1</code> will display the changes relative to the
+initial code supplied for this lab. Here, origin/lab1 is the name of the git branch
+with the initial code you downloaded from our server for this assignment.
+
+The same compilers and simulators you are already using to explore xv6 will
+work for the labs. If you are working on a non-GCL machine, the
+<a href=../tools.html>tools</a> page has directions on how to set up qemu and gcc
+for use with this course.
+
+Once you have the Git repository cloned in your account, you can build the
+PIOS skeleton by typing <code>make</code>, and you can run or debug it
+under QEMU by typing
+<code>make qemu</code> or <code>make qemu-gdb</code>, respectively, just as with
+xv6. The skeleton won't get very far, of course: it will quickly panic in
+one of the functions you will need to implement.
+
+<h3>Inline Assembly</h3>
+
+<p>
+In this lab you may find GCC's inline assembly language feature useful,
+although it is also possible to complete the lab without using it.
+At the very least, you will need to be able to understand
+the fragments of inline assembly language ("asm" statements)
+that already exist in the source code we gave you.
+You can find several sources of information
+on GCC inline assembly language
+on the <a href="../reference.html">reference</a> page.
+</p>
+
+<h3>Hand-In Procedure</h3>
+<p>
+On palasi,
+you should type <code>os-submit-lab1</code> from within the top-level PIOS lab
+directory  to submit your assignment.
+
+<p>
+You do not need to turn in answers
+to any of the questions in the text of the lab.
+(Do answer them for yourself though!  They will help with the rest of the lab.)
+
+<p>
+We will be grading your solutions with a grading program.
+You can run <kbd>make grade</kbd>
+to test your solutions with the grading program.
+
+<h2>Part 1: Printing to the Console</h2>
+
+<p>
+We will now start to examine the minimal PIOS kernel in a bit more detail.
+PIOS uses essentially the same boot loader code as xv6,
+which you examined in the lecture homeworks, so we will skip that part.
+Once the boot loader loads the kernel's ELF image,
+it jumps to the kernel entrypoint,
+namely the <code>start</code> label in <tt>kern/entry.S</tt>.
+This assembly language entrypoint code
+just performs basic initialization
+and then calls the C function <code>init()</code> in <tt>kern/init.c</tt>.
+After zeroing out the kernel's uninitialized data area
+(which is expected by C program loading conventions
+but the boot loader didn't bother to do when it was loading the kernel),
+the first thing the kernel does is initialize the console device driver
+so that your kernel can produce visible output.
+</p>
+
+<h3>Formatted Printing to the Console</h3>
+
+<p>
+Most people take functions like <tt>printf()</tt> for granted,
+sometimes even thinking of them as "primitives" of the C language.
+But in an OS kernel, we have to implement all I/O ourselves.
+</p>
+
+<p>
+Read through <tt>kern/console.c</tt>, <tt>lib/printfmt.c</tt>,
+<tt>dev/kbd.c</tt>, and <tt>dev/video.c</tt>,
+and make sure you understand their relationship.
+It will become clear in later labs why <tt>printfmt.c</tt>
+is located in the separate <tt>lib</tt> directory.
+</p>
+
+<div class="required">
+<p><span class="header">Exercise 1.</span>
+	We have omitted a small fragment of code -
+	the code necessary to print octal numbers
+	using patterns of the form "%o".
+	Find and fill in this code fragment.
+</p></div>
+
+<p>
+Be able to answer the following questions:
+</p>
+
+<ol>
+<li> Explain the interface
+between <tt>vcprintf()</tt> in <tt>kern/console.c</tt>
+and <tt>vprintfmt()</tt> in <tt>lib/printfmt.c</tt>.
+Specifically, how does <tt>vcprintf()</tt> tell <tt>vprintfmt()</tt>
+how to display a character?
+
+<li> Explain the following from <tt>video.c</tt>:
+<pre>
+1      if (crt_pos &gt;= CRT_SIZE) {
+2              int i;
+3              memcpy(crt_buf, crt_buf + CRT_COLS,
+4			(CRT_SIZE - CRT_COLS) * sizeof(uint16_t));
+5              for (i = CRT_SIZE - CRT_COLS; i &lt; CRT_SIZE; i++)
+6                      crt_buf[i] = 0x0700 | ' ';
+7              crt_pos -= CRT_COLS;
+8      }
+</pre></li>
+
+<li> For the following questions you might wish to consult
+the notes for Lecture 2.
+These notes cover GCC's calling convention on the x86.
+
+<p>
+Trace the execution of the following code step-by-step:
+</p>
+<pre>
+int x = 1, y = 3, z = 4;
+cprintf("x %d, y %x, z %d\n", x, y, z);
+</pre>
+<ul>
+<li>	In the call to <code>cprintf()</code>,
+	to what does <code>fmt</code> point?
+	To what does <code>ap</code> point?</li>
+
+<li> List (in order of execution) each call to
+<code>cons_putc</code>, <code>va_arg</code>, and <code>vcprintf</code>.
+For <code>cons_putc</code>, list its argument as well.  For
+<code>va_arg</code>, list what <code>ap</code> points to before and
+after the call.  For <code>vcprintf</code> list the values of its
+two arguments.</li>
+
+</ul></li>
+<li> Run the following code.
+<pre>
+    unsigned int i = 0x00646c72;
+    cprintf("H%x Wo%s", 57616, &amp;i);
+</pre>
+
+What is the output?  Explain how this output is arrived at in the
+step-by-step manner of the previous exercise.
+<a href="http://web.cs.mun.ca/~michael/c/ascii-table.html">Here's an ASCII
+  table</a> that maps bytes to characters.
+
+<p>The output depends on that fact that the x86 is little-endian.  If
+the x86 were instead big-endian what would you set <code>i</code> to in
+order to yield the same output?  Would you need to change
+<code>57616</code> to a different value?</p>
+
+<p>
+<a href="http://www.webopedia.com/TERM/b/big_endian.html">Here's
+a description of little- and big-endian</a>
+and
+<a href="http://www.networksorcery.com/enp/ien/ien137.txt">a more
+whimsical description</a>.
+</p>
+</li>
+
+<li>
+In the following code, what is going to be printed after
+<code>'y='</code>?  (note: the answer is not a specific value.)  Why
+does this happen?
+
+<pre>
+    cprintf("x=%d y=%d", 3);
+</pre>
+</li>
+
+<li>
+Let's say that GCC changed its calling convention so that it
+pushed arguments on the stack in declaration order,
+so that the last argument is pushed last.
+How would you have to change <code>cprintf</code> or its
+interface so that it would still be possible to pass it a variable
+number of arguments?
+</li>
+</ol>
+
+<div class="challenge">
+<p><span class="header">Challenge</span>
+	Enhance the console to allow text to be printed in different colors.
+	The traditional way to do this is to make it interpret
+	<a href="http://www.dee.ufcg.edu.br/~rrbrandt/tools/ansi.html">
+	ANSI escape sequences</a>
+	embedded in the text strings printed to the console,
+	but you may use any mechanism you like.
+	There is plenty of information on
+	<a href="../reference.html">the reference page</a>
+	and elsewhere on the web on programming the VGA display hardware.
+	If you're feeling really adventurous,
+	you could try switching the VGA hardware into a graphics mode
+	and making the console draw text onto the graphical frame buffer.
+</p></div>
+
+
+<h3>The Stack</h3>
+
+<p>
+We will now explore in more detail
+the way the C language uses the stack on the x86,
+and in the process write a useful function
+that computes a <i>backtrace</i> of the stack:
+a list of the saved Instruction Pointer (IP) values
+from the nested <tt>call</tt> instructions that
+led to the current point of execution.
+</p>
+
+<div class="required">
+<p><span class="header">Exercise 2.</span>
+	Determine where the kernel initializes its stack,
+	and exactly where in memory its stack is located.
+	How does the kernel reserve space for its stack?
+	And at which "end" of this reserved area
+	is the stack pointer initialized to point to?
+</p></div>
+
+<p>
+The x86 stack pointer (<tt>esp</tt> register)
+points to the lowest location on the stack that is
+currently in use.
+Everything <i>below</i> that location in the region reserved for the stack
+is free.
+Pushing a value onto the stack involves decreasing the stack
+pointer and then writing the value to the place the stack pointer
+points to.
+Popping a value from the stack involves reading the value
+the stack pointer points to and then increasing the stack pointer.
+In 32-bit mode, the stack can only hold 32-bit values,
+and esp is always divisible by four.
+Various x86 instructions, such as <tt>call</tt>,
+are "hard-wired" to use the stack pointer register.
+</p>
+
+<p>
+The <tt>ebp</tt> (base pointer) register, in contrast,
+is associated with the stack primarily by software convention.
+On entry to a C function,
+the function's <i>prologue</i> code normally
+saves the previous function's base pointer by pushing it onto the stack,
+and then copies the current <tt>esp</tt> value into <tt>ebp</tt>
+for the duration of the function.
+If all the functions in a program obey this convention,
+then at any given point during the program's execution,
+it is possible to trace back through the stack
+by following the chain of saved <tt>ebp</tt> pointers
+and determining exactly what nested sequence of function calls
+caused this particular point in the program to be reached.
+This capability can be particularly useful, for example,
+when a particular function causes an <tt>assert</tt> failure or <tt>panic</tt>
+because bad arguments were passed to it,
+but you aren't sure <i>who</i> passed the bad arguments.
+A stack backtrace lets you find the offending function.
+</p>
+
+<div class="required">
+<p><span class="header">Exercise 3.</span>
+	To become familiar with the C calling conventions on the x86,
+	set a breakpoint at <code>debug_trace</code>
+	in <tt>kern/debug.c</tt>,
+	and examine the state of the stack at the point it gets called.
+	Get GDB to give you a backtrace via the <kbd>bt</kbd> command,
+	compare GDB's backtrace with the "raw" contents of the stack,
+	and make sure you understand how GDB got that backtrace.
+	How many 32-bit words does each nested function push on the stack,
+	and what are those words?</p>
+</p></div>
+
+<p>
+The above exercise should give you the information you need
+to implement <tt>debug_trace()</tt>,
+which collects into an array the EIPs from
+up to <code>DEBUG_TRACEFRAMES</code> (10) stack frames
+starting at the EBP specified in the argument.
+This function will be used in multiple ways in the kernel,
+helping to provide meaningful context information for debugging
+when something goes seriously wrong with the system.
+</p>
+
+<p>
+Note that if there are fewer than 10 frames on the stack,
+<code>debug_trace</code> should set the rest of the EIPs to NULL.
+By studying <tt>kern/entry.S</tt>
+you'll find that there is an easy way to tell when to stop.
+</p>
+
+<p>
+Besides collecting the EIPs in the array passed by the caller,
+you may find it useful (at least for the moment)
+to make <code>debug_trace</code> print not only the EIP from each frame
+but the frame pointer itself and a few of each function's arguments.
+For example:
+</p>
+
+<pre>
+Stack backtrace:
+  ebp f0109e58  eip f0100a62  args 00000001 f0109e80 f0109e98 f0100ed2 00000031
+  ebp f0109ed8  eip f01000d6  args 00000000 00000000 f0100058 f0109f28 00000061
+  ...
+</pre>
+
+<p>
+Within each line of this example,
+the <tt>ebp</tt> value indicates the base pointer into the stack
+used by that function:
+i.e., the position of the stack pointer just after the function was entered
+and the function prologue code set up the base pointer.
+The listed <tt>eip</tt> value
+is the function's return instruction pointer,
+where control will return when the function returns.
+The return instruction pointer typically points to the instruction
+after the <tt>call</tt> instruction (why?).
+Finally, the five hex values listed after <tt>args</tt>
+are the first five arguments to the function in question,
+which would have been pushed on the stack just before the function was called.
+If the function was called with fewer than five arguments, of course,
+then not all five of these values will be useful.
+(Why can't the backtrace code detect how many arguments there actually are?
+How could this limitation be fixed?)
+</p>
+
+<p>
+Here are a few specific points you read about in K&amp;R Chapter 5 that are
+worth remembering for the following exercise and for future labs.
+</p>
+<ul>
+<li>If <code>int *p = (int*)100</code>, then 
+    <code>(int)p + 1</code> and <code>(int)(p + 1)</code>
+    are different numbers: the first is <code>101</code> but
+    the second is <code>104</code>.
+    When adding an integer to a pointer, as in the second case,
+    the integer is implicitly multiplied by the size of the object
+    the pointer points to.</li>
+<li><code>p[i]</code> is defined to be the same as <code>*(p+i)</code>,
+referring to the i'th object in the memory pointed to by p.
+The above rule for addition helps this definition work
+when the objects are larger than one byte.</li>
+<li> <code>&amp;p[i]</code> is the same as <code>(p+i)</code>, yielding
+the address of the i'th object in the memory pointed to by p.</li>
+</ul>
+<p>
+Although most C programs never need to cast between pointers and integers,
+operating systems frequently do.
+Whenever you see an addition involving a memory address,
+ask yourself whether it is an integer addition or pointer addition
+and make sure the value being added is appropriately multiplied
+or not.
+</p>
+
+<div class="required">
+<p><span class="header">Exercise 4.</span>
+	Implement the <code>debug_trace</code> function as specified above.
+	When you think you have it working right,
+	run <kbd>make grade</kbd> to see if the checking code agrees,
+	and fix it if it doesn't.
+</p></div>
+
+
+<h2>Part 2: Trap Handling</h2>
+
+<p>
+One of the most important functions of any OS kernel
+is to handle processor traps that occur during execution
+of either its own code or application code.
+For this part of the lab,
+the first thing you should do
+is thoroughly familiarize yourself with
+the x86 interrupt and exception mechanism.
+</p>
+
+<div class="required">
+<p><span class="header">Exercise 5.</span>
+	Read Chapter 5, Interrupt and Exception Handling,
+	in the
+	<a href="../ref/ia32-3.pdf">IA-32 System Programming Guide</a>,
+	if you haven't already.
+</p></div>
+
+<p>
+There are many types and classifications of traps,
+and the terminology used to describe them
+is unfortunately have no fully standard meanings,
+even within a single processor architecture such as the x86.
+We will distinguish between two main classes of traps:
+<i>exceptions</i> such as illegal instruction or divide by zero,
+whose cause is directly related to the code the processor is running;
+and <i>interrupts</i>,
+which are generated asynchronously by external I/O devices or other CPUs
+and whose cause may have nothing to do with the code
+that happens to be running at the time the interrupt arrives.
+We will generally use the term <i>trap</i> as a generic term
+referring to both exceptions and interrupts,
+but note that the Intel manuals uses the term differently,
+to refer to a specific subcategory of exceptions.
+When you see these terms outside of this lab,
+the meanings may differ further.
+
+<p>
+This part of the lab focuses on
+handling traps that occur while the processor is running
+in the x86 processor's most privileged mode, ring 0,
+which by convention we call "kernel mode".
+The next part of the lab will
+use traps to implement <i>protected control transfer</i>,
+allowing the kernel to enter user mode (ring 3)
+and later recover control safely from traps that occur in user mode.
+
+<h3>Handling Kernel Traps</h3>
+
+Like any nontrivial software, most OS kernels have bugs -
+especially during development, but typically even after deployment.
+And kernels typically have no "guard-rails" to keep their bugs contained:
+an application bug typically only causes that application to crash
+because the kernel is there to protect applications from each other,
+but a kernel bug typically causes the whole machine to crash
+because there is no other software "under" the kernel
+protecting the kernel from itself.
+(The obvious exception is when running the kernel
+in a virtual machine of some kind, such as QEMU,
+where QEMU prevents guest kernel bugs from escaping the virtual machine.)
+
+<p>
+When a kernel bug does manifest itself,
+there is no guarantee anything can be done -
+the bug could have caused the system to go into practically any state,
+from which no recovery of any kind might be possible.
+But often the bug causes the processor to take a trap at some point,
+and it may be possible to recover from the bug
+at least enough to collect and output
+some potentially useful information about what happened.
+But the processor does not know how to generate a "kernel bug report":
+it only knows how to take a trap;
+the kernel itself must <i>handle</i> the trap and produce the bug report.
+We will now create a trap handler for PIOS
+to help catch and report on such bugs.
+(You will later extend this same trap handling mechanism
+to handle protected control transfer, virtual memory faults,
+and external device interrupts).
+
+<p>
+Every widespread operating system seems to develop
+an entire subculture surrounding its kernel trap handling mechanism:
+this is what
+a "<a href="http://en.wikipedia.org/wiki/Blue_Screen_of_Death"
+	>blue screen of death</a>" (Windows),
+a "<a href="http://en.wikipedia.org/wiki/Sad_Mac"
+	>Sad Mac</a>", or
+a "<a href="http://en.wikipedia.org/wiki/Guru_Meditation"
+	>guru meditation</a>" (Amiga) is.
+Now it's time to implement your own screen of death.
+
+<h3>The Interrupt Descriptor Table</h3>
+
+<p>
+The x86 processor uses a table known as the
+<i>interrupt descriptor table</i> (IDT)
+to determine how to transfer control when a trap occurs.
+The x86 allows up to 256 different
+interrupt or exception entry points into the kernel,
+each with a different <i>interrupt vector</i>.
+A vector is a number between 0 and 256.
+An interrupt's vector is determined by the
+source of the interrupt: different devices, error
+conditions, and application requests to the kernel
+generate interrupts with different vectors.
+The CPU uses the vector as an index
+into the processor's IDT,
+which the kernel sets up in kernel-private memory of the kernel's choosing,
+much like the GDT.
+From the appropriate entry in this table
+the processor loads:
+
+<ul>
+<li>	the value to load into
+	the instruction pointer (<tt>EIP</tt>) register,
+	pointing to the kernel code designated
+	to handle that type of exception.</li>
+<li>	the value to load into
+	the code segment (<tt>CS</tt>) register,
+	which includes in bits 0-1 the privilege level
+	at which the exception handler is to run.
+	In PIOS, all exceptions are handled in kernel mode,
+	privilege level 0.</li>
+</ul>
+
+<h3>Entering and Returning from Trap Handlers</h3>
+
+<p>
+When an x86 processor takes a trap while in kernel mode,
+it first pushes a <i>trap frame</i> onto the kernel stack,
+to save the old values of certain registers
+before the trap handling mechanism modifies them.
+The processor then
+looks up the CS and EIP of the trap handler in the IDT,
+and transfers control to that instruction address.
+The following diagram illustrates the format
+of the basic kernel trap frame,
+defining the state of the kernel stack on entry to the trap handler:
+</p>
+<pre>
+                     +--------------------+ &lt;---- old ESP
+                     |     old EFLAGS     |     " - 4
+                     | 0x00000 | old CS   |     " - 8
+                     |      old EIP       |     " - 12
+                     +--------------------+ &lt;---- ESP
+</pre>
+
+<p>
+For certain types of x86 exceptions,
+in addition to the basic three 32-bit words above,
+the processor pushes onto the stack another word
+containing an <i>error code</i>.
+The page fault exception, number 14,
+is an important example.
+See the x86 manuals to determine for which exception numbers
+the processor pushes an error code,
+and what the error code means in that case.
+When the processor pushes an error code,
+the stack would look as follows at the beginning of the trap handler:
+</p>
+
+	<pre>
+                     +--------------------+ &lt;---- old ESP
+                     |     old EFLAGS     |     " - 4
+                     | 0x00000 | old CS   |     " - 8
+                     |      old EIP       |     " - 12
+                     |     error code     |     " - 16
+                     +--------------------+ &lt;---- ESP
+	</pre>
+
+<p>
+The x86 processor provides a special instruction, <samp>iret</samp>,
+to return from trap handlers.
+It expects the kernel's stack to look like the <i>first</i> figure above,
+with ESP pointing to the old EIP.
+When the processor executes an <samp>iret</samp> instruction,
+pops the saved values of EIP, CS, and EFLAGS off the stack
+and back into the corresponding registers,
+and resumes instruction execution at the popped EIP.
+
+<p>
+Note that when returning from a trap,
+the processor doesn't actually know or care
+whether the "old" values it is popping off the stack
+are really the exact same values
+that it originally pushed onto the stack on entry to the trap handler.
+Think about what would happen - for better or worse -
+if the kernel trap handler
+changes these values during its execution.
+
+<h3>Nested Traps</h3>
+
+<p>
+Because the processor handles a trap
+by pushing the old EIP (and some other state) on the stack
+and then transferring control to a designated instruction address,
+trap handling in the x86 works very analogously to procedure calls,
+and like ordinary procedure calls, traps can be nested.
+That is, if the processor is already in the process of handling one trap,
+and the trap handler itself causes an exception
+or is interrupted by an external device,
+then the processor merely pushes another trap frame onto the stack
+and transfers control to the appropriate trap handler.
+The processor itself doesn't maintain any state
+reflecting the fact that the second trap handler is nested inside the first:
+as far as the processor is concerned it is simply pushing
+a standard frame onto the stack and transferring control in a standard way
+whenever a trap occurs.
+All of the state of both interrupted activities remains on the stack,
+and can later be "unwound" by returning from the two trap handlers
+in reverse order, again analogously to ordinary procedure returns.
+
+<p>
+Nested trap handling is often extremely important in kernel development,
+both for its utility and its danger:
+it is often highly useful to allow one trap handler
+to be interrupted by another,
+but <i>unintentional</i> nesting can cause extremely subtle and difficult bugs.
+There is also one important caveat
+to the processor's nested trap handling capability.
+If the processor takes a trap while already in kernel mode,
+and <i>cannot push its old state onto the kernel stack</i> for any reason
+such as lack of stack space,
+then there is nothing the processor can do to recover,
+so it simply resets itself.
+Needless to say, the kernel should be designed so that this can't happen.
+</p>
+
+<h3>Setting Up the IDT</h3>
+
+<p>
+You should now have the basic information you need
+in order to set up the IDT and handle exceptions in PIOS.
+For now, you will set up the IDT to handle 
+interrupt vectors 0-31 (the processor exceptions).
+</p>
+
+<p>
+The header files <tt>inc/trap.h</tt> and <tt>kern/trap.h</tt>
+contain important definitions
+that you will need to become familiar with.
+The file <tt>kern/trap.h</tt> contains definitions
+that are strictly private to the kernel,
+while <tt>inc/trap.h</tt>
+contains definitions that may also be useful
+to user-level programs and libraries.
+The skeleton source code for PIOS's trap handling mechanism
+is in <tt>kern/trap.c</tt> (the C part)
+and <tt>kern/trapasm.S</tt> (the assembly language part).
+</p>
+
+<p>
+Note:
+Some of the exceptions in the range 0-31 are defined by Intel to be
+reserved.
+Since they will never be generated by the processor,
+it doesn't really matter how you handle them.
+Do whatever you think is cleanest.
+</p>
+
+<p>
+The overall flow of control that you should achieve is depicted below: 
+</p>
+
+<pre>
+      IDT                   trapasm.S         trap.c
+   
++----------------+                        
+|   &amp;handler1    |---------> handler1:          trap (struct Trapframe *tf)
+|                |             // do stuff      {
+|                |             call trap          // handle the exception/interrupt
+|                |             // undo stuff    }
++----------------+
+|   &amp;handler2    |--------> handler2:
+|                |            // do stuff
+|                |            call trap
+|                |            // undo stuff
++----------------+
+       .
+       .
+       .
++----------------+
+|   &amp;handlerX    |--------> handlerX:
+|                |             // do stuff
+|                |             call trap
+|                |             // undo stuff
++----------------+
+</pre>
+
+<p>
+Each exception should have
+its own handler in <tt>trapasm.S</tt>
+and <code>trap_idt_init()</code> should initialize the IDT with the addresses
+of these handlers.
+Each of the handlers should build a <code>struct trapframe</code>
+(see <tt>inc/trap.h</tt>) on the stack and call 
+<code>trap()</code> (in <tt>trap.c</tt>)
+with a pointer to that trapframe.
+</p>
+
+<p>
+<code>trap()</code> handles the
+exception/interrupt or dispatches to a specific
+handler function.
+If and when <code>trap()</code> returns,
+the code in <tt>trapasm.S</tt>
+restores the old CPU state saved in the Trapframe
+and then uses the <code>iret</code> instruction
+to return from the exception.
+</p>
+
+<div class="required">
+<p><span class="header">Exercise 6.</span>
+	Edit <tt>trapasm.S</tt> and <tt>trap.c</tt> and
+	implement the features described above.  The macros
+	<code>TRAPHANDLER</code> and <code>TRAPHANDLER_NOEC</code> in
+	<tt>trapasm.S</tt> should help you, as well as the T_*
+	defines in <tt>inc/trap.h</tt>.  You will need to add an
+	entry point in <tt>trapasm.S</tt> (using those macros)
+	for each trap defined in <tt>inc/trap.h</tt>, and
+        you'll have to provide <code>_alltraps</code> which the
+        <code>TRAPHANDLER</code> macros refer to.  You will
+	also need to modify <code>trap_idt_init()</code> to initialize the
+	IDT to point to each of these entry points
+	defined in <tt>trapasm.S</tt>; the <code>SETGATE</code>
+        macro will be helpful here.
+	</p>
+
+	<p>
+	Hint: your <code>_alltraps</code> should:
+	</p>
+	<ol>
+	<li>push values to make the stack look like a struct trapframe</li>
+	<li>load <code>CPU_GDT_KDATA</code>
+	into <tt>%ds</tt> and <tt>%es</tt></li>
+	<li><code>pushl %esp</code>
+		to pass a pointer to the trapframe as an argument to trap()</li>
+	<li><code>call trap</code> (can <code>trap</code> ever return?)</li>
+	</ol>
+
+	<p>
+	Consider using the <code>pushal</code> and <code>popal</code>
+	instructions; they fit nicely with the layout of the <code>struct
+	trapframe</code>.
+	</p>
+
+	<p>
+	We have provided a function <tt>trap_check()</tt>
+	to test your trap handling code for a variety of traps
+	(though by no means all the exceptions the processor can generate).
+	Make sure it reports success:
+	You should be able to get <kbd>make grade</kbd>
+	to succeed on the trap handler test at this point.
+	</p>
+</div>
+
+<div class="challenge">
+<p><span class="header">Challenge!</span>
+	You probably have a lot of very similar-looking code
+	right now, between the lists of <code>TRAPHANDLER</code> in
+	<tt>trapasm.S</tt> and their installations in
+	<tt>trap.c</tt>.  Clean this up.  Change the macros in
+	<tt>trapasm.S</tt> to automatically generate a table for
+	<tt>trap.c</tt> to use.  Note that you can switch between
+	laying down code and data in the assembler by using the
+	directives <code>.text</code> and <code>.data</code>.
+</p></div>
+
+<h3>Returning from Traps</h3>
+
+<p>
+You will now need to implement the complement of the trap entry code:
+namely the code to return from a trap.
+
+<p>
+In many kernels, including xv6,
+the high-level trap handling code written in C returns from a trap
+simply by returning from the C procedure
+corresponding to PIOS's <tt>trap()</tt>.
+PIOS follows a different convention, however.
+You might notice the <tt>gcc_noreturn</tt> macro
+(see <tt>inc/gcc.h</tt>)
+in the definition of the <tt>trap()</tt> function,
+which declares that this function "never returns",
+at least as far as GCC is concerned.
+In PIOS, kernel code returns from a trap
+by performing <i>another call</i>,
+to the function <tt>trap_return()</tt>,
+which is also declared in <tt>trap.h</tt> never to return.
+See <tt>trap_check_recover()</tt> for an example of how it is used.
+Those familiar with programming language implementation
+will recognize this as <i>tail-call</i> style programming.
+
+<div class="required">
+<p><span class="header">Exercise 7.</span>
+
+	Implement the <tt>trap_return()</tt> function in <tt>trapasm.S</tt>.
+	(Alternatively, you may implement it in <tt>kern/trap.c</tt>
+	using inline assembly language if you prefer.)
+
+	The <tt>trap_return()</tt> function
+	takes a pointer to a <tt>trapframe</tt> structure as an argument,
+	and first "unwinds" the stack
+	to the point where that <tt>trapframe</tt> was pushed,
+	discarding any information that has been pushed onto the stack
+	since that point.
+	The code then restores all the saved register state
+	from the <tt>trapframe</tt>
+	and returns from the trap via the <samp>iret</samp> instruction.
+
+	<p>
+	We have provided a function <tt>trap_check()</tt>
+	to test your trap handling code for a variety of traps
+	(though by no means all the exceptions the processor can generate).
+	Make sure it reports success:
+	You should be able to get <kbd>make grade</kbd>
+	to succeed on the trap handler test at this point.
+</div>
+
+<h2>Part 3: Privilege Levels and Protected Control Transfer</h2>
+
+So far in PIOS we have used only <i>kernel mode</i> or <i>ring 0</i>,
+the processor's most privileged level.
+To protect the kernel from unruly applications,
+and in turn applications from each other,
+the kernel must be able to protect both its own code and data,
+and various sensitive parts of the processor's state,
+from accidental or malicious modification by application code.
+An x86-based kernel protects its state in memory from applications
+by using the processor's virtual memory facilities,
+which we will use later in lab 3.
+
+<p>
+For now, we will focus on the other requirement:
+protecting sensitive processor state from application code.
+If any application could run a <tt>lidt</tt> instruction to change the IDT,
+for example,
+then the application could wrest control of trap handling
+away from the kernel
+and redirect all traps to handlers of the application's choosing.
+The x86 processor provides multiple <i>privilege levels</i> or <i>rings</i>
+to enable operating systems to protect sensitive processor state.
+To protect the location of the sensitive IDT, for example,
+the x86 architecture restricts the use of the <tt>lidt</tt> instruction
+to code running in ring 0;
+the kernel can thus prevent applications
+from executing <tt>lidt</tt> and other sensitive instructions
+by running application code at a lower privilege level.
+To do so, however,
+the kernel must still have a protected way
+to get <i>into</i> and back <i>out of</i> lower privilege levels.
+
+<div class="required">
+<p><span class="header">Exercise 8.</span>
+	Read Chapter 4, Protection,
+	in the
+	<a href="../ref/ia32-3.pdf">IA-32 System Programming Guide</a>,
+	if you haven't already.
+</p></div>
+
+<h3>Basics of Protected Control Transfer</h3>
+
+<p>
+In most processor architectures including the x86,
+the trap handling mechanism
+doubles as a <i>protected control transfer</i> mechanism,
+enabling the kernel to transfer control safely
+to and from code running at lower privilege levels.
+When the processor is running in user mode (ring 3 on the x86)
+and takes a trap or makes an explicit system call,
+the processor must transfer control to the kernel,
+but it is crucial for protection purposes that
+the user mode code currently running
+<i>does not get to choose arbitrarily where the kernel is entered or how</i>.
+Instead,
+the processor ensures that the kernel can be entered
+only under carefully controlled conditions.
+On the x86, two mechanisms work together to provide this protection:
+</p>
+
+<ol>
+<li><p>	<b>The Interrupt Descriptor Table.</b>
+	As you have already seen in the previous part,
+	through the IDT
+	the processor ensures that interrupts and exceptions
+	can only cause the kernel to be entered
+	at a few specific, well-defined entry-points
+	<i>determined by the kernel itself</i>,
+	and not by the code running
+	when the interrupt or exception is taken.
+	This mechanism effectively protects
+	the instruction pointer (EIP) address used to handle traps.
+
+<li><p>	<b>The Task State Segment.</b>
+	The processor needs a place
+	to save the <i>old</i> processor state
+	before the interrupt or exception occurred,
+	such as the original values of <tt>EIP</tt> and <tt>CS</tt>
+	before the processor invoked the exception handler,
+	so that the exception handler can later restore that old state
+	and resume the interrupted code from where it left off.
+	But this save area for the old processor state
+	must in turn be protected from unprivileged user-mode code;
+	otherwise buggy or malicious user code
+	could compromise the kernel:
+	for example, one user mode thread could change the kernel state
+	of another thread while the latter is in a system call,
+	or user code could simply point ESP to unmapped or read-only memory,
+	making it impossible for the processor to push the trap frame
+	and causing an immediate reset as described above.
+	</p>
+
+	<p>
+	For this reason,
+	when an x86 processor takes an interrupt or trap
+	that causes a privilege level change from user to kernel mode,
+        it also switches to a stack in the kernel's memory.
+	A structure called the <i>task state segment</i> (TSS) specifies
+	the segment selector and address where this stack lives.
+	The processor pushes (on this new stack)
+        <tt>SS</tt>, <tt>ESP</tt>, <tt>EFLAGS</tt>,
+	<tt>CS</tt>, <tt>EIP</tt>, and an optional error code.
+        Then it loads the <tt>CS</tt> and <tt>EIP</tt>
+	from the interrupt descriptor,
+	and sets the <tt>ESP</tt> and <tt>SS</tt> to refer to the new stack.
+	</p>
+
+	<p>
+	Although the TSS is large
+	and can potentially serve a variety of purposes,
+	PIOS only uses it to define
+	the kernel stack that the processor should switch to
+	when it transfers from user to kernel mode.
+	Since "kernel mode" in PIOS
+	is privilege level 0 on the x86,
+	the processor uses the <tt>ESP0</tt> and <tt>SS0</tt> fields of the TSS
+	to define the kernel stack when entering kernel mode.
+        PIOS doesn't use any other TSS fields.
+	</p>
+	</li>
+</ol>
+
+Combined,
+the IDT and TSS provide the kernel with a mechanism
+to ensure that traps are handled
+only by calling well-defined entrypoints in the kernel
+(the interrupt vectors in the IDT)
+and that trap handlers will have a well-defined, protected workspace
+(the stack pointers in the TSS).
+Exactly <i>where</i> these entrypoints and kernel stacks are located
+is up to the kernel,
+however.
+
+<h3>Kernel Stack Management</h3>
+
+<p>
+A particularly important kernel design issue is
+<i>how many</i> kernel stacks there are,
+and which OS abstraction they are associated with.
+There are basically two common models:
+<ul>
+<li>	The xv6 kernel, like most Unix kernels, uses a <i>process model</i>:
+	it associates a kernel stack with each user process,
+	so that whenever the kernel is running
+	on behalf of a particular process,
+	it runs on that process's kernel stack,
+	and it switches stacks whenever it switches between processes.
+
+<li>	The PIOS kernel, in contrast, is an <i>interrupt model</i> kernel,
+	which means it maintains one kernel stack per <i>physical CPU</i>,
+	irrespective of the number of processes.
+	Kernel code running on a given CPU always runs
+	on that CPU's permanently-assigned kernel stack
+	regardless of what user process is running,
+	and kernel code thus never switches kernel stacks once it has booted.
+	The downside of this simple design is that PIOS kernel code
+	cannot use its stack to maintain any state on behalf
+	of processes that are not currently running:
+	if the kernel is working on behalf of a process
+	and needs to put the process to sleep waiting on some event,
+	the kernel must explicitly store all relevant information
+	about what it was doing somewhere else,
+	such as in the process control structure,
+	or it would be lost when the kernel switches to another process.
+</ul>
+
+You will learn more about process versus interrupt model kernels
+when we get into process management and scheduling in the next lab,
+and for futher information you may wish to read about
+some of the research operating systems
+that have explored these design tradeoffs,
+such as <a href="../bib/draves91continuations.pdf">Mach</a>
+and <a href="../bib/ford99interface.pdf">Fluke</a>.
+
+<p>
+For now all you really need to know is that PIOS's kernel stack
+is part of the <tt>cpu</tt> structure,
+defined in <tt>kern/cpu.h</tt>:
+it grows downwards (like all x86 stacks)
+from <tt>kstackhi</tt> towards <tt>kstacklo</tt> in the structure.
+Thus, the ESP field for ring 0 in a given processor's TSS
+needs to point to <tt>kstackhi</tt>
+in that processor's <tt>cpu</tt> structure.
+
+<h3>An Example</h3>
+
+<p>
+Let's put the above pieces together and trace through an example.
+Suppose the processor is executing code in user mode
+and encounters a divide instruction that attempts to divide by zero.
+</p>
+
+<ol>
+<li>	The processor switches to the stack defined by the
+	<tt>SS0</tt> and <tt>ESP0</tt> fields of the TSS,
+	which in PIOS will hold the values
+	<code>CPU_GDT_KDATA</code> and <code>&cpu->kstackhi</code>,
+	respectively.</li>
+
+<li>	The processor pushes the following basic trap frame onto the
+	kernel stack, starting at <code>kstackhi</code>:
+	<pre>
+                     +--------------------+ &cpu->kstackhi
+                     | 0x00000 | old SS   |     " - 4
+                     |      old ESP       |     " - 8
+                     |     old EFLAGS     |     " - 12
+                     | 0x00000 | old CS   |     " - 16
+                     |      old EIP       |     " - 20 &lt;---- ESP 
+                     +--------------------+  &lt;---- ESP
+	</pre></li>
+
+<li>	Because we're handling a divide error,
+	which is interrupt vector 0 on the x86,
+	the processor reads IDT entry 0 and sets
+	<tt>CS:EIP</tt> to point to the handler function defined there.</li>
+
+<li>	The handler function takes control and handles the exception,
+	for example by terminating the user environment.</li>
+</ol>
+
+<p>
+As you can see,
+the trap frame the processor pushes on kernel entry from user
+is similar to the one it pushes when it is <i>already</i> in the kernel,
+except in this case the processor also pushes the SS and ESP registers
+<i>before</i> pushing the frame
+discussed in the preivous part of the lab.
+You can see this difference reflected 
+in the comments in the definition of <tt>trapframe</tt> in <tt>inc/trap.h</tt>,
+and on the definitions of the <tt>trapframe_usize()</tt>
+and <tt>trapframe_ksize()</tt> macros in the same header file.
+
+<p>
+For those traps for which the processor also pushes an error code
+when taking a trap from kernel mode,
+as discussed in the last part,
+it pushes an error code in the same fashion for traps from user mode.
+For these traps, therefore,
+a trap from user mode will leave the kernel stack in the following state:
+</p>
+
+	<pre>
+                     +--------------------+ &cpu->kstackhi
+                     | 0x00000 | old SS   |     " - 4
+                     |      old ESP       |     " - 8
+                     |     old EFLAGS     |     " - 12
+                     | 0x00000 | old CS   |     " - 16
+                     |      old EIP       |     " - 20
+                     |     error code     |     " - 24
+                     +--------------------+  &lt;---- ESP            
+	</pre>
+
+<div class="required">
+<p><span class="header">Exercise 9.</span>
+	Modify <tt>cpu_init()</tt>
+	to set up the <tt>tss</tt> field
+	in the <tt>cpu</tt> struct appropriately,
+	and to create a TSS segment descriptor in the GDT pointing to it.
+	The SEGDESC16 macro should make the latter part easy:
+	note that you can use this macro in an assignment statement,
+	as in '<samp>c->gdt[...] = SEGDESC16(...)</samp>'.
+	A GDT entry for the TSS named <tt>CPU_GDT_TSS</tt>
+	has already been reserved in <tt>kern/cpu.h</tt>.
+
+	<p>
+	Then, at the end of <tt>cpu_init()</tt>,
+	after the processor's GDT is loaded,
+	load your TSS into the processor using the LTR instruction.
+	For convenience,
+	there is an <tt>ltr()</tt> function in <tt>inc/x86.h</tt>.
+	Make sure your code "accepts" your TSS descriptor:
+	if it doesn't, the LTR instruction will cause a trap,
+	which the kernel probably won't handle very well
+	because <tt>trap_init()</tt> hasn't yet been called at this point.
+</p></div>
+
+<h3>Entering User Mode</h3>
+
+<p>
+What piece of register state in the processor
+actually defines which privilege level it is executing in at a given moment?
+Many architectures use a "kernel mode" flag in a control register of some kind,
+but x86 processors uses the low two bits of the CS register,
+effectively treating privilege level as a property
+of the currently running code segment.
+
+<p>
+To enter user mode,
+we might be tempted simply to take the kernel's code segment selector,
+<samp>CPU_GDT_KCODE</samp>,
+set the bottom two bits to 1,
+and do an <tt>ljmp</tt> to that code segment
+much like <tt>cpu_init()</tt> does to load <tt>CPU_GDT_KCODE</tt>
+as a kernel-mode code segment.
+Unfortunately, this doesn't work: <i>why?</i>
+
+<div class="required">
+<p><span class="header">Exercise 10.</span>
+	Modify the definition of <tt>cpu_boot</tt> in <tt>kern/cpu.c</tt>
+	to create code and data segments for user mode.
+	Other than privilege level,
+	these segments should be identical
+	to the corresponding kernel segments:
+	we aren't going to do any address translation
+	or memory protection for now.
+</p></div>
+
+<p>
+We described above how the processor <i>leaves</i> user mode
+and enters the kernel via a trap,
+but how does the kernel <i>enter</i> user in the first place?
+Simple: the kernel "returns" to user mode -
+even if the processor has never been there before!
+
+<p>
+When the processor executes an <tt>iret</tt> instruction,
+it pops its standard trap frame off the stack starting with the old EIP,
+but it doesn't actually know or care
+whether <i>it</i> actually pushed that frame on the stack
+or if it got there some other way.
+Thus, the kernel can always <i>manufacture</i> a trap frame
+representing whatever user mode state it wants to load into the processor,
+and "return" from it via <tt>iret</tt> to enter user mode.
+(There are other ways to switch to user mode on the x86,
+but this is the most general method.)
+
+<div class="required">
+<p><span class="header">Exercise 11.</span>
+	Modify the code at the end of <tt>init()</tt>
+	to cause the <tt>user()</tt> function to be run in user mode,
+	instead of just calling it as a procedure like the skeleton code does,
+	which leaves the processor in kernel mode.
+	To do this, you will need to create and set up
+	a <tt>trapframe</tt> struct correctly,
+	and call <tt>trap_return()</tt> to "return" to it.
+	The user mode code will need a stack,
+	which must be separate from the kernel stack
+	since the kernel stack will be used for trap handling:
+	we have defined an array called <tt>user_stack</tt> for this purpose.
+
+	<p>
+	<b>Note:</b>
+	You should make sure the processor enters user mode
+	with the I/O privilege level set to 3,
+	by setting the <tt>FL_IOPL_MASK</tt> bits in the EFLAGS register
+	to the value <tt>FL_IOPL_3</tt>.
+	This will allow console output,
+	such as the <tt>cprintf()</tt> at the beginning of <tt>user()</tt>,
+	to work even from user mode for debugging purposes.
+	We would not want to do this for ordinary applications,
+	since that would give them unrestricted access to the PC's I/O space:
+	we will later provide a way for user mode code code
+	to produce output in a controlled fashion via system calls.
+
+	<p>
+	You should now see <tt>user()</tt> print '<tt>in user()</tt>'
+	from user mode: verify that you're really in user mode here
+	by setting a GDB breakpoint at <tt>user</tt>
+	and looking at the CS register at that point.
+</p></div>
+
+<h3>Software Interrupts</h3>
+
+<p>
+Now that your kernel has basic exception handling capabilities
+and can enter user mode,
+you will refine it to handle traps
+that user mode code may cause deliberately for various purposes;
+we refer to such traps as <i>software interrupts</i>.
+There are two traps defined by the x86 processor
+expressly to serve as software interrupts,
+and PIOS defines a third one to serve as its system call mechanism:
+
+<ul>
+<li>	<tt>T_BRKPT</tt>:
+	The breakpoint exception,
+	interrupt vector 3,
+	is normally used to allow debuggers
+	to insert breakpoints in a program's code
+	by temporarily replacing the relevant program instruction
+	with the special 1-byte <code>int3</code>
+	software interrupt instruction.
+
+<li>	<tt>T_OFLOW</tt>:
+	The overflow exception,
+	interrupt vector 4,
+	allows software to generate a trap deliberately
+	via the special <code>into</code> software interrupt instruction,
+	if the overflow flag (FL_OF) is set when the instruction executes.
+	The intent is for software to execute an <tt>into</tt>
+	after an arithmetic operation that might overflow:
+	if it doesn't, execution proceeds normally,
+	but if it does, the overflow condition is immediately caught.
+	This appealing idea has never really caught on
+	in high-level languages, however, and is rarely used.
+	Nevertheless, on principle we want to ensure that PIOS
+	can handle <tt>into</tt> instructions in applications properly.
+
+<li>	<tt>T_SYSCALL</tt>:
+	This value defined in <tt>inc/trap.h</tt>
+	is <i>not</i> one of the 32 defined by the x86 architecture,
+	but is somewhat arbitrarily assigned by PIOS to be 48 (0x30),
+	one of the higher vectors in the 256-vector space.
+	PIOS application code will invoke this trap vector
+	deliberately with the <tt>int</tt> instruction
+	when it wishes to make an explicit system call to the kernel.
+	This is the classic way to perform system calls on the x86.
+</ul>
+
+We do not want user code to be able to invoke
+<i>just any</i> interrupt vector in the IDT deliberately
+via <tt>int</tt> instructions, however:
+that might allow user code to confuse the kernel
+into thinking that some special event has occurred when it has not.
+For this reason,
+all IDT descriptors have a <i>descriptor privilege level</i>
+indicating what privilege level is required
+for software to invoke that interrupt vector deliberately
+via a software interrupt instruction.
+Most of these vectors are normally set to "privileged" (ring 0),
+but we want the vectors used for software interrupts
+to be set so user mode code can invoke them.
+
+<div class="required">
+<p><span class="header">Exercise 12.</span>
+	Modify <code>trap_init_idt()</code>
+	to allow user mode code to invoke
+	the <tt>T_BRKPT</tt> and <tt>T_OFLOW</tt> vectors
+	via software interrupt instructions.
+	Don't worry about <tt>T_SYSCALL</tt> for now;
+	we'll do that in the next lab
+	when we start implementing useful system calls.
+
+	<p>
+	The call from <tt>user()</tt> to <tt>trap_check()</tt> in user mode
+	should now succeed,
+	and you should be able to get <kbd>make grade</kbd>
+	to succeed on the user mode test.
+</p></div>
+
+
+<h2>Part 4: Physical Page Allocation</h2>
+
+<p>
+The operating system must keep track of
+which parts of physical RAM are free
+and which are currently in use.
+The final part of this lab is to construct
+a physical memory allocator for the kernel,
+so that the kernel can dynamically allocate memory and later free it.
+Before starting this part of the lab,
+be sure you have read and understood
+the part about memory allocation in
+<a href="../book-rev6.pdf">xv6 chapter 2</a>.
+
+<p>
+Your allocator will operate in units of 4096 bytes, called
+<i>pages</i>.
+Pages will become highly relevant in lab 3,
+where you will implement virtual memory,
+but for now take it on faith that pages
+are useful units of allocation in kernels.
+Your task will be to maintain data structures that record
+which physical pages are free and which are
+allocated, and how many users there are of each allocated page.
+You will also write the routines to allocate and free pages of memory.
+
+<p>
+Dividing up physical memory into pages of exactly equal size
+will make memory allocation in the PIOS kernel substantially simpler
+than it is in xv6,
+or any user-level implementation of <code>malloc()</code>
+for that matter,
+because you won't have to deal with the problems
+of fragmentation or searching for a sufficiently large free chunk
+to fill a request for a given amount of memory.
+This design simplicity has its costs:
+namely, the rest of the kernel will not have any way
+to allocate physically contiguous memory
+for structures larger than a page after the kernel boots.
+As it turns out, the PIOS kernel will not <i>need</i>
+to allocate any data structures larger than a page after it boots.
+But even some much more complex kernels - Linux, for example -
+impose restrictions such as this
+to keep their physical memory allocators simple and fast,
+and work around these limitations using virtual memory
+to make physically discontiguous memory appear virtually contiguous
+to the kernel code using that memory.
+</p>
+
+<p>
+You'll now write the physical page allocator.  It keeps track of which
+pages are free with a linked list of <code>pageinfo</code> structures,
+each corresponding to a physical page.
+</p>
+
+<div class="required">
+<p><span class="header">Exercise 13.</span>
+	In the file <tt>kern/mem.c</tt>,
+	you must implement code for the following functions.</p>
+
+	<pre>
+	mem_init()
+	mem_alloc()
+	mem_free()
+	</pre>
+
+	<p>
+	We have provided a function in the same source file,
+	<code>mem_check()</code>, which tests your physical page allocator.
+        You should boot PIOS and see whether <code>mem_check()</code>
+        reports success. Fix your code so that it passes. You may find it
+        helpful to add your own <code>assert()</code>s to verify that
+        your assumptions are correct.
+	Our checking code is certainly not guaranteed
+	to detect every possible bug,
+	and any bugs your code has that it does <i>not</i> detect
+	may easily come back to bite you in a future lab!
+</p></div>
+
+<p>
+This lab, and all the labs in this course, will require you to do a bit of
+detective work to figure out exactly what you need to do. This
+assignment does not describe all the details of the code you'll have
+to add to the kernel.  Look for comments in the parts of the PIOS source that
+you have to modify; those comments often contain specifications and
+hints.  You will also need to look at related parts of PIOS, at the
+Intel manuals, and perhaps at your notes from relevant courses
+you may have taken previously such as CSL211.
+</p>
+
+<p>
+<b>This completes the lab.</b>
+
+
+</body>
+</html>
+
+<!--  LocalWords:  GCC Bochs JOS athena cd wget gtar xzvf uname ssh bochs gcc
+ -->
+<!--  LocalWords:  gmake handin NASM Brennan's Inline IA AMD quirky QEMU kern
+ -->
+<!--  LocalWords:  cc lib ld obj Os mk CVS bochsrc txt fff unk ctxt jmp ea cont
+ -->
+<!--  LocalWords:  slist stepi modebp vbreak lbreak pb pbreak sb sba blist bpe
+ -->
+<!--  LocalWords:  bpd del xp disas reg setpmem crc cpu ptime unwatch calc XXX
+ -->
+<!--  LocalWords:  backtrace kerninfo virt phys etext edata bc img CTRL BIOS Wo
+ -->
+<!--  LocalWords:  updateable PCI Storrs Plex VGABios bootable ROMs Torito IDE
+ -->
+<!--  LocalWords:  GNUmakefile loader's addr bootmain readsect mkisofs Jensen
+ -->
+<!--  LocalWords:  Linkable inc int jos objdump gdb xorw BIOS's Ttext Makefrag
+ -->
+<!--  LocalWords:  fpic GDT printf printfmt crt pos memcpy buf COLS sizeof uint
+ -->
+<!--  LocalWords:  GCC's cprintf endian esp ebp vb mon eip args i'th qemu QEMU's
+ -->
+<!--  LocalWords:  GDB's disassembly breakpoint
+-->

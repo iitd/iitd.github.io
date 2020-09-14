@@ -1,0 +1,209 @@
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices
+END
+usb.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/usb.h
+END
+speaker.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/speaker.h
+END
+block.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/block.h
+END
+kbd.c
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/kbd.c
+END
+usb_uhci.c
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/usb_uhci.c
+END
+pit.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/pit.h
+END
+ide.c
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/ide.c
+END
+kbd.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/kbd.h
+END
+ide.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/ide.h
+END
+usb_storage.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/usb_storage.c
+END
+serial.c
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/serial.c
+END
+serial.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/serial.h
+END
+usb_hub.c
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/usb_hub.c
+END
+rtc.c
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/rtc.c
+END
+usb_hub.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/usb_hub.h
+END
+rtc.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/rtc.h
+END
+input.c
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/input.c
+END
+input.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/input.h
+END
+partition.c
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/partition.c
+END
+pci_lookup.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/pci_lookup.h
+END
+intq.c
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/intq.c
+END
+pci.c
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/pci.c
+END
+vga.c
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/vga.c
+END
+partition.h
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/partition.h
+END
+timer.c
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/timer.c
+END
+intq.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/intq.h
+END
+pci.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/pci.h
+END
+usb_ehci.c
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/usb_ehci.c
+END
+vga.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/vga.h
+END
+timer.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/timer.h
+END
+usb.c
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/usb.c
+END
+speaker.c
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/speaker.c
+END
+block.c
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/block.c
+END
+pit.c
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/~cs1080167/pintos-repo/!svn/ver/1/src/devices/pit.c
+END
