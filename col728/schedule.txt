@@ -1,0 +1,81 @@
+TITLE: COL728 : Compiler Design : Schedule
+SEMESTER: Sem II, 2017-18
+Start: Jan 2, 2018
+Stop: May 1, 2018
+Schedule: Monday, Thursday
+HEADER: Links to notes etc. on future days are <i>tentative only</i>. They are here only to give you an idea what the future will bring.<br>
+
+HOLIDAY: Jan 26. Republic Day
+HOLIDAY: Feb 02. Maha Shivratri
+HOLIDAY: Feb 05. Minor1
+HOLIDAY: Feb 08. Minor1
+HOLIDAY: Feb 26. Semester break
+HOLIDAY: Mar 01. Semester break
+HOLIDAY: Mar 02. Holi
+HOLIDAY: Mar 29. Mahavir Jayanti
+HOLIDAY: Mar 30. Good Friday
+HOLIDAY: Jun 16. Idu'l Fitr
+
+SKIP: Feb 5. MINOR1 TESTS
+SKIP: Feb 8. MINOR1 TESTS
+SKIP: Mar 26. MINOR2 TESTS
+EVENT: Feb 20. Return of Minor-1 scripts
+EVENT: Apr 09. Return of Minor-2 scripts
+
+==
+LEC: <a href=lec/intro.html>Introduction to Interpreters, Compilers, and Programming Languages</a>
+==
+LEC: <a href=lec/lexing.html>Lexical Analysis Examples and Regular Languages</a>
+==
+LEC: <a href=lec/formal_languages.html>Formal Languages and Lexical Specifications</a>
+==
+LEC: <a href=lec/cfg.html>Context free languages and Derivations, Error handling, ASTs</a>
+==
+LEC: <a href=lec/parsing.html>Recursive Descent Parsing</a>
+==
+LEC: <a href=lec/parsing.html>Recursive Descent Parsing (contd.)</a>
+==
+LEC: <a href=lec/bottom_up_parsing.html>Bottom up Parsing</a>
+==
+LEC: <a href=lec/bottom_up_parsing.html>Bottom up Parsing (contd.)</a>
+==
+LEC: <a href=lec/semantic_analysis.html>Semantic Analysis</a>
+==
+LEC: <a href=lec/semantic_analysis.html>Semantic Analysis</a>
+==
+LEC: <a href=lec/semantic_analysis.html>Semantic Analysis</a>
+==
+LEC: <a href=lec/runtime_organization.html>Runtime Organization</a>
+==
+LEC: <a href=lec/runtime_organization.html>Runtime Organization (contd.)</a>
+==
+LEC: <a href=lec/code_generation_intro.html>Introduction to Code Generation</a>
+==
+LEC: <a href=lec/code_generation.html>Code Generation</a>
+==
+LEC: <a href=lec/code_generation_objects.html>Code Generation for Objects</a>
+==
+LEC: <a href=lec/semantics.html>Language Semantics</a>
+==
+LEC: <a href=lec/semantics.html>Language Semantics (contd.)</a>
+==
+LEC: <a href=lec/semantics.html>Language Semantics (contd.)</a>
+==
+LEC: <a href=lec/intermediate_language.html>Intermediate Language</a>, <a href=lec/optimization_overview.html>Optimization Overview</a>
+==
+LEC: <a href=lec/local_optimization.html>Local Optimization</a>
+==
+LEC: <a href=lec/dataflow_analysis.html>Dataflow analysis</a>
+==
+LEC: <a href=lec/global_constant_propagation.html>Global constant propagation</a>
+==
+LEC: <a href=lec/global_constant_propagation.html>Global constant propagation</a> (contd.)
+==
+LEC: <a href=lec/register_allocation.html>Register allocation</a>
+==
+LEC: <a href=lec/lazy_code_motion.html>Lazy code motion</a>
+==
+LEC: <a href=lec/lazy_code_motion.html>Lazy code motion</a> (contd.), <a href=lec/phase_ordering_problem.html>Phase ordering problem</a>
+==
+LEC: <em>Extra class (not part of major exam syllabus)</em><br><a href=lec/loop_transformations.html>Loop transformations</a>, <a href=lec/affine_transformations.html>Affine loop transformations</a>.
+==

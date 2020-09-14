@@ -1,0 +1,328 @@
+Several interesting and intuitive languages are not regular
+<pre>
+{ (^i )^i | i &gt;= 0 }
+</pre>
+This is fairly representative of several programming constructs, e.g., nested arithmetic constructs, nested scopes, nested if-then-else, etc. Programming languages usually have a natural recursive structure (often this is the structure of human thinking)
+
+<p>Regular expressions cannot represent this language. Intuitively, this language requires maintaining an unbounded amount of memory (specified by <em>i</em>), while FAs only have a bounded amount of memory (the number of states)
+
+<h3>Parser</h3>
+Input: A sequence of tokens as output from the lexer<br>
+Output: parse tree of the program
+
+<p>Example input: <code>if x == y then z = 1; else z = 2;</code>
+<p>Example output level 1: <code>if cond then statement else statement</code>
+<p>Example output level 2: <code>if-then-else statement</code>
+<p>Example output level 3: <code>statement</code>
+
+<p>The parse tree may be implicit, may not be output explicitly by the compiler.
+
+<p>For parsing, we need:
+<ol>
+	<li>A language for describing valid strings of tokens
+	<li>A method for distinguishing valid from invalid strings of tokens
+</ol>
+
+<p>Recursive structure of programming languages are a good fit for Context-Free grammars
+<pre>
+EXPR =   if EXPR then EXPR else EXPR;
+       | while EXPR ( EXPR )
+</pre>
+
+<p> A CFG consists of:
+<ul>
+	<li>A set of terminals T
+	<li>A set of non-terminals N
+	<li>A start symbol S \in N
+	<li>A set of productions: <pre> X -&gt; Y1Y2..Yn</pre>
+	<ul>
+		<li>X (on the left-hand side) must be a non-terminal. That's what an LHS means.
+		<li>Yi could be a terminal, a non-terminal, or the special symbol \epsilon
+	</ul>
+</ul>
+
+<p>Strings of balanced parantheses:
+<pre>
+S -&gt; (S)
+S -&gt; \epsilon
+</pre>
+Here,
+<pre>
+N = {S}
+T = {'(', ')'}
+</pre>
+
+<p>Productions can be read as replacement rules: the RHS can replace the LHS
+<ol>
+	<li>Begin with a string with only the non-terminal S
+	<li>Replace any non-terminal X in the string by the right-hand side of some production X -&gt; Y1..Yn
+	<li>Repeat (2) until there are no non-terminals
+</ol>
+
+<p>In other words, at any step of this <em>derivation</em> we perform the following replacement:
+<pre>
+X1X2X3..Xi X Xi+1..Xn --&gt; X1X2..Xi Y1Y2..Yk Xi+1..Xn
+</pre>
+
+<p>A derivation is of the form:
+<pre>
+S --&gt; ... -&gt; \alpha0 --&gt; ... --&gt; \alphaN 
+N &gt;= 0
+</pre>
+
+<p>Let G be a CFG with start symbol S. L(G) of G is:
+<pre>
+{a1...an | ai \in T and S ---*--&gt; a1...an}
+</pre>
+Terminals are called so because there are no rules for replacing them
+
+<p>For a parser, the terminals are the tokens
+
+<p>A fragment of C (this notation is a more concise form of writing the productions, and is used in actual tools)
+<pre>
+
+selection_statement:   IF '(' expression ')' statement ELSE statement
+	                   | IF '(' expression ')' statement
+                     | SWITCH '(' expression ')' statement;
+
+iteration_statement:   WHILE '(' expression ')' statement
+	                   | DO statement WHILE '(' expression ')' ';'
+	                   | FOR '(' expression_statement expression_statement ')' statement
+	                   | FOR '(' expression_statement expression_statement expression ')' statement
+	                   | FOR '(' declaration expression_statement ')' statement
+	                   | FOR '(' declaration expression_statement expression ')' statement;
+
+
+expression_statement:   ';'
+	                    | expression ';';
+
+statement:   labeled_statement
+	         | compound_statement
+	         | expression_statement
+	         | selection_statement
+	         | iteration_statement
+	         | jump_statement;
+</pre>
+
+<p>Some elements of this language?
+
+<p>Another example: arithmetic expressions
+<pre>
+E --&gt; E + E
+E --&gt; E * E
+E --&gt; ( E )
+E --&gt; Id
+</pre>
+
+<p>The idea of a CFG is a big step.
+<ul>
+	<li>Membership in a language is a yes/no answer. Also need a parse-tree
+  <li>Must handle errors gracefully. Give feedback to the programmer
+	<li>Need an implementation of the CFGs (e.g., bison generates an implementation given a grammar)
+</ul>
+
+<p>Form of the grammar is important
+<ul>
+	<li>Many grammars generate the same language
+	<li>Parsing tools are sensitive to the grammar. Only some grammars are parsable by some tools. Will see examples later
+</ul>
+
+<p>A derivation can be drawn as a tree
+<ul>
+	<li>Start symbol is tree's root
+	<li>For a production X --&gt; Y1..Yn, add children Y1..Yn to node X
+</ul>
+
+<p>Example: <code>id * id + id</code>. Generate the derivation tree for the grammar of arithmetic expressions. This derivation tree is called the parse tree of this string. While building the tree, also write the derivation rules that have  been used at each step to the left.
+
+<p>A parse tree has
+<ul>
+	<li>terminals at the leaves
+	<li>non-terminals at the interior nodes
+</ul>
+
+<p>An in-order traversal of the parse tree yields the original input
+
+<p>Multiple parse trees are possible for the same input (even for this example)
+
+<p>The parse tree shows the association of the operations, the original input does not.
+
+<p>The example we discussed is a <em>leftmost-derivation</em>: at each step, replace the left-most non-terminal. There is an equivalent notion of a <em>rightmost-derivation</em>.
+
+<p>A derivation defines a parse tree. But one parse tree can have multiple derivations. The leftmost and rightmost derivations are important from the point-of-view of parser implementation (as we will see later).
+
+<p>Note that the leftmost and rightmost derivations have the same parse tree. This is just about the order in which the branches of the parse tree were added.
+
+<h3>Ambiguity in CFGs</h3>
+
+<p>Example: id*id + id
+
+<p>This string has two parse-trees in the grammar of arithmetic operations: (id * id) + id  AND id * (id + id)
+
+<p>A grammar is <em>ambiguous</em> if it has more than one parse tree for some string.
+<ul>
+	<li>Equivalently, there is more than one right-most or left-most derivation for some string
+</ul>
+
+<p>Ambiguity may leave the meaning of the program ill-defined.
+
+<p>Several ways to handle ambiguity: One method is to rewrite the grammar unambiguously (by "stratifying" it)
+<pre>
+E --&gt; E' + E | E'
+E' --&gt; id * E' | id | (E) * E' | (E)
+</pre>
+Show the unique left-most derivation for <code>id*id + id</code> using this new grammar.
+<br>Enforces precedence of * over +. E can only generate sum expressions over E'.
+
+<p>Another example:
+<pre>
+E --&gt; if E then E | if E then E else E | ...
+</pre>
+String : if E1 then if E2 then E3 else E4
+<br>Ambiguity: which "if" does the "else" match with?
+<br>Typical rule: "else" matches the closest unmatched "if" (i.e., which does not already have an associated "else")
+<pre>
+E --&gt;   MIF   /* all if are matched with else */
+         | UIF   /* some if is unmatched */
+
+MIF --&gt;   if E then MIF else MIF
+           | ...
+
+UIF --&gt;   if E then MIF else UIF  /* the then expression is MIF, because if it were UIF then this else should have matched it! */
+           | ...
+</pre>
+Show the two parse trees, and show which one is rejected by this new grammar.
+
+<p>Impossible to convert automatically an ambiguous grammar to an unambiguous one
+
+<p>Used with care, ambiguity can sometimes simplify the grammar
+<ul>
+	<li>Sometimes allows more natural definitions
+	<li>We need disambiguation mechanisms
+</ul>
+
+<p>Most languages and parsing tools
+<ul>
+	<li>Use the more natural (ambiguous) grammar
+	<li>Along with disambiguating declarations
+</ul>
+Example: E -&gt; E + E | E * E | Int
+<br>Precedence: %left + (means that the "+" operator is left associative)
+<br>Precedence: %left * (means that the "*" operator is left associative)
+<br>The order of this specification says which one has higher precedence in case of ambiguity
+<br>Show how these precedence rules eliminate one of the parse trees
+
+<p>The parser will use these declarations to decide which move to take in case of ambiguity.
+
+<h3>Error handling</h3>
+<p>Purpose of a compiler is:
+<ul>
+	<li>Detect non-valid programs
+	<li>Translate the valid ones
+</ul>
+
+<p>Many kinds of possible errors (e.g., in C):
+<ul>
+	<li>Lexing errors. e.g., abc$abc, detected by lexer
+	<li>Syntax errors. e.g., abc * % 123, detected by parser
+	<li>Semantic errors. e.g., int x; y = x(3), detected by type checker
+	<li>Correctness. e.g., quicksort. detected by tester/user. out of scope for a compiler
+</ul>
+
+<p>Error handlers should
+<ul>
+	<li>Report errors accurately and clearly
+	<li>Recover from an error quickly
+	<li>Not slow down compilation of valid code
+</ul>
+
+<p>Error handling modes
+<ul>
+	<li>Panic
+	<li>Error production
+	<li>Automatic local and global correction. Popular area of research at some point, but not mainstream.
+</ul>
+
+<p>Panic mode is the simplest
+<ul>
+	<li> When an error is encountered, discard tokens until a clear role is found
+	<li> Continue from there
+</ul>
+Looking for "synchronizing tokens", typically the statement or expression terminators (e.g., ";" in C)
+
+<p>Example: (1 + + 2) + 3
+The parser is going to get stuck at the second +. In panic mode recovery, skip ahead to next integer and then continue. (In this example, it would restart at 2, and treat it as 1 + 2, and then it would parse fine).
+
+<p>Bison: use the special terminator <code>error</code> to describe how much input to skip (error productions)
+<pre>
+E --&gt; int | E + E | (E) | error int | (error)
+</pre>
+The fourth production says that if you see an error while trying to parse E, then the <code>error</code> symbol will match all the input until an int.
+<p>Similarly, the fourth production says that if you encounter an error while you are inside a paranthesized expression, you can discard everything until the closing bracket.
+
+<p>Error productions
+<ul>
+	<li>Specify known common mistakes in the grammar
+	<li>Example:
+	<ul>
+		<li>Write 5x instead of 5*x
+		<li>Mathematicians complained that they were used to writing 5x but compiler gives parse error
+		<li>Response: add a production E -&gt; EE
+	</ul>
+	<li>Disadvantage:
+	<ul>
+		<li>Complicates the grammar
+		<li>Promotes mistakes (by making the syntax less restrictive)
+		<li>Common response by production compilers: warn about such usage but accept it anyway. <em>Warnings</em>
+	</ul>
+</ul>
+
+<p>Error correction: find a "nearby" program. Notion of "edit distance"
+<ul>
+	<li>Try token insertions or deletions upto a certain edit distance exhaustively.
+	<li>Cons: hard to implement, significant slowdown in compilation, "nearby" is not necessarily the intended program
+	<li>Common response by production compilers today: suggestions to the programmer, e.g., OCaml
+	<li>PL/C is an example of a past error-correcting compiler
+	<ul>
+		<li>Motivation: compilation was quite slow. could take a day to recompile
+		<li>Hence wanted to find as many errors as possible in one compilation cycle
+	</ul>
+</ul>
+
+<h3>Abstract syntax trees</h3>
+<p>Review
+<ul>
+	<li>A parser traces the derivation of a sequence of tokens
+	<li>The rest of the compiler needs a structural representation of the program
+	<li>Abstract syntax trees (AST)
+	<ul>
+		<li>Like parse trees but ignore some details
+	</ul>
+</ul>
+
+<p>Consider the grammar
+<pre>
+E --&gt; int | (E) | E + E
+</pre>
+And the string
+<pre>
+5 + (2 + 3)
+</pre>
+After lexical analysis, a list of tokens
+<pre>
+int5 '+' '(' 'int2' '+' 'int3' ')'
+</pre>
+During parsing we build a parse tree
+<em>Draw a parse tree</em>root = E, second level expands E + E, third level expands the first E into int5 and the second E into (E), and so on...
+
+The parse tree is sufficient for compilation (it captures the nesting structure) but it has too much information, such as parantheses and single-successor nodes, etc. AST is a cleaned-up and more concise version of the parse tree. Parentheses are redundant because the tree structure tells us the grouping already
+
+<p>AST also captures the nesting structure, but it <em>abstracts</em> from the concrete syntax. It is more compact and easier to use. An important data structure in a compiler
+<pre>
+(A): PLUS, (B), (C)
+(B): 5
+(C): PLUS (D), (E)
+(D): 2
+(E): 3
+</pre>
+AST is an important data structure for the rest of the discussion

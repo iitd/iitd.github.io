@@ -1,0 +1,115 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252"><title>COL728 : Compiler Design : Labs (programming assignments)</title>
+</head><body><h1><font color="blue">COL728 : Compiler Design : Labs (programming assignments)</font></h1>
+
+All lab assignments are to be done in groups of at most two people.
+
+<h2><u><font color="maroon">Lab 1 : Studying the C parser</font></u></h2>
+<h3><font color="green">Due date</font></h3>
+5h February 2018, Monday
+<h3><font color="green">Weight</font></h3>
+4 marks
+<h3><font color="green">Submission Instructions</font></h3>
+Combine your reports on the lexical analyzer code and the parser code into one report, and email
+your combined report to the TA and the Instructor (see <a href=administrivia.html>administrivia</a> page for contact details).
+<h3><font color="green">Lab instructions</font></h3>
+<ol>
+	<li> Ensure that your environment allows cloning of Github repositories
+	<ul>
+		<li><code>git config --global http.proxy http://proxyNN.iitd.ac.in:3128/</code></li>
+		<li><code>git config --global https.proxy http://proxyNN.iitd.ac.in:3128/</code></li>
+	</ul>
+	</li>
+	<li> Clone the GIT repository : <a href=https://github.com/iitd-plos/cc>https://github.com/iitd-plos/cc</a>
+	<ul>
+		<li><code>$ git clone https://github.com/iitd-plos/cc</code></li>
+	</ul>
+	</li>
+	<li>In <code>cc</code> directory, type <code>make</code> to build the <code>cc</code> program</li>
+	<li>The <code>cc</code> program checks if an input C program is correctly formed (as per the C grammar). The C program should not have any pre-processor directives, and is assumed to have been pre-processed already. Try compiling the <code>hello_world</code> program:
+	<ul>
+		<li> <code>./cc examples/hello_world.c</code></li>
+	</ul>
+	Try changing the <code>hello_world.c</code> program to valid and invalid C programs, and check if the compilation succeeds or reports a syntax error appropriately.
+	<li><strong>Study the generated lexer in file <code>c.lex.cpp</code>, and write a short report (1-5 pages) on the logic of the code produced through the lexical analyser generator</strong>. In particular, we are interested in the logic of the function represented by YY_DECL (representing the <code>yylex()</code> function). Keep your report as brief as possible, but do not miss out any interesting fact about the generated code or logic. Your report should reflect your understanding of the logic of the generated lexical analyzer.
+	<ul>
+		<li><i>Hint</i>: Track the <code>yy_act</code> variable.
+	</ul>
+	<li><strong>Study the generated parser in file <code>c.tab.cpp</code>, and write a short report (1-5 pages) on the logic of the code produced through the parser generator</strong>. In particular, we are interested in the logic of the <code>yyparse()</code> function. Keep your report as brief as possible, but do not miss out any interesting fact about the generated code or logic. Your report should reflect your understanding of the logic of the generated parser.
+	<ul>
+		<li><i>Hint</i>: Track calls to the <code>yylex()</code> function for reading the next token through the lexical analyzer.</li>
+		<li><i>Hint</i>: Look at the <code>yyreduce</code> label, which is reached during reduction of a rule.</li>
+	</ul>
+	</li>
+</ol>
+
+Optional assignment
+<ul>
+	<li><strong>Study the hand-coded parser in <a href=https://bellard.org/tcc/>Tiny C Compiler</a></strong>. Comment on what parsing algorithm is being used here. On what basis do you make your conclusion?
+</ul>
+
+<h2><u><font color="maroon">Lab 2 : Code Generation</font></u></h2>
+<h3><font color="green">Due date</font></h3>
+22nd March 2018, Monday.
+<h3><font color="green">Weight</font></h3>
+12 marks
+<h3><font color="green">Submission Instructions</font></h3>
+<ol>
+	<li>Cleanup the <code>cc</code> directory, so that it only contains the source files.</li>
+        <li>Compress this directory to EntryNumber.zip file and submit it on course page on moodle.</li>
+	<!--
+        <li>Copy the <code>cc</code> directory to some directory in your home folder on the NFS-mounted shared storage in the GCL lab.</li>
+	<li>Login to palasi, change your current working directory (<code>cd</code>) to the clean <code>cc</code> directory, and type <code>col728-submit lab2</code>. Follow instructions. If you see the <code>Congratulations</code> message, your submission was successful.
+        -->
+</ol>
+<h3><font color="green">Lab Instructions</font></h3>
+<ol>
+	<li> <strong>Modify the <code>cc</code> program to emit (unoptimized) LLVM bitcode for the input C program</strong>. Start with supporting the most basic C features (e.g., those that can compile the <code>hello_world.c</code> program), and then incrementally add more C features to the LLVM code generator. Please see the <a href=references.html>references</a> page for some good resources on generating LLVM bitcode. The generated LLVM bitcode should run as expected using the LLVM interpreter <code>lli</code>.
+	</li>
+	<li>You will be evaluated on the <strong>correctness and elegance of your design/code</strong>, and on the <strong>generality / extensiveness of your handling of different C constructs</strong>.
+	You do not need to handle all C constructs, but we would like you to go as far as you can. The elegance of your design is likely to make your code simpler and easier to understand and debug, and is likely to allow you to make your implementation more general/extensive in the same amount of limited time.</li>
+	</li>
+</ol>
+<h3><font color="green">Some hints if you are unable to start</font></h3>
+<ol>
+	<li>You may want to start with creating a syntax tree for a simplified</li>
+grammer.
+	<li>Remove some rules and keep only small number like function declaration.</li>
+	<li>Define a header file in which you can define structure of nodes for AST.</li>
+	<li>In c.y file, add C code for returning tree of your defined type along with grammer rules. You can put C code inside braces ({}) in front of grammer rules.</li>
+	<li>In each class, defining structureof node for your AST, include a function which will generate llvm code for that node. You can take some help from <a href="https://pauladamsmith.com/blog/2015/01/how-to-get-started-with-llvm-c-api.html">this</a> link for getting started for code generation.</li>
+</ol>
+
+<h2><u><font color="maroon">Lab 3 : Local Optimizations at the time of parsing</font></u></h2>
+<h3><font color="green">Due date</font></h3>
+6th April 2018, Friday
+<h3><font color="green">Weight</font></h3>
+4 marks
+<h3><font color="green">Submission Instructions</font></h3>
+Submit your report and cleaned-up code on moodle.
+<h3><font color="green">Lab instructions</font></h3>
+<ol>
+	<li>Extend your code generator to support some local optimizations, like local constant-folding, local dead-code removal, etc.</li>
+	<li>Here is an example of a trivial constant propagation optimization.</li>
+	<code>	bool x, y;<br/>
+		...<br/>
+		x = true | y;<br/>
+		// this last instruction can be changed (at the time of parsing) to<br/>
+		x = true;<br/>
+	</code>
+</ol>
+
+<h2><u><font color="maroon">Lab 4 : Implementing an optimization pass for LLVM</font></u></h2>
+<h3><font color="green">Due date</font></h3>
+2nd May 2018, Monday
+<h3><font color="green">Weight</font></h3>
+10 marks
+<h3><font color="green">Submission Instructions</font></h3>
+Submit your cleaned-up code and report on moodle.
+<h3><font color="green">Lab instructions</font></h3>
+<ol>
+	<li>Use LLVM optimization passes to optimize the generated code.</li>
+	<li>Implement a custom LLVM optimization pass for common-subexpression elimination.</li>
+</ol>
+
+</body></html>

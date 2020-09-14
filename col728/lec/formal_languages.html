@@ -1,0 +1,189 @@
+<h3>Formal languages</h3>
+<p>Let \Sigma be a set of characters (an <em>alphabet</em>).
+
+<p>A <em>language</em> over \Sigma is a set of strings of characters drawn from \Sigma
+
+<p>e.g., English language: Alphabet = characters, Language = Sentences.
+
+<p>Another example: Alphabet = ASCII character set, Language = C programs
+
+<p>Meaning function <em>L</em> maps syntax to semantics. e.g., L(e) = M
+
+<p>Example: <em>e</em> could be a regular expression, and <em>M</em> would be the set of strings that it represents
+
+<p>Meaning of regular expressions:
+<pre>
+L(\epsilon) = { "" }
+L('c') = { "c" }
+L(A + B) = L(A) U L(B)
+L(AB) = {ab | a \in L(A) and b \in L(B)}
+L(A*) = U(i&gt;= 0)L(A^i)
+</pre>
+
+<p>Significance of the meaning function: separates syntax from semantics (we can change syntax without changing semantics; different syntax good for different languages/environments). Also, allows for redundancy: multiple syntaxes for the same semantics, e.g., some are concise while others are more efficient (optimization!)
+
+<p>Roman numerals vs. decimal number system: the meanings of both number systems are same, but the notation is extremely different
+
+<p>Example of redundancy: L(0*) = L(0 + 0*) = L(\epsilon + 00*)  = ...
+
+<p>Thus <em>L</em> is a many-to-one function, and this is the basis of optimization. <em>L</em> is never one-to-many
+
+<h3>Lexical Specifications</h3>
+<pre>
+Keyword: "if" or "else" or "then" or ...
+       : 'i''f' + 'e''l''s''e' + 't''h''e''n' + ...
+       : 'if' + 'else' + 'then' + ... (shorthand)
+</pre>
+
+<p>Integers = non-empty string of digits
+<pre>
+digit = '0' + '1' + '2' + ...
+Integer = digit.digit*    (ensures that there is at least one digit, also represented as digit+)
+</pre>
+
+<p>Identifier = strings of letters or digits, starting with a letter
+<pre>
+letter = 'a' + 'b' + ... + 'z' + 'A' + ... + 'Z' (shorthand: [a-zA-Z])
+Identifier = letter(letter + digit)*
+</pre>
+
+<p>Whitespace = a non-empty sequence of blanks, newlines, and tabs
+<pre>
+Whitespace = (' ' + '\n' + '\t')+
+</pre>
+
+<p>Example of a real language: PASCAL
+<pre>
+digit = '0' + '1' + '2' + ...
+digits = digit+
+opt_fraction = ('.' digits) + \epsilon
+opt_exponent = ('E'('+' + '-' + \epsilon) digits) + \epsilon
+num = digits opt_fraction opt_exponent
+</pre>
+
+<p>Given a string <em>s</em> and a regular expression <em>R</em>, does <em>s \in L(R)</em>?
+
+<p>Some additional notation (for conciseness)
+<pre>
+A+ = AA*
+A | B = A + B
+A? = A + \epsilon
+[a-z] = 'a' + .. + 'z'
+[^a-z] = complement of [a-z]
+</pre>
+
+<p>Lexical analysis</p>
+<ol>
+	<li>First step: write a regular expression for each token class (e.g., Keyword, Identifier, Number, ...)
+	<li>Construct a giant regular expression that is formed by
+	<pre>
+   R = Keyword + Identifier + Number + ...
+   or R = R1 + R2 + R3 + R4 + ....
+	</pre>
+	<li>For input <code>x1...xn</code>
+	<p>For 1 &lt;= i &lt;= n, check<br>
+	     x1...xi \in L(R)
+  <li>If success, we know that x1...xi \in L(Rj) for some j
+	<li>Remove x1...xi from the input and go to step 3
+</ol>
+
+This algorithm has some ambiguities.
+<ol>
+<li>How much input is used?
+<pre>
+x1...xi \in L(R)
+x1...xj \in L(R)
+i != j
+</pre>
+e.g., '=' vs. '=='.  The answer is that we should always take the longer one. This is called "Maximal Munch". This is how we process the English language as well, for example (this is how humans work). E.g., if we see the word 'inform', we do not read it as 'in' + 'form' but as a single word 'inform'.
+
+<li>Which token is used?
+<pre>
+x1...xi \in L(Rj)
+x1...xi \in L(Rk)
+</pre>
+e.g., Keywords = 'if' + 'else' + ...<br>
+Identifiers = letter(letter + digit)*
+
+<p>Should we treat 'if' as a keyword or an identifier?
+
+<p>Answer: use a priority order. e.g., Keywords higher priority than Identifiers
+
+<li>What if no rule matches?
+<pre>
+x1...xi \notin L(R)
+</pre>
+This will cause the program to terminate, as the program does not know what to do.
+
+<p>Answer: do not let this happen. Create another token class called <em>Error</em> and put it last in the priority order.
+<pre>
+Error = all strings not in the lexical specification
+</pre>
+
+</ol>
+
+<p>Summary: a simple lexical analysis can be achieved using regular expressions + a few rules to resolve ambiguities and errors.
+
+<p>Good algorithms are known to do such lexical analysis (subject of future lectures)
+<ul>
+	<li>Require only single pass over the input
+	<li>Few operations per character (table lookup)
+</ul>
+
+<h3>DFAs</h3>
+<ul>
+	<li>Only one possible transition for any input from any state</li>
+	<li>No epsilon moves
+	<li>Only one path possible for any input
+</ul>
+
+<h3>NFAs</h3>
+<ul>
+	<li>Potentially multiple possible transition for any input from any state</li>
+	<li>Allow epsilon moves
+	<li>Accept if any path accepts
+</ul>
+
+<h3>Conversion from NFA to DFA</h3>
+<ul>
+	<li>\epsilon-closure of an NFA state = all NFA states that are reachable through \epsilon moves from that state
+	<li>Have one state for each subset of NFA states: NFA can be exponentially smaller than the DFA!
+	<li>Execution of an NFA will always yield a subset of NFA states at the current execution point. Use the DFA state corresponding to this subset in the DFA path.
+	<li>While this conversion is exponential:
+	<ul>
+		<li>Typical number of states in the NFA are quite small
+		<li>Exponential blow-up is worst-case. Typical blow-ups are much smaller.
+	</ul>
+</ul>
+
+<h3>Conversion from Regular language to NFA</h3>
+<ul>
+	<li> \epsilon : start state is an accepting state
+	<li> 'c' : consume one character to reach an accepting state from the start state
+	<li> A + B : add a new start state, and add \epsilon moves from the start state to the start states of A and B resp. Similarly, add epsilon moves from the accepting states of A and B to the accepting state of the new automaton
+	<li> AB : connect the accepting state of A to the start state of B through an \epsilon move.
+	<li> A* : add a start state, a loop state. Add \epsilon moves from start state to loop state, and from loop state to final accepting state. add \epsilon moves from loop state to A's start state and from A's accepting state to the loop state.
+	<li>
+</ul>
+
+<h3>Implementing an automaton</h3>
+<ul>
+	<li>A DFA can be implemented as a 2D table T
+	<ul>
+		<li> One dimension : state
+		<li> Second dimension : Input character
+		<li> For every transition Si --a--&gt; Sj, define T[i, a] = j
+	</ul>
+	<li>
+	<pre>
+  i = 0
+  state = 0
+	while (input[i]) {
+    state = T[state, input[i++]];
+  }
+	</pre>
+	<li> Single pass, two lookups per input character (one for the input, another for the table)
+	<li>More space-efficient implementation of the table T are possible: e.g., share identical rows. Identical rows are very common, and so this results in significant compaction in the table's storage size. <em>Con</em>: Extra pointer de-reference during table lookup. Space vs. time tradeoff
+	<li>Even more space-efficient implementation: Use a table for the NFA (not the DFA): In this case, an element of the table would be a set of states. The table will be relatively small, because the number of states is limited by the number of NFA states and the size of the input alphabet. However, simulating the NFA is now more expensive, because we have to deal with sets of states (instead of single states). For each transition, we have to look at all the current set of possible states, to generate the next set of possible states. Again, this is a Space vs. Time tradeoff
+</ul>
+In practice, lexical analysis give you configuration options to choose between DFAs and NFAs-based implementations (for the user to choose between space-time tradeoffs).
