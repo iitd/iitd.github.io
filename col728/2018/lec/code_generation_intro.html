@@ -1,0 +1,131 @@
+<h3>Introduction to Code Generation</h3>
+<ul>
+	<li> We first focus on generating code for a stack machine with accumulator
+	<li> We want to run the resulting code on a real machine, e.g., the MIPS/x86 processor (or simulator)
+	<ul>
+		<li>The ideas do not change much for abstract machines like LLVM IR abstract machine, except some issues like register-allocation.
+	</ul>
+	<li> We simulate stack machine instructions using MIPS/x86 instructions and registers.
+</ul>
+
+<p><b>MIPS architecture</b>
+<ul>
+	<li> Prototypical Reduced Instruction Set Computer (RISC)
+	<li> Most operations use registers for operands and results
+	<li> Use <code>load</code> and <code>store</code> instructions to use values in memory
+	<li> 32 general purpose registers (32 bits each)
+	<ul>
+		<li>We will use only three registers: <code>$sp</code>, <code>$a0</code>, and <code>$t1</code> (a temporary register)
+	</ul>
+</ul>
+
+<p><b>x86 architecture</b>
+<ul>
+	<li> Complex Instruction Set Computer (CISC)
+	<li> Significantly larger opcode set : 400-odd compared to 40-odd in RISC
+	<li> Opcodes often can operate on both registers and/or memory
+	<ul>
+	<li> Do not necessarily need separate load/store instructions
+	</ul>
+	<li> 8 general purpose registers (32 bits each)
+	<ul>
+		<li>We will use <code>%esp</code>, <code>%eax</code>, and <code>%ecx</code> (a temporary register)
+		<li>Intel engineers felt that it is better to provide more opcodes and less registers. Use on-chip real-estate for more functional units and logic (by saving space through a shorter register file and its connections).
+	</ul>
+</ul>
+
+<p><b>Need some code-generation invariants</b>
+<ul>
+	<li>The accumulator is kept in MIPS register <code>$a0</code> (or x86 register <code>%eax</code>)
+	<li>The stack is kept in memory
+	<ul>
+		<li>Grows downwards towards lower addresses
+		<li>Standard convention on both MIPS and x86
+	</ul>
+	<li>For MIPS
+	<ul>
+		<li>The next location of the stack is kept in MIPS register <code>$sp</code>. The top of the stack is at address <code>$sp+4</code>
+	</ul>
+	<li>For x86
+	<ul>
+		<li>The top of the stack is at address <code>%esp</code>. The next location of the stack is at address <code>%esp-4</code>.
+	</ul>
+	<li>The name "<code>sp</code>" stands for stack-pointer.
+</ul>
+
+<p><b>MIPS opcodes (relevant only)</b>
+<ul>
+	<li> <code>lw reg1, offset(reg2)</code>
+	<ul>
+		<li>Load 32-bit word from address <code>reg2+offset</code> into <code>reg1</code>
+	</ul>
+	<li> <code>add reg1, reg2, reg3</code>
+	<ul>
+		<li><code>reg1 &lt;-- reg2+reg3</code>
+	</ul>
+	<li> <code>sw reg1, offset(reg2)</code>
+	<ul>
+		<li>Store 32-bit word <code>reg1</code> to address <code>reg2+offset</code>
+	</ul>
+	<li> <code>addiu reg1, reg2, imm</code>
+	<ul>
+		<li><code>reg1 &lt;-- reg2+imm</code>
+		<li>"<code>u</code>" means overflow is not checked (overflow means different things for signed and unsigned interpretation of the registers)
+	</ul>
+	<li> <code>li reg, imm</code>
+	<ul>
+		<li><code>reg &lt;-- imm</code>
+	</ul>
+</ul>
+
+<p><b>x86 opcodes (relevant only)</b>
+<ul>
+	<li> <code>movl %reg1/(memaddr1)/$imm, %reg2/(memaddr2)</code>
+	<ul>
+		<li>Move 32-bit word from register <code>reg1</code> (or address <code>memaddr1</code> or the immediate value itself) into <code>reg2</code> or to memory address <code>memaddr2</code>
+		<li>Captures several opcodes in one mnemonic (load, store, li, move-register, etc.). More powerful than RISC, e.g., MIPS cannot move immediate value directly to memory
+	</ul>
+	<li> <code>add %reg1/(memaddr1)/$imm, %reg2/(memaddr2)</code>
+	<ul>
+		<li><code>%reg2/(memaddr2) &lt;-- reg1/(memaddr1)/imm + %reg2/(memaddr2)</code>
+		<li>Overflow is always computed for both signed/unsigned arithmetic. Happens in parallel so not in critical performance path, but switches more transistors (more power)
+	</ul>
+	<li> <code>push %reg/(memaddr)/$imm</code>
+	<ul>
+		<li><code>(%esp-4) &lt;-- reg/(memaddr)/imm; %esp &lt;-- %esp-4</code>
+	</ul>
+	<li> <code>pop %reg/(memaddr)/$imm</code>
+	<ul>
+		<li><code>reg/(memaddr)/imm &lt;-- (%esp); %esp &lt;-- %esp+4</code>
+	</ul>
+	<li>push/pop are "higher-level" opcodes: enables faster execution paths for these common operations
+</ul>
+
+<p>The stack-machine code for <code>7+5</code> in MIPS:
+<pre>
+acc &lt;-- 7                      : li $a0, 7
+push acc                          : sw $a0, 0($sp)
+                                    addiu $sp, $sp, -4
+acc &lt;-- 5                      : li $a0, 5
+acc &lt; acc + top_of_stack       : lw $t1, 4($sp)
+                                  : add $a0, $a0, $t1
+pop                               : addiu $sp, $sp, 4
+</pre>
+
+<p>The stack-machine code for <code>7+5</code> in x86:
+<pre>
+acc &lt;-- 7                      : movl $7,%eax
+push acc                          : pushl %eax
+acc &lt;-- 5                      : movl $5, %eax
+acc &lt; acc + top_of_stack       : addl (%esp),%eax
+pop                               : popl %ecx    #just pop the register to unused register ecx
+</pre>
+
+<p>A more optimized version was possible in x86:
+<pre>
+acc &lt;-- 7                      : push $7
+push acc                          
+acc &lt;-- 5                      : mov $5, %eax
+acc &lt; acc + top_of_stack       : add (%esp), %eax
+pop                               : pop %ecx    #just pop the register to unused register ecx
+</pre>
