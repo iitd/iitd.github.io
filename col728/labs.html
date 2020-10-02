@@ -2,24 +2,27 @@
 <meta http-equiv="content-type" content="text/html; charset=windows-1252"><title>COL728 : Compiler Design : Labs (programming assignments)</title>
 </head><body><h1><font color="blue">COL728 : Compiler Design : Labs (programming assignments)</font></h1>
 
-All lab assignments are to be done in groups of at most two people.
+  <!--All lab assignments are to be done in groups of at most two people.-->
+  All lab assignments are to be done individually.
 
 <h2><u><font color="maroon">Lab 1 : Studying the C parser</font></u></h2>
 <h3><font color="green">Due date</font></h3>
-5h February 2018, Monday
+23rd October 2020, Friday
 <h3><font color="green">Weight</font></h3>
-4 marks
+TBD
+<!--4 marks-->
 <h3><font color="green">Submission Instructions</font></h3>
-Combine your reports on the lexical analyzer code and the parser code into one report, and email
-your combined report to the TA and the Instructor (see <a href=administrivia.html>administrivia</a> page for contact details).
+Combine your reports on the lexical analyzer code and the parser code into one PDF report, and submit using Moodle.
+Only PDF submissions will be considered.
+<!--email your combined report to the TA and the Instructor (see <a href=administrivia.html>administrivia</a> page for contact details).-->
 <h3><font color="green">Lab instructions</font></h3>
 <ol>
-	<li> Ensure that your environment allows cloning of Github repositories
-	<ul>
-		<li><code>git config --global http.proxy http://proxyNN.iitd.ac.in:3128/</code></li>
-		<li><code>git config --global https.proxy http://proxyNN.iitd.ac.in:3128/</code></li>
-	</ul>
-	</li>
+	<!--<li> Ensure that your environment allows cloning of Github repositories-->
+	<!--<ul>-->
+	<!--	<li><code>git config --global http.proxy http://proxyNN.iitd.ac.in:3128/</code></li>-->
+	<!--	<li><code>git config --global https.proxy http://proxyNN.iitd.ac.in:3128/</code></li>-->
+	<!--</ul>-->
+	<!--</li>-->
 	<li> Clone the GIT repository : <a href=https://github.com/iitd-plos/cc>https://github.com/iitd-plos/cc</a>
 	<ul>
 		<li><code>$ git clone https://github.com/iitd-plos/cc</code></li>
@@ -45,14 +48,15 @@ your combined report to the TA and the Instructor (see <a href=administrivia.htm
 
 Optional assignment
 <ul>
-	<li><strong>Study the hand-coded parser in <a href=https://bellard.org/tcc/>Tiny C Compiler</a></strong>. Comment on what parsing algorithm is being used here. On what basis do you make your conclusion?
+	<li><strong>Study the hand-coded parser of <a href=https://repo.or.cz/tinycc.git/tree/27f6e16bae9d0f73acec07f61aea696ab5adc680>initial version</a> of <a href=https://bellard.org/tcc/>Tiny C Compiler</a></strong>. Comment on what parsing algorithm is being used here. On what basis do you make your conclusion?
 </ul>
 
 <h2><u><font color="maroon">Lab 2 : Code Generation</font></u></h2>
 <h3><font color="green">Due date</font></h3>
-22nd March 2018, Monday.
+7th December 2020, Monday.
 <h3><font color="green">Weight</font></h3>
-12 marks
+TBD
+<!--12 marks-->
 <h3><font color="green">Submission Instructions</font></h3>
 <ol>
 	<li>Cleanup the <code>cc</code> directory, so that it only contains the source files.</li>
@@ -63,45 +67,54 @@ Optional assignment
         -->
 </ol>
 <h3><font color="green">Lab Instructions</font></h3>
+This assigment has multiple parts, each part depends on previous part.
 <ol>
-	<li> <strong>Modify the <code>cc</code> program to emit (unoptimized) LLVM bitcode for the input C program</strong>. Start with supporting the most basic C features (e.g., those that can compile the <code>hello_world.c</code> program), and then incrementally add more C features to the LLVM code generator. Please see the <a href=references.html>references</a> page for some good resources on generating LLVM bitcode. The generated LLVM bitcode should run as expected using the LLVM interpreter <code>lli</code>.
+	<li> <strong>Modify the <code>cc</code> program to emit (unoptimized) LLVM bitcode for the input C program</strong>.
+	  <ul>
+	    <li>Start with supporting the most basic C features (e.g., those that can compile the <code>hello_world.c</code> program), and then incrementally add more C features to the LLVM code generator.  TBD</li>
+	    <li>Please see the <a href=references.html>references</a> page for some good resources on generating LLVM bitcode.</li>
+	    <li>The generated LLVM bitcode should run as expected using the LLVM interpreter <code>lli</code>.</li>
+	  </ul>
 	</li>
-	<li>You will be evaluated on the <strong>correctness and elegance of your design/code</strong>, and on the <strong>generality / extensiveness of your handling of different C constructs</strong>.
-	You do not need to handle all C constructs, but we would like you to go as far as you can. The elegance of your design is likely to make your code simpler and easier to understand and debug, and is likely to allow you to make your implementation more general/extensive in the same amount of limited time.</li>
 	</li>
+	<li>Extend your code generator to support some local optimizations, like local constant-folding, local dead-code removal, etc.</li>
+	<ul>
+	  <li>Here is an example of a trivial constant propagation optimization.</li>
+	  <code>	bool x, y;<br/>
+		  ...<br/>
+		  x = true | y;<br/>
+		  // this last instruction can be changed (at the time of parsing) to<br/>
+		  x = true;<br/>
+	  </code>
+	</ul>
 </ol>
+  <strong>NOTE:</strong>
+  <ul>
+    <li>You will be evaluated on the <strong>correctness and elegance of your design/code</strong>, and on the <strong>generality / extensiveness of your handling of different C constructs</strong>.</li>
+	  <li>You do not need to handle all C constructs, but we would like you to go as far as you can. The elegance of your design is likely to make your code simpler and easier to understand and debug, and is likely to allow you to make your implementation more general/extensive in the same amount of limited time.</li>
+	</ul>
 <h3><font color="green">Some hints if you are unable to start</font></h3>
 <ol>
-	<li>You may want to start with creating a syntax tree for a simplified</li>
-grammer.
+	<li>You may want to start with creating a syntax tree for a simplified grammer.</li>
 	<li>Remove some rules and keep only small number like function declaration.</li>
 	<li>Define a header file in which you can define structure of nodes for AST.</li>
 	<li>In c.y file, add C code for returning tree of your defined type along with grammer rules. You can put C code inside braces ({}) in front of grammer rules.</li>
 	<li>In each class, defining structureof node for your AST, include a function which will generate llvm code for that node. You can take some help from <a href="https://pauladamsmith.com/blog/2015/01/how-to-get-started-with-llvm-c-api.html">this</a> link for getting started for code generation.</li>
 </ol>
 
-<h2><u><font color="maroon">Lab 3 : Local Optimizations at the time of parsing</font></u></h2>
-<h3><font color="green">Due date</font></h3>
-6th April 2018, Friday
-<h3><font color="green">Weight</font></h3>
-4 marks
-<h3><font color="green">Submission Instructions</font></h3>
-Submit your report and cleaned-up code on moodle.
-<h3><font color="green">Lab instructions</font></h3>
-<ol>
-	<li>Extend your code generator to support some local optimizations, like local constant-folding, local dead-code removal, etc.</li>
-	<li>Here is an example of a trivial constant propagation optimization.</li>
-	<code>	bool x, y;<br/>
-		...<br/>
-		x = true | y;<br/>
-		// this last instruction can be changed (at the time of parsing) to<br/>
-		x = true;<br/>
-	</code>
-</ol>
+<!--<h2><u><font color="maroon">Lab 3 : Local Optimizations at the time of parsing</font></u></h2>-->
+<!--<h3><font color="green">Due date</font></h3>-->
+<!--<h3><font color="green">Weight</font></h3>-->
+<!--4 marks-->
+<!--<h3><font color="green">Submission Instructions</font></h3>-->
+<!--Submit your report and cleaned-up code on moodle.-->
+<!--<h3><font color="green">Lab instructions</font></h3>-->
+<!--<ol>-->
+<!--</ol>-->
 
-<h2><u><font color="maroon">Lab 4 : Implementing an optimization pass for LLVM</font></u></h2>
+<h2><u><font color="maroon">Lab 3 : Implementing an optimization pass for LLVM</font></u></h2>
 <h3><font color="green">Due date</font></h3>
-2nd May 2018, Monday
+31st December 2020, Thursday
 <h3><font color="green">Weight</font></h3>
 10 marks
 <h3><font color="green">Submission Instructions</font></h3>
@@ -110,6 +123,7 @@ Submit your cleaned-up code and report on moodle.
 <ol>
 	<li>Use LLVM optimization passes to optimize the generated code.</li>
 	<li>Implement a custom LLVM optimization pass for common-subexpression elimination.</li>
+	<li>TBD</li>
 </ol>
 
 </body></html>
