@@ -7,14 +7,11 @@
 
 <h2><u><font color="maroon">Lab 1 : Studying the C parser</font></u></h2>
 <h3><font color="green">Due date</font></h3>
-23rd October 2020, Friday
+<i>Part 1:</i> 15th October 2020, Thursday <br>
+<i>Part 2:</i> 23rd October 2020, Friday
 <h3><font color="green">Weight</font></h3>
 TBD
 <!--4 marks-->
-<h3><font color="green">Submission Instructions</font></h3>
-Combine your reports on the lexical analyzer code and the parser code into one PDF report, and submit using Moodle.
-Only PDF submissions will be considered.
-<!--email your combined report to the TA and the Instructor (see <a href=administrivia.html>administrivia</a> page for contact details).-->
 <h3><font color="green">Lab instructions</font></h3>
 <ol>
 	<!--<li> Ensure that your environment allows cloning of Github repositories-->
@@ -23,33 +20,31 @@ Only PDF submissions will be considered.
 	<!--	<li><code>git config --global https.proxy http://proxyNN.iitd.ac.in:3128/</code></li>-->
 	<!--</ul>-->
 	<!--</li>-->
-	<li> Clone the GIT repository : <a href=https://github.com/iitd-plos/cc>https://github.com/iitd-plos/cc</a>
-	<ul>
-		<li><code>$ git clone https://github.com/iitd-plos/cc</code></li>
-	</ul>
+	<li> Clone the Git repository: <a href=https://github.com/iitd-plos/cc>https://github.com/iitd-plos/cc</a>
+		<br><code>$ git clone https://github.com/iitd-plos/cc</code><br>
 	</li>
 	<li>In <code>cc</code> directory, type <code>make</code> to build the <code>cc</code> program</li>
 	<li>The <code>cc</code> program checks if an input C program is correctly formed (as per the C grammar). The C program should not have any pre-processor directives, and is assumed to have been pre-processed already. Try compiling the <code>hello_world</code> program:
-	<ul>
-		<li> <code>./cc examples/hello_world.c</code></li>
-	</ul>
+		<br> <code>$ ./cc examples/hello_world.c</code><br>
 	Try changing the <code>hello_world.c</code> program to valid and invalid C programs, and check if the compilation succeeds or reports a syntax error appropriately.
-	<li><strong>Study the generated lexer in file <code>c.lex.cpp</code>, and write a short report (1-5 pages) on the logic of the code produced through the lexical analyser generator</strong>. In particular, we are interested in the logic of the function represented by YY_DECL (representing the <code>yylex()</code> function). Keep your report as brief as possible, but do not miss out any interesting fact about the generated code or logic. Your report should reflect your understanding of the logic of the generated lexical analyzer.
+	<li><strong><i>[Part 1]:</i> Study the generated lexer in file <code>c.lex.cpp</code>, and write a short report (1-5 pages) on the logic of the code produced through the lexical analyser generator</strong>. In particular, we are interested in the logic of the function represented by YY_DECL (representing the <code>yylex()</code> function). Keep your report as brief as possible, but do not miss out any interesting fact about the generated code or logic. Your report should reflect your understanding of the logic of the generated lexical analyzer.
 	<ul>
 		<li><i>Hint</i>: Track the <code>yy_act</code> variable.
 	</ul>
-	<li><strong>Study the generated parser in file <code>c.tab.cpp</code>, and write a short report (1-5 pages) on the logic of the code produced through the parser generator</strong>. In particular, we are interested in the logic of the <code>yyparse()</code> function. Keep your report as brief as possible, but do not miss out any interesting fact about the generated code or logic. Your report should reflect your understanding of the logic of the generated parser.
+	<li><strong><i>[Part 2]:</i> Study the generated parser in file <code>c.tab.cpp</code>, and write a short report (1-5 pages) on the logic of the code produced through the parser generator</strong>. In particular, we are interested in the logic of the <code>yyparse()</code> function. Keep your report as brief as possible, but do not miss out any interesting fact about the generated code or logic. Your report should reflect your understanding of the logic of the generated parser.
 	<ul>
 		<li><i>Hint</i>: Track calls to the <code>yylex()</code> function for reading the next token through the lexical analyzer.</li>
 		<li><i>Hint</i>: Look at the <code>yyreduce</code> label, which is reached during reduction of a rule.</li>
 	</ul>
 	</li>
-</ol>
 
-Optional assignment
-<ul>
-	<li><strong>Study the hand-coded parser of <a href=https://repo.or.cz/tinycc.git/tree/27f6e16bae9d0f73acec07f61aea696ab5adc680>initial version</a> of <a href=https://bellard.org/tcc/>Tiny C Compiler</a></strong>. Comment on what parsing algorithm is being used here. On what basis do you make your conclusion?
-</ul>
+	<li><strong><i>[Optional assignment]:</i> Study the hand-coded parser of <a href=https://repo.or.cz/tinycc.git/tree/27f6e16bae9d0f73acec07f61aea696ab5adc680>initial version</a> of <a href=https://bellard.org/tcc/>Tiny C Compiler</a></strong>. Comment on what parsing algorithm is being used here. On what basis do you make your conclusion?
+
+</ol>
+<h3><font color="green">Submission Instructions</font></h3>
+Prepare your report in PDF format and submit using Moodle.
+<!-- Combine your reports on the lexical analyzer code and the parser code into one PDF report, and submit using Moodle. -->
+<!--email your combined report to the TA and the Instructor (see <a href=administrivia.html>administrivia</a> page for contact details).-->
 
 <h2><u><font color="maroon">Lab 2 : Code Generation</font></u></h2>
 <h3><font color="green">Due date</font></h3>
