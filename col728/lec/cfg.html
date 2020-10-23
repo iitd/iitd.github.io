@@ -19,8 +19,8 @@ Output: parse tree of the program
 
 <p>For parsing, we need:
 <ol>
-	<li>A language for describing valid strings of tokens
-	<li>A method for distinguishing valid from invalid strings of tokens
+  <li>A language for describing valid strings of tokens
+  <li>A method for distinguishing valid from invalid strings of tokens
 </ol>
 
 <p>Recursive structure of programming languages are a good fit for Context-Free grammars
@@ -31,14 +31,14 @@ EXPR =   if EXPR then EXPR else EXPR;
 
 <p> A CFG consists of:
 <ul>
-	<li>A set of terminals T
-	<li>A set of non-terminals N
-	<li>A start symbol S \in N
-	<li>A set of productions: <pre> X -&gt; Y1Y2..Yn</pre>
-	<ul>
-		<li>X (on the left-hand side) must be a non-terminal. That's what an LHS means.
-		<li>Yi could be a terminal, a non-terminal, or the special symbol \epsilon
-	</ul>
+  <li>A set of terminals T
+  <li>A set of non-terminals N
+  <li>A start symbol S \in N
+  <li>A set of productions: <pre> X -&gt; Y1Y2..Yn</pre>
+  <ul>
+    <li>X (on the left-hand side) must be a non-terminal. That's what an LHS means.
+    <li>Yi could be a terminal, a non-terminal, or the special symbol \epsilon
+  </ul>
 </ul>
 
 <p>Strings of balanced parantheses:
@@ -54,9 +54,9 @@ T = {'(', ')'}
 
 <p>Productions can be read as replacement rules: the RHS can replace the LHS
 <ol>
-	<li>Begin with a string with only the non-terminal S
-	<li>Replace any non-terminal X in the string by the right-hand side of some production X -&gt; Y1..Yn
-	<li>Repeat (2) until there are no non-terminals
+  <li>Begin with a string with only the non-terminal S
+  <li>Replace any non-terminal X in the string by the right-hand side of some production X -&gt; Y1..Yn
+  <li>Repeat (2) until there are no non-terminals
 </ol>
 
 <p>In other words, at any step of this <em>derivation</em> we perform the following replacement:
@@ -82,26 +82,26 @@ Terminals are called so because there are no rules for replacing them
 <pre>
 
 selection_statement:   IF '(' expression ')' statement ELSE statement
-	                   | IF '(' expression ')' statement
+                     | IF '(' expression ')' statement
                      | SWITCH '(' expression ')' statement;
 
 iteration_statement:   WHILE '(' expression ')' statement
-	                   | DO statement WHILE '(' expression ')' ';'
-	                   | FOR '(' expression_statement expression_statement ')' statement
-	                   | FOR '(' expression_statement expression_statement expression ')' statement
-	                   | FOR '(' declaration expression_statement ')' statement
-	                   | FOR '(' declaration expression_statement expression ')' statement;
+                     | DO statement WHILE '(' expression ')' ';'
+                     | FOR '(' expression_statement expression_statement ')' statement
+                     | FOR '(' expression_statement expression_statement expression ')' statement
+                     | FOR '(' declaration expression_statement ')' statement
+                     | FOR '(' declaration expression_statement expression ')' statement;
 
 
 expression_statement:   ';'
-	                    | expression ';';
+                      | expression ';';
 
 statement:   labeled_statement
-	         | compound_statement
-	         | expression_statement
-	         | selection_statement
-	         | iteration_statement
-	         | jump_statement;
+           | compound_statement
+           | expression_statement
+           | selection_statement
+           | iteration_statement
+           | jump_statement;
 </pre>
 
 <p>Some elements of this language?
@@ -116,29 +116,29 @@ E --&gt; Id
 
 <p>The idea of a CFG is a big step.
 <ul>
-	<li>Membership in a language is a yes/no answer. Also need a parse-tree
+  <li>Membership in a language is a yes/no answer. Also need a parse-tree
   <li>Must handle errors gracefully. Give feedback to the programmer
-	<li>Need an implementation of the CFGs (e.g., bison generates an implementation given a grammar)
+  <li>Need an implementation of the CFGs (e.g., bison generates an implementation given a grammar)
 </ul>
 
 <p>Form of the grammar is important
 <ul>
-	<li>Many grammars generate the same language
-	<li>Parsing tools are sensitive to the grammar. Only some grammars are parsable by some tools. Will see examples later
+  <li>Many grammars generate the same language
+  <li>Parsing tools are sensitive to the grammar. Only some grammars are parsable by some tools. Will see examples later
 </ul>
 
 <p>A derivation can be drawn as a tree
 <ul>
-	<li>Start symbol is tree's root
-	<li>For a production X --&gt; Y1..Yn, add children Y1..Yn to node X
+  <li>Start symbol is tree's root
+  <li>For a production X --&gt; Y1..Yn, add children Y1..Yn to node X
 </ul>
 
 <p>Example: <code>id * id + id</code>. Generate the derivation tree for the grammar of arithmetic expressions. This derivation tree is called the parse tree of this string. While building the tree, also write the derivation rules that have  been used at each step to the left.
 
 <p>A parse tree has
 <ul>
-	<li>terminals at the leaves
-	<li>non-terminals at the interior nodes
+  <li>terminals at the leaves
+  <li>non-terminals at the interior nodes
 </ul>
 
 <p>An in-order traversal of the parse tree yields the original input
@@ -161,7 +161,7 @@ E --&gt; Id
 
 <p>A grammar is <em>ambiguous</em> if it has more than one parse tree for some string.
 <ul>
-	<li>Equivalently, there is more than one right-most or left-most derivation for some string
+  <li>Equivalently, there is more than one right-most or left-most derivation for some string
 </ul>
 
 <p>Ambiguity may leave the meaning of the program ill-defined.
@@ -197,14 +197,14 @@ Show the two parse trees, and show which one is rejected by this new grammar.
 
 <p>Used with care, ambiguity can sometimes simplify the grammar
 <ul>
-	<li>Sometimes allows more natural definitions
-	<li>We need disambiguation mechanisms
+  <li>Sometimes allows more natural definitions
+  <li>We need disambiguation mechanisms
 </ul>
 
 <p>Most languages and parsing tools
 <ul>
-	<li>Use the more natural (ambiguous) grammar
-	<li>Along with disambiguating declarations
+  <li>Use the more natural (ambiguous) grammar
+  <li>Along with disambiguating declarations
 </ul>
 Example: E -&gt; E + E | E * E | Int
 <br>Precedence: %left + (means that the "+" operator is left associative)
@@ -217,36 +217,36 @@ Example: E -&gt; E + E | E * E | Int
 <h3>Error handling</h3>
 <p>Purpose of a compiler is:
 <ul>
-	<li>Detect non-valid programs
-	<li>Translate the valid ones
+  <li>Detect non-valid programs
+  <li>Translate the valid ones
 </ul>
 
 <p>Many kinds of possible errors (e.g., in C):
 <ul>
-	<li>Lexing errors. e.g., abc$abc, detected by lexer
-	<li>Syntax errors. e.g., abc * % 123, detected by parser
-	<li>Semantic errors. e.g., int x; y = x(3), detected by type checker
-	<li>Correctness. e.g., quicksort. detected by tester/user. out of scope for a compiler
+  <li>Lexing errors. e.g., abc$abc, detected by lexer
+  <li>Syntax errors. e.g., abc * % 123, detected by parser
+  <li>Semantic errors. e.g., int x; y = x(3), detected by type checker
+  <li>Correctness. e.g., quicksort. detected by tester/user. out of scope for a compiler
 </ul>
 
 <p>Error handlers should
 <ul>
-	<li>Report errors accurately and clearly
-	<li>Recover from an error quickly
-	<li>Not slow down compilation of valid code
+  <li>Report errors accurately and clearly
+  <li>Recover from an error quickly
+  <li>Not slow down compilation of valid code
 </ul>
 
 <p>Error handling modes
 <ul>
-	<li>Panic
-	<li>Error production
-	<li>Automatic local and global correction. Popular area of research at some point, but not mainstream.
+  <li>Panic
+  <li>Error production
+  <li>Automatic local and global correction. Popular area of research at some point, but not mainstream.
 </ul>
 
 <p>Panic mode is the simplest
 <ul>
-	<li> When an error is encountered, discard tokens until a clear role is found
-	<li> Continue from there
+  <li> When an error is encountered, discard tokens until a clear role is found
+  <li> Continue from there
 </ul>
 Looking for "synchronizing tokens", typically the statement or expression terminators (e.g., ";" in C)
 
@@ -262,42 +262,42 @@ The fourth production says that if you see an error while trying to parse E, the
 
 <p>Error productions
 <ul>
-	<li>Specify known common mistakes in the grammar
-	<li>Example:
-	<ul>
-		<li>Write 5x instead of 5*x
-		<li>Mathematicians complained that they were used to writing 5x but compiler gives parse error
-		<li>Response: add a production E -&gt; EE
-	</ul>
-	<li>Disadvantage:
-	<ul>
-		<li>Complicates the grammar
-		<li>Promotes mistakes (by making the syntax less restrictive)
-		<li>Common response by production compilers: warn about such usage but accept it anyway. <em>Warnings</em>
-	</ul>
+  <li>Specify known common mistakes in the grammar
+  <li>Example:
+  <ul>
+    <li>Write 5x instead of 5*x
+    <li>Mathematicians complained that they were used to writing 5x but compiler gives parse error
+    <li>Response: add a production E -&gt; EE
+  </ul>
+  <li>Disadvantage:
+  <ul>
+    <li>Complicates the grammar
+    <li>Promotes mistakes (by making the syntax less restrictive)
+    <li>Common response by production compilers: warn about such usage but accept it anyway. <em>Warnings</em>
+  </ul>
 </ul>
 
 <p>Error correction: find a "nearby" program. Notion of "edit distance"
 <ul>
-	<li>Try token insertions or deletions upto a certain edit distance exhaustively.
-	<li>Cons: hard to implement, significant slowdown in compilation, "nearby" is not necessarily the intended program
-	<li>Common response by production compilers today: suggestions to the programmer, e.g., OCaml
-	<li>PL/C is an example of a past error-correcting compiler
-	<ul>
-		<li>Motivation: compilation was quite slow. could take a day to recompile
-		<li>Hence wanted to find as many errors as possible in one compilation cycle
-	</ul>
+  <li>Try token insertions or deletions upto a certain edit distance exhaustively.
+  <li>Cons: hard to implement, significant slowdown in compilation, "nearby" is not necessarily the intended program
+  <li>Common response by production compilers today: suggestions to the programmer, e.g., OCaml
+  <li>PL/C is an example of a past error-correcting compiler
+  <ul>
+    <li>Motivation: compilation was quite slow. could take a day to recompile
+    <li>Hence wanted to find as many errors as possible in one compilation cycle
+  </ul>
 </ul>
 
 <h3>Abstract syntax trees</h3>
 <p>Review
 <ul>
-	<li>A parser traces the derivation of a sequence of tokens
-	<li>The rest of the compiler needs a structural representation of the program
-	<li>Abstract syntax trees (AST)
-	<ul>
-		<li>Like parse trees but ignore some details
-	</ul>
+  <li>A parser traces the derivation of a sequence of tokens
+  <li>The rest of the compiler needs a structural representation of the program
+  <li>Abstract syntax trees (AST)
+  <ul>
+    <li>Like parse trees but ignore some details
+  </ul>
 </ul>
 
 <p>Consider the grammar
