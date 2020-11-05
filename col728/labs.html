@@ -72,11 +72,14 @@ This assigment has multiple parts, each part depends on previous part.
 </ul>
 </ul>
 <ol>
-	<li><strong><i>[Part 1]:</i> Building AST.</strong></li>
+	<li><strong><i>[Part 1]:</i> Building AST</strong></li>
 	<ol>
 	  <li>In this part you will build an AST using the provided Bison grammar specification.</li>
 	  <li>Switch to the <code>lab2</code> branch of <a href=https://github.com/iitd-plos/cc/tree/lab2><code>cc</code></a> (you may need to <code>git pull</code> first).
 	  <li>Look at the provided <code>c.y</code> file and implement support for emitting AST for two C constructs: function definitions and expressions (the <code>function_definition</code>, <code>expression</code> and other dependent parts of grammar)</li>
+	    <ul>
+	      <li>You should have a <code>dump_ast()</code> or similar method/function which should dump the string representation of the built AST.</li>
+	    </ul>
 	  <li>You do not need to exhaustively support all constructs but your implementation MUST at least be able to parse and build AST for the C files in the <code>examples</code> directory, namely <code>test1.c</code>.</li>
 	  <li>The goal of this exercise is to have the basic infrastructure ready in order to support more complex C constructs.  Being general in your implementation will you help in future parts of the assignment</li>
 	</ol>
