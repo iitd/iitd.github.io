@@ -48,7 +48,10 @@ Prepare your report in PDF format and submit using Moodle.
 
 <h2><u><font color="maroon">Lab 2 : Code Generation</font></u></h2>
 <h3><font color="green">Due date</font></h3>
-7th December 2020, Monday.
+<i>Part 1:</i> 20th November 2020, Friday<br>
+<!-- <i>Part 2:</i> 25th November 2020, Wednesday<br> -->
+<!-- <i>Part 3:</i>  3rd December 2020, Thursday<br> -->
+<i>Part 2,3,4:</i> 11th December 2020, Friday<br>
 <h3><font color="green">Weight</font></h3>
 16 marks
 <!--12 marks-->
@@ -56,24 +59,45 @@ Prepare your report in PDF format and submit using Moodle.
 <ol>
 	<li>Cleanup the <code>cc</code> directory, so that it only contains the source files.</li>
         <li>Compress this directory to EntryNumber.zip file and submit it on course page on moodle.</li>
-	<!--
-        <li>Copy the <code>cc</code> directory to some directory in your home folder on the NFS-mounted shared storage in the GCL lab.</li>
-	<li>Login to palasi, change your current working directory (<code>cd</code>) to the clean <code>cc</code> directory, and type <code>col728-submit lab2</code>. Follow instructions. If you see the <code>Congratulations</code> message, your submission was successful.
-        -->
 </ol>
 <h3><font color="green">Lab Instructions</font></h3>
 This assigment has multiple parts, each part depends on previous part.
+<strong>General instructions:</strong>
+<ul>
+  <li>The goal is to modify the <code>cc</code> program to emit (unoptimized) LLVM bitcode for the input C program.</li>
+  <li>You will start with supporting the most basic C features (e.g., those that can compile the <code>hello_world.c</code> program), and then incrementally add more C features to the LLVM code generator.</li>
+  <li>Please see the <a href=references.html>references</a> page for some good resources on generating LLVM bitcode. The generated LLVM bitcode should run as expected using the LLVM interpreter <code>lli</code>.</li>
+  <li>Please note that you will be evaluated on the <strong>correctness and elegance of your design/code</strong>, and on the <strong>generality/extensiveness of your handling of different C constructs</strong>.</li>
+	<li>Further, you do not need to handle all C constructs, but we would like you to go as far as you can. The elegance of your design is likely to make your code simpler and easier to understand and debug, and is likely to allow you to make your implementation more general/extensive in the same amount of limited time.</li>
+</ul>
+</ul>
 <ol>
-	<li> <strong>Modify the <code>cc</code> program to emit (unoptimized) LLVM bitcode for the input C program</strong>.
-	  <ul>
-	    <li>Start with supporting the most basic C features (e.g., those that can compile the <code>hello_world.c</code> program), and then incrementally add more C features to the LLVM code generator.  TBD</li>
-	    <li>Please see the <a href=references.html>references</a> page for some good resources on generating LLVM bitcode.</li>
-	    <li>The generated LLVM bitcode should run as expected using the LLVM interpreter <code>lli</code>.</li>
-	  </ul>
-	</li>
-	</li>
-	<li>Extend your code generator to support some local optimizations, like local constant-folding, local dead-code removal, etc.</li>
-	<ul>
+	<li><strong><i>[Part 1]:</i> Building AST</strong></li>
+	<ol>
+	  <li>In this part you will build an AST using the provided Bison grammar specification.</li>
+	  <li>Switch to the <code>lab2</code> branch of <a href=https://github.com/iitd-plos/cc/tree/lab2><code>cc</code></a> (you may need to <code>git pull</code> first).
+	  <li>Look at the provided <code>c.y</code> file and implement support for emitting AST for two C constructs: function definitions and expressions (the <code>function_definition</code>, <code>expression</code> and other dependent parts of grammar)</li>
+	    <ul>
+	      <li>You should have a <code>dump_ast()</code> or similar method/function which should dump the string representation of the built AST.</li>
+	    </ul>
+	  <li>You do not need to exhaustively support all constructs but your implementation MUST at least be able to parse and build AST for the C files in the <code>examples</code> directory, namely <code>test1.c</code>.</li>
+	  <li>The goal of this exercise is to have the basic infrastructure ready in order to support more complex C constructs.  Being general in your implementation will you help in future parts of the assignment</li>
+	</ol>
+	<li><strong><i>[Part 2]:</i> Supporting more complex constructs</strong></li>
+  <ol>
+    <li>In this part we will enough C constructs in order to get the <code>hello_world.c</code> example (and a few more) working.</li>
+    <li>Utilizing the infrastructure developed in previous part, add support for variable declarations, branching and control-flow statements, namely <code>if, while, return, goto</code> etc.</li>
+    <li>Handling variables declaration would require tracking scopes and declarations using a symbol table.</li>
+    <li>Your implementation must be able to parse and build AST for <code>hello_world.c</code> and <code>test2.c</code>.
+  </ol>
+  <li><strong><i>[Part 3]:</i> Emitting LLVM IR</strong></li>
+  <ol>
+    <li>This part will introduce you to the LLVM IR, and at the end of this assignment your implementation will emit LLVM IR for the C code it is able to parse.</li>
+    <li>The emitted LLVM IR bitcode should run as expected (per the input C code) using the LLVM interpreter <code>lli</code>.
+  </ol>
+  <li><strong><i>[Part 4]:</i> Local optimizations</strong></li>
+	<ol>
+	  <li>Extend your code generator to support some local optimizations, like local constant-folding, local dead-code removal, etc.</li>
 	  <li>Here is an example of a trivial constant propagation optimization.</li>
 	  <code>	bool x, y;<br/>
 		  ...<br/>
@@ -81,20 +105,21 @@ This assigment has multiple parts, each part depends on previous part.
 		  // this last instruction can be changed (at the time of parsing) to<br/>
 		  x = true;<br/>
 	  </code>
-	</ul>
+	</ol>
+  <li><strong><i>[Optional]:</i> More C constructs</strong></li>
+  <ol>
+    <li> Add support for more C statements:<code>for, do-while, switch</code>.  For example, try to get <a href=https://en.wikipedia.org/wiki/Duff%27s_device>Duff's device</a> working.</li>
+    <li> Handle local and global arrays.</li>
+    <li> Handle implicit casting and type checking.</li>
+  </ol>
 </ol>
-  <strong>NOTE:</strong>
-  <ul>
-    <li>You will be evaluated on the <strong>correctness and elegance of your design/code</strong>, and on the <strong>generality / extensiveness of your handling of different C constructs</strong>.</li>
-	  <li>You do not need to handle all C constructs, but we would like you to go as far as you can. The elegance of your design is likely to make your code simpler and easier to understand and debug, and is likely to allow you to make your implementation more general/extensive in the same amount of limited time.</li>
-	</ul>
 <h3><font color="green">Some hints if you are unable to start</font></h3>
 <ol>
 	<li>You may want to start with creating a syntax tree for a simplified grammer.</li>
 	<li>Remove some rules and keep only small number like function declaration.</li>
 	<li>Define a header file in which you can define structure of nodes for AST.</li>
 	<li>In c.y file, add C code for returning tree of your defined type along with grammer rules. You can put C code inside braces ({}) in front of grammer rules.</li>
-	<li>In each class, defining structureof node for your AST, include a function which will generate llvm code for that node. You can take some help from <a href="https://pauladamsmith.com/blog/2015/01/how-to-get-started-with-llvm-c-api.html">this</a> link for getting started for code generation.</li>
+	<li>In each class, defining structure of node for your AST, include a function which will generate llvm code for that node. You can take some help from <a href="https://pauladamsmith.com/blog/2015/01/how-to-get-started-with-llvm-c-api.html">this</a> link for getting started for code generation.</li>
 </ol>
 
 <!--<h2><u><font color="maroon">Lab 3 : Local Optimizations at the time of parsing</font></u></h2>-->
