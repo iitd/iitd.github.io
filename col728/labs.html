@@ -99,11 +99,11 @@ This assigment has multiple parts, each part depends on previous part.
 	<ol>
 	  <li>Extend your code generator to support some local optimizations, like local constant-folding, local dead-code removal, etc.</li>
 	  <li>Here is an example of a trivial constant propagation optimization.</li>
-	  <code>	bool x, y;<br/>
+	  <code>	_Bool x, y;<br/>
 		  ...<br/>
-		  x = true | y;<br/>
+		  x = 1 || y;<br/>
 		  // this last instruction can be changed (at the time of parsing) to<br/>
-		  x = true;<br/>
+		  x = 1;<br/>
 	  </code>
 	</ol>
   <li><strong><i>[Optional]:</i> More C constructs</strong></li>
