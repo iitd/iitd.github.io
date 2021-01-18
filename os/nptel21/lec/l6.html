@@ -1,0 +1,156 @@
+<html>
+<head>
+<title>L6</title>
+</head>
+<body>
+
+<h1>Physical Memory, I/O, Segmentation</h1>
+
+<h2>Outline</h2>
+<ul>
+<li>x86 Physical Memory Map
+<li>I/O
+<li>Example hardware for address spaces: x86 segments
+</ul>
+
+<h2>x86 Physical Memory Map</h2>
+
+<ul>
+<li>The physical address space mostly looks like ordinary RAM
+<li>Except some low-memory addresses actually refer to other things
+<li>Writes to VGA memory appear on the screen
+<li>Reset or power-on jumps to ROM at 0x000ffff0 (so must be ROM at top of BIOS)
+</ul>
+
+<pre>
++------------------+  <- 0xFFFFFFFF (4GB)
+|      32-bit      |
+|  memory mapped   |
+|     devices      |
+|                  |
+/\/\/\/\/\/\/\/\/\/\
+
+/\/\/\/\/\/\/\/\/\/\
+|                  |
+|      Unused      |
+|                  |
++------------------+  <- depends on amount of RAM
+|                  |
+|                  |
+| Extended Memory  |
+|                  |
+|                  |
++------------------+  <- 0x00100000 (1MB)
+|     BIOS ROM     |
++------------------+  <- 0x000F0000 (960KB)
+|  16-bit devices, |
+|  expansion ROMs  |
++------------------+  <- 0x000C0000 (768KB)
+|   VGA Display    |
++------------------+  <- 0x000A0000 (640KB)
+|                  |
+|    Low Memory    |
+|                  |
++------------------+  <- 0x00000000
+</pre>
+
+<h2>I/O</h2>
+	<ul>
+	<li>Original PC architecture: use dedicated <i>I/O space</i>
+		<ul>
+		<li>Works same as memory accesses but set I/O signal
+		<li>Only 1024 I/O addresses
+		<li>Accessed with special instructions (IN, OUT)
+		<li>Example: write a byte to line printer:
+<pre>
+#define DATA_PORT    0x378
+#define STATUS_PORT  0x379
+#define   BUSY 0x80
+#define CONTROL_PORT 0x37A
+#define   STROBE 0x01
+void
+lpt_putc(int c)
+{
+  /* wait for printer to consume previous byte */
+  while((inb(STATUS_PORT) & BUSY) == 0)
+    ;
+
+  /* put the byte on the parallel lines */
+  outb(DATA_PORT, c);
+
+  /* tell the printer to look at the data */
+  outb(CONTROL_PORT, STROBE);
+  outb(CONTROL_PORT, 0);
+}
+<pre>
+		</ul>
+
+	<li>Memory-Mapped I/O
+	<ul>
+	    <li>Use normal physical memory addresses
+		<ul>
+		<li>Gets around limited size of I/O address space
+		<li>No need for special instructions
+		<li>System controller routes to appropriate device
+		</ul>
+	    <li>Works like ``magic'' memory:
+		<ul>
+		<li>	<i>Addressed</i> and <i>accessed</i> like memory,
+			but ...
+		<li>	... does not <i>behave</i> like memory!
+		<li>	Reads and writes can have ``side effects''
+		<li>	Read results can change due to external events
+		</ul>
+	</ul>
+</ul>
+
+<h2>Example hardware for address spaces: x86 segments</h2>
+
+<p>The operating system can switch the x86 to protected mode, which
+supports virtual and physical addresses, and allows the O/S to set up
+address spaces so that user processes can't change them.  Translation
+in protected mode is as follows:
+	<ul>
+	<li>selector:offset (virtual / logical addr) <br>
+	     ==SEGMENTATION==> 
+	<li>linear address <br>
+	     ==PAGING ==>
+	<li>physical address
+	</ul>
+
+<p>Next lecture covers paging; now we focus on segmentation. 
+
+<p>Protected-mode segmentation works as follows (see handout):
+<ul>
+<li>segment register holds segment selector
+<li>selector: 13 bits of index, local vs global flag, 2-bit RPL
+<li>selector indexes into global descriptor table (GDT)
+<li>segment descriptor holds 32-bit base, limit, type, protection
+<li>la = va + base ; assert(va < limit);
+<li>choice of seg register usually implicit in instruction
+<ul>
+<li>ESP uses SS, EIP uses CS, others (mostly) use DS
+<li>some instructions can take far addresses: 
+		<ul><li><tt>ljmp $selector, $offset</tt>
+		</ul>
+</ul>
+<li>GDT lives in memory, CPU's GDTR register points to base of GDT
+<li>LGDT instruction loads GDTR
+<li>you turn on protected mode by setting PE bit in CR0 register
+
+<li>What about protection?
+<ul>
+  <li>instructions can only r/w/x memory reachable through seg regs
+  <li>not before base, not after limit
+	<li>can my program change a segment register? yes, but... to one of the
+	    permitted (accessible) descriptors in the GDT
+  <li>can my program re-load GDTR? no!
+  <li>how does h/w know if user or kernel?
+  <li>Current privilege level (CPL) is in the low 2 bits of CS
+  <li>CPL=0 is privileged O/S, CPL=3 is user
+  <li>why can't app modify the descriptors in the GDT? it's in memory...
+  <li>what about system calls? how do they transfer to kernel?
+  <li>app cannot <b>just</b> lower the CPL
+</ul>
+
+</ul>

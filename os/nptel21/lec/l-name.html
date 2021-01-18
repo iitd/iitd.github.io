@@ -1,0 +1,325 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+
+<title>L11</title>
+</head><body>
+<!--
+<h1>Naming in file systems</h1>
+
+Required reading: namei() and associated functions; sysfile.c.
+
+<p>
+
+</p><ul>
+    <li>why naming?
+	<ul>
+	    <li>convenient way for users, applications to keep track
+		of their data
+	    </li><li>isolates different apps from one another, much like VM
+		(e.g. different apps can use different directories)
+	    </li><li>can help applications with concurrency and sharing,
+		as we will see later
+	</li></ul>
+
+    </li><li>conceptual layers (Unix)
+	<ul>
+	    <li>blocks: 512 bytes on disk. named by a sector number.
+	    </li><li>inodes: sequence of bytes, backed by a sequence of blocks.
+			inode named by an inode number,
+			bytes in an inode named by offset in inode.
+	    </li><li>directories: map user-meaningful names to inode numbers.
+			directories are inodes, so named by inode number.
+	    </li><li>pathnames: describe a way to traverse the directory
+			structure to get the desired file.
+	    </li><li>(Unix FDs: user-visible binding for an inode;
+			more on this later.)
+	</li></ul>
+
+    </li><li>pathnames
+	<ul>
+	    <li>pathnames separated by /, root directory denoted by
+		a leading "/"
+	    </li><li>special entries "." and ".."
+	    </li><li>directory hierarchy -- can create subdirs, etc
+	    </li><li>each process has a current working directory (p-&gt;cwd),
+		which is used for relative paths (not starting with "/")
+	    </li><li>syscalls to manage namespace:
+		open, link, unlink, mkdir, chdir
+	</li></ul>
+
+    </li><li>limitations, features
+	<ul>
+	    <li>since naming layer is quite separate from files (inodes),
+		can easily have a file with multiple names, or no names
+		at all.
+	    </li><li>how do we implement rename?  rename-replace?
+	    </li><li>hard links for directories?  problem: inode numbers
+		don't tell us when we might be forming a cycle..
+	    </li><li>fix: disallow hard links for directories
+	    </li><li>Unix convention: can only remove empty directories
+		(in part making the user do explicit garbage-collection)
+
+	    </li><li>symbolic links: does not hold a reference, but just
+		tells the name lookup code to continue looking for
+		another name.
+	    </li><li>works fine for directories, but does not guarantee
+		anything exists.
+	    </li><li>tricky bit: relative-path symlinks evaluated starting
+		from the directory that holds the symlink, not caller's
+		cwd (as if caller provided same relative-path string).
+	</li></ul>
+
+    </li><li>how else could you design an FS?  e.g. FAT
+	<ul>
+	    <li>puts file info (equivalent of inode) in directory entry
+	    </li><li>no notion of an inode (file's identity aside from name)
+	    </li><li>cannot have hard links to files
+	    </li><li>cannot rename across directories
+	</li></ul>
+
+    </li><li>NTFS
+	<ul>
+	    <li>has a notion of an inode
+	    </li><li>doesn't have the static disk layout of xv6 fs
+	    </li><li>most metadata (like block bitmap) is a file
+	    </li><li>kind-of like UVPT trick, can look at inode map as
+		just another file
+	    </li><li>cute trick: can even map the real boot sector at
+		the start of a disk as yet another file
+	</li></ul>
+</li></ul>
+
+<h2>xv6 data structures</h2>
+
+<ul>
+    <li>dirent
+	<ul>
+	    <li>name: string
+	    </li><li>inum: inode number for that file
+	    </li><li>empty directory entries: zeroed-out inode
+	</li></ul>
+
+    </li><li>dinode
+	<ul>
+	    <li>nlink: number of links (directory references)
+	</li></ul>
+
+    </li><li>inode
+	<ul>
+	    <li>ref: number of threads that have an in-memory
+		pointer to this inode.  FDs, p-&gt;cwd, syscalls,
+		namei.
+	    </li><li>flags: I_BUSY (locked), I_VALID (data present, like buf)
+	    </li><li>we'll see why we need I_BUSY vs ref in a bit..
+	</li></ul>
+
+    </li><li>struct file
+      <ul>
+	<li> abstracts files (files, pipes, ...)
+	</li><li> shared offset
+	</li></ul>
+      </li></ul>
+
+    <li>naming functions:
+	<ul>
+	    <li>_namei does most name-to-inode translation
+	    </li><li>skipelem parses path names
+	    </li><li>dirlookup does name-to-inode lookup in a single dir
+	    </li><li>dirlink adds names to a directory
+	</li></ul>
+
+
+<h2>xv6 code</h2>
+
+<ul>
+    <li>open("a/b/c", O_RDWR)
+	<ul>
+	    <li>4851: sys_open
+	    </li><li>4865: namei should return inode for "a/b/c"
+		<ul>
+		    <li>4389: namei
+		    </li><li>4354: namex
+		    </li><li>4361: start in cp-&gt;cwd
+		    </li><li>4363: skipelem: a/b/c -&gt; b/c, name=a
+		    </li><li>4374: look up "a":
+			dirlookup [4212] iterates over all entries in dir
+		    </li><li>4379: go back around looking up "b/c" in the "a" dir
+		    </li><li>4374: look up "b", ...
+		    </li><li>4385: return inode for "a/b/c"
+ 		</li></ul>
+	    </li><li>4874: back in sys_open, get a new FD#
+	    </li><li>4883: this is where we save reference to actual inode
+	    </li><li>4888: return FD# to user
+	</li></ul>
+
+    </li><li>open("a/b/c", O_RDWR | O_CREATE)
+	<ul>
+	    <li>4851: sys_open
+	    </li><li>4801: create
+	    </li><li>4807: nameiparent [4396] is slightly different:
+		get inode for parent dir, keep name to create
+	    </li><li>4811: dirlookup [4212] checks if file already exists.
+		who sets canexist?  sys_open, sys_mknod, sys_mkdir.
+	    </li><li>4821: get a fresh inode, fill it in
+		(ialloc [3952] scans for a type=0 inode)
+	    </li><li>4831: add name to directory, dirlink [4252]
+		(what if we now crash here?  good example from quiz.
+		 how to fix?)
+	    </li><li>4838: if mkdir("a/b/c"), create "." and ".." entries.
+	    </li><li>what ensures two threads can't race to create same name?
+	    </li><li>4846: return newly created inode
+	</li></ul>
+
+    </li><li>unlink("a")
+	<ul>
+	    <li>4751: sys_unlink
+	    </li><li>4760: nameiparent again, get parent dir, keep name to unlink
+	    </li><li>4765: why do we need to guard "." and ".." here?
+	    </li><li>4770: find dirent slot that holds name to unlink
+	    </li><li>4774: we already locked directory, why lock inode?
+	    </li><li>4778: if removing directory, make sure it's empty
+	    </li><li>4784: first blank out dirent
+	    </li><li>4789: then drop nlink; what would happen if we did otherwise?
+	    </li><li>4791: iunlockput [3924]
+
+	    </li><li>when does the file (inode) actually get freed?
+	    </li><li>what happens to files with multiple names (nlink&gt;1)?
+	    </li><li>what happens to files still held open by some processes?
+	    </li><li>what happens if there's a concurrent link [4663]
+		executing for the same inode?
+	    </li><li>what happens if there's a process running in a child dir?<br>
+		child directory's ".." holds an nlink on parent [4839].
+		could have accessed a free directory inode otherwise.
+		(and xv6 gets it wrong again; itrunc should
+		 drop parent-&gt;nlink..)
+	</li></ul>
+
+    </li><li>back to namei: concurrency
+	<ul>
+	    <li>namei vs unlink of final name
+		(what's the precise problem?)
+	    </li><li>namei vs unlink/rmdir of directory being traversed
+		(what's the precise problem?)
+	    </li><li>namei("d1/d2") vs namei("d1/d2/..") -- circular locking?
+	    </li><li>key idea: differentiate between locking an inode (I_BUSY)
+		vs protecting it from deletion (ref)
+	</li></ul>
+
+    </li><li>concurrency requires lots of work to keep data structures
+	consistent and to provide some reasonable semantics
+
+    </li><li>work not necessarily wasted:
+	lots of applications have potential concurrency
+	and crash-recovery issues, and it's convenient when these issues
+	can be relegated to some common FS code
+	<ul>
+	    <li>example: atomic file creation -- create and rename trick
+	    </li><li>atomic file replacement?  xv6 lacks rename aka
+		unlink-and-link, but most Unix systems do have it.
+	</li></ul>
+
+</li></ul>
+
+<h2>symlinks</h2>
+
+<ul>
+    <li>what are the interesting points for implementing symlinks in xv6?
+</li></ul>
+-->
+<h2>Access Control</h2>
+
+<ul>
+	<li> Access Control Lists
+	<li> Capabilities
+</ul>
+<h2>TOCTTOU</h2>
+
+<ul>
+    <li>unfortunately, for all our effort on concurrency,
+	some things just aren't solvable in the Unix API.
+
+    </li><li>various system calls take names, but the file it refers to
+	can change between each call, making it difficult to know
+	what you're really doing
+
+    </li><li>traditionally this problem has come up in privileged code,
+	which needs to perform some checks on a file, and if the
+	checks succeed, do something to that file.  if the file
+	name points to a different inode between the "check" and
+	the "do", we have a security problem.
+
+    </li><li>called "time-of-check to time-of-use" (TOCTTOU) bug.
+
+    </li><li>usual example: cleaner for a /tmp directory
+	<ul>
+	    <li>root runs: <tt>rm /tmp/*/*</tt>
+		(really something like
+		 <tt>find /tmp <i>-not-accessed-recently</i> | xargs rm</tt>)
+	    </li><li>two phases: expand list of files, then unlink them
+
+	    </li><li>attacker: <tt>mkdir /tmp/a; echo &gt;/tmp/a/passwd</tt>
+	    </li><li>root's rm: finds /tmp/a/passwd
+	    </li><li>attacker: <tt>rm /tmp/a/passwd; rmdir /tmp/a;
+		ln -s /etc /tmp/d</tt>
+	    </li><li>root's rm: <tt>unlink("/tmp/a/passwd")</tt>,
+		unlinks <tt>passwd</tt> from /tmp/a==/etc
+	</li></ul>
+
+    </li><li>what's the fix?  expose more inodes (as file descriptors)
+	to avoid duplicate namei() calls that might return different
+	values.
+	<ul>
+	    <li>fstat allows us to check file status for an inode,
+		rather than path (real unix also has stat, which
+		can lead to trouble)
+	    </li><li>how to do a directory lookup on a directory inode?
+	    </li><li>how to execute a file with a particular inode?
+	</li></ul>
+
+</li></ul>
+
+<pre>
+ In early versions of Unix there was no mkdir() system call. here's
+ the source for /bin/mkdir (from v7 unix):
+   if ((mknod(d, 040777, 0)) < 0) {
+       fprintf(stderr,"mkdir: cannot make directory %s\n", d);
+       ++Errors;
+       return;
+   }
+   chown(d, getuid(), getgid());
+ mkdir was setuid to root -- it ran as root even if started by
+   an ordinary user, since mknod() is a privileged call.
+ what's the problem?
+ how to exploit it?
+   cd /tmp
+   mkdir foo & ./exploit
+   exploit waits for foo to appear, then removes it,
+     substitutes a link to e.g. /etc/passwd
+
+unix used to be full of such bugs. e.g. mail delivery command
+appended to /usr/spool/mail/cs123456, running as root:
+ stat(/usr/spool/mail/cs123456)
+ if owned by cs123456
+   open and write
+
+how do people fix tocttou bugs?
+ atomic mkdir() call
+ f-calls:
+   fd = open(file)
+   fstat(fd)
+   if(ok)
+     fchown(fd)
+ don't run as root: structure s/w to drop privileges when possible
+   e.g. setuid(cs123456) before delivering mail
+</pre>
+<h2>rest of course</h2>
+
+<ul>
+    <li>will talk about a research paper per lecture
+    </li><li>lecture after next lecture: paper on getting both crash-consistency and
+	performance in a file system.
+    </li><li>read paper before class, lecture will discuss it in detail,
+	be prepared.
+</li></ul>
+
+</li></body></html>

@@ -1,0 +1,503 @@
+<title>L23</title>
+<html>
+<head>
+</head>
+<body>
+<!--<h2>Lock Subtleties</h2>
+<p>insert() with these locks is only correct if each CPU carries
+out memory reads and writes in program order.
+For example, if the CPU were to
+execute insert() out of order so that it did the read at A before the
+acquire(), then insert() would be incorrect even with locks.
+Many modern processors execute memory operations out of order to increase
+performance!  So we
+may have to use special instructions to tell the CPU not to re-order
+memory operations past acquire()s and release()s.
+The compiler may also generate instructions in orders
+that don't correspond to the order of the source code lines,
+so we have to worry about that too.
+
+<p>Our <tt>xchg</tt>-based acquire() is inefficient when
+it has to wait because
+the continuous <tt>xchg</tt> instructions interfere with
+useful use of the memory system.
+In a later lecture we will see how to do better.
+
+<h2>Fine-grained locking and modularity</h2>
+
+This lock abstraction gives the programmer lots of flexibility, since
+the programmer can associate lock objects with code or data in
+whatever way seems best.  For example, suppose you are implementing a
+file system that will be used in a multi-processor
+kernel like xv6.  The file system can have a single lock,
+or a lock per distinct file system (disk), or a lock per directory.
+How to decide?
+
+<p>
+There are two big questions to think about, correctness and
+performance. Worry about correctness first.  The easiest way to get
+correct locking is to have just a single lock, that every function
+grabs at the start and releases at the end.  A "big" lock requires
+relatively little thought to achieve correctness, since it prevents
+any concurrency within your software.  Even complicated operations,
+like rename() between directories, don't require special treatment.
+
+<p>
+The potential performance problem with a big lock is that only one
+CPU at a time can execute anywhere in your code. If your code is
+called a lot, this may reduce the performance of an expensive
+multiprocessor to that of a single CPU.
+Perhaps locking at smaller granularity would get
+higher performance through more concurrency. How to best reduce lock
+granularity is a bit of an art. You might inspect the file system code
+and notice that most operations use just one file or directory,
+leading you to have one lock per inode.  But then cross-directory
+operations, like path-name lookup and rename(), will need special
+attention to get the locking right.-->
+
+<h2>Locks and modularity</h2>
+
+<p>When designing a system we desire clean abstractions and good
+  modularity. We'd like a caller not to have to know how a callee
+  implements a particular function.  We'd like to hide locking
+  behavior in this way -- for example, it would be nice if 
+  the lock on each file-system inode was the private business of 
+  methods on inodes.
+
+<p>It turns out it's hard to use locks in a modular way. Two
+problems come up that require non-modular global knowledge:
+multi-module invariants and deadlock.
+
+<p>First, multi-module invariants. You could imagine the code
+implementing directories exporting various operations like
+<code>dir_lookup(d, name)</code>,
+<code>dir_add(d, name, inumber)</code>, and
+<code>dir_del(d, name)</code>.
+These directory operations would each acquire the lock on <code>d</code>,
+do their work, and release the lock.
+Then higher-level code could implement operations like 
+moving a file from one directory to another (one case of
+the UNIX <code>rename()</code> system call):
+
+<pre>
+move(olddir, oldname, newdir, newname){
+  inumber = dir_lookup(olddir, oldname)
+  dir_del(olddir, oldname)
+  dir_add(newdir, newname, inumber)
+}
+</pre>
+
+This code is pleasingly simple, but has a number of problems. One of
+them is that there's a period of time when the file is visible in
+neither directory.  Fixing that, sadly, seems to require that the
+directory locks <i>not</i> be hidden inside the <code>dir_</code>
+operations, thus:
+
+<pre>
+move(olddir, oldname, newdir, newname){
+  acquire(olddir.lock)
+  acquire(newdir.lock)
+  inumber = dir_lookup(olddir, oldname)
+  dir_del(olddir, oldname)
+  dir_add(newdir, newname, inumber)
+  release(newdir.lock)
+  release(olddir.lock)
+}
+</pre>
+
+<p>
+The above code is ugly in that it exposes the implementation of
+directories to <code>move()</code>, but (if all you have is locks)
+you have to do it this way.
+
+<p>The second big problem is deadlock. Notice that <code>move()</code>
+holds two locks. What would happen if one process called
+<code>move(dirA, ..., dir B, ...)</code> while another process called
+<code>move(dirB, ..., dir A, ...)</code>?
+
+<p>In an operating system the usual solution is to avoid deadlocks by
+establishing an order on all locks and making sure that every thread
+acquires its locks in that order.  For the file system the rule might
+be to lock the directory with the lowest inode first.
+Picking and obeying the order on <i>all</i> locks requires that modules
+make public their locking behavior, and requires them to know about
+other module's locking. This can be painful and error-prone.
+
+<p>Fine-grained locks usually make both of these problems worse.
+
+<h2>Some terms</h2>
+
+<p>Locks are a way to implement "mutual exclusion", which is the
+property that only one CPU at a time can be executing a certain piece
+of code.  This is also called "isolation atomicity".
+
+<p>The code between an acquire() and a release() is sometimes called a
+"critical section."
+
+<p>The more general idea of ensuring one thread waits for another when
+neccessary for correctness is called "coordination."  People have
+invented a huge number of coordination primitives; locks are just one
+example, which we use because they are simple. We'll see some more
+coordination primitives next.
+
+<h2>Spin Lock Subtleties</h2>
+The <code>xchg R,M</code> instruction is expensive because it usually
+involves a bus transaction, to ensure that the read and write both happen
+atomically. Here is a computer system diagram to explain this better:
+
+<pre>
+                           -------------
+                          | Main Memory |  (containing l->locked)
+                           -------------
+                                  |
+                                  |
+        --------|-----------------|----------------|------
+        --------|-----------------|----------------|------   Bus
+        --------|-----------------|----------------|------
+                |                                  |
+                |                                  |
+              cache0                             cache1
+             --------                           --------
+             | CPU0 |                           | CPU1 |
+             --------                           --------
+</pre>
+Each CPU usually has a private L1 cache. Consistency between the caches
+is maintained using a "cache coherence protocol", whereby the system ensures
+that each memory location has only one valid value at any time.
+
+<p>Thus if CPU0 access location X, a 100 times (without any intervening
+access to X by CPU1), the first access will result in a bus transaction
+(whereby X will be fetched either from the main memory, or from CPU1's cache
+through the cache coherence protocol). All the other 99 accesses will be
+served locally from cache0, without incurring a bus transaction. In a
+multiprocessor system, the bus often becomes a performance bottleneck
+(especially if the number of CPUs is high), and so reducing the number of
+bus transactions is an important optimization.
+
+<p>In our implementation of <code>acquire()</code> and <code>release()</code>,
+we use the atomic <code>xchg</code> instruction that needs to perform
+two memory accesses (one read and one write) in an atomic fashion. This
+can only be achieved by a bus transaction, because all other processors
+need to be informed that the two memory accesses need to be done atomically.
+Hence, if a CPU is spin-waiting inside a lock acquire function, it is
+constantly making bus transactions, which can severely affect performance.
+<pre>
+void acquire(struct lock *l) {
+  Reg = 1;
+  while (xchg(Reg, &amp;l->locked) == 1);
+}
+void release(struct lock *l) {
+  l->locked = 0;
+}
+</pre>
+
+<p>Instead, it may be better to write the code like this:
+<pre>
+void acquire(struct lock *l) {
+  Reg = 1;
+  while (xchg(Reg, &amp;l->locked) == 1) {
+    while (l->locked == 1);
+  }
+}
+void release(struct lock *l) {
+  l->locked = 0;
+}
+</pre>
+In this case, while waiting, we use a regular memory read instruction
+(in the inner loop) to test the current value of <code>l->locked</code>.
+For the time that <code>l->locked</code> is not changed by the other
+CPU, <code>l->locked</code> will get cached into cache0, and the accesses
+by a CPU will be only to its local cache (thus avoiding bus transactions).
+If the local cache reports that the value has changed (which means another
+CPU must have changed its value), this code again tries the <code>xchg</code>
+instruction, which may succeed this time. If it fails again, we again
+go into the inner waiting loop. This is a more efficient method of waiting
+as it reduces bus transactions significantly. Modern processors provide
+special instructions (e.g., <code>pause</code> on x86) to make this
+waiting operation even more efficient.
+
+<h3>Effect of Compiler/Architecture Optimizations</h3>
+<p>Compiler optimizations typically do not work well with code that
+can be executed concurrently. Using locks, we have ensured that the
+only code that can execute concurrently are the <code>acquire()</code>
+and <code>release()</code> functions. Let's see what could happen if
+the compiler tries to optimize our <code>acquire()</code>
+and <code>release()</code> implementation.
+<h4>Register allocation of variables</h4>
+Register allocation of a variable involves reading the variable from
+memory into a register, and then performing the operations on the
+register locally, before writing the register back to memory. For
+example, in the following code, the variable <code>a</code> gets
+register allocated to register <code>R</code>.
+<pre>
+a = 1;
+b = a + 2;
+a = a + 1;
+</pre>
+may get compiled to
+<pre>
+load  a, Reg     //load 'a' from memory to register
+b = Reg + 2
+Reg = Reg + 1
+store Reg, a     //store current value of 'a' from register to memory
+</pre>
+
+<p>Intelligent register allocation reduces the number of memory accesses, and
+thus reduces memory accesses. But what would happen if the
+<code>l->locked</code> variable in our <code>acquire()</code> function
+gets register allocated. It will result in an infinite loop inside
+acquire, causing a deadlock.
+
+<p>Because compiler optimizations assume sequential code, they do not
+play well with code that could be executed concurrently. Languages typically
+provide ways to tell the compiler to not optimize accesses to certain
+variables (for example, the <code>volatile</code> keyword in C). In this
+case, we should either write the waiting loop in assembly, or use the
+volatile keyword appropriately to ensure that the <code>l->locked</code>
+variable does not get register allocated.
+
+<h4>Reordering of Memory Accesses</h4>
+Usually, compilers are free to reorder accesses to "independent" memory
+locations. For a compiler, two locations are independent, if they are
+different. For example, it is perfectly valid for a compiler to
+invert the order of accesses to variables <code>a</code> and <code>b</code>
+like this:
+<pre>
+a = 2;
+b = 3;
+</pre>
+becomes
+<pre>
+b = 3;
+a = 2;
+</pre>
+For a compiler which only looks at sequential semantics, this is a valid
+optimization. Similarly, even if the compiler does not reorder the instructions,
+the hardware is free to reorder the memory accesses at runtime. For
+example, if the access to variable <code>"a"</code> is a cache miss, while
+the access to variable <code>"b"</code> is a cache hit, the access to
+<code>"b"</code> will complete first. This is true for most
+modern processors, and this behaviour is called "out-of-order" execution.
+
+<p>In our lock implementation, if the access to a shared variable
+gets reordered with the access to the lock variable (<code>l->locked</code>),
+our semantics get violated. For example,
+<pre>
+acquire(l);
+hits++;
+release(l);
+</pre>
+may become equivalent to (either at compile-time or at runtime)
+<pre>
+acquire(l);
+release(l);
+hits++;
+</pre>
+
+<p>To avoid this, it is possible to tell the compiler and the hardware
+to not reorder instructions. Many architectures that support out-of-order
+execution, also provide "<code>fence</code>" instructions, which can
+be used to instruct the hardware to not reorder memory accesses across
+the fence instruction. On the x86 architecture, the locked <code>xchg</code>
+instruction implicitly also acts as a fence, so our <code>acquire</code>
+implementation is correct even in the presence of memory access reordering.
+However, we need to explicitly insert a <code>fence</code> instruction
+in our <code>release()</code> implementation like this:
+<pre>
+void acquire(struct lock *l) {
+  Reg = 1;
+  while (xchg(Reg, &amp;l->locked) == 1) {
+    while (l->locked == 1);
+  }
+}
+void release(struct lock *l) {
+  fence;   //assembly instruction
+  l->locked = 0;
+}
+</pre>
+
+<h3>Spinlock implementations inside the kernel</h3>
+For a uniprocessor kernel, spin locks are not needed. Instead, mutual
+exclusion can be ensured by clearing (and re-enabling) insterrupts around
+before (and after) the critical section.
+
+<p>For a multiprocessor kernel, spin locks as implemented above
+suffice for ensuring mutual exclusion among different CPUs. However, this
+still does not protect a CPU from its own interrupt handler. For
+example, if an interrupt can occur within a critical section, and the
+interrupt handler could access the shared data (which was also being
+accessed within the critical section), mutual exclusion would get violated.
+On xv6, this is true for the process table <code>ptable</code>, for example,
+where the timer handler may need to inspect the <code>ptable</code> and
+may find it in an inconsistent state, if the timer interrupt occurred
+in the middle of an access to the <code>ptable</code>. Worse, if the
+timer handler also tries to acquire the <code>ptable.lock</code>, it
+would result in a deadlock.
+
+<p>To deal with this, xv6's spinlock also
+disables the interrupts on a call to <code>acquire</code>, and reenables
+them on a call to <code>release</code>. To allow a thread to acquire multiple
+locks simultaneously, the interrupts are enabled and disabled in a
+recursive manner, as follows:
+<pre>
+void acquire(struct lock *l) {
+  Reg = 1;
+  pushcli();
+  while (xchg(Reg, &amp;l->locked) == 1) {
+    while (l->locked == 1);
+  }
+}
+void release(struct lock *l) {
+  fence;   //assembly instruction
+  l->locked = 0;
+  popcli();
+}
+</pre>
+The <code>pushcli()</code> function uses the <code>cli</code> instruction
+internally to disable interrupts. The <code>popcli()</code> function
+uses the <code>sti</code> instruction internally to re-enable interrupts.
+They also maintain a per-CPU counter <code>cpu->ncli</code> to correctly
+handle nested calls to <code>pushcli()</code> and <code>popcli()</code>.
+<pre>
+void pushcli(void) {
+  if (cpu->ncli == 0) {
+    cli;
+  }
+  cpu->ncli++;
+}
+void popcli(void) {
+  cpu->ncli--;
+  if (cpu->ncli == 0) {
+    sti;
+  }
+}
+</pre>
+<h3>Spinlock implementations in the user-mode</h3>
+In the usermode, spinlocks work exactly like they work in kernel-mode,
+except that they do not need to disable and enable interrupts. Kernel's
+interrupt handlers are not expected to touch user data, so disabling
+interrupts is not required. Notice that the <code>xchg</code> instruction
+is an unprivileged instruction, and has identical semantics in both user
+and kernel modes.
+
+<h2>Blocking Locks</h2>
+Blocking locks involve changing the status of the current thread from
+RUNNING to BLOCKED in the process table (or the list of PCBs, depending
+on how the processes are maintained). For xv6, the global <code>ptable</code>
+array is the process table structure. A kernel thread that needs to wait on a lock
+<code>acquire</code>, will set its status to "BLOCKED on lock l", and call the
+scheduler. Similarly, when a thread calls <code>release(l)</code>, it scans the
+<code>ptable</code> and changes the status of one of the blocked processes (if any),
+blocked on <code>l</code> from BLOCKED to READY.
+
+<p>Notice that the accesses to the <code>ptable</code> also need to be mutually
+exclusive. This is done using a spinlock (<code>ptable.lock</code> in the case of
+xv6). Hence, a blocking lock typically uses a spinlock internally. Of course, the
+spinlock is released, as soon as the ptable is updated.
+
+<h3>Blocking locks at user-level</h3>
+At the user-level, blocking locks need to suspend a thread. If the threads are
+kernel-level threads, this involves making a system call to tell the kernel to
+block on a lock acquire. Similarly, release involves making a system call to 
+unblock one of the threads blocked on that lock.
+
+<p>If the threads are user-level threads however, all this can be done entirely
+in userspace, without any kernel involvement. For user-level threads, the
+<code>ptable</code> itself will be maintained (and manipulated) at the user-level.
+
+<h2>Locking Variations</h2>
+<h3>Recursive locks</h3>
+Our current lock abstraction does not allow a code path which acquires the same
+lock twice --- execution of this code path will cause a deadlock. For example, as
+we discussed previously, if an interrupt occurs in the middle of
+a critical section, and the interrupt handler tries to acquire an already-held
+lock, a deadlock would result.
+
+<p>One proposal to solve this issue is to allow the
+same thread to acquire a lock multiple times, but still disallow different threads
+to acquire the lock at the same time. Here is an example implementation of
+recursive locks, which uses regular locks internally.
+<pre>
+void recursive_acquire(struct rlock *rl) {
+  if (rl->owner == cur_thread) {
+    rl->count++;
+  } else {
+    acquire(&amp;rl->lock);
+    rl->count = 0;
+    rl->owner = cur_thread;
+  }
+}
+void recursive_release(struct rlock *rl) {
+  rl->count--;
+  if (rl->count == 0) {
+    release(&amp;rl->lock);
+    rl->owner = -1;
+  }
+}
+</pre>
+Usually, recursive locks are a bad idea. Most programmers maintain the invariant
+that a critical section always begins in a consistent
+state, i.e., immediately after successfully returning from a lock acquire,
+the state of the system is consistent. Similarly, they maintain the invariant that
+the state of the system is left in a consistent state on a lock release, i.e., the
+state is consistent just before a call to <code>release()</code>. (By consistency,
+we mean that certain invariants hold about the program state. For example, in our
+bank account program, consistency may mean that the total money in the bank
+is constant).
+
+<p>Recursive locks encourage the programmer to allow a critical section to begin
+in an inconsistent state. Consider a function <code>foo()</code> which acquires
+a lock <code>l</code>, and then calls another function <code>bar()</code>. The
+call to the function <code>bar()</code> may be synchronous (i.e., the programmer
+has a call chain in her program that eventually leads to
+<code>bar</code> from <code>foo</code>), or asynchronous (e.g., if <code>bar()</code>
+is called within an interrupt handler, and the interrupt is received within
+<code>foo()</code>). In either case, <code>bar()</code> may be assuming that
+the state is consistent when it begins its critical section. However, because the
+function was called in the middle of the critical section of <code>foo()</code>,
+<code>bar</code> may unexpectedly see inconsistent state.
+<pre>
+foo() {
+  acquire();
+  ....
+  bar();   //at this point, state is inconsistent
+  ....
+  release();
+}
+
+bar() {
+  acquire();
+  ....      // assumes that if acquire succeeds, the state here is consistent.
+  ....
+  release();
+}
+</pre>
+Because recursive locks encourage such bugs, they are not considered very useful.
+
+<h3>Try locks</h3>
+Another locking variation is a try lock, where the <code>acquire()</code> function
+returns a SUCCESS or a FAILURE value, depending on whether the acquisition was
+successful or not. Here is a sample implementation of a trylock.
+<pre>
+bool try_acquire(struct trylock *tl) {
+  Reg = 1;
+  xchg(Reg, &amp;tl->locked);
+  if (Reg == 1) {
+    return false;  //FAILURE
+  } else {
+    return true;   //SUCCESS
+  }
+}
+void try_release(struct trylock *tl) {
+  fence;
+  tl->locked = 0;
+}
+</pre>
+The caller of <code>try_acquire</code> may decide its action depending on the
+return value. A regular acquire can be implemented trivially by calling
+<code>try_acquire</code> in a loop till it succeeds. However, <code>try_acquire</code>
+gives the flexibility to the caller to do something else, if the lock is not
+currently available.
+
+</body>
+</html>

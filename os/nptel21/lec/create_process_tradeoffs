@@ -1,0 +1,1 @@
+- CreateProcess seems difficult to work with pipes; maybe they allow current fds to be passed as arguments to the syscall

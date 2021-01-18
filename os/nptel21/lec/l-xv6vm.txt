@@ -1,0 +1,313 @@
+6.828 2011 Lecture 3: virtual memory
+
+main topic: virtual memory (VM)
+  how the kernel controls what memory addresses mean
+  traditional basis for memory multiplexing and protection
+  source of many neat tricks (later)
+  you'll play with VM a lot in the labs
+    though JOS uses VM quite differently than xv6
+  
+state of play
+  we were powering on ("booting") the machine
+  nothing in RAM, need to read kernel from disk
+  BIOS copied first ("boot") sector to 0x7c00 in mem
+  boot sector = bootasm.S + bootmain.c
+  executing at end of bootasm.S
+  stack below 0x7c00, so we can call into C
+  call bootmain
+
+bootmain (sheet 83)
+  two jobs:
+  1. copy kernel from disk to mem
+  2. jump to kernel's first instruction
+
+where is the kernel on disk?
+  starts at 2nd sector of disk 0, just after boot sector
+  [diagram of disk]
+  *not* in a file; written directly to the raw disk
+
+what format?
+  the result of running the compiler and linker on xv6 source
+  they produce instructions+data, in machine format
+  linker writes a file in ELF format (same as the JOS kernel)
+  ELF headers indicate offset and size of data
+    and the start address!
+
+to where in memory should bootmem copy the kernel?
+  where to store it -- in DRAM -- physical memory
+  bootmain loads kernel starting at 0x100000
+  [diagram of phys mem]
+
+why 0x100000?
+  that's 1 MB
+  why not 0x0?
+    there are memory-mapped devices at phys addrs < 1 MB
+  why not somewhere else, e.g. at 2 MB?
+    that would work too
+    it actually doesn't matter much where bootmain loads the kernel!
+    b/c kernel will use VM hardware to put itself at predictable virt addr
+  only real constraints on where bootmain loads the kernel:
+    1. there must be DRAM at that phys addr
+    2. kernel must be able to find itself after it starts
+  0x100000 satisfies both those constraints
+  
+why doesn't 0x100000 appear in bootmain.c?
+  it's actually in the ELF header
+  the linker put it there, in response to a config option
+  % i386-jos-elf-objdump -p kernel
+
+to where should bootmain jump?
+  where is the kernel's first instruction?
+  not actually 0x100000!
+  ELF header specifies start address, for flexibility
+  % i386-jos-elf-objdump -f kernel
+  0x10000c -- this is "start", in entry.S, sheet 10
+  we told the linker to put 0x10000c in the ELF header
+
+let's skip details of bootmain.c and enter the kernel
+  (gdb) b *0x10000c
+  sheet 10, entry.S
+
+kernel is about to start
+  it must set up the hardware
+  and set up its own sub-systems (processes, files, &c)
+  let's start with how xv6 configures the MMU
+    i.e. how xv6 manages memory and addressing
+    one of the most interesting parts of kernel design
+
+how is addressing currently configured?
+  program addresses refer directly to physical memory
+  MMU segments set for identity mapping
+  MMU paging is disabled
+
+are we going to be happy with this arrangement?
+  for example, once xv6 starts running processes?
+  no: protect kernel memory from user writes
+  no: protect process A's memory from process B's writes
+  no: give user code memory at predictable addresses
+  no: let user code allocate big contiguous memory blocks
+  there are many ways to solve these problems...
+
+xv6 uses x86 MMU's paging hardware to fix these problems
+  paging provides a level of indirection for addressing
+  s/w can only ld/st to virtual addresses, not physical
+  kernel tells MMU how to map each virtual address to a physical address
+    MMU essentially has a table, indexed by va, yielding pa
+    called a "page table"
+  MMU can restrict what virtual addresses user code can use
+
+big picture of xv6's virtual addressing scheme
+  [diagram]
+  0x00000000:0x80000000 -- user addresses below KERNBASE
+  0x80000000:0x80100000 -- map low 1MB devices (for kernel)
+  0x80100000:?          -- kernel instructions/data
+  ?         :0x8E000000 -- 224 MB of DRAM mapped here
+  0xFE000000:0x00000000 -- more memory-mapped devices
+
+where does the paging h/w map these regions, in phys mem?
+  [diagram]
+  note double-mapping of user pages
+
+this is an "address space"
+  each process has its own address space
+    and its own page table
+  all processes have the same kernel (high memory) mappings
+  kernel switches page tables when switching processes
+
+Q: what is good about this arrangement?
+  user memory always starts at zero
+    of course user va 0 maps to different pa for each process
+  lots of room for user to grow contiguously
+  terms: "low memory" and "high memory"
+  both kernel and user mapped -- easy to switch for syscall, interrupt
+  kernel mapped at same place for all processes
+    eases switching between processes
+  easy for kernel to r/w user memory
+    using user addresses, e.g. sys call arguments
+  easy for kernel to r/w physical memory
+    pa x mapped at va x+0x80000000
+
+Q: what's the largest process this scheme can accomodate?
+
+Q: could we increase that by increasing/decreasing 0x80000000?
+
+To think about: does the kernel have to map all of phys mem
+  into its virtual address space?
+  
+reminder:
+  we're about to execute first instruction in kernel
+  paging hardware is disabled, so pa = va
+  bootmain loaded kernel at 0x100000
+  bootmain jumped to 0x10000c
+
+what's going to happen when the kernel enables paging?
+  i.e. the above virtual address translation comes into effect?
+  presumably the enabling instruction has address 0x100xxx
+  0x100xxx maps to user memory, not kernel instructions!
+
+solution:
+  temporary page table with kernel mapped at both 0x80100000 and 0x100000
+  that's what the first few kernel instructions set up
+
+entry, sheet 10:
+  (gdb) si ...
+  CR4_PSE
+  entrypgdir -- sheet 13
+  page directory
+    MMU reads it to map va to pa
+    page dir lives in RAM
+    1024 32-bit PDEs (page directory entry)
+    each PDE describes 4 MB of virtual address space
+    MMU uses top 10 bits of va as index
+      replaces top bits with top bits of PDE
+      this is virtual to physical translation
+    this is a simple pagetable in special 4MB mode, more complex later
+  what's in entrypgdir?
+    x/x 0x10a000
+    x/x 0x10a000+4*(0x80000000>>22)
+    [diagram]
+  why V2P(entrypgdir)?
+    i386-jos-elf-nm kernel | grep entrypgdir
+    V2P subtracts 0x8000000 -- sheet 02
+  what is %cr3?
+  what is %cr0?
+  CR0_PG
+  before enabling:
+    x/x 0x10a000
+    x/x 0x8010a000
+  after enabling:
+    x/x 0x8010a000
+  si to jmp *%eax
+  info reg
+  print main
+  step into main
+
+main
+  long sequence of calls to initialize subsystems
+  first -- call kvmalloc to generate *another* page table
+
+why another page table?
+  map kernel only once, leaving space for low user memory
+  map more physical memory, not just first 4 MB
+  use 4KB pages instead of 4 MB pages
+
+4 KB pages
+  entrypgdir was simple: array of 1024 PDEs, each mapping 4 MB
+  but 4 MB is too large a page size!
+    very wasteful if you have small processes
+    xv6 programs are a few dozen kilobytes
+    4 MB pages require allocating full 4 MB of phys mem
+  solution: x86 MMU supports 4 KB pages
+
+how much space required for a flat page table w/ 4 KB pages?
+  there are a million of them on a 32-bit machine
+  32 bits per entry, so 4 MB for a full page table
+  that also wastes lots of memory for small programs!
+    you only need mappings for a few hundred pages
+    so the rest of the million entries would be there but not needed
+   
+detailed structure of x86 page table
+  see handout
+  page table translates va to pa
+    replacing top 20 bits in va with a [different] pa
+    leaving bottom 12 bits alone
+  logical view:
+    a table of 32-bit PTEs
+    2^20 PTEs, one for each 4096 bytes of address
+    each PTE holds 20-bit pa of page
+      or is marked invalid
+    flags in low 12 bits
+  implementation view:
+    split page table into 4096-byte chunks ("page table pages")
+    diagram
+    each holds 1024 32-bit PTEs
+    omit parts you don't need
+    how to know where the parts of the table are? and which are valid?
+  page-directory page
+    1024 32-bit entries (PDE)
+    each entry holds pa of a page-table page
+      with entries for a range of 1024 pages
+      or is blank (invalid)
+    really top 20 bits of pa of page-table page
+      pages are aligned, so bottom 12 bits always zero
+    PDE holds some flags in those 12 bits
+  %cr3 holds phys addr of page directory
+
+how does x86 paging hardware translate a va?
+  need to find the right PTE
+  top 10 bits index PD to get address of PT
+  next 10 bits index PT to get PTE
+  flags in PTE
+    P, W, U
+    xv6 uses U to forbid user from using anything above 640 K
+
+for example, 0x80100000 must be mapped to 0x00100000
+  1000 0000 0001 0000 0000 0000 0000 0000
+  top 10 bits are 0x200 (512), next 10 are 0x100 (256)
+  so PD[0x200] should be valid, point to a page-table page
+  and PT[0x100] PTE should hold PPN 0x100
+
+the page table is stored in DRAM
+  thus xv6 has to allocate physical memory for PD and PTs
+  each PD and PT fits in a physical page (4096 bytes) of memory
+
+back to vm.c (sheet 17)
+  main calls kvmalloc
+  kvmalloc calls setupkvm
+
+setupkvm
+  creates a page table
+  install mappings the kernel will need
+  will be called once for each newly created process
+
+setupkvm
+  must allocate PD, allocate some PTs, put mappings in PTEs
+  alloc allocates a physical page for the PD
+    returns that page's virtual address above 0x8000000
+    so we'll have to call V2P before installing in cr3
+  memset so that default is no translation (no P bit)
+  a call to mappages for each entry in kmap[]
+
+what is kmap[]?
+  an entry for each region of kernel virtual address space
+  same as address space setup from earlier in lecture
+  0x80000000 -> 0x00000000 (memory-mapped devices)
+  0x80100000 -> 0x00100000 (kernel instructions and data)
+  data -> data-0x80000000  (phys mem after where kernel was loaded)
+  DEVSPACE -> DEVSPACE     (more memory mapped devices)
+  note no mappings below va 0x80000000 -- future user memory there
+
+mappages (sheet 16)
+  (called by setupkvm for each kernel mapping range)
+  arguments are PD, va, size, pa, perm
+  adds mappings from a range of va's to corresponding pa's
+  rounds b/c other uses pass in non-page-aligned addresses
+  for each page-aligned address in the range
+  call walkpgdir to find address of PTE
+    need the PTE's address (not just content) b/c we want to modify
+
+diagram of PD &c, as following steps build it
+
+walkpgdir
+  mimics how the paging h/w finds the PTE for an address
+  refer to the handout
+  a little complex b/c xv6 allocates page-table pages lazily
+    might not be present, might have to allocate
+  PDX extracts top ten bits
+  &pgdir[PDX(va)] is the address of the relevant PDE
+  now *pde is the PDE
+  if PTE_P
+    the relevant page-table page already exists
+    PTE_ADDR extracts the PPN from the PDE
+    p2v() adds 0x80000000, since PTE holds physical address
+  if not PTE_P
+    alloc a page-table page
+    fill in PDE with PPN -- thus v2p
+  now the PTE we want is in the page-table page
+    at offset PTX(va)
+    which is 2nd 10 bits of va
+
+back to mappages
+  put the desired pa into the PTE
+  mark PTE as valid w/ PTE_P
+  repeat for all pages in the range

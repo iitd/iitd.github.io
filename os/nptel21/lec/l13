@@ -1,0 +1,29 @@
+//
+// An application that updates file "grades" so that
+// after a crash the file will have either the new
+// or old contents (but not be e.g. empty).
+// In real life you should check all syscall returns.
+//
+
+main()
+{
+  int fd, cc;
+  char buf[512];
+
+  // read existing file into memory
+  fd = open("grades", 0);
+  cc = read(fd, buf, sizeof(buf));
+  close(fd);
+
+  // change a grade in memory
+  buf[0] = 'A';
+
+  // write to a temporary file
+  fd = creat("temp1234", 0600);
+  write(fd, buf, cc);
+  fsync(fd); // wait until everything on disk
+  close(fd);
+
+  // atomically replace old file with new
+  rename("temp1234", "grades");
+}

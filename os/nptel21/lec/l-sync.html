@@ -1,0 +1,293 @@
+<title>File System Performance and Durability</title>
+
+<h2>File System Performance and Durability</h2>
+
+<b>Required reading</b>: <a href="../readings/rethink-the-sync.pdf">
+			Rethink the Sync</a>.
+
+<pre>
+EXT3, Rethink the Sync
+
+this lecture
+ finish ext3
+ Rethink the Sync
+
+how does ext3 get good performance despite logging entire blocks?
+ batches many syscalls per "transaction"
+ defers copying cache block to log until it commits log to disk
+ hopes multiple sycalls modified same block
+   thus many syscalls, but only one copy of block in log
+
+sys call:
+ h = start()
+ get(h, block #)
+   warn logging system we'll modify cached block
+     added to list of blocks to be logged
+   prevent writing block to disk until after xaction commits
+ modify the blocks in the cache
+ stop(h)
+ guarantee: all or none
+
+ext3 transaction
+ while "open", adds new syscall handles, and remembers their block #s
+ only one open transaction at a time
+ ext3 decides to commit current transaction every few seconds (or  
+fsync())
+
+committing a transaction to disk
+ mark transaction as done (new syscalls must start new xaction)
+ wait for in-progress syscalls to stop() (or not?)
+ for all blocks in list to be logged
+   append descriptor w/ block # to on-disk log
+   append block content from cache to on-disk log
+ wait for all log writes to finish
+ append the commit record
+ (now blocks mentioned in committed log can go to disk)
+
+a new xaction may start while prev is committing
+ what if syscall in new xaction wants to change a block in old  
+committing xaction?
+ can't be allowed to write buffer that old xaction is writing to disk
+   then one of new syscall's writes would be visible in old xaction
+ new transaction gets a separate copy of the buffer to modify
+   old transaction holds onto old copy to write to log
+ are there now *two* versions of the block in the buffer cache?
+   no, on the new one is in the buffer cache, the old one isn't
+   ext3 doesn't write old copy to FS, since new xaction will write it
+   but now cannot free up old transaction in log until new one commits
+     don't want to lose only copy of old xaction's committed updates
+
+how to free up log space
+ after commit, cached blocks written to real locations in FS on disk
+ then that part of log can be re-used
+
+what if a crash?
+ crash may interrupt writing the log -> partial transaction in log
+ may not have finished writing cache to disk
+   only relevant for a committed transaction
+
+how does recovery work
+ 1. find the start and end of the log
+    superblock start and seq# of first transaction
+    scan until bad record or not the expected seq #
+    go back to last commit record
+    crash during commit -> last transaction ignored during recovery
+ 2. replay all blocks from whole transactions, in log order
+
+other interesting tidbits about ext3:
+
+ext3 not as durable as xv6
+ creat() returns -> maybe data is not on disk! crash will undo it.
+ need fsync(fd) to force commit of current transaction, and wait
+ would ext3 have good performance if commit after every sys call?
+   would log many more blocks, no absorption
+   10 ms per syscall, rather than 0 ms
+   xsyncfs Figure 4 shows 10x decrease in performance!
+ (Rethink the Sync addresses this problem)
+
+lack of checksum in ext3 commit record
+ disks usually have write caches and re-order writes, for performance
+   sometimes hard to turn off (the disk lies)
+   people often leave re-ordering enabled for speed, out of ignorance
+ bad news if disk re-orders writes, writes commit before preceding  
+stuff
+ then recovery replays descriptors with random block #s!
+ and writes them with random content!
+
+ordered vs journaled
+ journaling file content is slow, every data block written twice
+ in principle not needed to keep FS internally consistent
+ but can't just write data blocks whever we feel like it:
+   if metadata updated first, crash may leave file pointing
+   to blocks with someone else's data
+ ext3 ordered mode:
+   write() causes data blocks to go to disk before committing adding  
+block # to inode
+   thus won't see stale data if there's a crash
+
+correctness challenges w/ ordered:
+ A. rmdir, re-use block for file, ordered write of file,
+      crash before rmdir or write committed
+    now scribbled over the directory block
+    fix: defer free of block until freeing operation forced to log  
+on disk
+ B. rmdir, commit, re-use block in file, ordered file write, log  
+force,
+      crash, replay rmdir
+    file is left w/ directory content e.g. . and ..
+    fix: revoke records, prevent log replay of a given block
+
+Rethink the Sync
+
+intro: why are we reading Rethink the Sync?
+ ext3 defends FS internal consistency (no dirent -> unallocated  
+inode &c)
+ but that is not enough!
+   apps and external users also need consistency
+   ext3 may hurt here: delayed commit
+
+xsyncfs's promises to external user
+ correctness of synchronous FS updates
+ performance of asynchronous FS
+
+what is a sync FS?
+ a sync FS forces updates to disk before returning from syscall,  
+like xv6
+   if syscall returns, its effects will be visible after a crash
+ write-through disk cache in kernel, so slow
+
+why is sync FS a good standard for correct FS behavior?
+ maybe since sync FS easy to reason about?
+   can count on all ops completed before crash being visible after  
+crash
+   e.g. write data to file, print "OK"
+ no-one uses a sync FS or writes apps that assume one...
+ in real life: write(), fsync(), print "OK"
+
+what does paper mean by an async FS?
+ system calls can return before data is on disk
+   syscalls modify blocks in a write-back cache
+   but then FS has to worry about internal consistency
+ paper really means FS w/ async logging, in particular Linux's ext3
+
+why is not-durable a problem for external users?
+ mail server says "OK" but crash erases its copy of msg
+   OK -> sending server deleted, so now msg entirely gone
+ or
+   % cp * backupdir
+   %
+   is it ok now to edit the original files?
+
+currently you have to choose between durability and performance
+ slow sync fs, or fast non-durable async logging
+ or remember to call fsync(), maybe call it too much
+
+what's the paper's insight to get performance + durability?
+ sufficient definition of durability:
+    updates only need to be durable by the time of external output
+    display output, network packet
+ if user sees no output, no reason to expect FS I/O has finished
+
+which data has to be durable before external output?
+ certainly all writes &c of process producing the output
+ also all updates "causally preceding" the external output
+ example:
+   X : write(file) -> exit()
+   Y :                       -> wait() -> printf("$ ")
+   process X's file write must be on disk before user sees Y's "$ "
+
+why is durability of causally preceding updates useful to external  
+users?
+ if mail sender sees "OK" msg via net, guaranteed msg is on rcvr's  
+disk
+   no "OK" -> recovery by resending later
+ % cp * backupdir
+ %
+ if you see the 2nd prompt, you know backup is complete
+ if crash before 2nd prompt, user "recovers" by backing up again
+ seems to be sufficient in these two cases
+
+can we argue that no non-causally-preceding write is necessary?
+ example:
+   read mail msg from socket
+   fork a child
+     child writes msg to a file
+   parent writes "OK" to socket
+ so: sufficient only if application is written carefully
+
+is it necessary for xsyncfs to force all causally preceding writes?
+ examples when maybe app doesn't need a causally preceding write  
+forced?
+
+will xsyncfs have higher performance than sync updates?
+ can use write-back cache, coalesce writes
+ external output forces batched disk update
+ will be fast if many updates to same disk block
+
+will xsyncfs have higher performance than async logging?
+ usually no:
+   xsyncfs has causal tracking overhead
+   xsyncfs might force to disk more often than every 5 seconds
+
+when might xsyncfs have *higher* performance than async FS?
+ mysql example
+   client does multiple SQL xactions before external output
+   mysql server must fsync() after each xaction for D in ACID
+   but xsyncfs knows: no external output -> can ignore fsync()
+
+what guarantees does xsyncfs give to applications?
+ paper implies apps written for sync file system will work fine
+   xsyncfs guarantees ordering: section 2.2, end of page
+   so like sync FS, but crashed earlier
+   your app still needs to be able to recover from a crash
+     at any point, can rely on all syscalls up to a certain
+     point being visible after the crash
+     examples of why prefix property is useful in app recovery?
+
+what are the hard parts of xsyncfs design / impl?
+ tracking causality
+   each process and kernel object (pipe) has list of not-yet-written  
+blocks
+   copy that list when a process reads/updates kernel object
+ buffering external output, e.g. display writes and network packets
+   why useful to buffer? why not just suspend process?
+ forcing disk writes on external output
+   track down all causally preceding blocks
+   ask ext3 to write them
+   wait, then release output
+   what does that involve?
+     can you ask ext3 to write just a particular block?
+     no: xsyncfs must force whole log, including unrelated updates
+
+given that ext3 won't let you write an individual block
+ why do they have to do all that causal tracking?
+ why not just commit ext3 xaction when program does external output?
+
+this eliminates a potential advantage of xsyncfs over async logging FS
+ in principle, if there are multiple unrelated apps,
+   xsyncfs only needs to force causally related updates
+   not entire log, which is what ordinary ext3 fsync() does
+ in practice, xsyncfs forces whole ext3 log
+
+xsyncfs evaluation
+ what do they need to demonstrate?
+   that the problem they're solving exists
+   that they achieve the main goals stated at the start of the paper
+ #1. synchronous file systems are slow (i.e. problem exists)
+ #2. asynchronous file systems aren't very durable (ditto)
+ #3. xsyncfs as durable as a synchronous file system
+ #4. xsyncfs as fast as an asynchronous file system
+
+figure 3: durability
+ (show #2 and #3)
+ very cool that they systematically test crashes
+ async is ordinary ext3, force every 5 seconds or on fsync
+ sync is force ext3 log after every system call
+ sync + write barriers fixes ide write caching
+ xsyncfs uses ext3 and write barriers
+ comparison unfair: async ext3 should be using write barriers
+   that is how it was designed to be used
+   then it would be as durable (and as high performance) as xsyncfs
+
+figure 4:
+ single-threaded read/write/create/delete benchmark
+ no external output
+ lots of FS I/O
+ would we expect xsyncfs to be faster than async ext3?
+   why or why not?
+   shows #4
+ why is sync ext3 so slow?
+   shows #1
+
+figure 6: mysql, vs async ext3 with write barriers
+ mysql fsync()s log after each SQL transaction
+   so both systems are arguably equally durable
+ why does xsyncfs win with few threads?
+ why does ext3 catch up with many threads?
+
+figure 7: web server, not much difference, why?
+ what does specweb99 do?
+
+what is the bottom line?
+ should linux switch from ext3 to xsyncfs?
+</pre>
