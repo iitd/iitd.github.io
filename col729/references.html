@@ -1,0 +1,56 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252"><title>COL729 : Compiler Optimizations : References</title>
+</head><body><h1><font color="blue">COL729 : Compiler Optimizations : References</font></h1>
+
+<h3>Motivational references</h3>
+<ul>
+<li><a href=https://www.youtube.com/watch?v=NjoU-MjCws4&list=PLn0nrSd4xjjYCkOxtYqozyDuwt-4sC2L6&index=10&t=0s>Frances Allen 2013 ACM A.M. Turing Award Lecture on PL and High-Performance Compilers</a> (<a href=https://youtu.be/NjoU-MjCws4?t=3370>discussion on important open questions in systems/compilers research</a>)<br><br></li>
+<li><a href=https://www.youtube.com/watch?v=3LVeEjsn8Ts>John Hennessy and David Patterson 2017 ACM A.M. Turing Award Lecture</a> (<a href=https://youtu.be/3LVeEjsn8Ts?t=4402>question on future research in compiler optimization</a>)<br><br></li>
+</ul>
+
+<h3>Books</h3>
+<ul>
+<li> <a href=https://en.wikipedia.org/wiki/Compilers:_Principles,_Techniques,_and_Tools>Compilers: Principles, Techniques, and Tools</a>, by A.V. Aho, M.S. Lam, R. Sethi, J.D. Ullman (available in <a href=http://libcat.iitd.ac.in:8080/opac/browse/browse.html?browseType=2&key=compilers+principles+aho&sortByVal=--Select--&bcat=2&db=4&browse_siteId=99&tokenId=V4L6T7S5O7D8F4M4>IITD library</a>) [ <a href=refs/ALSUdragonbook.pdf>PDF</a> ]<br><br></li>
+<li> <a href=https://www.goodreads.com/work/editions/873157-advanced-compiler-design-and-implementation>Advanced Compiler Design Implementation</a>, by Steven Muchnik. (available in <a href=http://libcat.iitd.ac.in:8080/opac/browse/browse.html?browseType=2&key=advanced+compiler+design+and+implementation+muchnick&sortByVal=--Select--&bcat=2&db=4&browse_siteId=99&tokenId=T7R5I6E3L6W6J5W5>IITD library</a>)<br><br></li>
+</ul>
+
+<h3> Online Resources </h3>
+<ul>
+<li> <a href=https://www.inf.ed.ac.uk/teaching/courses/copt/> Compiler Optimisation Lecture Notes and Videos</a> by Hugh Leather, University of Edinburgh <br><br></li>
+<li> <a href=http://ayrtonmassey.github.io/proj/index.html> Dataflow Analysis Tutor</a> by Ayrton Massey<br><br></li>
+</ul>
+
+<h3>Some must-know material on modern-day performance benchmarking and optimization</h3>
+Highly recommend that you know this material before starting the course.
+<ul>
+<li><a href=https://www.youtube.com/watch?v=fHNmRkzxHWs>Efficiency with Algorithms, Performance with Data Structures</a>, Chandler Carruth at CppCon 2014.<br><br></li>
+<li><a href=https://www.youtube.com/watch?v=zWxSZcpeS8Q>Benchmarking C++ Code</a>, Bryce Adelstein-Lelbach at CppCon 2015. Talks about benchmarking best practices.
+<ul>
+<li><a href=https://youtu.be/zWxSZcpeS8Q?t=473>Why you may see variance in computer performance</a></li>
+<li><a href=https://youtu.be/zWxSZcpeS8Q?t=2024>Mean-median test</a>: easy normality test</li>
+<li><a href=https://youtu.be/zWxSZcpeS8Q?t=2215>Time-based benchmarking</a>: using x86 TSC, C++11 Chrono, more ideas</li>
+<li><a href=https://youtu.be/zWxSZcpeS8Q?t=2513>Memory benchmarking</a>: googleperftools/TCMalloc (MALLOCSTATS), more ideas</li>
+<li><a href=https://youtu.be/zWxSZcpeS8Q?t=2688>x86 hardware performance counters</a>: Intel VTune Amplifier</li>
+<li><a href=https://youtu.be/zWxSZcpeS8Q?t=3101>Intel Vectorization Adviser</a></li>
+<li><a href=https://youtu.be/zWxSZcpeS8Q?t=3209>Stateful Performance Tests</a></li>
+</ul>
+<br><br></li>
+<li><a href=https://www.youtube.com/watch?v=nXaxk27zwlk>Tuning C++: Benchmarks, and CPUs, and Compilers! Oh My!</a>, Chandler Carruth at CppCon 2015.<br><br></li>
+<li><a href=https://www.youtube.com/watch?v=FnGCDLhaxKU&t=1075s>Understanding Compiler Optimization</a>, Chandler Carruth's keynote at C++ 2015.<br><br></li>
+<li><a href=https://www.youtube.com/watch?v=yG1OZ69H_-o>Garbage In, Garbage Out: Arguing about Undefined Behavior...</a>, Chandler Carruth at CppCon 2016.<br><br></li>
+</ul>
+
+<h3>Domain-specific languages and compilers</h3>
+<ul>
+<li><a href=https://www.tensorflow.org/xla/>XLA compiler for TensorFlow</a><br><br></li>
+</ul>
+
+<h3>Open-source</h3>
+<ul>
+<li> <a href=http://web.cs.ucla.edu/~pouchet/software/polyopt/doc/htmltexinfo/index.html>PolyOpt</a>: Polyhedral Optimization Framework</li>
+</ul>
+
+<h3>Discussion on writing performance-aware and compiler-aware code</h3>
+<ul>
+<li> <a href=https://medium.com/@aka.rider/how-to-optimize-c-and-c-code-in-2018-bd4f90a72c2b>How to optimize C and C++ code in 2018</a>. </li>
+</ul>
