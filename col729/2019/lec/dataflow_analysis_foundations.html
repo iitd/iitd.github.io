@@ -1,0 +1,448 @@
+<h1>Foundations of Dataflow Analysis</h1>
+
+<h3>Global constant propagation algorithm</h3>
+<p>Consider an alternate representation of constant information using sets.
+<p>Consider the following example:
+<pre>
+d0: y = 3
+d1: x = y + 4
+d2: y = 11
+d3: if e ...
+</pre>
+<ul>
+<li>in[d0] = empty set</li>
+<li>out[d0] = in[d0] U (y,3)</li>
+<li>in[d1] = out[d0]</li>
+<li>out[d1] = in[d1] U (x,7)</li>
+<li>in[d2] = out[d1]</li>
+<li>out[d2] = (in[d2] - (y,3)) U (y,11)</li>
+<li>in[d3] = out[d2]</li>
+</ul>
+This representation allows transfer functions to be written using <b>generate</b> (Gen[s]) and <b>propagate</b> (in[s] - Kill[s]) definitions.
+
+<p>Can summarize a basic block through its own composite transfer function as follows:
+<ul>
+<li>Gen[d0] = (y,3), Kill[d0] = empty, out[d0] = (in[d0] - Kill[d0]) U Gen[d0]</li>
+<li>Gen[d1] = (x,7), Kill[d1] = empty, out[d1] = (in[d1] - Kill[d1]) U Gen[d1]</li>
+<li>Gen[d2] = (y,11), Kill[d2] = (y,3), out[d2] = (in[d2] - Kill[d2]) U Gen[d2]</li>
+<li>...</li>
+</ul>
+out[B] = fd2(fd1(fd0(in[B[)))
+       = Gen[d2] U (Gen[d1] U (Gen[d0] U (in[B] - Kill[d0]) - Kill[d1]) - Kill[d2])
+       = Gen[d2] U (Gen[d1] U (Gen[d0] - Kill[d1]) - Kill[d2]) U (in[B] - (Kill[d0] U Kill[d1] U Kill[d2]))
+       = Gen[B] U (in[B] - Kill[B])
+
+<p>Gen[B]: locally exposed constant definitions, definitions available at the end of the basic block B
+
+<p>Kill[B]: the set of constant definitions killed by B
+
+
+<p>Effects of edges: nodes with multiple predecessor: meet operator is Intersection: in[b] = out[p1] n out[p2] ... n out[pn], for p1..pn predecessors of b
+
+<p>Cyclic graphs: equations still hold:
+<ul>
+<li>out[b] = fb(in[b])</li>
+<li>in[b] = Intersection over out[pi] for preds pi of b</li>
+</ul>
+Find fixed point solution (actually maximum fixed point, as we will discuss later).
+
+<pre>
+input: control flow graph CFG = (N, E, Entry, Exit)
+
+//Boundary condition
+OUT[Entry] = empty set
+
+//Initialization for iterative algorithm
+For each basic block B other than Entry
+  OUT[B] = {(x,\Top) for all x}
+
+//Iterate
+While (changes to any OUT occur) {
+    For each basic block B other than Entry {
+      in[B] = intersection over (out[p]), for all preds p of B
+      out[B] = fB(in[B]) //out[B] = gen[B] u (in[B] - kill[B])
+    }
+}
+</pre>
+
+<p>Summary of reaching definitions
+<table border=1>
+<th><td>Reaching Definitions</td></th>
+<tr><td>Domain</td><td>Sets of constant definitions</td></tr>
+<tr><td>Transfer function fb(x)</td><td>forward:<br>out[b] = fb(in[b])<br>out[b] = Gen[b] U (x - Kill[b])<br></td></tr>
+<tr><td>Meet operation</td><td>in[b] = n out[predecessors]<br>intersection</td></tr>
+<tr><td>Boundary condition</td><td>out[entry] = empty</td></tr>
+<tr><td>Initial interior points</td><td>out[b] = {(x,\top): for all variables x}</td></tr>
+</table>
+
+<h3>Live Variable analysis</h3>
+<ul>
+<li><b>Direction</b>: backward: in[b] = fb(out[b])</li>
+<li>Transfer function for statement s: x = y + z
+<ul>
+<li>generate live variables: Use[s] = {y, z}</li>
+<li>propagate live variables: out[s] - Def[s], Def[s] = x</li>
+<li>in[s] = Use[s] U (out[s] - Def[s])</li>
+</ul>
+</li>
+<li>Transfer function for basic block B:
+<ul>
+<li>in[b] = Use[b] U (out[b] - Def[B])</li>
+<li>Use[b] : set of locally exposed uses in B, i.e., uses not covered by definitions in B</li>
+<li>Def[b] = set of variables defined in B.</li>
+</ul>
+</li>
+<li>Meet operator: intersection: out[B] = in[s1] U in[s2] ... U in[sn], for successors s1, .., sn of B</li>
+<li>Boundary condition: in[exit] = empty (or return value as the case might be)</li>
+</ul>
+
+<p>Liveness : Iterative algorithm
+<pre>
+input: control flow graph CFG = (N, E, Entry, Exit)
+
+//Boundary condition
+In[Exit] = empty
+
+//Initialization for iterative algorithm
+For each basic block B other than Exit
+    In[B] = empty
+
+//Iterate
+While (changes to any IN occur) {
+  For each basic block B other than Exit {
+    out[B] = U (in[s]) for all successors s of B
+    in[B] = fB(out[B]) //in[B]=Use[B] U (out[B] - Def[B])
+  }
+}
+</pre>
+
+<p>Framework
+<table border=1>
+<th><td>Reaching Definitions</td><td>Live variables</td></th>
+<tr><td>Domain</td><td>Sets of constant definitions</td><td>Sets of variables</td></tr>
+<tr><td>Direction and Transfer function fb(x)</td><td>forward:<br>out[b] = fb(in[b])<br>out[b] = Gen[b] U (x - Kill[b])<br>in[b] = n out[predecessors]<br></td><td>backward:<br>in[B] = fb(out[B])<br>in[b] = Use[b] U (x - Def[b])<br>out[B] = U in[succ[B]]</tr>
+<tr><td>Meet operation</td><td>intersection</td><td>union</td></tr>
+<tr><td>Boundary condition</td><td>out[entry] = empty</td><td>in[exit] = empty</td></tr>
+<tr><td>Initial interior points</td><td>out[b] = {(x,\top): for all variables x}</td><td>in[b] = empty</td></tr>
+</table>
+
+<p>Exercise: must-reach definitions
+<ul>
+<li>A definition D(a = b+c) must reach point P iff
+<ul>
+<li>D appears at least once along all paths leading to P</li>
+<li><code>a</code> is not redefined along any path after last appearance of D and before P</li>
+</ul>
+</li>
+</ul>
+How do we formulate the data flow algorithm for this problem?
+
+<p>Exercise: reaching definitions
+<ul>
+<li>A definition D(a = b+c) reaches point P if there <b>exists</b> a path from the point immediately following D to P, such that D is not killed (overwritten) along that path.</li>
+</ul>
+What would be the data flow algorithm formulation for this problem?
+
+<p>Would the following be a legal solution to reaching definitions?
+<pre>
+Entry --&gt; BB1
+
+BB1 --&gt; BB2
+
+BB2 --&gt; BB2
+
+BB2 --&gt; BB3
+
+BB3 contains (d1: b = 1) definition
+
+BB3 --&gt; exit
+</pre>
+Candidate solution:
+<pre>
+in[BB1] = empty
+out[BB1] = empty
+in[BB2] = {d1}
+out[BB2] = {d1}
+in[BB3] = {d1}
+out[BB3] = {d1}
+in[exit] = {d1}
+</pre>
+Will our iterative worklist algorithm generate this answer?
+
+<p>Answer: this is a legal fixed-point solution to the system of equations. However this is not a maximum fixed-point (later).
+
+<h2>Framework</h2>
+Why do we need a framework:
+<ol>
+<li>Prove properties of entire family of problems once and for all, e.g., will the program converge? what do the solution to the set of equations mean? how do we ensure the best solution?</li>
+<li>Aid in software engineering: re-use code</li>
+</ol>
+
+<p><b>Data-flow problems (F, V, ^) are defined by</b>
+<ul>
+<li>A semilattice
+<ul>
+<li>domain of values (V)</li>
+<li>meet operator (^)</li>
+</ul>
+</li>
+<li>A family of transfer functions (F: V --&gt; F)</li>
+</ul>
+
+<p>
+<ul>
+<li>A <b>semi-lattice</b> S = &lt; a set of values V, a meet operator ^ &gt;</li>
+<li>Properties of the meet operator
+<ul>
+<li>idempotent: x ^ x = x</li>
+<li>commutative: x ^ y = y ^ x</li>
+<li>associative: x ^ (y ^ z) = (x ^ y) ^ z</li>
+</ul>
+</li>
+<li>Examples of meet operators: set-union, set-intersection, and, or, max, min</li>
+<li>Non-examples: add, subtract, multiply, ...</li>
+</ul>
+
+<p>Example of a <b>semi-lattice diagram</b>:
+V = { x | x is a subset of {d1,d2,d3}}, ^ = set-union
+
+<p>Draw the semi-lattice with arrows pointing downwards (&gt;= relation)
+
+<p>Some interesting properties
+<ul>
+<li><code>x^y</code> is the first common descendant of x and y</li>
+<li>Define top element \Top such that <code>x ^ \Top = x</code></li>
+<li>Define bottom element \Bottom such that <code>x ^ \Bottom = \Bottom</code></li>
+<li>Semi-lattice diagram: picture of a <b>partial order</b></li>
+</ul>
+
+<p>A meet-operator defines a partial-order and vice-versa
+<ul>
+<li>Definition of partial order &le;: x &le; y if and only if x^y = x</li>
+<li>In the diagram, x &le; y indicates that there is path from y to x, and vice versa</li>
+<li>Properties of meet operator guarantee that &le; is a partial order
+<ul>
+<li>Reflexive: x &le; x</li>
+<li>Antisymmetric: if x&le;y and y&le;x then x=y</li>
+<li>Transitive: if x &le; y and y &le; z then x &le; z</li>
+</ul>
+</li>
+<li>x &lt; y is equivalent to ((x &le; y) and !(x == y))</li>
+<li>A semi-lattice diagram:
+<ul>
+<li>Set of nodes: set of values</li>
+<li>Set of edges: {(y,x): x&lt;y and \not\existsz s.t. (x&lt;z)^(z&lt;y)}</li>
+</ul>
+<li>Example: meet operator = \union, partial order &le; is ?</li>
+<li>Another example: meet operator = \intersection, partial order &le; is ? Draw semilattice diagram for this</li>
+</ul>
+
+<p>Summary:
+<ul>
+<li>Three ways to define a semi-lattice:
+<ul>
+<li>Set of values + meet operator
+<ul>
+<li>idempotent: <code>x ^ x = x</code></li>
+<li>commutative: <code>x ^ y = y ^ x</code></li>
+<li>associative: <code>x ^ (y ^ z) = (x ^ y) ^ z</code></li>
+</ul>
+</li>
+<li>Set of values + partial order
+<ul>
+<li>Reflexive: <code> x &le; x</code></li>
+<li>Antisymmetric: <code>if x &le; y and y &le; x then x = y</code></li>
+<li>Transitive: <code>if x &le; y and y &le; z then x &le; z</code></li>
+</ul>
+</li>
+<li>A semi-lattice diagram
+<ul>
+<li>No cycles</li>
+<li>\Top is on top of everything</li>
+<li>\Bottom is at the bottom of everything.</li>
+<li>\Top or \Bottom may not necessarily exist; e.g., if domain is integers, and meet operator is Max, then bottom is \infinity.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<p>Another example: semi-lattice with V = {x | such that x is a subset of {d1, d2, d3}}, ^ = \intersection
+
+<p>One element at a time
+<ul>
+<li>A semi-lattice for data flow problems can get quite large; 2^n elements for n var/definitions, for example</li>
+<li>A useful technique
+<ul>
+<li>define semi-lattice for 1 element</li>
+<li>product of semi-lattices for all elements</li>
+</ul>
+</li>
+<li>Example: union of definitions
+<ul>
+<li>For each element d1, lattice is : {} --&gt; {d1}</li>
+<li>Similarly, for d2, lattice is : {} --&gt; {d2}</li>
+<li>Product lattice is: {} --&gt; {d1},  {} --&gt; {d2}, {d1} --&gt; {d1, d2}, {d2} --&gt; {d1, d2}.</li>
+</ul>
+</li>
+<li>Defining product of lattices: &lt;x1,x2&gt; &le; &lt;y1,y2&gt; iff x1&le;y1 and x2&le;y2</li>
+</ul>
+
+<p><b>Descending chain</b>
+<ul>
+<li>Definition: The <b>height</b> of a lattice is the largest number of &gt; relations that will fit in a descending chain:
+<pre>
+x0 &gt; x1 &gt; x2 &gt; ... &gt; ...
+</pre>
+</li>
+<li>Height of lattice in reaching definitions? Number of definitions</li>
+<li>Height of lattice in live variables? Number of variables</li>
+<li>Important property for the algorithm to work: finite descending chains
+<ul>
+<li>if V=integers, and ^=min, then height = \infinity</li>
+<li>Note that it is not necessary for an infinite semi-lattice to have infinite height. example? constant propagation over integers</li>
+</ul>
+</ul>
+
+<h3>Transfer functions</h3>
+<ul>
+<li>A family of transfer functions F</li>
+<li>Basic properties <em>f</em>: V --&gt; V
+<ul>
+<li>Has an identity function, i.e., \Exists f such that f(x) = x for all x.</li>
+<li>Closed under composition, i.e., if f1,f2 \in F, then f1.f2 \in F.</li>
+</ul>
+</li>
+</ul>
+
+<p><b>Monotonicity</b>
+<ul>
+<li>
+A framework (F, V, ^) is monotone iff x &le; y implies f(x) &le; f(y)
+</li>
+<li>
+Equivalently, a framework (F, V, ^) is monotone iff
+<ul>
+<li>f(x^y) &le; f(x)^f(y)</li>
+<li>(meet inputs, then apply f) &le; (apply f individually to inputs, then meet results)</li>
+</ul>
+</li>
+</ul>
+
+<p>Example: reaching definitions: f(x) = Gen \union (x - Kill), ^ = \union
+<ul>
+<li>Definition 1: Let x1 &le; x2 (x1 is a superset of x2); f(x1): Gen \Union (x1 - Kill); f(x2): Gen \Union (x2 - Kill)</li>
+<li>Clearly, f(x1) &le; f(x2) (because f(x1) is a superset of f(x2))</li></li>
+</ul>
+Alternatively,
+<ul>
+<li>Definition 2:
+<ul>
+<li>f(x1^x2) = Gen \union ((x1 \union x2) - Kill)</li>
+<li>f(x1)^f(x2) = (Gen \union (x1 - Kill)) \Union (Gen \Union (x2 - Kill))</li>
+<li>(x1 \union x2) - Kill = (x1 - Kill) \union (x2 - Kill)</li>
+<li>hence monotone; actually <b>distributive</b>, because f(x1^x2)=f(x1)^f(x2)</li>
+</ul>
+</li>
+</ul>
+
+<p>Important: monotone framework does <b>not</b> mean that <code>f(x) &le; x</code>.
+<ul>
+<li>e.g., reaching definition for two definitions in a program, d1 and d2. Suppose f: Gen = {d1}; Kill = {d2}; f({}) = {d1} which is not &le; {}.</li>
+<li>x: {} &ge; {d1} &ge; {d1,d2}; f(x): {d1} &ge; {d1} &ge; {d1}.</li>
+<li>No relationship between f(x) and x!</li>
+</ul>
+
+<p><b>Distributivity</b>: A framework (F, V, ^) is distributive if and only if:
+<ul>
+<li>f(x^y) = f(x)^f(y)</li>
+</ul>
+Meet input, then apply f is <b>equal to</b> apply the transfer function individually and then merge result.
+
+<p>Distributivity implies monotonicity, but not vice-versa.
+
+<p>Example: the framework for constant propagation is not distributive: example: if (...) { x = 2; y = 3; } else { x = 3; y = 2; }; z = x + y;  f(x)^f(y) = 5; f(x^y) = \Bottom.
+
+<h3>Properties of Iterative Algorithm</h3>
+<ul>
+<li>Given:
+<ul>
+<li>^ and monotone data flow framework</li>
+<li>finite descending chain</li>
+<li>THEN converges!</li>
+</ul>
+</li>
+<li>Initialization of interior points to \Top.
+<ul>
+<li>yields <b>Maximum Fixed Point</b> (MFP) solution of equations.
+</ul>
+</li>
+</ul>
+
+<p><b>Behaviour of iterative algorithm (intuitively)</b>:
+For each IN/OUT of an interior program point:
+<ul>
+<li>It's value cannot go up (new value &lt; old value) during algorithm.</li>
+<li>Start with \Top (largest value)</li>
+<li>Proof by induction:
+<ul>
+<li>Apply first transfer function / meet operator &le; old value (\Top)</li>
+<li>Inputs to meet changes (get smaller), reapply
+<ul>
+<li>since input gets smaller, new output &le; old output</li>
+</ul>
+</li>
+<li>Inputs to transfer function changes (get smaller), reapply
+<ul>
+<li>because of monotonicity of transfer function: since input gets smaller, new output &le; old output</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Values do not come down unless some constraints drive them down (ensures "maximum")</li>
+<li>Algorithm iterates until equations are satisfied.</li>
+<li>Therefore, finds the largest solution that satisfies the equations.</li>
+</ul>
+
+<h3>What does the solution mean?</h3>
+IDEAL data flow solution
+<ul>
+<li>Let f1, .., fm: \in F, fi is the transfer function for node i</li>
+<li>For a path p, fp = fn.f(n-1)...(f1), if p is a path through nodes n1,..,nk</li>
+<li>For an empty path p, fp = identity function</li>
+<li>For each node n: ^fp (boundary value) for <u>all possibly executed paths</u> p reaching n.</li>
+<li>example: if (sqr(y) &ge; 0) { x = 0; } else { x = 1; }. Here, the ideal solution is that x = 0 at the end of this program.</li>
+<li>However, determining all possibly executed paths is undecidable.</li>
+</ul>
+
+<p><b>Meet over paths MOP</b> solution:
+<ul>
+<li>Err in the conservative direction</li>
+<li>Meet over paths MOP (over all paths, not just executed paths):
+<ul>
+<li>Assume every edge is traversed</li>
+<li>For each node n: MOP(n) = ^ f(p) for all paths p reaching n</li>
+</ul>
+</li>
+<li>Compare MOP with IDEAL
+<ul>
+<li>MOP includes more paths than IDEAL</li>
+<li>MOP = IDEAL ^ Result(unexecuted paths)</li>
+<li>MOP &le; IDEAL</li>
+<li>MOP is a "smaller" solution, more conservative, <b>safe</b></li>
+</ul>
+</li>
+<li>Data flow solution &le; MOP &le; IDEAL
+<ul>
+<li>because we don't just meet at the end, we meet all the time.</li>
+<li>as close to MOP from below as possible.</li>
+</ul>
+</li>
+</ul>
+
+<p>What is the difference between MOP and MFP of data flow equations? Consider two paths F1.F3 and F2.F3. MOP = F3F1(x) ^ F3F2(x).  MFP (through iterative algo) = F3(F1(x) ^ F2(x)). Therefore
+<ul>
+<li>any FP &le; MFP &le; MOP &le; IDEAL</li>
+<li>FP, MFP, MOP are safe</li>
+<li>If framework is distributive, FP &le; MFP = MOP &le; IDEAL</li>
+</ul>

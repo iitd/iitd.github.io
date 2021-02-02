@@ -1,0 +1,89 @@
+<h3>Dataflow Analysis</h3>
+
+<p>Recall the simple basic-block optimizations
+<ul>
+	<li> Constant propagation</li>
+	<li> Dead code elimination</li>
+</ul>
+<pre>
+X := 3
+Y := Z + W
+Q := X + Y
+</pre>
+to
+<pre>
+X := 3
+Y := Z + W
+Q := 3 + Y
+</pre>
+to (if X is not used anywhere else)
+<pre>
+Y := Z + W
+Q := 3 + Y
+</pre>
+
+<p>These optimizations can be extended to an entire control-flow graph (CFG).
+<pre>
+BB1:
+X := 3
+B &gt; 0 then goto BB2
+         else goto BB3
+
+BB2:
+Y := Z + W
+
+BB3:
+Y := 0
+
+BB4:
+A := 2 * X
+</pre>
+Here we can substitute X with 3 in BB4.
+
+<p>Another example
+<pre>
+BB1:
+X := 3
+B &gt; 0 then goto BB2
+         else goto BB3
+
+BB2:
+Y := Z + W
+X := 4
+
+BB3:
+Y := 0
+
+BB4:
+A := 2 * X
+</pre>
+Now we cannot replace X with 3 in BB4 even though X is only assigned constants.
+
+<p>How do we know if it is OK to globally propagate constants?
+
+<p>To replace a use of <code>x</code> by a constant <code>k</code>, we
+must know: <em>On every path to the use of <code>x</code>, the last assignment
+	to <code>x</code> is <code>x := k</code></em>.
+
+<p>Let's look at the first example.  Indeed this condition is satisfied for X:=3 at BB4.
+
+<p>Let's look at the second example. This condition is <em>not</em> satisfied for <code>X</code> at BB4.
+
+<p>The correctness condition is not trivial to check. "All paths" includes paths around loops and through branches of conditionals.
+
+<p>Checking the condition requires <em>global dataflow analysis</em>, i.e., an analysis of the entire CFG.
+
+<p>In general, global optimization tasks share several traits:
+<ul>
+	<li> The optimization depends on knowing a property <code>X</code> at a particular point in program execution.</li>
+	<li> Proving <code>X</code> at any point requires knowledge of the entire program.</li>
+	<li>It is OK to be conservative. If the optimization requires <code>X</code> to be true, then want to know either:
+		<ul>
+			<li><code>X</code> is definitely true.</li>
+			<li>Don't know if <code>X</code> is true.</li>
+			<li>It is always safe to say "don't know".</li>
+		</ul>
+	</li>
+</ul>
+
+<p>Global dataflow analysis is a standard technique for solving problems with these characteristics. Global constant propagation is an example of such a problem.
