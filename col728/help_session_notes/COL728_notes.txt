@@ -1,0 +1,32 @@
+1. Clarification on the definition of a handle:
+
+ab is a handle of some string s if X->b is a production and S ->* aXW -> abW ->* s in some right-mode derivation from S. 
+
+Is the set of handles a subset of the set of viable prefixes?
+
+2. Are the set of all strings in the languages also viable prefixes? Yes. The language of viable prefixes overapproximates the context free language
+
+3. Does that mean that the language of regular expressions can be used to represent a context free language (because it overapproximates the context free language)?  No.  It only overapproximates.  For example, the language of all possible strings (over an alphabet) is a regular expression that overapproximates all possible context-free languages on the same alphabet.  The overapproximated language accepts a lot of other extraneous stuff too.
+
+4. Yes. By definition a handle is a viable prefix. The language of viable prefixes is a regular approximation of the language of handles.
+
+5. How to find the regular expression for the language of viable prefixes for a grammar? One way is to construct the regular expression from the NFA (and we have already discussed the algorithm for NFA construction). Another way is to rewrite the NFA construction algorithm so that it uses concatenation for NFA transitions, Kleene star for NFA transitions involving a loop, and union if there are multiple outgoing transitions for the same input character (including epsilon).
+
+6. Can all LL(k) , k>1 grammar be converted to a equivalent LL(1) grammar?
+Yes, it seems that it should be possible to convert an LL(k) grammar to an LL(1) grammar through left-factoring.
+
+7. Why does the algorithm to find FIRST and FOLLOW sets always converge?
+
+a) In each iteration, some of the sets increases in size and the rest remain unchanged.
+b) If the grammar has N(T) terminals then the FIRST set of any string can contain at most N(T)+1 symbols [including epsilon]
+c) Similarly, the FOLLOW sets can contain at most N(T) symbols.
+
+So the maximum sizes of the sets are bounded by the number of terminals in the grammar which is finite.
+
+8. In the worst case the number of states in the DFA can be exponential in the number of states of its equivalent NFA. In such a scenario the DFA for the language of viable prefixes can be exponential in size.
+Doesn't the complexity of this parsing algorithm become exponential too which conflicts with the notion that predictive parsing algorithms should be linear time?
+
+a) The number of states in the NFA is a function of number of productions and their lengths, not the length of the input string to be parsed. So even if the DFA contains exponentially more number of states than the NFA,
+it does not change the parsing complexity with respect to the length of the input string and stays linear time in that respect.
+
+b) Probably the structure of the NFA for the language of viable prefixes will always be such that the number of states in the DFA is linear in the number of states in the NFA. This question is similar to asking: for any input \alpha, what is the number of distinct NFA states that may be simultaneously reached; and how many such distinct sets of states may be possible for different strings \alpha.  These numbers are usually very small for practical CFGs and so an exponential number of DFA states is extremely rare.

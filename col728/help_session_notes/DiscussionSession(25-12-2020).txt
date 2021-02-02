@@ -1,0 +1,88 @@
+Q1) Variables in new environment can be taken from previous environment
+In static scoping we don't have caller's variables in callee's. Globals can be there and will be available for evaluation in the constructor.
+In  language itself there are no globals so we didn't consider that. But if there were globals, they would be present in the new environment.
+
+Q2) X = *Y = 3 and *Y = X = 3(what is going to change if OOE changes?)  -> OOE of expressions and Non deterministic order can cause problems (context)
+Ans) (*X = 3) + Y. In this case if *X and Y alias (X = address of Y) then we have a problem. Depending of OOE result is different.
+
+If both *X and Y is 0 initially and *X is pointing to same location of Y
+L to R => ans = 6
+R to L => ans = 3
+
+For example:
+X = *Y = 3 -> OOE shouldn't matter.
+
+Q3) In multiple inheritance:The diamond, there is no top offset of A in video? 
+Ans) Error in video, there should be top offset of A also.
+Also in the video, the third offset should be -16 and fourth should be -24 (error in video)
+
+Q4) How non-virtual functions implemented? (like virtual functions have vtable)
+Ans) Non-virtual funcs have static addresses (like global vars) at the beginning of prog. So if we make call to a non-virtual func.
+
+Let there is non-virtual func foo in class C. So C::foo has address which is constant throughout the program. So we don't need to look through the 
+vtable for non-virtual functions. During compilation, we make a map for global vars (used everywhere) and same is true for non-virtual functions.
+
+Q5) In C, sometimes OOE is unspecified so how do we write semantics for that in operational semantics?
+Ans) So semantics have some non-determinism in them. 
+Cases: (ND = non-deterministically)
+i) OOE is unspecified -> It can be anything (middle to outward also) => Research paper (OOElala)
+ii) OOE is ND between L to R or R to L (only 2 options) => I am going to have 2 rules (one in which evaluation is in L to R and other for R to L. L to R in class discussions. 
+For R to L we switch orders). Machine is allowed to choose ND between any of these. We have to augment the meaning of judgement. If antecedants are true then inference is true. 
+We assume that only one rule is activated at a time(before) but now 2 rules can be triggered simulataneously. So Op semantics are that any rule can be chosen ND. So we change 
+structure of Op semantics and we say that machine is free to choose any one of these rules. (small freedom given to machine. only to choose from L to R and R to L)
+
+Q6) If assignment expr (E1 = E2), in op semantics in class it is that we evaluate E1 first then E2. Shouldn't for assignment we should evaluate first E2 then E1?
+Ans) It is just matter of design choice(can be done L to R or R to L). It is not counter-intuitive. 
+Example)a) *X = 3 then *X gets evaluated first, 3 gets evaluated second and then assignment gets evaluated third (updation of *X). (In L to R)
+	b) *(X++) = 3 then according to L to R, we first increment X then get address of *X and then assign 3 to that address. => meaning of doing L to R
+	c) *(X++) = *X. In this example it matters if we evaluate L to R or R to L(ans will be different). So:
+	   i) L to R => increment first then rhs is evaluated and rhs is incremented value then assignment
+	   ii) R to L => rhs first then increment then assigment 
+	   Both values are different
+
+Q7) We had rule for object instantiation and allocation. How to implement accessing members of object? (E1.a1) 
+
+Ans) We need some representation of object like we have of class and function. Object of a class will have representation (fields, virtual functions). If that is repr. of object X then
+X.e1 gives the value. Map from fieldname to value.
+In abstract semantics, we keep it abstract by saying that it is just a map of fieldnames to values
+
+Q8) Let there is no static scoping but dynamic scoping then at a high level what are changes in op semantics? Would struct of op semantics change? 
+Ans)
+a) We have to return an updated environment along with values 
+b) Also environment we set in func call dispatch and obj allocation changes. We just have to augment environment to current evaluation
+
+Notes: 
+- Languages like C and C++ have the notion of undefined behavior. C ignores silently some things while Java explicitly gives error and so java is safe language. 
+So if you return an unintialized value then C will take no responsibility but Java will throw an exception 
+Another example:-
+array a (pointer in C)
+integer index i
+a[i] -> Is evaluation of expression well defined depends on a and i. 
+-> It is well defined if i>=0 and i<len(a) [true for both C and Java] 
+-> If i<0 or i>=len(a) then Java gives error of Array Out of bounds. In C, it does some random things.(may or may not give seg fault)=>causes security issues
+-> How do you handle in C? In C you have one rule where everything works and in other rule you can have notion of undefined behavior.
+-> Useful in terms of compiler optimizations
+-> How to represent UB as op semantics? 
+	a) One way is to have one correct rule only. In struc of op semantics, say if no rule triggers then believe that it is an UB (machine gets stuck). If you get stuck then you have UB
+ 	   and machine can do anything it likes. (We need to keep it as abstract as possible)
+	- C gives some random value to unintialized variables => It is also an UB. 
+	Q) How to specify implementation defined behavior? Depending on implementation of lang, they can be chosen to be one or other. You make choice upfront and it stays same 
+	throughout the program. It can be different for different machines. (Size of long). From op semantics pov, I don't want to comment for size of long. We say that there is some env 	that captures implementation defined behavior and in rules we say to look for it in environment.
+	Size of long is diff for diff machines=> It is not UB but implementation defined behavior.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

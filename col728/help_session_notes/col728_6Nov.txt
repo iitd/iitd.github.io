@@ -1,0 +1,15 @@
+1. What type system to use?
+This is a design choice. Typical considerations are (a) Types should be designed to catch common errors; (b) Type checking should be fast and automatic.
+
+2. What is polymorphism?
+When same name can be used to name different contexts/functions/operators.  Multiple types of polymorphism (ad hoc vs. parametric)
+
+3. How does python return different number of values?
+From static type checker’s point of view, the type checker just checks that the function is returning an object of a generic type. 
+
+Some languages do parsing at runtime! On the other hand, some languages allow programmers to specify very expressive types. In case of very expressive type systems, users may have to provide some rules to  the type checker (e.g., Coq).
+
+4. Implicit type conversion is when compiler automatically casts one type to another for eg int + float, compiler converts int to float and then type checks. They are rules which define implicit type conversion. 
+
+5. We used @ symbol in dispatch rule to say that foo is coming from a particular class. So how will the type checker handle it?
+@ is just for convenience. It will be handled in scoping as have both global and local tables and thus we can know where in hierarchy of types is a particular type.
