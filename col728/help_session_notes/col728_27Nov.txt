@@ -1,0 +1,49 @@
+Q-1) Can we generate code for an abstract stack machine, where random access to the middle of the stack is not allowed?
+A-1) Any language that involves function calls needs to have random access memory (to access the activation record in the middle of the function body), so we would need some way of doing random access. Thus, it seems unlikely that we can generate code for our language (as discussed in the modules) on a pure stack machine.
+
+Q-2) Is it cheaper to read 64 bytes all at once compared with 8 bytes accessed 8 times?
+A-2) Analogy:  consider a transfer of a big file from a 
+      case-1) IIT hostel to Bharti building
+      case-2) IIT hostel to moon
+      
+      in case-2) it is more likely that latency will become the bottleneck, not the bandwidth.
+
+    Between CPU and memory, bandwidth is not an issue.
+    
+    If we consider data transfer is occurring from L1 cache then typically latency and bandwidth
+    costs almost 1 CPU cycle.
+
+    But if the data transfer involves main memory and bus latency costs more cycles than
+    bandwidth cycles then it is a better choice to transfer data in batch rather than in
+    small chunks. This is true for any high-latency, high-bandwidth connection.
+
+Discussion-1) Alignment and architecture:
+                X86 allows unaligned accesses. PowerPC does not allow unaligned accesses
+                though both X86 and PowerPC use similar RAM.
+                  
+                Alignment is not just a memory property but also a property of the interconnect and the CPU (e.g., arithmetic circuits become more complex while incorporating unaligned data).
+
+Discussion-2) Prefetching:
+                Modern architectures prefetches data. Prefetched data is stored in L1 cache.
+                For example, if user requests 4 bytes then the underling architecture may
+                fetch 16 bytes by assuming that in future accesses these bytes may be accessed.
+                
+                There exist instructions to prefetch the data. If compiler figures out a pattern
+                in a program then it can introduce such prefetching instructions in the program.
+
+                However if prefetched data is unused (because it was speculatively prefetched) then
+                prefetching can be counter-productive. The best way of improving performance (at the compiler
+                level) is to vectorize the code (or find other ways to parallelize the computation).
+
+Q-3)  C is a portable language. 4 bytes of an integer must be stored in an aligned fashion.
+      What extra actions must be taken on stack?
+A-3)  Bytes should be padded on stack.
+
+      Suggestion
+      by Indrajit:  One possible optimization to padding bytes can be that
+                    if
+                        - a compiler figures out that program does not use address of a variable x and
+                        - underling architecture supports unaligned access without performance degradation
+                    then
+                        - rather than padding bytes we can store them in an unaligned manner.
+      True.

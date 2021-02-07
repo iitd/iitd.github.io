@@ -1,1 +1,0 @@
-To compile, type 'make'

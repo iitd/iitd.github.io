@@ -1,0 +1,59 @@
+<h2>Interactions of data-flow analyses</h2>
+<h3>Deep common sub-expressions</h3>
+Using available-expressions analysis to identify redundant expressions only
+works for expressions that are textually identical. For example, an application of common-subexpression elimination will recognize that t1 in the
+code fragment
+<pre>
+t1 = b + c; a = t1 + d;
+</pre>
+has the same value as does t2 in
+<pre>
+t2 = b + c; e = t2 + d;
+</pre>
+as long as the variables b and c have not been redefined in between. It
+does not, however, recognize that a and e are also the same. It is
+possible to find such "deep" common subexpressions by re-applying common
+subexpression elimination until no new common subexpressions are found
+on one round.
+
+<h3>Multiple-passes do not always help</h3>
+One data-flow analysis can improve the results of another data-flow analysis and vice-versa.
+Classic example: constant propagation and unreachable code elimination: performing constant propagation
+and folding may replace branch predicates with constant boolean values, enabling more code to be identified as unreachable; conversely, eliminating unreachable code can remove non-constant assignments to variables, thus improving the precision of constant-propagation.
+There are many more examples of mutually-beneficial interactions of different data-flow analyses.
+
+<em>Phase-ordering problem</em>: if two or more analyses are mutually beneficial, then any ordering of the analyses in which each is run only once may yield sub-optimal results. Some common responses to the
+phase-ordering problem:
+<ul>
+	<li>Carefully choose the order; allow the same analysis to be performed multiple times if needed.</li>
+	<li>Use a meta-fixed-point loop that applies all analyses in a sequence and keeps repeating it, until there is no change.</li>
+</ul>
+Unfortunately, in the presence of loops, even the meta-fixed-point approach may yield sub-optimal
+result. This is so because: when analyzing a loop, optimistic initial assumptions must be made simultaneously
+for all mutually beneficial analyses to reach the best solution: performing the analyses separately, in effect, makes the pessimistic assumptions about the solutions of all other analyses, from which it is not possible to recover, simply by iterating the separate analyses.
+
+<p>Example:
+<pre>
+x := 10;
+while (...) {
+  if (x == 10) {
+    DoSomething();
+  } else {
+    DoSomethingElse();
+    x := x + 1;
+  }
+}
+y := x;
+</pre>
+If we do constant-propagation analysis and dead-code elimination separately, we will never be able
+to simplify this loop. On the other hand, a <em>super-analysis</em> that does the two analyses <em>simultaneously</em> would result in the following optimized code:
+<pre>
+x := 10;
+while (...) {
+  DoSomething();
+}
+y := 10;
+</pre>
+So, the phase-ordering problem is not simply an ordering problem, but a problem that can get you stuck in a <em>local minimum</em> even if you try all possible orders, as compared to a super-analysis that composes the analyses together.
+
+<p>In general, developing such a super-analysis is intractable and so the best-effort solution is to try multiple passes in some sequence and repeatedly, until nothing changes.

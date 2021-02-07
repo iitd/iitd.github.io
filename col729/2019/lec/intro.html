@@ -1,0 +1,443 @@
+<h3>Interpreters</h3>
+
+<p>Interpret :: (Program, Data) --> Output
+
+<p><em>or (currying the inputs)</em> Interpret :: Program --> Data --> Output
+
+<p><em>or (grouping the last two outputs)</em> Interpret :: Program --> (Data --> Output)
+
+<p><em>or </em> Interpret :: Program --> Executable   (Futamura's first projection, discussed below)
+
+<p>
+<em>"online"</em>
+
+
+<h3>Compilers</h3>
+
+<p>Compile :: Program --> Executable
+
+<p>Executable is in the language of the implementation of the Interpreter (e.g., assembly language for Java interpreter)
+
+<p>Executable :: Data --> Output
+
+<p>
+<em>"offline"</em>
+
+
+<h3>Partial evaluation</h3>
+
+<p>
+A computer program can be seen as a mapping of input data to output data:
+
+<p>
+<code>
+prog :: Istatic x Idynamic  -->  Output
+</code>
+
+<p>
+The partial evaluator (also called <em>specializer</em>) transforms (prog, Istatic) into prog*  :: Idynamic -> Output
+
+<p>
+prog* is called the residual program and should run more efficiently than the original program
+
+<h3>Futamura Projections</h3>
+
+<p>
+Interesting case when prog is an interpreter for a programming language. Described in 1970s by Yoshihiko Futamura
+
+<p>
+If Istatic is source code designed to run inside an interpreter, then partial evaluation of the interpreter with respect to this data/program produces prog*, a version of the interpreter that only runs that source code.
+
+<p>
+This specialized version of the interpreter is written in the implementation language of the interpreter., i.e., the language in which the interpreter has been written (e.g., assembly language for the Java interpreter).
+
+<p>
+The source code does not need to be re-supplied to prog*
+
+<p>
+prog* is effectively a compiled version of Istatic
+
+<p><b>This is the first Futamura projection</b>. There are three Futamura projections:
+
+<p><em>A specializer is a partial evaluator</em><br>
+
+<p>
+<ol>
+	<li> <b>Futamura Projection 1</b>: Specializing an interpreter for given source code, yields an executable</li>
+
+<ul>
+	<li>
+	<p><b>Interpret :: prog --> Executable</b>
+</li>
+<li>
+<p><em>Specializing (partially evaluating) the Interpreter for the program</em><br>
+<p>Specialize1 :: (Interpret, prog) --> Executable
+
+</li>
+<li>
+<p><em>Currying the arguments</em><br>
+<p>Specialize1 :: Interpret --> prog --> Executable
+
+</li>
+<li>
+<p><em>Grouping the last two outputs</em><br>
+<p>Specialize1 :: Interpret --> (prog --> Executable)
+</li>
+</ul>
+
+<li> <b>Futamura Projection 2</b>: Specializing the specializer for the interpreter (as applied in #1) yields a compiler</li>
+
+<ul>
+<li><p>
+<b>Specialize1 :: Interpreter --> Compiler</b>
+
+	<li>
+	<p><em>Specializing the specializer for the Interpreter</em>
+
+	<p>
+Specialize2 :: (Specialize1, Interpreter) --> Compiler
+
+	<li>
+	<p><em>Currying the arguments</em>
+
+	<p>
+	Specialize2 :: Specialize1 --> Interpreter --> Compiler
+
+<li>
+<p><em>Grouping the last two outputs</em><br>
+<p>Specialize2 :: Specialize1 --> (Interpreter --> Compiler)
+</li>
+</ul>
+
+<li> <b>Futamura Projection 3</b>: Specializing the specializer for itself (as applied in #2), yields a tool that can convert any interpreter to an equivalent compiler.
+<ul>
+	<li>
+<p>
+<b>Specialize2 :: Specialize1 --> InterpreterToCompilerConverter</b>
+</li>
+</ul>
+</ol>
+<h3>Take-aways from Futamura's projections</h3>
+<ul>
+	<li> An executable is a partial-evaluation of an interpreter for a program's source code
+	<li> The process of partial-evaluation of an interpreter for a program's source code is called <em>compilation</em>
+	<li> The execution of the partially-evaluated interpreter (for the program) should ideally be faster than the execution of the original interpreter on the program.
+	<ul>
+		<li>In other words, the execution of the executable should be faster than the execution of the interpreter on the program.
+	  </li>
+	</ul>
+	</li>
+	<li>The quality of the compilation is determined by the speedup obtained through this <em>offline</em> partial evaluation</li>
+	<ul>
+		<li>A trivial compilation is to just store the interpreter and the program's source code as a tuple; running it would involve full evaluation of the interpreter over all arguments. But this will result in slow runtime.</li>
+		<li>A smarter compilation will involve substituting ("constant propagating") the input program (Istatic) into the interpreter's implementation. If the interpreter is written as an evaluation loop over each statement in the source program, then compilation will also involve unrolling the loop for the number of statements in the source program:
+		<pre>
+Interpret(Prog, Data):
+    for Statement in Prog:
+        Data = Evaluate(Statement, Data)
+    return Data
+
+Executable(Data):
+    Data = EvaluateStatement1(Data)
+    Data = EvaluateStatement2(Data)
+    Data = EvaluateStatement3(Data)
+    ...
+    Data = EvaluateStatementN(Data)
+    return Data
+</pre>
+		
+		<p>Can we do better?</li>
+		<li>Local Optimizations: Specialize the code for EvaluateStatementI. Recall that Data is not available at compile time (Idynamic), but StatementI is available (Istatic)</li>
+		<li>Caching the generated code (An optimization that is very effective for code with loops):
+		<ul>
+			<li>The evaluation of a statement involves (a) generation of machine code for the Statement and (b) execution of the generated machine code on the Data</li>
+			<li> If one statement, say StatementI is executed several times (typical programs execute the same statement millions to billions of times), cache the generated machine code, so we do not need to regenerate the same machine code repeatedly.</li>
+			<ul>
+				<li>Static compilation, also called <em>Ahead-of-time</em> Compilation: Cache the generated machine code for all statements, irrespective of whether they execute once or multiple times.
+				<ul>
+					<li><em>Pro</em>: Offline, zero compilation cost at runtime.</li>
+					<li><em>Con</em>: Compile + Execute may be slower (or at best equal cost) than plain interpretation for some programs, e.g., programs which have no loops.
+					</li>
+					<li><em>More serious con</em>: Optimized compilation is expensive. For a given time budget for compilation, we do not have enough information to decide how much time to spend on optimizing which part of the program. e.g., the most executed part of the program should be optimized the most, while dead-code needs no optimization. This information is not available during ahead-of-time compilation, and can only be estimated using approximation heuristics.</li>
+				</ul>
+				</li>
+				<li>Dynamic compilation, also called <em>Just-in-time</em> Compilation:
+				<ul>
+					<li>Generate machine code at runtime.</li>
+					<li>Maintain a cache of generated code for each program fragment.</li>
+					<li>Cache can be limited size. Need cache-replacement policy (e.g., Least Recently Used LRU).</li>
+					<li>Do not need to re-generate code on cache hit.</li>
+					<li><em>Pro:</em> Can spend more effort on the program fragments that are executed most (<em>hot regions</em>).</li>
+					<li><em>Pro:</em> If the generated code is much bigger than the source program, then storage requirements are smaller in JIT compilation. Real problem for Android's JVM. e.g., JIT compiled Facebook App on Android is 90MB in size, while AOT compiled Facebook App takes 250MB. For a long time, Samsung hard-codeed Facebook to be JIT compiled, while some other apps were AOT compiled.</li>
+					<li><em>Serious con</em>: Pay compilation cost at runtime.
+					<ul>
+						<li> However, this is not a very serious con for typical applications that are relatively small but run for a long time (due to loops); typical JIT compilation times for most applications are significantly smaller than typical runtimes.</li>
+						<li>Often the advantages of JIT optimization outweigh the JIT costs.</li>
+						<li>With multi-core processors, we can use the additional processors to do the JIT compilation/optimization in parallel.</li>
+					</ul>
+			</ul>
+	</ul>
+	</li>
+</ul>
+</li>
+	<li>Global optimizations: Optimizations that span multiple statements (or program fragments) are often possible.
+	<ul>
+		<li>Because the programmer wrote sub-optimal code. It is our job to optimize it now. e.g., the programmer wrote x=1; x=2;</li>
+		<li>Because the machine representation may be richer than the source code syntax. e.g., the C syntax has multiply and add as separate operations, but the machine may have a single instruction to do multiply-and-add in one go.</li>
+		<li>Because some optimizations enable other optimizations. e.g., constant substitution can trigger more constant substitution.</li>
+		<ul>
+			<li><em>Caveat</em>: On the other hand, it is also possible for some optimizations to <em>preclude</em> other optimizations. e.g., replacing multiplication with shift may preclude the use of multiply-and-add instruction.
+		</ul>
+    <li>And several other reasons...
+		<ul>
+			<li>Generating the optimal implementation for a given program specification is an undecidable problem in Turing's model of computation, and an NP-Hard problem in the finite model of computation.
+		</ul>
+	</ul>
+	</li>
+  </ul>
+</ul>
+
+<h3>Why study compilers?  Can't I just take them for granted and forget about them?</h3>
+<b>If you ask me, compilers are the most exciting research area in computer systems (and perhaps in the whole of computer science) currently, and are likely to remain so for several years to come.</b>
+
+<p>Two technology trends that show the rising importance of compilers in Computer Science:
+<ol>
+	<li><em>Moore's law is running out of steam</em>
+	<ul>
+		<li> Gordon Moore, the co-founder of Fairchild Semiconductor and Intel, in his 1965 paper, described a doubling every year in the number of components per integrated circuit for at least the next decade.</li>
+		<li> In 1975 (after one decade), he revised it to doubling every two years.</li>
+		<li>Usually meant faster and more powerful computers, but speeds saturated in early 2000s, necessisating the need towards multi-core computing.</li>
+		<li> In 2015, Intel CEO, Brian Krzanich, revised the estimate to "doubling every two and a half years".</li>
+		<li> Physical limits to transistor scaling, such as source-to-drain leakage, limited gate metals, and limited options for channel material have been reached. While scientists are still exploring more ways to scale the transistors further (e.g., electron spintronics, tunnel junctions, etc.), it is safe to assume that all good things come to an end.</li>
+		<li>Moore's law meant that architects and computer system engineers did not have to work too hard
+		<ul>
+			<li>The process and materials engineers are already making great improvements.  We are too busy catching up with that.
+			<ul>
+			<li> <em>Consequence</em>: Our OS and programming language stacks are quite similar to what they were in 1960s-70s. Seems absurd to imagine that this will continue as-is for the next 50 years.</li>
+		  </ul>
+		  </li>
+			<li>Need innovations at the architecture level: perhaps we need innovative computing units not limited to sequential execution of simple instructions, or perhaps something else
+			<ul>
+				<li>If you read research papers in the architecture community, it is evident that several innovative ideas to improve performance have been proposed over the past 20 years or so.</li>
+				<li>Yet, these ideas have not become mainstream.
+				<ul>
+					<li>The primary stumbling block is: we do not know how to automatically and efficiently map program specifications written by humans to these new innovative architectural constructs.</li>
+					<li>Humans find it hard to directly code using these architectural constructs/abstractions, as they are not intuitive</li>
+					<li>Today's compilers are too fragile
+					<ul>
+						<li>The original designs for compilers were meant to handle simple opcodes (e.g., add, multiply, etc.), which were easily generated using similar constructs used by humans in their programs.</li>
+						<li>Over the years, this design the compiler has been loaded with several more requirements: vectorization, more programming constructs, more opcodes, parallel constructs and implementation, and so on...
+						<ul>
+							<li>Result: Over 14 million lines of code in GCC. Has increased at the rate of two million SLOC every three years. I predict that it will continue to grow at this rate (or higher) for the next decade, if the compiler design is not changed. You can call this the Compiler Complexity Law (or Sorav's Law if you will ;-).</li>
+						</ul>
+					</ul>
+				</ul>
+				</li>
+			</ul>
+		</ul>
+	</ul>
+	</li>
+	<li><em>Program complexity is increasing</em>
+	<ul>
+		<li>We expected programs to just perform arithmetic computations in 1960s. Today we expect them to talk to us, write English books, and perhaps even develop a compiler!</li>
+		<li>This has given rise to programming in higher levels of abstraction
+		<ul>
+			<li> Higher levels of abstraction was about constructs like objects, automatic memory management constructs, etc. (e.g., Java, C++), in late 1980s and 1990s.</li>
+			<li> In 2000s, this was about abstractions for distributed data-intensive applications, e.g., Map, Reduce, Sort, Filter, etc.</li>
+			<li> In 2010s, this was about machine-learning constructs like Neuron and Connections, e.g., TensorFlow.</li>
+			<li> Several other domain-specific abstractions/languages have emerged --- e.g., image and video processing, web programming, UI programming, networking, etc.</li>
+		</ul>
+		</li>
+		<li>Higher levels of abstraction increase the gap between the programming language and the architectural abstractions, making the search space for optimal implementations even larger.  Thus compilers assume a central role in this setting.</li>
+	</ul>
+</ol>
+
+<p>Some more crazy ideas that seem to be going around these days
+<ul>
+	<li>Natural language processing can be modeled as a compilation problem?  I do not believe this, but I also do not believe several other things that machine-learning people say ;-)</li>
+	<li>Almost every problem in computer science is a compilation problem. For example, can't I just say that I need a web-server (in some very high-level syntax), and can't a compiler generate a highly optimized implementation of a webserver (using multiple machines in a data-center) for me?</li>
+</ul>
+
+<h3>Some history</h3>
+<ul>
+	<li>1954 : IBM develops the 704 (the first commercially-successful machine)
+	<ul>
+		<li>Found that software costs exceeded the hardware costs by a lot</li>
+	</ul>
+	</li>
+	<li>1953 : John backus introduced something called "Speedcoding"
+	<ul>
+		<li> A small language that was much easier to program than directly programming the machine
+		<li> 10-20x slower (interpreted)</li>
+		<li> Interpreter itself took 300 bytes of memory (which was 30\% of all available memory).</li>
+		<li>Did not become popular</li>
+	</ul>
+	</li>
+	<li>Most common use of computers was for evaluating arithmetic formulae. John Backus, took his Speedcoding experience, to develop a higher-level program language for Formulas, and automatically "Translate" these "Formulas", in a language called "ForTran". The compiler took three years to develop (during 1954-57).</li>
+	<li>By 1958, 50\% of all programs were written in ForTran1 --- huge success!</li>
+	<li>The first Fortran compiler led to a huge body of theoretical work. Modern compilers preserve the outline of Fortran1!</li>
+	<ul>
+		<li>Compilers is a field that involves a mixture of theory and systems in quite an intense way.</li>
+	</ul>
+</ul>
+
+<!--
+<h3>Outline of the Fortran1 compiler</h3>
+<ol>
+	<li>Lexical Analysis</li>
+	<li>Parsing</li>
+	<li>Semantic Analysis
+	<ul>
+		<li>Types, scope, etc.</li>
+	</ul>
+	<li>Optimization</li>
+	<li>Code generation (translation)</li>
+</ol>
+
+<h3>Steps in a compiler in some more detail</h3>
+Explain using an analogy to how humans understand written english.
+
+<ul>
+<li>Understanding English: First step is to recognize words (lexical analysis)
+<ul>
+	<li>Words are the smallest unit above letters</li>
+	<li>Example: <code>This is a sentence.</code>
+	<ul>
+		<li>Background computation: identify separators (white spaces), capitals, punctuation marks, etc., to identify words and sentence.</li>
+		<li>Counterexample: <code>ist hisa sen tence.</code> is much harder to read. Hence, first step is to group letters into words (or tokens).</li>
+	</ul>
+<li> <code> if x == y then z = 1; else z = 2; </code>
+<ul>
+	<li>Need to group these characters into tokens.</li>
+	<li>The language keywords (if, then, else) are each represented as a single token.</li>
+	<li>Each identifier (x, y, z) is also identified as a single token.</li>
+	<li>Each operator (=, ==) is identified as a single token. Now, how do we know that "==" represents a single token or is a combination of two "=" tokens?  We will see this when we discuss the lexical analyzer.</li>
+	<li>Delimiters like white-space and semi-colon, are also recognized as separate tokens. Multiple white-space is recognized as a single token in this language, for example.</li>
+</ul>
+</li>
+</li>
+</ul>
+<li> English language: the next step is to understand sentence structure (parsing)
+<ul>
+	<li> Parsing = diagramming sentences as trees</li>
+	<li> <code>This line is a longer sentence</code>
+	<ul>
+		<li> <code>This</code>: Article</li>
+		<li> <code>line</code>: Noun</li>
+		<li> <code>is</code>: Verb</li>
+		<li> <code>a</code>: Article</li>
+		<li> <code>longer</code>: Adjective</li>
+		<li> <code>sentence</code>: Noun</li>
+    <li>Next level:
+		<ul>
+			<li> <code>This line</code> : subject</li>
+			<li> <code>is</code> : verb</li>
+			<li> <code>a longer sentence</code> : object</li>
+		</ul>
+		</li>
+    <li>Next level:
+		<ul>
+			<li> <code>This line is a longer sentence</code> : subject verb object : sentence</li>
+		</ul>
+	</ul>
+<li><code>if x == y then z = 1; else z = 2;</code>
+<ul>
+	<li> <code>x==y  </code> : relation
+	<li> <code>z = 1;</code> : assignment
+	<li> <code>z = 2;</code> : assignment
+</ul>
+<li>Next level
+<ul>
+	<li> <code>x == y</code>: predicate
+	<li> <code>z = 1</code>: then-statement
+	<li> <code>z = 2</code>: else-statement
+</ul>
+<li>Next level
+<ul>
+	<li> predicate then-statement else-statement : if-then-else</ul>
+<li> Is it a co-incidence that English parsing is exactly similar to program parsing?</li>
+</ul>
+</li>
+<li> English language: the next step is to understand the "meaning" of the sentence (semantic analysis)
+<ul>
+	<li>This is too hard!</li>
+	<li>Reduces to the equivalence checking problem in computers, which is undecidable!</li>
+	<li>Compilers perform limited semantic analysis to catch inconsistencies, but they do not know what the program is supposed to do.</li>
+	<li>Variable binding : an example of semantic analysis
+	<ul>
+		<li> <code>Jack said Jerry left his assignment at home</code>
+		<ul>
+			<li>Whom does <code>his</code> refer to? Jack or Jerry?
+		</ul>
+		</li>
+		<li> Even worse: <code>Jack said Jack left his assignment at home</code>
+		<ul>
+			<li>How many people are involved? Could be 1, 2, or 3.
+		</ul>
+		<li>These are examples of <em>ambiguity</em> in the english language syntax.</li>
+		<li>Such ambiguities are resolved in programming languages through strict variable binding rules. <code> { int Jack = 3; { int Jack = 4; cout &lt;&lt; Jack; } } </code>
+		<ul>
+			<li> Common rule: bind to inner-most definition (inner definition hides outer definition)</li>
+		</ul>
+	</ul>
+	<li>Type analysis: another example of semantic analysis
+	<ul>
+		<li><code>Jack left her homework at home</code>
+		<ul>
+			<li>Assuming Jack is male, this is a type mismatch between <code>her</code> and <code>Jack</code>; we know they are different people.</li>
+		</ul>
+	</ul>
+</ul>
+<li> English language: optimization is perhaps a bit like editing (not a strong correlation)
+<ul>
+	<li>Automatically modify programs so that they
+	<ul>
+		<li>Run faster
+		<li>Use less memory
+		<li>Reduce power
+		<li>Reduce network messages or database queries
+		<li>Reduce disk accesses, etc.
+	</ul>
+	</li>
+	<li>Optimization requires precise semantic modeling; several subtleties emerge in this context.
+	<ul>
+		<li> Can <code>for (unsigned i = 0; i &lt; n + 1; i++) {}</code> be changed to <code>for (unsigned i = 0; i &lt;= n; i++) {}</code>? Answer: No!</li>
+		<li> Can <code>for (int i = 0; i &lt; n + 1; i++) {}</code> be changed to <code>for (int i = 0; i &lt;= n; i++) {}</code>? Answer: Yes!</li>
+		<li> Can <code>(2*i)/2</code> be changed to <code>i</code>? Answer: No!</li>
+		<li> Can <code>Y*0</code> be changed to <code>0</code>? Answer: No for floating point!</li>
+	</ul>
+</ul>
+<li> English language: Translation into another language (code generation)
+<ul>
+	<li>Usually generate code for assembly language in compilers.</li>
+</ul>
+<li>The overall structure of almost every compiler adheres to this outline, yet proportions have changed.
+<ul>
+	<li>Sorted in order of size/complexity in Fortran: Lexer, Parser, CG, Optimizations, Semantic analysis</li>
+	<li>Sorted in order of size/complexity in today's compilers: Optimizations (by a huge margin), Semantic analysis (deeper than before), CG (rather small), Parser, Lexer</li>
+</ul>
+</ul>
+
+<h3>Economy of Programming Languages</h3>
+<ul>
+	<li> Why are there so many (hundreds to thousands) programming languages?</li>
+	<ul>
+		<li>Application domains have distinctive/conflicting needs
+		<ul>
+			<li>Scientific computing
+			<ul>
+				<li> Need rich support for floating-point operations, arrays, and parallelism. e.g., Fortran</li>
+			</ul>
+			</li>
+			<li>Business applications
+			<ul>
+				<li> Need support for persistence, report generation facilities, data analysis. e.g., SQL</li>
+			</ul>
+			<li>Systems programming
+			<ul>
+				<li> Need support for fine-grained control over resources, real-time constraints. e.g., C/C++</li>
+			</ul>
+		</ul>
+		Different languages make it easier for human programmers to <em>efficiently</em> encode different types of logic, and require different types of optimization support!  Somewhat related to the fragility of our current compilers.
+	</ul>
+</ul>-->

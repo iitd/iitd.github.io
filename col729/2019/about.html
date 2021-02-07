@@ -1,0 +1,79 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252"><title>COL729 : Compiler Optimizations : About</title>
+</head><body><h1><font color="blue">COL729 : Compiler Optimizations : About</font></h1>
+
+<h2>Course Staff</h2>
+<p><b>Instructor</b>: <a href="http://www.cse.iitd.ernet.in/%7Esbansal">Sorav Bansal</a>.
+
+<p><b>Teaching Assistants (TAs)</b>:
+<ul>
+<li>Shubhani</li>
+<li>Ankush Phulia</li>
+</ul>
+
+</p><p><b>Lectures</b>: Mon, Thu. 8-9.30 (Slot A), SIT 006
+
+<h2>Pre-requisites</h2>
+This course will briefly sketch the fundamentals of <a href=http://www.cse.iitd.ac.in/~sbansal/col728>compiler design</a> and will quickly move to
+the primary focus of the course: compiler optimizations. We recommend that
+you should have done a <a href=http://www.cse.iitd.ac.in/~sbansal/col728>compiler-design</a> course beforehand. However if you have not taken that
+course but are very interested in taking this course, please write to me
+with your CV/resume and I can guide you based on your background. You
+should have at least done a UG course on logic and/or programming languages.
+
+<p>The official pre-requisites are (see <a href=http://www.iitd.ac.in/sites/default/files/semsch/CouStudy_201819.pdf>courses of study</a>):
+<ul>
+<li>COL 216 : Computer Architecture</li>
+<li>COL 226 : Programming Languages</li>
+</ul>
+or equivalent.
+
+<h2>Why study compiler optimization?</h2>
+<p><b>How compiler optimizations are central to further progress in computer science</b>: Compilers
+bridge the gap between what humans find easy to understand and what machines
+find easy to execute. There is perhaps no CS area that does not need this
+important capability
+in today's research scenario:
+<ul>
+<li>Domain specific languages for writing operating systems,
+AI and machine learning algorithms, are very popular in the research
+community. The only way to harness their potential is through great compiler support.</li>
+<li>Gaps between safe languages (like Java/Python/OCaml) and
+performant languages (like C/C++) depend on the power of the compilation
+infrastructure</li>
+<li>Efficiently harnessing the compute power of modern devices like
+multi-core CPUs, GPUs, FPGAs, etc., is tightly dependent on compiler
+support.</li>
+</ul>
+Some discussion on compiler optimizations in recent Turing award lectures is available <a href=https://youtu.be/3LVeEjsn8Ts?t=4402>here</a> and <a href=https://youtu.be/NjoU-MjCws4?t=3370>here</a>.<br>
+<i>My opinion</i>: Perhaps the most important innovations in the next decade in CS will
+be primarily based on advances in compilation support. See <a href=references.html>references</a> page for some more pointers.
+
+<p><b>How it improves your understanding of computer science</b>:
+Compilers is perhaps the only CS area that combines a rich knowledge of
+logic, algorithms, theory, and low-level system programming, design and
+performance optimization. Very commonly, logicians
+derive research problems from real-world compiler problems; also, system
+builders and researchers find some of the most intriguing and difficult
+problems in compiler design.
+
+<h2>Course topics</h2>
+Following are the tentative course topics; the exact topics will evolve as
+we go along the course
+<ul>
+<li>Data-flow analyses : basic mathematical framework, examples like global constant propagation, liveness, reaching definitions, single static assignment, common subexpression elimination, alias analysis, lazy code motion, and perhaps some more.</li>
+<li>Region-based analysis : natural loops, induction variable analysis, strength reduction based on induction variable analysis, auto-parallelization based on induction-variable analysis, reduction operations, and perhaps some more.</li>
+<li>Inter-procedural analysis : inlining, inter-procedural data-flow analysis, function summaries, partial inlining.</li>
+<li>Undefined and unspecified behaviour semantics and their effects on compiler optimization</li>
+<li>Register allocation : graph-based techniques, enumerative techniques, performance studies</li>
+<li>Peephole optimizations : examples from multiple architectures, superoptimization techniques to learn peephole optimizations (<a href=https://gmplib.org/~tege/gso-pldi92.pdf>GNU Superoptimizer</a>, <a href=https://www.cse.iitd.ernet.in/~sbansal/pubs/asplos06.pdf>Peephole Superoptimizer</a>).</li>
+<li>Code synthesis and superoptimization : study some state-of-the-art superoptimizers and their pros and cons, e.g. <a href=https://www.embecosm.com/services/superoptimization/>Embecosm's GNU Superoptimizer 2.0</a>, <a href=https://www.embecosm.com/research/gso-2-0/>another effort by Embecosm</a>.</li>
+<li>Non-bisimilar loop transformations, such as loop tiling, loop interchange, blocking, for better locality and parallelism.</li>
+<li>Polyhedral optimization framework, e.g., <a href=https://polly.llvm.org/>Polly</a>.</li>
+<li>Domain-specific languages and compilers, e.g., <a href=https://www.tensorflow.org/xla/>machine-learning</a>, <a href=https://p4.org/>high-performance networking</a>, and some more</li>
+<li>Empirical studies on compiler optimization</li>
+</ul>
+
+<h2>Lab assignments</h2>
+We will have assignments primarily based on the LLVM IR to supplement the
+course material. The assignment load is expected to be moderate.

@@ -1,0 +1,129 @@
+<h2>Finding Synchronization-Free Parallelism</h2>
+These techniques also help improving locality in the program --- because all dependent accesses get clustered together, and all independent cluster of accesses get separated (to be executed on independent processors), we can run the independent clusters one by one on the same processor. This way, accesses that have dependencies (and thus reuse) will be closer in time.
+
+<p>An example: excerpt of a 5000-line Fortran multigrid program to solve 3D Euler equations
+<pre>
+for (j = 2; j &lt;= jl; j++) {
+  for (i = 2; i &lt;= il; i++) {
+    AP[j, i] = ...;
+    T = 1.0/(1.0 + AP[j, i]);
+    D[2,j,i] = T*AP[j,i];
+    DW[1,2,j,i] = T*DW[1,2,j,i];
+  }
+}
+for (k = 3; i &lt;= kl-1; k++) {
+  for (j = 2; j &lt;= jl; j++) {
+    for (i = 2; i &lt;= il; i++) {
+      AM[j,i] = AP[j,i];
+      AP[j,i] = ...;
+      T = ...AP[j,i] - AM[j,i](D[k-1,j,i]...;
+      D[k,j,i] - T*AP[j,i];
+      DW[1,k,j,i] = T*(DW[1,k,j,i]+DW[1,k-1,j,i])...;
+    }
+  }
+}
+...
+for (k=kl-1; k &gt;= 2; k--) {
+  for (j = 2; j &lt;= jl; j++) {
+    for (i = 2; i &lt;= il; i++) {
+      DW[1,k,j,i] = DW[1,k,j,i] + D[k,j,i]*DW[1,k+1,j,i]
+    }
+  }
+}
+</pre>
+<ul>
+<li>T is used in all iterations, so it seems that iterations cannot be executed in parallel; Two possible responses: (1) eliminate T if it is not live at exit; (2) replace T with an array, with one value for each iteration. Better responses possible than (2) depending on the particular example.</li>
+<li>With the modification above, the computation of the array element in each assignment statement depends only on other array elements with the same values for the last two components (j, i resp.).</li>
+<li>We can group all operations that operate on the (j,i)th element of all arrays into one computation, and execute them in the original serial order.</li>
+<li>The second and third loop nests involve an outer loop on k but: there is no dependence between the dynamic accesses with the same values for j and i, and so we can swith the loop nest order, and bring the outer loop on k and make it the innermost loop.</li>
+</ul>
+For a uniprocessor, the code can be reorganized as follows:
+<pre>
+for (j = 2; j &lt;= jl; j++) {
+  for (i = 2; i &lt;= il; i++) {
+    AP[j,i] = ...;
+    T = 1.0/(1.0 + AP[j, i]);
+    D[2,j,i] = T*AP[j,i];
+    DW[1,2,j,i] = T*DW[1,2,j,i];
+    for (k = 3; i &lt;= kl-1; k++) {
+      AM[j,i] = AP[j,i];
+      AP[j,i] = ...;
+      T = ...AP[j,i] - AM[j,i](D[k-1,j,i]...;
+      D[k,j,i] - T*AP[j,i];
+      DW[1,k,j,i] = T*(DW[1,k,j,i]+DW[1,k-1,j,i])...;
+    }
+    for (k=kl-1; k &gt;= 2; k--) {
+      DW[1,k,j,i] = DW[1,k,j,i] + D[k,j,i]*DW[1,k+1,j,i]
+    }
+  }
+}
+</pre>
+Independent units can be assigned to different processors and executed in parallel, without requiring any synchronization. Total number of computation units = <code>(jl-1)(il-1)</code>. We can map this to a 2-D processor space (j,i).
+
+<h3>Affine Space Partitions</h3>
+A loop nest is said to have k degrees of parallelism if it has, within the
+nest, k parallelizable loops -- loops that have no data dependencies between
+different iterations of the loops. e.g., the above example has 2 degrees
+of parallelism.
+
+We will first assume that the processor array also has k dimension, and
+each iteration can be mapped to one of the "virtual processors". Later
+we can worry about mapping these virtual processors to physical processors.
+
+We break down the program to be parallelized into elementary statements, e.g.,
+3-address code. For each statement, we find an <em>affine space partition</em>
+that maps each dynamic instance of the statement, as identified by loop
+indexes, to a processor ID.
+
+<h3>Space Partition Constraints</h3>
+If we want to disallow any communication, each pair of operations that share
+a data dependence must be assigned to the same processor. Any mapping that satisfies these constraints creates partitions that
+are independent of one another. A trivial mapping is when everything is mapped
+to the same processor.
+
+We restrict ourselves to affine partitions. Instead of maximizing the
+number of independent units, we may maximize the
+degree (number of dimensions) of parallelism.  It is sometimes possible
+to create more independent units if we can use <em>piecewise</em> affine
+partitions. A piecewise affine partition divides instances of a single
+access into different sets and allows a different affine partition for
+each set; we do not consider such cases here --- we assume a single
+affine partition for each access, i.e., a single affine function
+defines the processor mapping of different iterations of the same access.
+
+An affine partition of a program is <em>synchronization free</em> if
+and only if, for every two (not necessarily distinct) accesses sharing
+a dependence (F1,f1,B1,b1) in statement s1 nested in d1 loops and
+(F2,f2,B2,b2) in statement s2 nested in d2 loops, the partitions
+(C1,c1) and (C2,c2) for statements s1 and s2 respectively satisfy
+the following <em>space partition constraints</em>:
+<ul>
+<li>For all i1 in Z^d1 amd i2 in Z^d2 such that
+<ul>
+<li>B1i1 + b1 &gt;= 0</li>
+<li>B2i2 + b2 &gt;= 0</li>
+<li>F1i1 + f1 = F2i2 + f2</li>
+</ul>
+it is the case that C1i1 + c1 = C2i2 + c2
+</ul>
+Show diagram showing mapping to data space and processor space from iteration space.
+
+<p>If we choose an affine partition whose rank is the maximum of the ranks of all statements, we get the maximum possible parallelism. However under this partitioning, some processors may be idle at times while other processors are executing statements whose affine partitions have a smaller rank. This situation may be acceptable if the time taken to execute those statements is relatively short. Otherwise we can choose an affine partition whose rank is smaller than the maximum possible, as long as that rank is greater than 0 (rank 0 means everything mapped to one processor).
+
+<p>Example
+<pre>
+for (i = 1; i &lt;= 100; i++) {
+  for (j = 1; j &lt;= 100; j++) {
+    X[i,j] = X[i,j] + Y[i-1,j]; //s1
+    Y[i,j] = Y[i,j] + X[i,j-1]; //s2
+  }
+}
+</pre>
+Show data-dependence diagram with X-axis representing i, Y-axis representing
+j, alternating white and black rows of circles, with the white circles
+representing s2 and black circles representing s1. Looking at the figure,
+we can identify depence chains that go one-step diagonal-right-up one step up.
+There are 200 chains, and their length varies between 1 and 100.
+
+Because there are two statements, we are seeking two affine partitions, one
+for each statement. We need on

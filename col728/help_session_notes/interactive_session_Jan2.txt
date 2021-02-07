@@ -1,0 +1,36 @@
+Q1. In Module 70, at time frame 10:10, the example contains 2 paths from 1st to 4th block. In 4th block, shouldn't there must be a phi-node for x as well, since x is assigned a value in left path ?
+
+Ans. Yes, there must be a phi-node for x in the beginning of 4th block along with a phi-node for y.
+
+
+Q2. How does compiler access global variables from static data region during code generation?
+Ans. The compiler assigns a static address to the global variable at the beginning of program and all uses of that variable in the program are replaced by this address. So global variable is accessed using this static address. This is maintained using a map from identifiers to their addresses in a symbol table, which is different from other typical symbol tables which store types, etc. for identifiers.
+
+
+Q3. Suppose a peephole optimization rule is '{statement 1; statement 2} -> statement 3', and there is a label between statements 1 and 2, i.e. an incoming branch is possible from outside to statement 2. Is this a valid rule of peephole optimization ?
+
+Ans. NO, we are assuming that peephole optimization is being performed at a basic block level and a basic block cannot have labels in the middle of the block, except for first instruction.
+
+
+Q4. In dynamic scoping, do we need a symbol table at run time just like in static scoping, a symbol table is needed at compile time (and has no overhead at run time) ?
+
+Ans. Yes, we need a dynamic map from identifier name to objects at the run time, where an object may be address, type, etc. Everything is resolved at run time with the help of this map (symbol table).
+
+
+Q5. In peephole optimization, can we have bigger peephole/window size of the rules, including arbitrary no. of instructions in the middle that are unrelated to the first and last instructions of this rule ?
+
+Ans. A high-level abstract rule can be created which contains first instruction (say, i1), last instruction (say i2) and has some rule like 'ANY' (meaning arbitrary no. of instructions between i1 and i2, not related to i1 or i2). 
+Pro: With this scheme, we can cover a large set of instructions using just one rule. So the coverage increases.
+Con: The actual pattern matching will become very difficult and time consuming, increasing the compile time overhead.
+In production, such rules will not be generally used.
+
+
+Q6. In automatic learning of peephole optimizations, how do we estimate the cost of a set of instructions in the peephole?
+
+Ans. Each opcode is assigned a cost. The no. of operands add up the cost. Moreover, memory accesses in instructions also have associated costs. These costs are added up for all instructions in the peephole to measure total cost for that peephole. 
+
+
+Q7. t = x*15 -> t = x << 4; t = t-x;
+In the above optimization rule, is it possible that multiplication by 15 doesn't overflow but left shift by 4 (i.e. multiplication by 16) does ?
+
+Ans. Actually, there exists no value of x for which the two (pattern and replacement) would produce different results (assuming two's complement representation of x).

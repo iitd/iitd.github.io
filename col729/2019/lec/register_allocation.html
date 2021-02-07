@@ -1,0 +1,148 @@
+<h3>Register allocation</h3>
+Intermediate code uses unlimited temporaries:
+<ul>
+	<li>Simplifies code generation and optimization</li>
+	<li>Complicates final translation to assembly</li>
+</ul>
+
+<p>Typical IR code uses too many temporaries
+
+<p>The problem: <em>Rewrite the intermediate code to use no more temporaries than there are machine registers</em>
+
+<p>Potential Method:
+<ul>
+	<li>Assign multiple temporaries to each register</li>
+	<li>But without changing the program behaviour</li>
+</ul>
+Many-to-one mapping
+
+<p>Consider the program
+<pre>
+a := c + d
+e : = a + b
+f : = e - 1
+</pre>
+Assume <code>a</code> and <code>e</code> dead after use. A dead temporary can be "reused".
+
+<p>Can allocate <code>a</code>, <code>e</code>, and <code>f</code> all to one
+register (<code>r1</code>). <code>c</code>, <code>d</code> and <code>b</code> to <code>r2</code>, <code>r3</code>, and <code>r4</code> resp.
+<pre>
+r1 := r2 + r3
+r1 := r1 + r4
+r1 := r1 - 1
+</pre>
+
+<p>One approach: Temporaries <code>t1</code> and <code>t2</code> can share the same register if <u>at any point in the program at most one</u> of <code>t1</code> or <code>t2</code> is live. If <code>t1</code> and <code>t2</code> is live at the same time, they cannot share a register.
+
+<p>Compute live variables at each point
+<pre>
+BB1:
+           &lt;-- b,c,f
+ a := b+c
+           &lt;-- a,c,f
+ d := -a
+           &lt;-- c,d,f
+ e := d + f
+
+BB1-&gt;BB2
+BB1-&gt;BB3
+
+BB2:
+           &lt;-- c,e
+ f := 2*e
+           &lt;-- c,f
+
+BB3:
+           &lt;-- c,d,e,f
+ b := d + e
+           &lt;-- b,c,e,f
+ e := e - 1
+           &lt;-- b,c,f
+
+BB2-&gt;BB4
+BB3-&gt;BB4
+BB4-&gt;BB5 (b live)
+
+BB4:
+          &lt;-- c,f
+ b := f + c
+
+BB4-&gt;BB1
+BB4-&gt;BB6 (b live)
+</pre>
+
+<p>Construct an undirected graph
+<ul>
+	<li>A node for each temporary</li>
+	<li>An edge between <code>t1</code> and <code>t2</code> if they are live simultaneously at some point in the program.</li>
+</ul>
+This is the <em>register interference graph</em> (RIG): two temporaries can be allocated to the same register if there is no edge connecting them.
+
+<p>For our example
+<pre>
+a -&gt; f
+a -&gt; c
+f -&gt; b
+f -&gt; c
+f -&gt; d
+f -&gt; e
+b -&gt; e
+b -&gt; c
+e -&gt; c
+e -&gt; d
+c -&gt; d
+</pre>
+E.g., <code>b</code> and <code>c</code> cannot be in the same register while <code>b</code> and <code>d</code> can be in the same register.
+
+<p>RIG extracts exactly the information needed to characterize legal register assignments, and gives a global picture (i.e., over the entire graph) of the register requirements.
+
+<p><em>Graph coloring</em>: This register allocation problem is identical to the graph-coloring problem. A <u>coloring of a graph</u> is an assignment of colors to nodes, such that nodes connected by an edge have different colors. A graph is <em>k-colorable</em> if it has a coloring with <code>k</code> colors. For us, colors = registers.
+
+<p>Our example graph: There is no coloring with less than 4 colors. THere are 4 colorings of the graph. Can assign temporaries to registers using one of the 4 colorings, and change the original program accordingly.
+
+<h3>Spilling</h3>
+What if the graph cannot be colored with the available number of registers? e.g., what if the number of available registers is 3 in our example.
+
+<p>Pick a node as a candidate for spilling. This temporary will "live" in memory. Remove the picked node and all its incident edges from the RIG.
+
+<p>Picking the right node is hard. We will just use heuristics to decide which one to pick. Let's say we pick <code>a</code>. But we are again stuck as the remaining graph is also not 3-colorable. Let's say we now pick <code>f</code>. After removing <code>f</code>, the remaining graph can be colored with three colors. But now we try to add back <code>f</code>. It is possible that after we add back <code>f</code>, the colors of all four neighbors of <code>f</code> allow that <code>f</code> can be colored too. THis is called <em>optimistic coloring</em>. In this example however, optimistic coloring will fail.
+
+<p>If optimistic coloring fails, we spill <code>f</code>:
+<ul>
+	<li>Allocate a memory location for <code>f</code>
+		<ul>
+			<li>Typically in the current stack frame.</li>
+			<li>Call this address <code>fa</code>.</li>
+		</ul>
+	</li>
+	<li>Before each operation that reads <code>f</code>, insert:
+		<ul>
+			<li><code>f := load fa</code></li>
+		</ul>
+	</li>
+	<li>After each operation that writes <code>f</code>, insert:
+		<ul>
+			<li><code>store f, fa</code></li>
+		</ul>
+	</li>
+	<li>Also rename each use of <code>f</code> to separate variables, say <code>f1</code>, <code>f2</code>, ...</li>
+	<li>Recompute liveness and retry
+</ul>
+
+<p>It is possible that even after spilling the RIG is not colorable, in which case we should spill another variable (that has not already been spilled).
+Eventually we should get a colorable graph, because we are making the RIG much sparser by by significantly reducing the <em>live range</em> of the
+variables. For example, the new variables <code>f1</code>, ... are only live at the instruction using them and the one preceding/succeeding them (for load/store resp.).
+
+<h3>Limitations of this method of register allocation</h3>
+The primary limitation of this algorithm is that it allocates registers <em>statically</em>. For example, if we have two regions of the program, one where <code>t1</code> is used heavily and another where <code>t1</code> is used sparingly, then it would make sense to register-allocate <code>t1</code> in the first region and spill it in the second region. However the current algorithm makes an all-or-nothing choice.
+
+<p>Region-based register allocator: partition the program into <em>regions</em>, assign temporaries to registers or memory within each region, and resolve discrepancies at region boundaries. The overall quality of the solution depends heavily on the region partitioning. Some example heuristics:
+<ul>
+	<li>A region for each loop region.</li>
+	<li>Regions based on register pressure.</li>
+	<li>Regions based on register pressure.</li>
+</ul>
+
+<p>Even after doing this, there are issues relating to some opcodes requiring only register operands; further other opcodes may require certain specific registers. To deal with these problems, compilers add extra passes (like the "reloading" pass in GCC's <a href=https://gcc.gnu.org/onlinedocs/gccint/RTL-passes.html>register allocator</a>) to resolve these issues (by adding instructions to spill/copy registers). These problems arise due to this layered pass-by-pass nature of our analysis and transformation.
+
+<p>An alternative technique is to do instruction-selection (opcode selection) simultaneously with register-allocation. More expensive in general but can use heuristics to prune the search space while still getting most of the benefits. Some previous work on <a href=http://www.cse.iitd.ernet.in/~sbansal/pubs/osdi08.pdf>binary translation</a> demonstrates one such algorithm based on dynamic-programming --- the performance results in this work clearly bring out the weaknesses of the pass-by-pass register allocation approach in compilers like GCC.
