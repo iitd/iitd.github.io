@@ -197,23 +197,32 @@ BB2: a = a+1
 <h3>Region-based analysis</h3>
 The iterative data-flow analysis algorithm we have discussed so far is just one
 approach to solving data-flow problems. We discuss another approach
-called region-based analysis. In the iterative-analysis approach, we
+called region-based analysis.
+
+<p>
+In the iterative-analysis approach, we
 create transfer functions for basic blocks and then find the fixedpoint solution by
 repeated passes over the blocks. Instead of creating transfer functions just for
 individual blocks, a region-based analysis finds transfer functions that summarize the execution of progressively larger regions of the program. Ultimately,
 transfer functions for entire procedures are constructed and then applied, to get
 the desired data-flow values directly.
+
+<p>
 While a data-flow framework using an iterative algorithm is specified by
 a semilattice of data-flow values and a family of transfer functions closed under composition, region-based analysis requires more elements. A region-based
 framework includes both a semilattice of data-flow values and a semilattice
 of transfer functions that must possess a meet operator,
 a composition operator, and a closure operator.
 
+<p>
 A region-based analysis is particularly useful for data-flow problems where
 paths that have cycles may change the data-flow values. The closure operator
 allows the effect of a loop to be summarized more effectively than does
 iterative
-analysis. The technique is also useful for interprocedural analysis, where
+analysis.
+
+<p>
+The technique is also useful for interprocedural analysis, where
 transfer functions associated with a procedure call may be treated
 like the transfer
 functions associated with basic blocks.
@@ -221,6 +230,7 @@ For simplicity, we shall consider only forward data-flow problems in this
 section. We first illustrate how region-based analysis works by
 using the familiar example of reaching definitions.
 
+<p>
 In region-based analysis, a program is viewed as a hierarchy of regions, which
 are (roughly) portions of a flow graph that have only one point of entry.
 We
@@ -230,6 +240,7 @@ regions. Each statement in a block-structured program is a region, as control
 flow can only enter at the beginning of a statement. Each level of statement
 nesting corresponds to a level in the region hierarchy. 
 
+<p>
 Formally, a region of a flow graph is a collection of nodes N and edges E
 such that
 <ol>
@@ -240,6 +251,8 @@ m is also in N.</li>
  in N,
 except (possibly) for some that enter h.</li>
 </ol>
+
+<p>
 Clearly, a natural loop represents a region. Also, a basic block represents
 a region; similarly a single statement represents a region.
 
