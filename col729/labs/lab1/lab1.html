@@ -1,0 +1,131 @@
+<html>
+  <head>
+    <title>COL729 Lab 1 : Anticipated (Needed) Expressions Analysis</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="Stylesheet" type="text/css" href="style.css">
+  </head>
+
+<body>
+  <h1>COL729 Lab 1 : Anticipated (Needed) Expressions Analysis</h1>
+
+  <h2>Due date - 23:55, 21 March 2021</h2>
+
+  <h3>Overview</h3>
+  <p>In this assignment you will implement Anticipated or Needed Expressions Analysis (<a href="https://iitd.github.io/col729/lec/lazy_code_motion.html">notes</a>, <a href="https://www.youtube.com/watch?v=zPLbAOdIqRw&list=PLf3ZkSCyj1tf3rPAkOKY5hUzDrDoekAc7&index=108">video</a>).  Make sure you understand it before proceeding ahead.</p>
+
+  <p>In order to implement the analysis, we need (broadly) two things: (1) a framework to represent programs as flow graphs which and, (2) a DFA frawework within which we can implement our analysis.
+  For this assignment we will work with the <code>compilerai</code> framework (developed in-house here at IITD).  We give a brief overview of the framework below (for more details refer to <code>doc/</code> directory of <code>superopt-project</code>).
+  </p>
+  <h4>Compilerai framework</h4>
+  <p>Programs are represented as Control Flow Graphs (CFGs) and are referred to as <b>TFGs</b> (Transfer Function Graphs) in the code.</p>
+    <ul>
+      <li>Each node of a TFG represents to a program point and is referred to as <b>PC</b> in the code.  PCs are uniquely identified by their labels.  Labels look like this:<code>L0%0%1</code>, <code>L1%1%1</code>, etc.</li>
+      <li>Each edge of a TFG represents a guarded basic block where the guard is the condition under the edge shall be taken.</li>
+      <ul>
+        <li>An edge from a PC, say <code>L0%0%1</code>, to a PC, say <code>L1%1%1</code>, is specified by its <b>edge condition</b> (guard is referred to as edge condition in the code) and a <b>to-state</b> which summarizes the effect of that basic block.</li>
+        <li>The edge condition of <code>L0%0%1 => L1%1%1</code> (short for "from PC <code>L0%0%1</code> to PC <code>L1%1%1</code>") may look something like "<code>not(eq(input.src.llvm-%7, 0))</code>", which says that this edge will be taken if the "state element" <code>input.src.llvm-%7</code> is not equal to 0.
+        <li>The to-state for the same edge may look like
+          <pre>
+input.src.llvm-%8 <-- bvadd(input.src.llvm-%7, 1)
+input.src.llvm-%9 <-- 0</pre>
+          <ul>
+            <li>This is saying that <em>after</em> the execution of this edge state element <code>input.src.llvm-%8</code> will be assigned the value <code>(input.src.llvm-%7 + 1)</code> where <code>input.src.llvm-%7</code> refers to the value of the state element "input.src.llvm-%7" just <em>before</em> the execution of this edge.</li>
+            <li>Similarly, state element <code>input.src.llvm-%9</code> gets assigned the value 0.</li>
+          </ul>
+        </li>
+        <li>Further, for completeness, an edge also has a set of "assumes" but they are not relevant in this assignment and will not be discussed.</li>
+      </ul>
+      <li>The <b>state</b> of the program is the set of all variables used in the program and an extra memory element.  For example, for the following LLVM IR program
+        <pre>
+define i32 @sum(i32 %n) {
+entry:
+  br label %for.cond
+
+for.cond:                                         ; preds = %for.inc, %entry
+  %ret.0 = phi i32 [ 0, %entry ], [ %add, %for.inc ]
+  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ]
+  %cmp = icmp slt i32 %i.0, %n
+  br i1 %cmp, label %for.body, label %for.end
+
+for.body:                                         ; preds = %for.cond
+  %add = add nsw i32 %ret.0, %i.0
+  br label %for.inc
+
+for.inc:                                          ; preds = %for.body
+  %inc = add nsw i32 %i.0, 1
+  br label %for.cond
+
+for.end:                                          ; preds = %for.cond
+  ret i32 %ret.0
+}</pre>
+        <ul>
+          <li>The state of the above program would have (among others) the following elements: <code>%n, %ret.0, %i.0, %cmp, %add, %inc</code>.</li>
+          <li>The "to-state" of an edge specifies the elements that were modified along with the corresponding modification.</li>
+        </ul>
+      </li>
+    </ul>
+
+  <h3>Instructions</h3>
+
+  <p>The source code for the framework is available in the form of a Git repository in the server machine provided to you for lab work.  You will clone it in your home directory and work on it from there only (see also: <code>doc/GettingStarted.md</code> and <code>doc/discipline.md</code>). 
+
+  <h4>Getting started</h4>
+  <p>Please follow the following steps to get started:</p>
+  <ol>
+    <li>Clone the Git repo in your local: <code>scratch</code> directory: <code>git clone --recursive /home/abhishek/scratch/superopt-project</code>
+      <blockquote>You are advised to use <code>scratch</code> as the rootfs does not have enough free space for everyone.</blockquote>
+    </li>
+    <li>Change directory to <code>superopt-project</code>.</li>
+    <li>Copy the <code>tars</code> directory: <code>cp -r /home/abhishek/scratch/superopt-project/tars .</code>.</li>
+    <li>Build the project: <code>make</code>.
+      <blockquote>If you get any issues in this step, please make a post on Piazza with full logs (i.e. the full output of <code>make</code>).</blockquote>
+    </li>
+  </ol>
+
+  <p>At this point we have completed the initial setup and can now start working with the code.</p>
+  <p>Change directory to <code>superopt</code>, this is the repository where you will implement the analysis.  From now we will assume that you are already in the root of <code>superopt</code>.  The primary places where you need to make changes have been marked with <em>COL729_LAB1 TODO</em>.  Search for them using <code>git grep 'COL729_LAB1 TODO'</code>.</p>
+
+  <h4>Working with the code</h4>
+
+  <p>Recall that in our framework a program is represented using TFG, in the code we have a class named <code>tfg</code> for the same.  In fact, <code>tfg</code> is part of a hierarchy of classes which build upon each other to achieve more complex functionality.  At the bottom of this hierarchy is the <code>graph</code> class which is mostly concerned with "graph" properties i.e. edges and nodes.  On the other hand, at the top are specialized classes such as <code>tfg_llvm_t</code> which represent a TFG created from LLVM IR.  The relevant source code paths are <code>include/graph/</code> and <code>include/tfg/</code>.</p>
+  <p>The DFA framework builds upon <code>graph</code> and provides an implementation of the worklist algorithm.  To implement an analysis, one needs to subclass the <code>data_flow_analysis</code> and provide overriding implementation for the <code>xfer_and_meet()</code> function which accepts 3 parameters: (1) the corresponding edge, (2) input value (i.e. IN), (3) output value (i.e. OUT) passed as reference.  The function is supposed to compute the new OUT value using the IN value and the old OUT value (by using <code>meet()</code> for the latter), and indicate as return value whether there was a change in OUT value.  The DFA framework itself is defined in <code>include/graph/dfa.h</code>, and the files <code>include/graph/avail_exprs_dfa.h</code>, <code>include/graph/liveness_dfa.h</code> contain implementation of available expressions and liveness analysis using the DFA framework.  The available expressions analysis is actually implemented as a super dataflow analysis.  You can find the implementation of its <code>xfer_and_meet()</code> in <code>lib/graph/graph_with_aliasing.cpp</code>, line <code>1362</code> under the function name <code>avail_exprs_xfer_and_meet()</code>.</p>
+  <p>Studying the implementation of <code>xfer_and_meet</code> of available expressions analysis would give you enough information to implement the anticipated expressions analysis.  Most things remain same in both analyses: you would need the expressions generated and killed in each edge (<code>populate_gen_and_kill_sets_for_edge()</code>), you would have to kill those expressions which depend on a killed expression (<code>get_locs_potentially_read_in_expr_using_locs_map()</code> and <code>set_intersect(deps, killed_locs)</code>) and so on.
+  <blockquote><strong>On locs</strong>: As you must have noticed, instead of returning expressions (or set of <code>expr_ref</code>), the function <code>populate_gen_and_kill_sets_for_edge()</code> returns <em>locs</em>.  A <b>loc</b> is one of the following: an LLVM variable, a register, or a unit of memory whose size and location are known (these are called memory slots or <em>memslot</em> for short).  It represents a unit of memory about which the framework can reason about.  For example, a write to an LLVM variable would modify the <em>loc</em> corresponding to that variable, a write to a memory location would modify all memory slots whose address can potentially alias with the target of memory write and so on.  It is possible to convert a <em>loc</em> (<code>graph_loc_id_t</code> in code) to an expression (<code>expr_ref</code>) and vice-versa using two special mappings maintained by TFG: <code>exprid2locid_map</code> and <code>locid2expr_map</code>.</blockquote>
+  <blockquote><strong>On expressions</strong>: We represent an expression with the <code>expr</code> class (see <code>include/expr/expr.h</code>).  In the code, however, you would mostly see references to <code>expr_ref</code> only.  This is because an <code>expr_ref</code> is a reference to an immutable <code>expr</code> object which is reference-counted in order to simplify memory management.</blockquote>
+
+  <p>In order to simplify things for the lab assignment and allow you to focus on only the important parts, some skeleton code has been provided.  In particular:
+  <ul>
+    <li>A class which represents anticipated expressions as a set of <code>expr_ref</code> has been defined at <code>include/graph/anticipated_exprs.h</code>.</li>
+    <li>A class for anticipated expressions DFA value has been defined at <code>include/graph/anticipated_exprs_dfa.h</code>.  You are expected to fill-in definitions of <code>meet</code> and <code>top</code> here (see <code>include/graph/avail_exprs_dfa.h</code>).</li>
+    <li>A class for defining the DFA schema for anticipated expressions analysis is defined at <code>include/graph/anticipated_exprs_dfa.h</code>.  You are expected to fill-in definition of <code>xfer_and_meet</code> and make other changes (as required) here.</li>
+  </ul>
+
+  <h4>Running and testing your changes</h4>
+
+  <p>Once you have filled-in the required code, you need to first uncomment the lines 575-587 and comment line 588 to run the anticipated expressions analysis.</p>
+  <p>Steps for building and running the code:</p>
+  <ol>
+    <li>Run <code>make</code> in <code>superopt-project</code> to build your changes.</li>
+    <li>Now switch directory to <code>lab1_test</code> and run <code>./c2bc.sh a.c</code> to compile C file <code>a.c</code> to LLVM bitcode <code>a.c.bc</code>.</li>
+    <li>While still in <code>lab1_test</code>, run <code>./run.sh a.c.bc</code> to convert LLVM bitcode to TFG and run the analysis.  The output TFG file name will be named <code>${INPUT_FILENAME}.etfg</code>, e.g., <code>a.c.bc.etfg</code> for <code>a.c.bc</code>.  Log (stdout) of run is automatically saved in <code>last_run.log</code>.
+      <blockquote>You can turn on debug output by appending <code>--dyn_debug=DEBUG_CLASS</code> to <code>llvm2tfg</code> command in <code>run.sh</code>.  <code>DYN_DEBUG</code> statements in your code will get executed if their <code>DEBUG_CLASS</code> matches the supplied <code>DEBUG_CLASS</code>.  For example, in order execute this statement: <pre>DYN_DEBUG(anticipated_analysis, cout << "Here" << endl);</pre>you will supply <code>--dyn_debug=anticipated_analysis</code> to <code>llvm2tfg</code>.</blockquote>
+    </li>
+  </ol>
+
+  The result of your anticipated expressions analysis will be available in serialized format in the output TFG file: search for text "=Anticipated expressions in".
+
+  <h5>Requirements</h5>
+
+  Your implementation should be able find <em>all</em> anticipated expressions at every PC in the input program.  As the framework can transparently handle things like aliasing and function calls, your implementation should not assume absence of any program features.
+
+  <h3>Turn in</h3>
+  Submit your changes to <code>superopt</code> repository in the form of a compressed patch file:
+  <ul>
+    <li><code>git diff col728_lab1 | gzip ${your_group_members_entry_nums}.gz</code></li>
+    <li>Submit <code>${your_group_members_entry_nums}.gz</code> to moodle</li>
+  </ul>
+  <p>NOTE: It is your responsibility to ensure that a sequence of <code>gunzip -c ${your_group_members_entry_nums}.gz | patch -p1</code>, when executed in <code>superopt</code> root with HEAD at <code>col728_lab1</code>, produces a tree equivalent to yours.</p>
+  <blockquote><strong>NOTE:</strong> Please start early in this lab.  This is the first time we are using this framework for teaching, therefore the documentation (and code) is not very beginner friendly.  We may not have <em>anticipated</em> all newbie problems and you might have trouble understanding the code/docs initially.</blockquote>
+</body>
+</html>
