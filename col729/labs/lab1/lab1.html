@@ -114,6 +114,7 @@ for.end:                                          ; preds = %for.cond
   </ol>
 
   The result of your anticipated expressions analysis will be available in serialized format in the output TFG file: search for text "=Anticipated expressions in".
+  <blockquote><strong>Visual representation of TFG</strong>: For debugging you may also find the <code>etfg2dot</code> tool helpful.  <code>etfg2dot</code> converts an LLVM TFG to Graphviz's dot file, which can then be viewed graphically using <code>xdot</code> or similar dot viewers.  You can build <code>etfg2dot</code> by switching to <code>superopt</code> and then running <code>make etfg2dot</code>.  For running, use this command: <code>superopt/build/etfg_i386/etfg2dot ${FunctionName} ${TFGfile}</code>, e.g. <code>superopt/build/etfg_i386/etfg2dot sum a.c.bc.etfg</code>.</blockquote>
 
   <h5>Requirements</h5>
 
