@@ -1,4 +1,5 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
     <title>COL729 Lab 1 : Anticipated (Needed) Expressions Analysis</title>
     <meta charset="utf-8">
@@ -21,21 +22,36 @@
   <p>Programs are represented as Control Flow Graphs (CFGs) and are referred to as <b>TFGs</b> (Transfer Function Graphs) in the code.</p>
     <ul>
       <li>Each node of a TFG represents to a program point and is referred to as <b>PC</b> in the code.  PCs are uniquely identified by their labels.  Labels look like this:<code>L0%0%1</code>, <code>L1%1%1</code>, etc.</li>
-      <li>Each edge of a TFG represents a guarded basic block where the guard is the condition under the edge shall be taken.</li>
-      <ul>
-        <li>An edge from a PC, say <code>L0%0%1</code>, to a PC, say <code>L1%1%1</code>, is specified by its <b>edge condition</b> (guard is referred to as edge condition in the code) and a <b>to-state</b> which summarizes the effect of that basic block.</li>
-        <li>The edge condition of <code>L0%0%1 => L1%1%1</code> (short for "from PC <code>L0%0%1</code> to PC <code>L1%1%1</code>") may look something like "<code>not(eq(input.src.llvm-%7, 0))</code>", which says that this edge will be taken if the "state element" <code>input.src.llvm-%7</code> is not equal to 0.
-        <li>The to-state for the same edge may look like
-          <pre>
-input.src.llvm-%8 <-- bvadd(input.src.llvm-%7, 1)
-input.src.llvm-%9 <-- 0</pre>
-          <ul>
-            <li>This is saying that <em>after</em> the execution of this edge state element <code>input.src.llvm-%8</code> will be assigned the value <code>(input.src.llvm-%7 + 1)</code> where <code>input.src.llvm-%7</code> refers to the value of the state element "input.src.llvm-%7" just <em>before</em> the execution of this edge.</li>
-            <li>Similarly, state element <code>input.src.llvm-%9</code> gets assigned the value 0.</li>
-          </ul>
-        </li>
-        <li>Further, for completeness, an edge also has a set of "assumes" but they are not relevant in this assignment and will not be discussed.</li>
-      </ul>
+      <li>Each edge of a TFG represents a guarded basic block where the guard is the condition under the edge shall be taken.
+        <ul>
+          <li>An edge from a PC, say <code>L0%0%1</code>, to a PC, say <code>L1%1%1</code>, is specified by its <b>edge condition</b> (guard is referred to as edge condition in the code) and a <b>to-state</b> which summarizes the effect of that basic block.</li>
+          <li>The edge condition of <code>L0%0%1 => L1%1%1</code> (short for "from PC <code>L0%0%1</code> to PC <code>L1%1%1</code>") may look something like "<code>not(eq(input.src.llvm-%7, 0))</code>", which says that this edge will be taken if the "state element" <code>input.src.llvm-%7</code> is not equal to 0.
+          <li>The to-state for the same edge may look like
+            <pre>
+input.  src.llvm-%8 &lt;-- bvadd(input.src.llvm-%7, 1)
+input.  src.llvm-%9 &lt;-- 0</pre>
+            <ul>
+              <li>This is saying that <em>after</em> the execution of this edge state element <code>input.src.llvm-%8</code> will be assigned the value <code>(input.src.llvm-%7 + 1)</code> where <code>input.src.llvm-%7</code> refers to the value of the state element "input.src.llvm-%7" just <em>before</em> the execution of this edge.</li>
+              <li>Similarly, state element <code>input.src.llvm-%9</code> gets assigned the value 0.</li>
+            </ul>
+          <blockquote><strong>On sequencing and order of evaluation</strong>: It is important to note that there is no sequencing in the to-state of a TFG edge; every assignment is assumed to happen simultaneously (the notion of sequencing comes from combination of edges).
+            <br>
+            In the simplest case you would have one TFG edge for each program statement (for example, one TFG edge per LLVM statement) and sequencing would look <q>normal</q>.  However, you can also have a single TFG edge for a <i>maximal</i> basic block (i.e., a basic block which has multiple input edges and multiple outgoing edges) and in that case it might be somewhat difficult to imagine what the to-state would look like.
+            <br>
+            Consider the following sequence of C statements:
+            <pre>
+x = y+z;
+q = x+1;</pre>
+            The to-state of the TFG edge which represents the above sequence will look like:
+            <pre>
+x &lt;-- bvadd(y, z);           #1
+q &lt;-- bvadd(bvadd(y, z), 1); #2</pre>
+            Notice that instead of referencing <code>x</code> in <code>#2</code> we substituted the expression which is assigned to <code>x</code>.  Thus, there is no dependence between <code>#1</code> and <code>#2</code> and the assignments can happen in any order (or even simultaneously).
+          </blockquote>
+          </li>
+          <li>Further, for completeness, an edge also has a set of "assumes" but they are not relevant in this assignment and will not be discussed.</li>
+        </ul>
+      </li>
       <li>The <b>state</b> of the program is the set of all variables used in the program and an extra memory element.  For example, for the following LLVM IR program
         <pre>
 define i32 @sum(i32 %n) {
@@ -109,7 +125,7 @@ for.end:                                          ; preds = %for.cond
     <li>Run <code>make</code> in <code>superopt-project</code> to build your changes.</li>
     <li>Now switch directory to <code>lab1_test</code> and run <code>./c2bc.sh a.c</code> to compile C file <code>a.c</code> to LLVM bitcode <code>a.c.bc</code>.</li>
     <li>While still in <code>lab1_test</code>, run <code>./run.sh a.c.bc</code> to convert LLVM bitcode to TFG and run the analysis.  The output TFG file name will be named <code>${INPUT_FILENAME}.etfg</code>, e.g., <code>a.c.bc.etfg</code> for <code>a.c.bc</code>.  Log (stdout) of run is automatically saved in <code>last_run.log</code>.
-      <blockquote>You can turn on debug output by appending <code>--dyn_debug=DEBUG_CLASS</code> to <code>llvm2tfg</code> command in <code>run.sh</code>.  <code>DYN_DEBUG</code> statements in your code will get executed if their <code>DEBUG_CLASS</code> matches the supplied <code>DEBUG_CLASS</code>.  For example, in order execute this statement: <pre>DYN_DEBUG(anticipated_analysis, cout << "Here" << endl);</pre>you will supply <code>--dyn_debug=anticipated_analysis</code> to <code>llvm2tfg</code>.</blockquote>
+      <blockquote>You can turn on debug output by appending <code>--dyn_debug=DEBUG_CLASS</code> to <code>llvm2tfg</code> command in <code>run.sh</code>.  <code>DYN_DEBUG</code> statements in your code will get executed if their <code>DEBUG_CLASS</code> matches the supplied <code>DEBUG_CLASS</code>.  For example, in order execute this statement: <pre>DYN_DEBUG(anticipated_analysis, cout &lt;&lt; "Here" &lt;&lt; endl);</pre>you will supply <code>--dyn_debug=anticipated_analysis</code> to <code>llvm2tfg</code>.</blockquote>
     </li>
   </ol>
 
