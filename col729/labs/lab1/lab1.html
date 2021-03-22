@@ -139,7 +139,7 @@ for.end:                                          ; preds = %for.cond
   <h3>Turn in</h3>
   Submit your changes to <code>superopt</code> repository in the form of a compressed patch file:
   <ul>
-    <li><code>git diff col728_lab1 | gzip ${your_group_members_entry_nums}.gz</code></li>
+    <li><code>git diff col729_lab1 | gzip &gt; ${your_group_members_entry_nums}.gz</code></li>
     <li>Submit <code>${your_group_members_entry_nums}.gz</code> to moodle</li>
   </ul>
   <p>NOTE: It is your responsibility to ensure that a sequence of <code>gunzip -c ${your_group_members_entry_nums}.gz | patch -p1</code>, when executed in <code>superopt</code> root with HEAD at <code>col728_lab1</code>, produces a tree equivalent to yours.</p>
