@@ -21,7 +21,18 @@
   <h4>Compilerai framework</h4>
   <p>Programs are represented as Control Flow Graphs (CFGs) and are referred to as <b>TFGs</b> (Transfer Function Graphs) in the code.</p>
     <ul>
-      <li>Each node of a TFG represents to a program point and is referred to as <b>PC</b> in the code.  PCs are uniquely identified by their labels.  Labels look like this:<code>L0%0%1</code>, <code>L1%1%1</code>, etc.</li>
+      <li>Each node of a TFG represents to a program point and is referred to as <b>PC</b> in the code.  PCs are uniquely identified by their labels.  Labels look like this:<code>L0%0%1</code>, <code>Lfor.cond%1%1</code>, etc.
+        <blockquote>
+          <strong>On PC labels</strong>: PC Labels are composed of three subcomponents: Block-ID (AKA index), Statement-ID (AKA subindex), Sub-statement-ID (AKA subsubindex).  Concatenation of these three components, separated by <code>%</code> and prefixed by <code>L</code>, generates the label string.  For example, the three components of <code>Lfor.cond%1%1</code> are:
+          <pre>
+     +--------&gt; for.cond :  Block-ID -- corresponds to LLVM basic block
+     |    +---&gt; 1        :  Statement-ID -- first statement of the basic block
+     |    | +-&gt; 1        :  Sub-statement-ID -- first sub-statement of the statement
+     |    | |
+Lfor.cond%1%1</pre>
+          Further, using this information the PC locations can be mapped back into source (LLVM) locations.  In the above example, <code>Lfor.cond%1%1</code> refers to the location just before the first statement of the LLVM basic block <code>for.cond</code> (note that in the textual representation of LLVM IR a <code>%</code> is pre-prepended before the basic block label, i.e. <code>for.cond</code> will be referred to as <code>%for.cond</code>).
+        </blockquote>
+      </li>
       <li>Each edge of a TFG represents a guarded basic block where the guard is the condition under the edge shall be taken.
         <ul>
           <li>An edge from a PC, say <code>L0%0%1</code>, to a PC, say <code>L1%1%1</code>, is specified by its <b>edge condition</b> (guard is referred to as edge condition in the code) and a <b>to-state</b> which summarizes the effect of that basic block.</li>
@@ -129,8 +140,33 @@ for.end:                                          ; preds = %for.cond
     </li>
   </ol>
 
-  The result of your anticipated expressions analysis will be available in serialized format in the output TFG file: search for text "=Anticipated expressions in".
   <blockquote><strong>Visual representation of TFG</strong>: For debugging you may also find the <code>etfg2dot</code> tool helpful.  <code>etfg2dot</code> converts an LLVM TFG to Graphviz's dot file, which can then be viewed graphically using <code>xdot</code> or similar dot viewers.  You can build <code>etfg2dot</code> by switching to <code>superopt</code> and then running <code>make etfg2dot</code>.  For running, use this command: <code>superopt/build/etfg_i386/etfg2dot ${FunctionName} ${TFGfile}</code>, e.g. <code>superopt/build/etfg_i386/etfg2dot sum a.c.bc.etfg</code>.</blockquote>
+
+  <h5 id='interp-results'>Interpreting the results</h5>
+
+  The result of your anticipated expressions analysis will be available in serialized format in the output TFG file: search for text <code>=Anticipated expressions in</code>.  Example:
+  <pre>
+=Anticipated expressions in src.llvm.sum
+=anticipated expressions at L0%0%1 in src.llvm.sum
+=anticipated_exprs begin
+=expr
+1 : 0 : BV:32
+2 : input.src.llvm-%n : BV:32
+3 : bvslt(1, 2) : BOOL
+=expr
+=anticipated_exprs end
+=anticipated expressions at Lentry%1%1 in src.llvm.sum
+=anticipated_exprs begin
+...
+...
+...
+=anticipated_exprs end
+=anticipated expressions at Lfor.cond%1%1 in src.llvm.sum
+...
+...
+...</pre>
+  The above example represents the following information: at PC <code>L0%0%1</code>, the expression <code>bvslt(0, input.src.llvm-%n)</code>, i.e. <code>(0 &lt; %n)</code> is anticipated (we can probably guess here that the first statement of the corresponding C code has a check with <code>n &gt; 0</code> in it, where <code>n</code> is a parameter).
+  </h5>
 
   <h5>Requirements</h5>
 
