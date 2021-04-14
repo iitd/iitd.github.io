@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>COL729 Lab 2 : Lazy Code Motion</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="Stylesheet" type="text/css" href="style.css">
+  </head>
+
+<body>
+  <h1>COL729 Lab 2 : Lazy Code Motion</h1>
+
+  <h2>Due date - 23:55, 30 April 2021</h2>
+
+  <h3>Overview</h3>
+  <p>In this assignment you will implement the Lazy Code Motion algorithm (<a href="../../lec/lazy_code_motion.html">notes</a>, <a href="https://www.youtube.com/watch?v=We3LEZklr8U&list=PLf3ZkSCyj1tf3rPAkOKY5hUzDrDoekAc7&index=107">video</a>).  You have already implemented the first part of it (Anticipated Expressions Analysis) in previous lab.  In this lab, you will implement the remaining bits.  If you didn't complete the previous lab, you might want to do that first.
+
+  <p>As with previous lab, you will work with the <a href="../lab1/lab1.html#compilerai-framework">Compilerai framework</a>.</p>
+
+  <h3>Instructions</h3>
+
+  <h4>Getting Started</h4>
+
+  <p>Follow <a href="../lab1/lab1.html#getting-started">Getting started</a> of previous lab to complete initial setup.</p>
+
+  <p>Now, pull lab 2 specific changes with <code>git pull col729_lab2</code> in both top-level directory (<code>superopt-project</code>) and <code>superopt</code> directory.
+  <blockquote>In most cases, the merging should happen automatically.  If it does not and you are unable to resolve the conflicts manually, post a note on Piazza</blockquote>
+  <p>The primary places where you need to make changes have been marked with <em>COL729_LAB2 TODO</em>.  Search for them using <code>git grep 'COL729_LAB2 TODO'</code>.</p>
+  <p>Before starting the implementation, you might want to review <a href="../lab1/lab1.html#working-with-the-code">material from previous lab</a> for a quick recap.<p>
+
+  <h4>Implementing the algorithm</h4>
+
+  <p>You will implement the four analyses of Lazy Code Motion algorithm.  We will stop short of the last step where the result of the analyses is used for code transformation.  The DFA implementation will remain similar to previous lab, however, you must keep the following representational differences between TFGs and CFGs in mind:<p>
+  <ul>
+    <li>A basic block in a CFG corresponds to an edge in the TFG.</li>
+    <li>Instead of separate IN and OUT values, there is only a single value for a PC (or, program point).</li>
+    <li>We do not need to add separate empty edges (corresponding to BBs) as preprocessing step.  This is because the trailing edge (or instruction) of a basic block will always have a jump instruction with empty body or to-state and a latest placement can be made in this edge.</li>
+  </ul>
+
+  <p>As before, the classes corresponding to the four analyses have been created for you, along with all the boilerplate code.  You just need to supply the core logic in places marked with <em>COL729_LAB2 TODO</em>:</p>
+  <ul>
+    <li>Anticipated (or Needed) expresssions analysis: <code>include/graph/anticipated_exprs{,_dfa}.h</code></li>
+    <li>Available (or Missing) expresssions analysis: <code>include/graph/missing_exprs{,_dfa}.h</code></li>
+    <li>Earliest expresssions computation: <code>include/graph/earliest_exprs.h</code></li>
+    <li>Postponable expresssions analysis: <code>include/graph/postponable_exprs{,_dfa}.h</code></li>
+    <li>Latest expresssions computation: <code>include/graph/latest_exprs.h</code></li>
+    <li>Used expresssions analysis: <code>include/graph/used_exprs{,_dfa}.h</code></li>
+  </ul>
+
+  <h4>Running and testing your changes</h4>
+
+  <p>Once you have filled-in the required code, you need to first uncomment the comment block marked with <em>COL729_LAB2_UNCOMMENT_ME</em> to run the four analyses.<p>
+
+  <p>The steps for building and running the code remain <a href="../lab1/lab1.html#running-testing">same as before</a> except the name of test directory which is <code>lab2_test</code>.</p>
+
+  <h5 id='interp-results'>Interpreting the results</h5>
+
+  <p>The results of your analyses will be available in serialized format in the output TFG file.  The format for PC bound results remain <a href="../lab1/lab1.html#interp-results">same as before</a>.</p>
+  <p>The format for edge bound results refers to an edge instead of a PC.  For example:</p>
+  <pre>
+=Earliest expressions in src.llvm.sum
+=earliest expressions at L0%0%1=&gt;Lentry%1%1 in src.llvm.sum
+=earliest_exprs begin
+=expr
+1 : 0 : BV:32
+2 : input.src.llvm-%n : BV:32
+3 : bvslt(1, 2) : BOOL
+=expr
+=earliest_exprs end
+...
+...
+...</pre>
+  <p>The above example represents the following information: for the edge from <code>L0%0%1</code> to <code>Lentry%1%1</code>, the earliest expressions set contains <code>bvslt(0, input.src.llvm-%n)</code>.</p>
+
+  <h5>Requirements</h5>
+
+  Your implementation's results should match the results of the algorithm specified in Dragonbook (Section 9.5.5).  As the framework can transparently handle things like aliasing and function calls, your implementation should not assume absence of any program features.
+
+  <h3>Turn in</h3>
+  Submit your changes to <code>superopt</code> repository in the form of a compressed patch file:
+  <ul>
+    <li><code>git diff col729_lab2 | gzip &gt; ${your_group_members_entry_nums}.gz</code></li>
+    <li>Submit <code>${your_group_members_entry_nums}.gz</code> to moodle</li>
+  </ul>
+  <p>NOTE: It is your responsibility to ensure that a sequence of <code>gunzip -c ${your_group_members_entry_nums}.gz | patch -p1</code>, when executed in <code>superopt</code> root with HEAD at <code>col728_lab2</code>, produces a tree equivalent to yours.</p>
+</body>
+</html>
