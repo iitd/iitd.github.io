@@ -24,7 +24,7 @@
   <p>Follow <a href="../lab1/lab1.html#getting-started">Getting started</a> of previous lab to complete initial setup.</p>
 
   <p>Now, pull lab 2 specific changes with <code>git pull col729_lab2</code> in both top-level directory (<code>superopt-project</code>) and <code>superopt</code> directory.
-  <blockquote>In most cases, the merging should happen automatically.  If it does not and you are unable to resolve the conflicts manually, post a note on Piazza</blockquote>
+  <blockquote>In most cases, the merging should happen automatically.  If it does not and you are unable to resolve the conflicts manually, post a note on Piazza.</blockquote>
   <p>The primary places where you need to make changes have been marked with <em>COL729_LAB2 TODO</em>.  Search for them using <code>git grep 'COL729_LAB2 TODO'</code>.</p>
   <p>Before starting the implementation, you might want to review <a href="../lab1/lab1.html#working-with-the-code">material from previous lab</a> for a quick recap.<p>
 
@@ -34,7 +34,8 @@
   <ul>
     <li>A basic block in a CFG corresponds to an edge in the TFG.</li>
     <li>Instead of separate IN and OUT values, there is only a single value for a PC (or, program point).</li>
-    <li>We do not need to add separate empty edges (corresponding to BBs) as preprocessing step.  This is because the trailing edge (or instruction) of a basic block will always have a jump instruction with empty body or to-state and a latest placement can be made in this edge.</li>
+    <li>Because we associate program logic with edges and not instructions (e.g., a conditional branch is represented as two edges and not one instruction), we do not need to add empty basic blocks (as in the preprocessing step of the original algorithm).</li>
+    <!--<li>We do not need to add separate empty edges (corresponding to BBs) as preprocessing step.  This is because the trailing edge (or instruction) of a basic block will always have a jump instruction with empty body or to-state and a latest placement can be made in this edge.</li>-->
   </ul>
 
   <p>As before, the classes corresponding to the four analyses have been created for you, along with all the boilerplate code.  You just need to supply the core logic in places marked with <em>COL729_LAB2 TODO</em>:</p>
