@@ -11,14 +11,15 @@
   <h1>COL729 Lab 1 : Anticipated (Needed) Expressions Analysis</h1>
 
   <h2>Due date - 23:55, 7 April 2021</h2>
+  <h2>Weightage: 40%</h2>
 
   <h3>Overview</h3>
-  <p>In this assignment you will implement Anticipated or Needed Expressions Analysis (<a href="https://iitd.github.io/col729/lec/lazy_code_motion.html">notes</a>, <a href="https://www.youtube.com/watch?v=zPLbAOdIqRw&list=PLf3ZkSCyj1tf3rPAkOKY5hUzDrDoekAc7&index=108">video</a>).  Make sure you understand it before proceeding ahead.</p>
+  <p>In this assignment you will implement Anticipated or Needed Expressions Analysis (<a href="../../lec/lazy_code_motion.html">notes</a>, <a href="https://www.youtube.com/watch?v=zPLbAOdIqRw&list=PLf3ZkSCyj1tf3rPAkOKY5hUzDrDoekAc7&index=108">video</a>).  Make sure you understand it before proceeding ahead.</p>
 
   <p>In order to implement the analysis, we need (broadly) two things: (1) a framework to represent programs as flow graphs which and, (2) a DFA frawework within which we can implement our analysis.
   For this assignment we will work with the <code>compilerai</code> framework (developed in-house here at IITD).  We give a brief overview of the framework below (for more details refer to <code>doc/</code> directory of <code>superopt-project</code>).
   </p>
-  <h4>Compilerai framework</h4>
+  <h4 id="compilerai-framework">Compilerai framework</h4>
   <p>Programs are represented as Control Flow Graphs (CFGs) and are referred to as <b>TFGs</b> (Transfer Function Graphs) in the code.</p>
     <ul>
       <li>Each node of a TFG represents to a program point and is referred to as <b>PC</b> in the code.  PCs are uniquely identified by their labels.  Labels look like this:<code>L0%0%1</code>, <code>Lfor.cond%1%1</code>, etc.
@@ -95,9 +96,9 @@ for.end:                                          ; preds = %for.cond
 
   <h3>Instructions</h3>
 
-  <p>The source code for the framework is available in the form of a Git repository in the server machine provided to you for lab work.  You will clone it in your home directory and work on it from there only (see also: <code>doc/GettingStarted.md</code> and <code>doc/discipline.md</code>). 
+  <p>The source code for the framework is available in the form of a Git repository in the server machine provided to you for lab work.  You will clone it in your home directory and work on it from there only (see also: <code>doc/GettingStarted.md</code> and <code>doc/discipline.md</code>).</p>
 
-  <h4>Getting started</h4>
+  <h4 id="getting-started">Getting started</h4>
   <p>Please follow the following steps to get started:</p>
   <ol>
     <li>Clone the Git repo in your local: <code>scratch</code> directory: <code>git clone --recursive /home/abhishek/scratch/superopt-project</code>
@@ -113,7 +114,7 @@ for.end:                                          ; preds = %for.cond
   <p>At this point we have completed the initial setup and can now start working with the code.</p>
   <p>Change directory to <code>superopt</code>, this is the repository where you will implement the analysis.  From now we will assume that you are already in the root of <code>superopt</code>.  The primary places where you need to make changes have been marked with <em>COL729_LAB1 TODO</em>.  Search for them using <code>git grep 'COL729_LAB1 TODO'</code>.</p>
 
-  <h4>Working with the code</h4>
+  <h4 id="working-with-the-code">Working with the code</h4>
 
   <p>Recall that in our framework a program is represented using TFG, in the code we have a class named <code>tfg</code> for the same.  In fact, <code>tfg</code> is part of a hierarchy of classes which build upon each other to achieve more complex functionality.  At the bottom of this hierarchy is the <code>graph</code> class which is mostly concerned with "graph" properties i.e. edges and nodes.  On the other hand, at the top are specialized classes such as <code>tfg_llvm_t</code> which represent a TFG created from LLVM IR.  The relevant source code paths are <code>include/graph/</code> and <code>include/tfg/</code>.</p>
   <p>The DFA framework builds upon <code>graph</code> and provides an implementation of the worklist algorithm.  To implement an analysis, one needs to subclass the <code>data_flow_analysis</code> and provide overriding implementation for the <code>xfer_and_meet()</code> function which accepts 3 parameters: (1) the corresponding edge, (2) input value (i.e. IN), (3) output value (i.e. OUT) passed as reference.  The function is supposed to compute the new OUT value using the IN value and the old OUT value (by using <code>meet()</code> for the latter), and indicate as return value whether there was a change in OUT value.  The DFA framework itself is defined in <code>include/graph/dfa.h</code>, and the files <code>include/graph/avail_exprs_dfa.h</code>, <code>include/graph/liveness_dfa.h</code> contain implementation of available expressions and liveness analysis using the DFA framework.  The available expressions analysis is actually implemented as a super dataflow analysis.  You can find the implementation of its <code>xfer_and_meet()</code> in <code>lib/graph/graph_with_aliasing.cpp</code>, line <code>1362</code> under the function name <code>avail_exprs_xfer_and_meet()</code>.</p>
@@ -128,7 +129,7 @@ for.end:                                          ; preds = %for.cond
     <li>A class for defining the DFA schema for anticipated expressions analysis is defined at <code>include/graph/anticipated_exprs_dfa.h</code>.  You are expected to fill-in definition of <code>xfer_and_meet</code> and make other changes (as required) here.</li>
   </ul>
 
-  <h4>Running and testing your changes</h4>
+  <h4 id="running-testing">Running and testing your changes</h4>
 
   <p>Once you have filled-in the required code, you need to first uncomment the lines 575-587 and comment line 588 to run the anticipated expressions analysis.</p>
   <p>Steps for building and running the code:</p>
@@ -166,7 +167,6 @@ for.end:                                          ; preds = %for.cond
 ...
 ...</pre>
   The above example represents the following information: at PC <code>L0%0%1</code>, the expression <code>bvslt(0, input.src.llvm-%n)</code>, i.e. <code>(0 &lt; %n)</code> is anticipated (we can probably guess here that the first statement of the corresponding C code has a check with <code>n &gt; 0</code> in it, where <code>n</code> is a parameter).
-  </h5>
 
   <h5>Requirements</h5>
 
