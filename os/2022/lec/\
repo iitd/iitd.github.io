@@ -1,0 +1,72 @@
+<html>
+<head>
+<title>xv6 file system</title>
+<link rel="stylesheet" href="../labs.css" type="text/css" />
+</head>
+<body>
+
+<h2><a href="..">Operating Systems</a></h2>
+<hr>
+
+<h1>xv6 file system</h1>
+
+<p>
+<b>Read</b>: sysfile.c (create(), sys_unlink()),
+fs.c (readi(), writei(), dirlink(), ialloc(), iupdate(), iget(), ilock(), iunlock(),
+iput(), itrunc()), bio.c (bget(), bread(), bwrite(), brelse())
+
+<p>
+<b> Add the following line at the beginning of the log_write() function in log.c</b>
+<pre>
+cprintf("log_write %d\n", b->sector);
+</pre>
+This will record all writes to the file system along with the sector number.
+
+<p>
+Start a new session on xv6 with a fresh disk (using <code>make clean</code> followed
+by <code>make qemu</code>, and type the following command:
+<pre>
+$ echo > a
+</pre>
+This command creates a new file.
+You will see a series of disk writes (printed in log_write()).
+<div class="required">
+<p><span class="header">Turn in:</span>
+Report the printed output and explain what is being written in each disk write.
+What is the third disk write (to sector
+29)? You may want to insert <code>cprintf()</code> statements in xv6 code to
+see where the writes are coming from.
+</p></div>
+
+<p>
+Interrupt the previous command (leave the newly created file unchanged).
+Next, execute the following command to write data to this file:
+<pre>
+$ echo x > a
+</pre>
+<div class="required">
+<p><span class="header">Turn in:</span>
+Report the printed output and explain what is being written in each disk write.
+Why do you see writes to block 4 (and to 426) twice? You may want to
+insert <code>cprintf()</code> statements in xv6 code to
+see where the writes are coming from.
+</p></div>
+
+<p>
+Next, delete the file by typing the following command:
+<pre>
+$ rm a
+</pre>
+<div class="required">
+<p><span class="header">Turn in:</span>
+Report the printed output and explain what is being written in each disk write.
+</p></div>
+
+
+
+<p><hr><p>
+
+
+</body>
+</html>
+

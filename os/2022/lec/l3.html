@@ -1,0 +1,217 @@
+<html>
+<head>
+<title>L3</title>
+</head>
+<body>
+
+<h2>Outline</h2>
+<ul>
+<li>UNIX Signals: kill, signal system calls
+<li>Kernel-level Threads
+<li>User-level Threads
+<li>Intro to Concurrency and Locks
+</ul>
+
+<h3>UNIX Signals</h3>
+<ul>
+	<li>Signals are a limited form of inter-process communication
+	<li>When a signal is sent, the operating system interrupts the target
+	process's normal flow of execution to deliver a signal.
+	<li>If the process
+	has previously registered a signal handler, that routine is executed.
+	Otherwise, the default signal handler is executed.
+	<li>Examples:
+	<ul>
+		<li> Ctrl-C sends SIGINT; by default, this causes the
+		process to terminate
+		<li> Ctrl-Z sends SIGTSTP; by default, this causes the process to suspend
+		execution
+		<li> SIGCHLD signal is sent to a process when a child process
+		terminates.
+		<li>SIGFPE is the floating point exception (for example, on divide by zero)
+		<li>SIGSEGV on segmentation fault
+		<li>SIGUSR1 and SIGUSR2 are user-defined signals
+	</ul>
+	<li> <code>kill(pid, signum)</code>: send signal SIG to PID.
+	<li> <code>signal(signum, void (*handler)(int))</code>: associates HANDLER with
+	signal SIGNUM.
+</ul>
+<h3>Shell Backgrounding</h3>
+<ul>
+<li>How do you create a background job?
+<pre>
+        $ compute &
+</pre>
+<li>How does the shell implement "&", backgrounding?  (Don't call wait
+immediately).
+<li>Q: What if a background process exits while sh waits for a foreground process?</li>
+<li>
+<i>Think about</i> how a shell implements the following functionalities.
+<ul>
+	<li> Lists of commands, separated by ";" (e.g., touch a; ls)
+	<li> Sub shells implemented using "(" and ")". For example, a subshell can be used
+	to setup a "dedicated environment" for a command group:
+<pre>
+  COMMAND1;
+  COMMAND2;
+  (
+    PATH=/bin
+    COMMAND3
+    COMMAND4
+  );
+  COMMAND5
+</pre>
+</ul>
+</ul>
+<h3>Interesting uses of open/read/write/close</h3>
+<ul>
+<li>Linux has a nice representation of a process and its FDs, under /proc/PID/
+<ul>
+<li>maps: VA range, perms (p=private, s=shared), offset, dev, inode, pathname
+<li>fd: symlinks to files pointed to by each fd.
+    (what's missing in this representation?)
+<li>can do fd manipulation in shell and see it reflected in /proc/$$/fd
+<li>can read or write kernel parameters using read() and write() syscalls!
+</ul>
+</ul>
+
+
+
+<h3>Threads</h3>
+
+<p>Figure on process address space: code, static data, stack, heap. On
+fork, the whole address space gets replicated. On thread create, the
+created thread has a different program counter, registers, and stack (through
+stack pointer). Everything else is shared between threads.
+
+<p>Kernel-level threads are just processes minus separate address spaces.
+Discuss the kernel scheduler which is invoked at every timer interrupt.
+Each thread is an independent entity for the kernel.
+
+<p>Write the <code>cswitch</code> function for processes and
+threads. Notice that switching among threads requires no privileged
+operations. Switching the stack can be done by switching the <code>sp</code>
+register. A cswitch needs to be fast (typically a few 100 microseconds).
+
+<p>Advantages of threads over processes
+<ul>
+<li> <em>Much</em> more lightweight than processes. Faster creation, deletion,
+switching.
+<li> Much faster communication among threads: allow shared data structures to
+be maintained.
+</ul>
+
+<p>User-level threads can be implemented inside a process by writing
+<code>scheduler()</code> and <code>cswitch()</code> functions. The
+scheduler can be called periodically using SIGALRM signal.
+
+<p>Pros of user-level threads:
+<ul>
+<li>Lighter-weight
+<li>Faster cswitch
+<li>Do not need kernel's permission
+</ul>
+
+<p>Cons of user-level threads:
+<ul>
+<li>Will not be scheduled on different cores, because they look like one
+process to the kernel.
+<li>If one thread blocks (e.g., on I/O), all threads block.
+</ul>
+
+<p>Threading models (slide)
+<!--
+<p>Thread pools (slide)
+
+<h3>Concurrency and Synchronization</h3>
+But if multiple threads share a memory location, good-looking
+sequential programs can start failing.
+e.g.,
+shared static variable: <code>hits</code>
+shared code: <code>hits = hits + 1</code>
+Assume the shared code gets compiled into the following assembly
+code
+<pre>
+  ld   [hits], R
+	add  R, R, 1
+  st   R, [hits]
+</pre>
+<code>hits</code> represents a memory location, and <code>[hits]</code>
+represents the contents of that memory location. <code>ld [hits], R</code>
+loads the contents of <code>hits</code> to register <code>R</code>.
+
+<p>If two threads try and execute this code simultaneously what
+can happen? Assume <code>hits=10</code> before starting these threads.
+What interleavings cause <code>hits=12</code>? What interleavings
+cause <code>hits=11</code>?
+
+<p>This is a problem associated with <em>concurrent access to a shared
+	data region</em>, in short <em>concurrency</em>. This is also called
+a <em>race condition</em> (perhaps because it is a race between two
+threads and the result depends on who wins).
+
+<p>Concurrency could be "logical concurrency" on a single CPU due to
+possibly arbitrary interruptions (or preemptions) caused by the
+timer interrupt, or could be "physical concurrency" due to threads
+executing simultaneously on different CPUs. The nature of the problem
+in both cases is identical.
+
+<p>Another example:
+<pre>
+  Thread A:
+     i = 0;
+     while (i < 10)
+         i = i + 1;
+     print "A won!";
+
+  Thread B:
+     i = 0;
+     while (i > -10)
+         i = i - 1;
+     print "B won!";
+</pre>
+Who wins? Guaranteed that someone wins? What if both threads run on
+identical speed CPU executing in parallel? (guaranteed to go on forever?)
+
+<p>Another example
+<pre>
+    push(v):
+        if (n == stack_size)
+                return full;
+        stack[n] = v;
+        n = n + 1;
+</pre>
+Some bad schedules? Some that will work?
+
+<p>One way to deal with the problem is to <em>enforce atomicity</em>
+of certain code regions. In the <code>hits</code> example, we wanted
+the three instructions to execute atomically with respect to themselves.
+The code region that needs to be made atomic for the program
+to be correct is also called the <em>critical section</em>.
+
+<p>Locks are one way of implementing atomic regions. A lock <code>L</code>
+is a shared variable that provides two methods <code>acquire(L)</code>
+and <code>release(L)</code>. Any lock <code>L</code>
+can be acquired by at most one thread at a time. Another thread
+can acquire it only after it's holder has released it.
+Any thread trying to acquire a lock which is already acquired by another
+thread must wait for it to be released.
+
+<p>Locks allow implementation of atomic regions by bracketing the
+critical section using calls to <code>acquire()</code> and
+<code>release</code>. For our <code>hits</code> example, the
+new code will be:
+<pre>
+   lock hit_lock;    //shared lock.
+   ...
+   acquire(hit_lock);
+   hit = hit + 1;
+   release(hit_lock);
+</pre>
+What happens when one thread is inside the critical section and another
+thread tries to enter it at the same time? What are the possible interleavings
+now? Are all possible interleavings correct?
+-->
+</body>
+
+

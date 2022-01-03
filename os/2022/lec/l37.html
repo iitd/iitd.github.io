@@ -1,0 +1,294 @@
+<title>L37</title>
+<html>
+<head>
+</head>
+<body>
+
+<h1>Scheduling Policies</h1>
+<h2>Case Study: CPU Scheduling</h2>
+Jobs are created and removed dynamically. Need a fair and efficient way of scheduling
+the jobs. Some objectives:
+<ul>
+	<li>Throughput
+	<li>Response time (or waiting time)
+	<li>Fairness
+</ul>
+<ul>
+	<li>FIFO
+	<ul>
+		<li>But process lengths (time on CPU) can be long. Cannot afford such
+		high response times in interactive systems.
+	</ul>
+	<li>Shortest Time to completion first : provably efficient in terms of
+	waiting time. But can completely starve long processes!
+	<li>Round Robin (fair)
+	<ul>
+		<li>But response times can be high. Convoy effect: I/O bound application
+		keeps having to queue behing several compute bound applications
+	</ul>
+	<li>Proportional CPU capacity reservation (e.g., provide proportionally more CPU for some jobs than others)<br>
+Some jobs need higher CPU proportion than others: e.g., system processes
+	(e.g., disk driver) over user processes
+	<li>Stride Scheduling
+	<ul>
+		<li>If P1:P2's proportions are X:1, schedule
+		P1 X times more often than P1, i.e., schedule P1 for X quanta before
+		scheduling P2.
+	</ul>
+	<li>Lottery Scheduling
+	<ul>
+		<li>Probabilistic method of proportional CPU capacity reservation.
+		Each process assigned some number of lottery tickets, and the
+		scheduler draws a random ticket to select the next process.
+		<li>Distribution of tickets based on proportional share. e.g., give
+		X tickets to process P1 for one ticket to process P2.
+		<li>Solves the problem of starvation: giving at least one lottery
+		ticket to each process ensures that there is a non-zero probability
+		of that process being scheduled at every scheduling quantum.
+	</ul>
+	<li>Priority Scheduling
+	Some jobs need higher <em>priority</em> than others: e.g., interrupts
+	over others,
+	I/O bound jobs over compute-bound
+	jobs. Priorities are different from proportional scheduling: priorities
+	are strict, i.e., a higher priority process always wins over a lower
+	priority process.
+	<ul>
+		<li>Priority Inversion
+		<li>Priority Donation
+	</ul>
+	<li>Multi-level feedback queue
+	<ul>
+		<li>Maintain multiple priority levels: highest to lowest
+		<li>At each priority level, serve processes in round-robin (or
+		proportional CPU) way
+		<li>Lower priority threads are scheduled only if no higher priority
+		threads are ready to run.
+		<li>Higher priority threads given smaller time quanta to run than
+		lower priority threads (provides fairness and better throughput)
+		<li>Typical usage: I/O bound jobs are put at higher priority, compute
+		bound jobs are put at lower priority
+		<li>How to identify I/O bound jobs: Use past = future.
+		<ul>
+			<li>On the first scheduling instance of a process, give it a high
+			priority and a short time slice
+			<li>If the process uses up the time slice without blocking (implies
+			compute bound):
+			<ul>
+				<li>priority = priority - 1
+				<li>time_slice = time_slice * 2
+			</ul>
+			<li>Draw diagram
+		</ul>
+		<li>But: won't low priority threads starve?
+		<ul>
+			<li>Solution: increase priority of threads at constant rate, while
+			waiting. So the priority is increased for all threads which are
+			not chosen for a scheduling quantum
+			<li>Also if a thread blocks before exhausting its time quantum, have
+			 a way to increase its priority (e.g., CPU bound job converts to
+			 I/O bound)
+		</ul>
+	</ul>
+	<li>Affinity Scheduling : <em>much</em> better cache utilization
+	<li>Gang Scheduling : Can significantly increase throughput
+</ul>
+
+<h2>Scheduling is Complex as multiple schedulers need to interact with each other</h2>
+<ul>
+	<li>Example: thread blocks (or is preempted) after holding spinlock. All other threads simply
+	waste CPU cycles
+	<li>Threads have producer consumer relationship, that is completely hidden from the scheduler
+	<li>Multiple resources need to be scheduled in tandem for best throughput:
+	<ul>
+		<li>No use if process has priority on CPU but is given very little memory, so it page faults
+		every time it gets to run, needs to wait for other (lower priority) processes' pages to be
+		written to disk
+		<li>Cache scheduling
+		<li>Disk scheduling : Should the disk driver prioritize requests based on process priority
+		<li>Server processes :
+		<ul>
+			<li>Suppose an interactive process uses the X server for display: does the X server know
+			that the interactive process needs to be given priority over the compute-bound process
+			<li>Similarly for NFS server
+		</ul>
+	</ul>
+</ul>
+
+Scheduling was very important in the days of time sharing, when
+there was a shortage of resources all around.
+Many scheduling problems become not very interesting when
+you can just buy a faster CPU or a faster network. The topic becomes
+important again for modern datacenters or cloud computing environments
+desirous of extracting maximum utilization from their hardware resources.
+
+
+<!--<h2>General Overview</h2>
+
+<ul>
+
+<li>What is scheduling?
+    <ul>
+	<li>OS policies and mechanisms to allocate resources to entities.
+	<li>Usually in the context of resources where re-assignment
+	    can happen with some frequency: CPU cycles, network
+	    bandwidth, disk accesses, memory when swapping to disk.
+	<li>Not so applicable to more static resources like disk space.
+	<li>Entities that you might want to give resources to: users,
+	processes, threads, web requests.
+
+	<p>
+
+	<li>Scheduling unavoidable with shared resources (whether implicit
+	    or explicit), but particularly interesting when demand exceeds
+	    available resources (e.g. demand for CPU is infinite with
+	    compute-bound tasks).
+	<li>A good scheduling policy ensures that the most important
+	    entity gets the resources it needs.
+	<li>Many polices for resource to entity allocation are possible:
+	    strict priority, divide equally, shortest job first, minimum
+	    guarantee combined with admission control.
+
+	<p>
+
+	<li>This topic was popular in the days of time sharing, when
+	    there was a shortage of resources all around.
+	<li>Many scheduling problems become not very interesting when
+	    you can just buy a faster CPU or a faster network.
+	<li>Exception: web sites and large-scale networks often cannot
+	    be made fast enough to handle peak demand (flash crowds,
+	    attacks) so scheduling becomes important again.
+	    For example may want to prioritize paying customers, or
+	    address denial-of-service attacks.
+	<li>Exception 2: some scheduling decisions have non-linear
+	    effects on overall system behavior, not just different
+	    performance for different users.  For example today's paper.
+    </ul>
+
+<li>Key problems
+    <ul>
+	<li>Gap between desired policy and available mechanism.
+	    High-level desired policies often don't have a one-to-one
+	    mapping onto available scheduling mechanisms.  Scheduler
+	    can approximate policy, or implement it under certain
+	    assumptions, etc.
+
+	<li>Conflicting goals, e.g. low latency, high throughput,
+	    and fairness.  The scheduler must make a trade-off between
+	    the goals.
+
+	<li>Interaction between different schedulers.
+	    Just optimizing the CPU scheduler may do little to for
+	    the overall desired policy.
+    </ul>
+
+<li>General plan for scheduling mechanisms
+    <ol>
+	<li>Understand where scheduling is occuring.
+	<li>Expose scheduling decisions, allow control.
+	<li>Account for resource consumption, to allow intelligent control.
+    </ol>
+
+<li>Round-robin: equal time for all environments:
+    <ul>
+	<li>But this only works if processes are compute-bound.
+	    What if a process gives up some of its 10 ms to wait
+	    for input?  Do we have to keep track of that and give
+	    it back?
+
+	<li>For a long time Linux had a similar problem, where a
+	    process can use CPU time "undetected" by yielding just
+	    before the 10ms timer interrupt.
+
+	<li>How long should the quantum be?  is 10 msec the right answer?
+	    Shorter quantum will lead to better interactive performance,
+	    but lowers overall system throughput because we will reschedule
+	    more, which has overhead.
+
+	<li>What if the environment computes for 1 msec and sends an IPC to
+	    a server environment?  Shouldn't the server get more CPU time
+	    because it operates on behalf of all other functions?
+
+	<li>Potential improvements over pure round-robin: track "recent" CPU use
+	    (e.g., over the last second) and always run environment to
+	    which we "owe" the most CPU time. (But can't accumulate CPU
+	    debt forever...)
+
+	<li>Other solution: directed yield; specify on the yield to which
+	    environment you are donating the remainder of the quantum
+	    (e.g., to an IPC server so that it can compute on the
+	    environment's behalf).
+    </ul>
+
+<li>Pitfall: Priority Inversion
+    <ul>
+	<li>Assume policy is strict priority.<br>
+	    Thread T1: low priority
+	    (e.g. check to see if I have new mail periodically).<br>
+	    Thread T2: medium priority.<br>
+	    Thread T3: high priority (e.g. real-time game).
+	<li>T1: acquire(l)<br>
+	    context switch to T3 (maybe T3 wakes up needs to run:
+	    it has priority)<br>
+	    T3: acquire(l)... must wait for T1 to release(l)...<br>
+	    context switch to T2 (again, perhaps T2 needs to run &
+	    has prio over T1)<br>
+	    T2 computes for a while<br>
+	    T3 is indefinitely delayed despite high priority
+	<li>Can solve if T3 lends its priority to holder of lock
+	    it is waiting for, so T1 runs instead of T2.
+	<li>This is really a multiple scheduler problem,
+	    since locks schedule access to locked resource.
+	<li>(Diagram.)
+    </ul>
+
+<li>Pitfall: Efficiency and conflicting requirements.
+    <ul>
+	<li>Efficiency often conflicts with fairness, or any other policy.
+	<li>Long time quantum for efficiency in CPU scheduling
+	    versus low delay and context-switching overhead.
+	<li>Shortest seek versus FIFO disk scheduling.
+	<li>Contiguous read-ahead vs data needed now.
+	<li>For example, scheduler swaps out an idle emacs to let
+	    gcc run faster with more phys mem.
+	    What happens when user types a key?
+	<li>These issues don't fit well into a "who gets to go next"
+	    scheduler framework.
+	<li>Inefficient scheduling may make <i>everybody</i> slower,
+	    including high priority users.
+    </ul>
+
+<li>Pitfall: Multiple Interacting Schedulers.
+    <ul>
+	<li>Suppose you want your emacs to have priority over
+	    everything else.  Give it high CPU priority.
+	    Does that mean nothing else will run if emacs wants to run?
+	<li>No: Disk scheduler might not know to favor emacs's disk I/Os.
+	    Typical UNIX disk scheduler favors disk efficiency, not process
+	    prio.
+	<li>Suppose emacs needs more memory.  Other processes have dirty
+	    pages; emacs must wait.  Disk scheduler doesn't know these other
+	    processes' writes are high prio.
+    </ul>
+
+<li>Pitfall: Server Processes.
+    <ul>
+	<li>Suppose emacs uses X windows to display.
+	    The X server must serve requests from many clients.
+	<li>Does it know that emacs' requests should be given priority?
+	<li>Does the OS know to raise X's priority when it is serving emacs?
+	<li>Similarly for DNS, and NFS.  Does the network know to give
+	    emacs's NFS requests priority?
+    </ul>
+
+<li>In short, scheduling is a system problem.
+    There are many schedulers; they interact.
+    The CPU scheduler is usually the easy part.
+    The hardest part is system structure.
+    For example, the <i>existence</i> of interrupts is bad for scheduling.
+    Conflicting goals may limit effectiveness.
+
+</ul>
+Discuss stride scheduling, lottery scheduling
+-->
+</body></html>

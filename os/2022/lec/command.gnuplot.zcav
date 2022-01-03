@@ -1,0 +1,9 @@
+unset autoscale x
+set autoscale xmax
+unset autoscale y
+set autoscale ymax
+set xlabel "Position GiB"
+set ylabel "MiB/s"
+set terminal png
+set output "zcav-desktop.png"
+plot "zcav-desktop"
