@@ -1,4 +1,4 @@
-Start: Jan 3, 2022
+Start: Jan 5, 2022
 Stop: Apr 1, 2022
 Schedule: Tuesday, Wednesday, Friday
 
