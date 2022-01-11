@@ -67,11 +67,11 @@ LEC: <a href=lec/l5.html>x86 Instruction Set, GCC Calling Conventions</a>
 ==
 
 LEC: <a href=lec/l6.html>Physical Memory Map, I/O, Segmentation</a>
-PREP: <b>do <a href=hw/hw1.html>homework</a></b>
 
 ==
 
 LEC: <a href=lec/l7.html>Segmentation, Trap Handling</a>
+PREP: <b>do <a href=hw/hw1.html>homework</a></b>
 
 ==
 
