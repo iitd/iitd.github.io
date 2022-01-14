@@ -2,7 +2,6 @@ Start: Jan 5, 2022
 Stop: Apr 1, 2022
 Schedule: Tuesday, Wednesday, Friday
 
-HOLIDAY: Jan 14. Makar Sakranti
 HOLIDAY: Jan 26. Republic Day
 HOLIDAY: Mar 1. Maha Shivratri
 HOLIDAY: Mar 18. Holi
