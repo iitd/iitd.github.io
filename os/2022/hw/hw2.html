@@ -12,11 +12,9 @@
 [total 16 marks]
 
 <p>
-<b>Hand-In Procedure</b>
+<b>Submission</b>
 <p>
-You are to turn in this homework before the lecture begins. Please
-drop your homework in a cardboard box near to the lecture podium. Your
-homework must be hand-written (typed homeworks will not be accepted).
+Homework is to be submitted using Gradescope.
 
 
 
@@ -236,7 +234,7 @@ No need to figure out all the details -
 just the general idea of what the BIOS is doing first.
 
 <div class="required">
-<p><span class="header">Turn in:</span>
+<p><span class="header">[1.5 marks] Turn in: </span>
 a disassembly of the BIOS from the target of the initial <code>jmp</code>
 up to the next control transfer instruction.
 
@@ -418,7 +416,7 @@ Be able to answer the following questions:
 </ul>
 
 <div class="required">
-<p><span class="header">Turn in:</span>
+<p><span class="header">[2 marks] Turn in:</span>
 the values of the CS and EIP registers
 immediately before and after the processor executes
 the <code>ljmp</code> instruction in <tt>bootasm.S</tt>
@@ -469,7 +467,7 @@ and then eventually come to understand them the hard way.
 Trust us; you don't want to find out what "the hard way" is.
 
 <div class="required">
-<p><span class="header">Turn in:</span>
+<p><span class="header">[2 marks] Turn in:</span>
 a diagram of the x86 memory layout of the `<code>int a[4]</code>' array
 from the <a href="hw2-pointers.c">l10-hw3-pointers.c</a> program.
 Show the contents of the array
@@ -612,7 +610,7 @@ bytes (the 'w' in xorw, which stands for word, means 2 bytes).
 </p>
 
 <div class="required">
-<p><span class="header">Turn in:</span>
+<p><span class="header">[1.5 marks] Turn in:</span>
 	Reset the machine (exit QEMU/GDB and start them again).
 	Examine the 8 words of memory at 0x00100000 
 	at the point the BIOS enters the boot loader,
@@ -625,6 +623,10 @@ bytes (the 'w' in xorw, which stands for word, means 2 bytes).
 
 </body>
 </html>
+
+
+
+
 
 <p><h2>Assignment : Variable Naming</h2>
 [3 marks]<br>
@@ -643,7 +645,7 @@ int32_t foo(int32_t a, int32_t *b) {
 Assume that the variable <code>global</code> is allocated at a
 global address <code>0x12345</code>.
 <br>
-<i>Turn in</i>: Write the assembly code
+<i>[3 marks]  Turn in</i>: Write the assembly code
 for this function, with proper comments on which assembly code lines
 are implementing which C statement. Assume GCC calling conventions. You will
 need to be careful about properly naming all variables
@@ -651,8 +653,11 @@ and arguments (e.g., using global addresses, stack offsets or frame pointer
 offsets), use proper opcodes and addressing modes, obey caller and callee-save
 conventions, etc.
 
+
+
+
 <p><h2>Assignment : Caller and Callee saved registers</h2>
-[2 marks]<br>
+[4 marks]<br>
 <p>
 To implement function calls, typically compilers use conventions
 about which registers to save. Some registers are saved
@@ -681,6 +686,9 @@ which registers should the caller try to use first for storing its temporary
 values? Similarly, which registers should the callee try to use first for
 storing its temporary values?
 Why?)
+
+
+
 
 <p><h2>Assignment : Fastest implementation while respecting calling conventions</h2>
 [2 marks]<br>
@@ -745,8 +753,12 @@ Why?)
 			ret
 	</pre>
 
-<li><b>Turn in:</b> Shortest <tt>_f</tt>? Simply write the shortest code for <tt>_f</tt> which satisfies the calling conventions.
+<li><b>[2 marks] Turn in:</b> Shortest <tt>_f</tt>? Simply write the shortest code for <tt>_f</tt> which satisfies the calling conventions.
 
+	
+	
+	
+	
 <p><h2>Assignment : Thread priorities and spinlocks</h2>
 [0 marks]<br>
 On a linux shell, try using <code>nice</code> to decrease the
