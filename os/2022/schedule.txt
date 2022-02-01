@@ -20,14 +20,14 @@ DUE: Jan 25
 ==
 
 <a href=http://iitd-plos.github.io/os/hohlabs>Lab 2: Threads (2.1-2.4)</a>
-OUT: Feb 22
-DUE: Mar 4
+OUT: Feb 11
+DUE: Feb 22
 
 ==
 
 <a href=http://iitd-plos.github.io/os/hohlabs>Lab 3: Concurrency (3.1)</a>
-OUT: Mar 8
-DUE: Mar 29
+OUT: Mar 1
+DUE: Mar 22
 
 ==
 
