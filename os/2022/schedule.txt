@@ -13,25 +13,25 @@ SEMESTER: Sem II, 2021-22
 
 ==
 
-<a href=http://iitd-plos.github.io/os/hohlabs>Lab 1: Shell (1.1-1.4)</a>
+<a href=http://hohlabs.github.io/>Lab 1: Shell (1.1-1.4)</a>
 OUT: Jan 18
 DUE: Jan 25
 
 ==
 
-<a href=http://iitd-plos.github.io/os/hohlabs>Lab 2: Threads (2.1-2.4)</a>
+<a href=http://hohlabs.github.io/>Lab 2: Threads (2.1-2.4)</a>
 OUT: Feb 11
 DUE: Feb 22
 
 ==
 
-<a href=http://iitd-plos.github.io/os/hohlabs>Lab 3: Concurrency (3.1)</a>
+<a href=http://hohlabs.github.io/>Lab 3: Concurrency (3.1)</a>
 OUT: Mar 1
 DUE: Mar 22
 
 ==
 
-<a href=http://iitd-plos.github.io/os/hohlabs>Lab 4: UserProgram (4.1)</a>
+<a href=http://hohlabs.github.io/>Lab 4: UserProgram (4.1)</a>
 OUT: Mar 15
 DUE: Apr 1
 
