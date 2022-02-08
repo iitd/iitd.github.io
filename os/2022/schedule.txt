@@ -21,7 +21,7 @@ DUE: Jan 25
 
 <a href=http://hohlabs.github.io/>Lab 2: Threads (2.1-2.4)</a>
 OUT: Feb 11
-DUE: Feb 22
+DUE: Feb 25
 
 ==
 
