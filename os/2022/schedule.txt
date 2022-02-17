@@ -6,6 +6,7 @@ HOLIDAY: Mar 18. Holi
 HOLIDAY: Apr 10. Good Friday
 HOLIDAY: Feb 15. Midterm
 HOLIDAY: Feb 16. Midterm
+HOLIDAY: Feb 18. No classes (project evaluation)
 
 HEADER: Links to notes etc. on future days are <i>tentative only</i>. They are here only to give you an idea what the future will bring.<br>SG refers to the book by Silberschatz and Galvin<br>
 TITLE: COL331 / COL633 : Operating Systems : Schedule
