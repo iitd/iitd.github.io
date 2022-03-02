@@ -139,11 +139,11 @@ PREP: Read <a href=book.pdf>xv6 chapter 4</a> with spinlock.c and skim mp.c<br><
 ==
 
 LEC: <a href=lec/l22.html>Fine-grained locking and its challenges</a>
-PREP: <b>do <a href=hw/hw3.html>homework</a></b>
 
 ==
 
 LEC: <a href=lec/l23.html>Locking variations</a>
+PREP: <b>do <a href=hw/hw3.html>homework</a></b>
 
 ==
 
