@@ -178,13 +178,8 @@ LEC: <a href=lec/l30.html>Page Replacement, Thrashing</a> (<a href=lec/lecture12
 
 ==
 
-LEC: <a href=lec/l31.html>Storage devices, Filesystem interfaces</a><br>
-PREP: <b>do <a href=hw/hw4.html>homework</a></b>
-
-==
-
-LEC: <a href=lec/l32.html>Filesystem Implementation</a><br>
-PREP: xv6 book <a href=book.pdf>chapter 6</a> and <a href=book.pdf>chapter 7</a>
+LEC: <a href=lec/l31.html>Storage devices, Filesystem interfaces</a><br> <a href=lec/l32.html>Filesystem Implementation</a> (Saturday)<br>
+PREP: <b>do <a href=hw/hw4.html>homework</a></b>, xv6 book <a href=book.pdf>chapter 6</a> and <a href=book.pdf>chapter 7</a>
 OSC: chapters 12, 13
 
 ==
