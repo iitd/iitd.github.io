@@ -189,11 +189,10 @@ LEC: <a href=lec/l33.html>Filesystem Operations</a><br>
 ==
 
 LEC: <a href=lec/l34.html>Crash Recovery and Logging</a>
-PREP: <b>do <a href=hw/hw5.html>homework</a></b>
 ==
 
 LEC: <a href=lec/l35.html>Logging in ext3</a>
-PREP: Read <a href=bib/tweedie98journaling.pdf>Journaling the Linux ext2fs Filesystem</a>
+PREP: Read <a href=bib/tweedie98journaling.pdf>Journaling the Linux ext2fs Filesystem</a>, <b>do <a href=hw/hw5.html>homework</a></b>
 
 ==
 
