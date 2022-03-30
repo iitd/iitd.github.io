@@ -29,7 +29,7 @@ iput(), itrunc()), bio.c (bget(), bread(), bwrite(), brelse())
 <p>
 <b> Add the following line at the beginning of the log_write() function in log.c</b>
 <pre>
-cprintf("log_write %d\n", b->blockno);
+cprintf("log_write %d\n", b->sector);
 </pre>
 This will record all writes to the file system along with the sector number (blockno has 1-1 correspondence with sector number).
 
