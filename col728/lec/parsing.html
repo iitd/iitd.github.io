@@ -1,0 +1,425 @@
+<h3>Recursive Descent Parsing (Top-down)</h3>
+The parse tree is constructed (a) from the top, and (b) from left to right
+
+<p>Tokens are seen in order of appearence in the token stream
+
+<p>Example token stream (stream of terminals): t2 t5 t6 t8 t9
+
+<pre>
+1 --&gt; t2 3 9
+3 --&gt; 4 7
+4 --&gt; t5 t6
+7 --&gt; t8 t9 
+</pre>
+
+<p>Consider the grammar
+<pre>
+E --&gt; T | T + E
+T --&gt; int | int * T | (E)
+</pre>
+
+<p>Token stream is: ( int5 )
+
+<p>Start with top-level non-terminal E (hence called top-down). Try rules for E <em>in order</em>.
+
+Walk through the input with an arrow left to right. Also try rules in order. As long as we are generating non-terminals, we do not know if we are on the right path or not. However if we hit a terminal, we can see if that matches our current token or not. If it does not, we can back-track and try another option (in order). In this case we go to T and then down to int, backtrack, then int * T, then backtrack, and then (E), and here '(' matches! So we might be on the right track, and we now need to advance the input pointer, and now we have to expand the non-terminal E. Again we will start with the first production T. And we will eventually match the input string with some production, and we are done.
+
+<h3>General algorithm for Recursive Descent Parsing</h3>
+Let TOKEN be the type of the tokens: e.g., INT, OPEN, CLOSE, PLUS, TIMES, ...
+Let <code>next</code> point to the next token in the input string (the arrow).
+
+<p>Define boolean functions that check for a match of:
+<ul>
+	<li> A given token terminal
+	<pre>
+	bool term(TOKEN, tok) { return *next++ == tok;  }//next pointer is incremented regardless!
+  Try the nth production of non-terminal S
+  bool Sn() { ... } //will succeed if input matches the nth production of S
+  Try all productions of S
+  bool S() { ... } //will succeed if input matches any production of S
+	</pre>
+</ul>
+
+<p>Running on our example, functions for non-terminal E
+<ul>
+	<li>For production <code>E --&gt; T</code>
+	<pre>
+   bool E1() { return T(); }
+	</pre>
+	<li>For production <code>E --&gt; T + E</code>
+	<pre>
+   bool E2() { return T() AND term(PLUS) AND E(); }
+	</pre>
+  <li>For all productions of <code>E</code> (with backtracking)
+  <pre>
+   bool E() {
+      TOKEN *save = next;
+	    return    (next = save, E1())
+             || (next = save, E2());
+   }
+	</pre>
+	The first rule that returns true will cause a return (we will not evaluate the remaining rules due to semantics of logical OR ||)
+	<br><code>next</code> pointer needs to be saved for backtracking
+</ul>
+
+<p>Functions for non-terminal T
+<ul>
+	<li>For production <code>T --&gt; int</code>
+	<pre>
+   bool T1() { return term(INT); }
+	</pre>
+	<li>For production <code>E --&gt; int * T</code>
+	<pre>
+	 bool T2() { return term(INT) AND term(TIMES) AND T(); }
+	</pre>
+  <li>For production <code>E --&gt; (E)</code>
+	<pre>
+	 bool T3() { return term(OPEN) AND E() AND term(CLOSE); }
+	</pre>
+  <pre>
+   bool T() {
+      TOKEN *save = next;
+	    return    (next = save, T1())
+             || (next = save, T2())
+             || (next = save, T3());
+   }
+	</pre>
+	The first rule that returns true will cause a return (we will not evaluate the remaining rules due to semantics of logical OR ||)
+	<br><code>next</code> pointer needs to be saved for backtracking
+</ul>
+
+<p>To start the parser:
+<ol>
+	<li> 	Initialize <code>next</code> to first token
+	<li> Invoke E()
+	<ul>
+		<li>Show full execution of E() on the example string
+	</ul>
+</ol>
+Can implement by hand, e.g., TinyCC
+
+<h3>Left Recursion : the main problem with Recursive Descent Parsing</h3>
+Consider
+<pre>
+S --&gt; S a
+
+bool S1() { return S() AND term(a); }
+bool S() { return S1(); }
+</pre>
+This will go into an infinite loop for parsing <em>any</em> input.
+
+<p>The problem is that this grammar is left recursive
+<pre>
+S --&gt;+ S \alpha    for some \alpha
+</pre>
+If for some sequence of productions we end up with left recursion, recursive descent parsing will just not work
+
+<p>Consider the left-recursive grammar
+<pre>
+S --&gt; S a | b
+</pre>
+This generates a string starting with <code>b</code> with any number of <code>a</code>s following it.  It produces the sentences right-to-left, and that's why it does not work with recursive descent parsing (which works left-to-right).
+
+<p>We can generate exactly the same language by producing strings left to right, which is also a solution to our problem.
+<pre>
+S --&gt; b S'
+S' --&gt; a S' | \epsilon
+</pre>
+
+<p>In general, for any left recursive grammar
+<pre>
+S --&gt; S a1 | S a2 | ... | S an | b1 | b2 | ... | bm
+</pre>
+All strings starting with one of b1..bm and continue with several instances of a1..an
+<br>Rewrite as
+<pre>
+S --&gt; b1 S' | b2 S' | ... | bm S'
+S' --&gt; a1 S' | a2 S' | ... | an S' | \epsilon
+</pre>
+
+<p>There are more general ways of encoding left recursion in a grammar
+<pre>
+S --&gt; A a | d
+A --&gt; S b
+</pre>
+is also left-recursive because
+<pre>
+S --&gt;+ S b a
+</pre>
+This left recursion can also be eliminated (see Dragon book for general algorithm).
+
+<p>Recursive descent
+<ul>
+	<li>Simple and general parsing strategy
+	<li>Left-recursion must be eliminated first
+	<ul>
+		<li>This can be done automatically
+		<li>In practice however, this is done manually. The reason is that we also need to specify semantic actions with the productions used. Hence, people do elimination of left-recursion on their own, and this is not difficult to do.
+	</ul>
+	<li> Popular strategy in production compilers. e.g., gcc's parser is a hand-written recursive-descent parser.
+</ul>
+
+<h3>Predictive Parsing</h3>
+<ul>
+	<li>Like recursive-descent but parser can "predict" which production to use
+	<ul>
+		<li>by looking at the next few tokens
+		<li>without backtracking
+	</ul>
+	<li>Predictive parsing accepts LL(k) grammars
+	<ul>
+		<li>Left-to-right scanning of tokens
+		<li>Leftmost derivation
+		<li>k tokens to lookahead. In practice, k = 1
+	</ul>
+	<li>In LL(1), at every step there is at most one choice for a possible production
+	<ul>
+		<li>At each step, only one choice of production
+		<pre>
+      wAb --&gt; w \alpha b , next input: token t//only one choice for A at every step
+		</pre>
+	</ul>
+</ul>
+
+<p>Example
+<pre>
+E --&gt; T + E | T
+T --&gt; int | int * T | (E)
+</pre>
+Here, with one lookahead, hard to predict because:
+<ul>
+	<li>we cannot choose the first two productions of T by one lookahead
+	<li>the same problem exists with E, because two productions start with non-terminal T. Here it is a non-terminal, but still there is an issue, because we do not know which production to use for one lookahead
+</ul>
+
+<h3>Left factoring a grammar</h3>
+Basic idea: Factor out common prefix into a single production
+<pre>
+E --&gt; TX
+X --&gt; + E | \epsilon
+</pre>
+Left factoring delays the decision on which production to use. Here we decide which production to use <em>after</em> we have seen <code>T</code>.
+
+<p>Similarly,
+<pre>
+T --&gt; int Y | (E)
+Y --&gt; \epsilon | * T
+</pre>
+
+<p>Left-factored grammar
+<ul>
+E --&gt; TX
+X --&gt; +E | \epsilon
+T --&gt; int Y | (E)
+Y --&gt; \epsilon | * T
+</ul>
+LL(1) parsing table (assume it is somehow given, later we will discuss how to construct this):
+<pre>
+     int     *     +     (     )          $
+E    TX                 TX
+X                 +E          \epsilon   \epsilon
+T    int Y              (E)
+Y           *T   \epsilon     \epsilon   \epsilon
+</pre>
+Empty entries represent error states
+
+<p>Algorithm: similar to recursive descent, except
+<ul>
+	<li>For the left-most non-terminal S, we look at the next input token a
+	<li>Choose the production rule shown at (S, a)
+</ul>
+Instead of using recursive functions, maintain a stack of the frontier of the parse tree. The stack contains all the entries on the right of the top of the frontier. In other words, the top of the stack is the leftmost pending terminal or non-terminal. Terminals in the stack are yet to be matched in the input. Non-terminals in the stack are yet to be expanded.
+
+<p>Reject on reaching error state.
+
+<p>Accept on end of input or empty stack.
+
+<p>Pseudo-code:
+<pre>
+initialize stack = &lt;S $&gt; and next
+repeat
+    case stack of
+      &lt;X, rest&gt; : if T[X, *next] = Y1...Yn
+                        then stack &lt;-- &lt;Y1..Yn, rest&gt;;
+                        else error();
+      &lt;t, rest&gt; : if t == *next++
+                        then stack &lt;-- &lt;rest&gt;;
+                        else error();
+until stack == &lt; &gt;
+</pre>
+Run this algorithm on the example
+
+<h3>Constructing LL(1) Parsing Tables</h3>
+
+Constructing <b>First sets</b>
+
+<p>Consider a non-terminal A, production A --&gt; \alpha, and a token <code>t</code>
+
+<p>T(A, t) = \alpha in two cases:
+<ol>
+	<li>If \alpha --&gt;* t \beta
+	<ul>
+		<li>If \alpha can derive t in the first position
+		<li>We say that t \in First(\alpha)
+	</ul>
+	<li> If \alpha --&gt;* \epsilon and S --&gt;* \beta A t \delta
+	<ul>
+		<li>Useful if stack has A, input is t, and A cannot derive t
+		<li>In this case, the only option is to get rid of A by deriving \epsilon
+		<ul>
+			<li>Can work only if t can follow A in at least one derivation
+		</ul>
+		<li>We say that t \in Follow(\alpha)
+	</ul>
+</ol>
+
+<p>Definition:
+<pre>
+First(X) = {t | X --&gt;* t \alpha} U {\epsilon | X --&gt;* \epsilon}
+</pre>
+
+<p>Algorithm sketch:
+<ol>
+	<li>First(t) = {t}
+	<li>\epsilon \in First(X)
+	<ul>
+		<li>if X --&gt; \epsilon
+		<li>if X --&gt; A1A2..An   AND  \epsilon \in First(Ai) for all i
+	</ul>
+	<li>First(\alpha) \subset First(X) if X --&gt; A1..An \alpha and \epsilon \in First(Ai) for all i
+</ol>
+
+<p>Example
+<pre>
+E --&gt; TX
+X --&gt; +E | \epsilon
+T --&gt; int Y | (E)
+Y --&gt; \epsilon | * T
+</pre>
+
+<p>First set for terminals
+<pre>
+First(t) = {t}
+First(*) = {*}
+....
+</pre>
+
+<p>First set for non-terminals
+<pre>
+First(E) \superset First(T)
+First(T) = {'(', 'int')}
+First(X) = {+, \epsilon}
+First(Y) = {*, \epsilon}
+</pre>
+
+<p>Constructing <b>Follow sets</b>
+
+<p>Definition
+<pre>
+Follow(X) = {t | S --&gt;* \beta X t \delta}
+</pre>
+
+<p>Intuition
+<ul>
+	<li>if <code>X --&gt; A B, then First(B) \subset Follow(A) and Follow(X) \subset Follow(B)</code>
+	<li>if <code>B --&gt; \epsilon</code>, Follow(X) \subset Follow(A)
+	<li>If S is the start symbol, then $ \in Follow(S)
+</ul>
+
+<p>Algorithm sketch:
+<ol>
+	<li> $ \in Follow(S)
+	<li> For each A --&gt; \alpha X \beta,
+	<ul>
+		<li> First(\beta) - \epsilon \subset Follow(X)
+	</ul>
+	<li> For each A --&gt; \alpha X \beta
+	<ul>
+		<li> Follow(A) \subset Follow(X) if \epsilon \in First(\beta)
+	</ul>
+</ol>
+
+<p>Example
+<pre>
+E --&gt; TX
+X --&gt; +E | \epsilon
+T --&gt; int Y | (E)
+Y --&gt; \epsilon | * T
+</pre>
+
+<p>Running the algo
+<pre>
+Follow(E) = {$, )}
+Follow(E) \superset Follow(X)
+Follow(X) \superset Follow(E)
+(in other words Follow(X) = Follow(E))
+</pre>
+
+<p>Hence
+<pre>
+Follow(X) = {$, )}
+</pre>
+
+<p>Looking at T, and the first production E --&gt; TX
+<pre>
+Follow(T) \superset First(X)
+or
+Follow(T) = {+} (ignoring \epsilon)
+Follow(T) \superset Follow(E)    because X --&gt;* \epsilon
+Follow(T) = {+, $}
+</pre>
+Looking at the second rule,
+<pre>
+Follow(Y) \superset Follow(T)
+Follow(T) \superset Follow(Y)
+</pre>
+Follow(Y) = {+, $, )}
+
+<p>Looking at terminals
+<pre>
+Follow('(') \superset First(E)
+Follow('(') = {(, int}
+Follow(')') \superset Follow(T)
+Follow(')') = {+,$,)}
+Follow(+) \superset First(E)
+Follow(+) = {(, int}
+E does not go to \epsilon, so this is it.
+Follow(*) \superset First(T)
+Follow(*) = {(, int}
+T does not go to \epsilon, so this is it.
+Follow(int) \superset First(Y) - \epsilon
+Follow(int) = {*}
+Follow(int) \superset Follow(T)   (because \epsilon \in First(Y))
+Follow(int) = {*,+,$,)}
+</pre>
+
+<h3>LL(1) Parsing Tables</h3>
+Goal: Construct a parsing table T for CFG G
+
+<ul>
+	<li>For each production A --&gt; \alpha in G, do:
+	<ul>
+		<li>For each terminal t \in First(\alpha), do T[A, t] = \alpha
+	</ul>
+	<li>If \epsilon \in First(\alpha), for each t \in Follow(A) do T[A, t] = \alpha (for token t)
+	<li>If \epsilon \in First(\alpha), for each $ \in Follow(A) do T[A, $] = \alpha (just a special case for $)
+</ul>
+
+Parsing table
+<pre>
+     int     *     +     (     )          $
+E    TX                 TX
+X                 +E          \epsilon   \epsilon
+T    int Y              (E)
+Y           *T   \epsilon     \epsilon   \epsilon
+</pre>
+Fill some entries in this table
+
+<p>What happens if we try and build a parsing table for a grammar that is not LL(1). Example: <code>S --&gt; Sa | b</code>
+<pre>
+First(S) = {b}
+Follow(S) = {$, a}
+</pre>
+In this case, both productions will appear at T[S, b]. If an entry is multiply defined (more than one productions appear in a table cell), G is not LL(1). Examples: a grammar that is ambiguous, not left-factored, left-recursive will all be not LL(1). But there are more grammars that may not be LL(1)
+
+<p>Most programming language CFGs are not LL(1). More powerful formulations for describing practical grammars that assemble some of these ideas in more sophisticated ways to develop more parsers
