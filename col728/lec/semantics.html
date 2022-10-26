@@ -446,3 +446,5 @@ We are interested in the class-tag of <code>v0</code> (<code>X</code>) and its a
 <p>The construction of <code>E'</code> is interesting because it two square brackets: this is because it is possible that a formal parameter may have the same name as an attribute name, and we want to capture this overriding semantics.
 
 <p>The function body is evaluated in an updated store, where the locations of formal arguments are replaced by expression values (call-by-value). Also the self object is v0. Notice that E' has nothing to do with <code>E</code> (static scoping). Dynamic scoping may have E' that is dependent on E.
+
+<p> We did not delete the locations <code>lxi</code> after finishing the execution of <code>ebody</code>.  Is that a problem?
