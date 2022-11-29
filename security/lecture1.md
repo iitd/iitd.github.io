@@ -21,7 +21,7 @@ eventually writes to the read/write-protected password file `/etc/passwd`
 
 4. Can you generalize these observations to the SSHD programs?
 
-# Software Defects
+# Software Defect 1 : Buffer Overflow
 
 Consider the following C program in the file `passwd.c`
 ```
@@ -51,7 +51,7 @@ int main(int argc, char** argv)
 This program `passwd.c` is compiled to produce the `passwd` executable as
 follows:
 ```
-$ gcc -O3 passwd.c -o passwd
+$ gcc -O3 -fno-stack-protector -z execstack passwd.c -o passwd
 ```
 Further, this program is owned by the _root_ user and its setuid bit
 is set using the following command:
@@ -71,4 +71,24 @@ Password successfully changed to 'secret'
 5. Does this `passwd` program have a software defect that can allow _userX_
    to obtain super-user (root) privileges?
 
-6. How can _userX_ invoke the `passwd` program to obtain super-user privileges?
+6. How can _userX_ invoke the `passwd` program to (unintendedly) run arbitrary commands with super-user privileges?
+
+7. What if the OS implements "Data Execution Protection"? i.e., the executable code is in a separate region from the data/stack. i.e., the bytes in the stack cannot be executed.
+```
+$ gcc -O3 -fno-stack-protector passwd.c -o passwd
+```
+Let's look at the assembly code produced in `passwd`
+```
+$ objdump -d passwd
+```
+Can we still mount an attack?
+
+8. What if we enable stack-protection by the compiler?
+```
+$ gcc -O3 passwd.c -o passwd
+```
+What is the tradeoff here?
+
+9. What about overflow of heap or global variables?
+
+# Software Defect 2 : Buffer Overflow
