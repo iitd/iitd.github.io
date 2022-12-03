@@ -16,7 +16,7 @@ eventually writes to the read/write-protected password file `/etc/passwd`
 1. How is the `passwd` program able to change the write to `/etc/passwd`, when it is executed by X?
    - Learn about the `setuid` bit that allows the executable to be executed with the privileges of the owner of the executable file.
 
-2. Why can't user X cannot change other user passwords?
+2. Why can't user X change other user passwords?
    - Because the executable carefully checks what the user is trying to do, against the user privileges.
 
 3. What happens if the `passwd` program had a software defect?
@@ -73,7 +73,7 @@ Password successfully changed to 'secret'
 4. How can `userX` invoke the `passwd` program to make it crash?
    - By passing a command-line argument (_password_) string which is longer than 99 characters.
 
-5. How can `userX1 invoke the `passwd` program to run arbitrary commands with super-user (root) privileges?
+5. How can `userX` invoke the `passwd` program to run arbitrary commands with super-user (root) privileges?
    - By carefully crafting the command-line argument (_password_) to that it contains the code that needs to be executed _and_ it overwrites the return address so it jumps to the code (within the _password_ string).
 
 # Software Defect 2 : Integer Overflow Bugs
@@ -81,18 +81,18 @@ Password successfully changed to 'secret'
 The software developer decides to check the length of the command-line argument as follows:
 ```
   ...
+  char password[100];
   size_t len = strlen(argv[1]);
-  if (99 - len < 0) {
+  if ((char*)password + len + 1 >= (char*)password + 100) {
     printf("Supplied password too long. Exiting without changing the password.\n");
     exit(1);
   }
-  char password[100];
   strcpy(password, argv[1]);
   ...
 ```
 6. Does this check prevent the attack?
-   - No, because `len` is of unsigned type (`size_t`) and arithmetic performed on this type (`99 - len`) is also promoted to the same unsigned `size_t` type. And a value of an unsigned type can never be less than zero.
-   - Such a sequence of integer overflow and buffer overflow form the basis of the famous _Heartbleed_ vulnerability.
+   - No, because `password + len + 1` could overflow.
+   - A similar sequence of integer overflow and buffer overflow form the basis of the famous _Heartbleed_ vulnerability (as seen in the lab assignment).
 
 # Software Defect 3 : Time-of-Check-To-Time-Of-Use (TOCTTOU) Bugs
 

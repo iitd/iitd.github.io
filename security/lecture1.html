@@ -6,7 +6,7 @@
 <ul>
 <li>Learn about the <code>setuid</code> bit that allows the executable to be executed with the privileges of the owner of the executable file.</li>
 </ul></li>
-<li>Why can’t user X cannot change other user passwords?
+<li>Why can’t user X change other user passwords?
 <ul>
 <li>Because the executable carefully checks what the user is trying to do, against the user privileges.</li>
 </ul></li>
@@ -55,7 +55,7 @@ Password successfully changed to &#39;secret&#39;</code></pre>
 <ul>
 <li>By passing a command-line argument (<em>password</em>) string which is longer than 99 characters.</li>
 </ul></li>
-<li>How can <code>userX1 invoke the</code>passwd` program to run arbitrary commands with super-user (root) privileges?
+<li>How can <code>userX</code> invoke the <code>passwd</code> program to run arbitrary commands with super-user (root) privileges?
 <ul>
 <li>By carefully crafting the command-line argument (<em>password</em>) to that it contains the code that needs to be executed <em>and</em> it overwrites the return address so it jumps to the code (within the <em>password</em> string).</li>
 </ul></li>
@@ -63,19 +63,19 @@ Password successfully changed to &#39;secret&#39;</code></pre>
 <h1 id="software-defect-2-integer-overflow-bugs">Software Defect 2 : Integer Overflow Bugs</h1>
 <p>The software developer decides to check the length of the command-line argument as follows:</p>
 <pre><code>  ...
+  char password[100];
   size_t len = strlen(argv[1]);
-  if (99 - len &lt; 0) {
+  if ((char*)password + len + 1 &gt;= (char*)password + 100) {
     printf(&quot;Supplied password too long. Exiting without changing the password.\n&quot;);
     exit(1);
   }
-  char password[100];
   strcpy(password, argv[1]);
   ...</code></pre>
 <ol start="6" type="1">
 <li>Does this check prevent the attack?
 <ul>
-<li>No, because <code>len</code> is of unsigned type (<code>size_t</code>) and arithmetic performed on this type (<code>99 - len</code>) is also promoted to the same unsigned <code>size_t</code> type. And a value of an unsigned type can never be less than zero.</li>
-<li>Such a sequence of integer overflow and buffer overflow form the basis of the famous <em>Heartbleed</em> vulnerability.</li>
+<li>No, because <code>password + len + 1</code> could overflow.</li>
+<li>A similar sequence of integer overflow and buffer overflow form the basis of the famous <em>Heartbleed</em> vulnerability (as seen in the lab assignment).</li>
 </ul></li>
 </ol>
 <h1 id="software-defect-3-time-of-check-to-time-of-use-tocttou-bugs">Software Defect 3 : Time-of-Check-To-Time-Of-Use (TOCTTOU) Bugs</h1>
