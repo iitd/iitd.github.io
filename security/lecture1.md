@@ -96,6 +96,29 @@ The software developer decides to check the length of the command-line argument 
 
 # Software Defect 3 : Time-of-Check-To-Time-Of-Use (TOCTTOU) Bugs
 
+Consider the following code:
+```
+  get_from_user(filename);
+  if (!access(filename, R_OK) != 0) {
+    printf("The file cannot be accessed by the user");
+    exit(1);
+  }
+  //for executables with setuid bit set, the following
+  //system call succeeds if the file is accessible by
+  //either the user or the owner of the executable file.
+  fd = open(filename, O_RDONLY);
+  read(fd, ...); //user can read the contents of the file
+```
+Assume that the owner of the executable file is the super-user (root).
+
+6. What happens if the attacker ensures that when the `access(..)` check
+   is executed, the `filename` is readable by the user, but by the time
+   the `open(..)` call is executed, the filename is replaced to point to
+   a file that is readable only by the super-user?
+   - This time gap between the _time-of-check_ (call to `access`) and the
+     _time-of-use_ (call to `open`) can be exploited by the attacker to
+     change the filesystem state in the middle of the two calls.
+
 <!--
 7. What if the OS implements "Data Execution Protection"? i.e., the executable code is in a separate region from the data/stack. i.e., the bytes in the stack cannot be executed.
 ```
@@ -115,5 +138,3 @@ What is the tradeoff here?
 
 9. What about overflow of heap or global variables?
 -->
-
-
