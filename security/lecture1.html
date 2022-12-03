@@ -1,0 +1,100 @@
+<h1 id="privilege-escalation">Privilege Escalation</h1>
+<p>An OS typically supports multiple users. Each user has certain access privileges, e.g., user X may access file F in read-only mode, etc. All processes run by user X are run with the privileges given to X; if any process run by user X tries to overstep the granted privileges, that process can be terminated.</p>
+<p>Yet, some programs that user X may need to execute, require more privileges than those that were granted to user X. For example, on Linux, X can use the <code>passwd</code> program can change his/her password: this program eventually writes to the read/write-protected password file <code>/etc/passwd</code> (which is only readable/writeable by the <em>root</em> user).</p>
+<ol type="1">
+<li>How is the <code>passwd</code> program able to change the write to <code>/etc/passwd</code>, when it is executed by X?
+<ul>
+<li>Learn about the <code>setuid</code> bit that allows the executable to be executed with the privileges of the owner of the executable file.</li>
+</ul></li>
+<li>Why can’t user X cannot change other user passwords?
+<ul>
+<li>Because the executable carefully checks what the user is trying to do, against the user privileges.</li>
+</ul></li>
+<li>What happens if the <code>passwd</code> program had a software defect?
+<ul>
+<li>It may become possible to bypass the privilege checks.</li>
+</ul></li>
+</ol>
+<h1 id="software-defect-1-buffer-overflow-bugs">Software Defect 1 : Buffer Overflow Bugs</h1>
+<p>Consider the following C program in the file <code>passwd.c</code>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb1-1" title="1"><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="pp">#include </span><span class="im">&lt;stdlib.h&gt;</span></a>
+<a class="sourceLine" id="cb1-3" title="3"><span class="pp">#include </span><span class="im">&lt;string.h&gt;</span></a>
+<a class="sourceLine" id="cb1-4" title="4"></a>
+<a class="sourceLine" id="cb1-5" title="5"><span class="dt">int</span> main(<span class="dt">int</span> argc, <span class="dt">char</span>** argv)</a>
+<a class="sourceLine" id="cb1-6" title="6">{</a>
+<a class="sourceLine" id="cb1-7" title="7">  <span class="dt">char</span> password[<span class="dv">100</span>];</a>
+<a class="sourceLine" id="cb1-8" title="8">  <span class="cf">if</span> (argc &lt; <span class="dv">2</span>) {</a>
+<a class="sourceLine" id="cb1-9" title="9">    printf(<span class="st">&quot;Filename not provided, exiting</span><span class="sc">\n</span><span class="st">&quot;</span>);</a>
+<a class="sourceLine" id="cb1-10" title="10">    exit(<span class="dv">1</span>);</a>
+<a class="sourceLine" id="cb1-11" title="11">  }</a>
+<a class="sourceLine" id="cb1-12" title="12">  strcpy(password, argv[<span class="dv">1</span>]);</a>
+<a class="sourceLine" id="cb1-13" title="13">  <span class="dt">FILE</span> *fp = fopen(<span class="st">&quot;/etc/passwd&quot;</span>, <span class="st">&quot;r+&quot;</span>);</a>
+<a class="sourceLine" id="cb1-14" title="14">  <span class="cf">if</span> (!fp) {</a>
+<a class="sourceLine" id="cb1-15" title="15">    printf(<span class="st">&quot;Could not open the password file, exiting.</span><span class="sc">\n</span><span class="st">&quot;</span>);</a>
+<a class="sourceLine" id="cb1-16" title="16">    exit(<span class="dv">1</span>);</a>
+<a class="sourceLine" id="cb1-17" title="17">  }</a>
+<a class="sourceLine" id="cb1-18" title="18">  <span class="co">//...write the contents of password string to fp at the desired offset</span></a>
+<a class="sourceLine" id="cb1-19" title="19">  fclose(fp);</a>
+<a class="sourceLine" id="cb1-20" title="20">  printf(<span class="st">&quot;Password successfully changed to &#39;%s&#39;</span><span class="sc">\n</span><span class="st">&quot;</span>, password);</a>
+<a class="sourceLine" id="cb1-21" title="21">  <span class="cf">return</span> <span class="dv">0</span>;</a>
+<a class="sourceLine" id="cb1-22" title="22">}</a></code></pre></div>
+<p>This program <code>passwd.c</code> is compiled to produce the <code>passwd</code> executable as follows:</p>
+<pre><code>$ gcc -O3 -fno-stack-protector -z execstack passwd.c -o passwd</code></pre>
+<p>Further, this program is owned by the <em>root</em> user and its setuid bit is set using the following command:</p>
+<pre><code>$ whoami
+root
+$ setuid 4555 passwd</code></pre>
+<p>This program can now be used by the user to change his/her password:</p>
+<pre><code>$ whoami
+userX
+$ passwd secret
+Password successfully changed to &#39;secret&#39;</code></pre>
+<ol start="4" type="1">
+<li>How can <code>userX</code> invoke the <code>passwd</code> program to make it crash?
+<ul>
+<li>By passing a command-line argument (<em>password</em>) string which is longer than 99 characters.</li>
+</ul></li>
+<li>How can <code>userX1 invoke the</code>passwd` program to run arbitrary commands with super-user (root) privileges?
+<ul>
+<li>By carefully crafting the command-line argument (<em>password</em>) to that it contains the code that needs to be executed <em>and</em> it overwrites the return address so it jumps to the code (within the <em>password</em> string).</li>
+</ul></li>
+</ol>
+<h1 id="software-defect-2-integer-overflow-bugs">Software Defect 2 : Integer Overflow Bugs</h1>
+<p>The software developer decides to check the length of the command-line argument as follows:</p>
+<pre><code>  ...
+  size_t len = strlen(argv[1]);
+  if (99 - len &lt; 0) {
+    printf(&quot;Supplied password too long. Exiting without changing the password.\n&quot;);
+    exit(1);
+  }
+  char password[100];
+  strcpy(password, argv[1]);
+  ...</code></pre>
+<ol start="6" type="1">
+<li>Does this check prevent the attack?
+<ul>
+<li>No, because <code>len</code> is of unsigned type (<code>size_t</code>) and arithmetic performed on this type (<code>99 - len</code>) is also promoted to the same unsigned <code>size_t</code> type. And a value of an unsigned type can never be less than zero.</li>
+<li>Such a sequence of integer overflow and buffer overflow form the basis of the famous <em>Heartbleed</em> vulnerability.</li>
+</ul></li>
+</ol>
+<h1 id="software-defect-3-time-of-check-to-time-of-use-tocttou-bugs">Software Defect 3 : Time-of-Check-To-Time-Of-Use (TOCTTOU) Bugs</h1>
+<!--
+7. What if the OS implements "Data Execution Protection"? i.e., the executable code is in a separate region from the data/stack. i.e., the bytes in the stack cannot be executed.
+```
+$ gcc -O3 -fno-stack-protector passwd.c -o passwd
+```
+Let's look at the assembly code produced in `passwd`
+```
+$ objdump -d passwd
+```
+Can we still mount an attack?
+
+8. What if we enable stack-protection by the compiler?
+```
+$ gcc -O3 passwd.c -o passwd
+```
+What is the tradeoff here?
+
+9. What about overflow of heap or global variables?
+-->
