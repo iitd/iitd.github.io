@@ -1,0 +1,23 @@
+<h1 id="install-virtualbox">Install Virtualbox</h1>
+<pre><code>sudo apt install virtualbox</code></pre>
+<h1 id="download-and-untar-the-vm-image">Download and untar the VM image</h1>
+<pre><code>$ wget www.cse.iitd.ac.in/~sbansal/tmp/ubuntu20.tbz2
+$ tar xf ubuntu20.tbz2</code></pre>
+<h1 id="register-the-vm">Register the VM</h1>
+<pre><code>$ VBoxManage registervm ubuntu20/ubuntu20.vbox</code></pre>
+<h1 id="see-the-vm-in-the-list-of-registered-vms">See the VM in the list of registered VMs</h1>
+<pre><code>$ VBoxManage list vms</code></pre>
+<h1 id="start-the-vm">Start the VM</h1>
+<p>You could use the GUI by typing</p>
+<pre><code>$ virtualbox</code></pre>
+<p>Or you could start the VM using the command-line as follows</p>
+<pre><code>$ VBoxManage startvm &quot;ubuntu20&quot;</code></pre>
+<p>If you want to start the VM in headless mode:</p>
+<pre><code>$ VBoxManage startvm &quot;ubuntu20&quot; --type headless</code></pre>
+<h1 id="other-useful-commands">Other useful commands</h1>
+<p>Pause the VM:</p>
+<pre><code>VBoxManage controlvm &quot;ubuntu20&quot; pause --type headless</code></pre>
+<p>Restart the paused VM:</p>
+<pre><code>VBoxManage controlvm &quot;ubuntu20&quot; resume --type headless</code></pre>
+<p>Power-off the VM:</p>
+<pre><code>VBoxManage controlvm &quot;ubuntu20&quot; poweroff --type headless</code></pre>
