@@ -1,4 +1,5 @@
 <h1 id="fuzzing">Fuzzing</h1>
+<p>(adapted from <a href="https://www.fuzzingbook.org/beta/html/Fuzzer.html">The Fuzzing Book by Andreas Zeller et. al.</a>)</p>
 <h2 id="generating-random-software-inputs">Generating random software inputs</h2>
 <ul>
 <li>10K to 1M inputs per second</li>
@@ -13,6 +14,9 @@
 <li>Invoke on Microsoft Word — and it crashed frequently.</li>
 </ul>
 <pre><code>def fuzzer(max\_length : int = 100, char\_start : int = 32, char\_range: int = 32) -&gt; str;</code></pre>
+<figure>
+<img src="fuzzed_output.png" title="Example Randomly Fuzzed Output" alt="Example Randomly Fuzzed Output" /><figcaption>Example Randomly Fuzzed Output</figcaption>
+</figure>
 <ul>
 <li>Pros of random string generation
 <ul>

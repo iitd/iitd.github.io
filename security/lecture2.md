@@ -1,5 +1,7 @@
 # Fuzzing
 
+(adapted from [The Fuzzing Book by Andreas Zeller et. al.](https://www.fuzzingbook.org/beta/html/Fuzzer.html))
+
 ## Generating random software inputs
 
 - 10K to 1M inputs per second
@@ -13,6 +15,9 @@
 ```
 def fuzzer(max\_length : int = 100, char\_start : int = 32, char\_range: int = 32) -> str;
 ```
+![Example Randomly Fuzzed Output](fuzzed_output.png "Example Randomly Fuzzed Output")
+
+
 - Pros of random string generation
   - Universally applicable for any piece of software that accepts strings
   - No user inputs required
