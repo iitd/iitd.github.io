@@ -39,7 +39,10 @@ def fuzzer(max\_length : int = 100, char\_start : int = 32, char\_range: int = 3
   - delete a character
   - add a character at a randomly chosen position
   - change an existing character
-- Example: a URL fuzzer
+
+![Example for Mutation Fuzzing](mutation-fuzzing.png "Example for Mutation Fuzzing")
+
+
 - These mutation types require no user guidance
 - Other user-assisted mutation types are: introduce a word from user-supplied dictionary
   - e.g., HTML tags, C keywords, etc.
