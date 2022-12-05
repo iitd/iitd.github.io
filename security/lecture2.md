@@ -69,6 +69,11 @@ def fuzzer(max\_length : int = 100, char\_start : int = 32, char\_range: int = 3
 - This kind of thing is exactly wht penetration testers do today.
 
 - Show a fuzzing effectiveness graph
+  - Number of inputs on the X axis (10,000 - 100,000)
+  - Lines covered (40-200)
+  - Edges covered (400-2000)
+
+- Discuss fuzzing for compilers
 
 - Fuzzing with Generators
   - Regular Languages (a^n) -> Context Free Languages (a^nb^n) -> Context Sensitive Languages -> Universal Languages
