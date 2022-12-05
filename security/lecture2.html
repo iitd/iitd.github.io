@@ -1,0 +1,109 @@
+<h1 id="fuzzing">Fuzzing</h1>
+<h2 id="generating-random-software-inputs">Generating random software inputs</h2>
+<ul>
+<li>10K to 1M inputs per second</li>
+<li>This was first tried in a Fall 1988 class project in the graduate OS class, taught by Prof. Barton Miller, at the University of Wisconsin.</li>
+<li>Random strings of random lengths</li>
+<li>Search for interesting behaviour
+<ul>
+<li>Crashes</li>
+<li>Hangs</li>
+<li>But probably not logical errors</li>
+</ul></li>
+<li>Invoke on Microsoft Word — and it crashed frequently.</li>
+</ul>
+<pre><code>def fuzzer(max\_length : int = 100, char\_start : int = 32, char\_range: int = 32) -&gt; str;</code></pre>
+<ul>
+<li>Pros of random string generation
+<ul>
+<li>Universally applicable for any piece of software that accepts strings</li>
+<li>No user inputs required</li>
+</ul></li>
+<li>Cons of random string generation
+<ul>
+<li>While this may find lots of bugs initially, soon we stop uncovering new bugs</li>
+</ul></li>
+</ul>
+<h1 id="a-general-con-of-fuzzing">A general con of fuzzing</h1>
+<ul>
+<li>Fuzzing is only interested crashes and hangs.</li>
+<li>But it is still interesting from the point-of-view of security because once you get a crash, you can inspect the code around it; and perhaps you may identify a buffer overflow or an integer overflow</li>
+<li>Works only for inputs that can be expressed as strings served as inputs at the top-level. Need to write “fuzzing harnesses”.
+<ul>
+<li>the design of the harness may limit the effectiveness of the fuzzing technique</li>
+<li>the harness may inadvertently cause certain parts of the input space to remain uncovered, e.g., if the program expects a linked list, what happens if the input list contains a cycle. The harness may not allow the creation of such a harness.</li>
+</ul></li>
+</ul>
+<h1 id="mutation-based-fuzzing">Mutation-based Fuzzing</h1>
+<ul>
+<li>Ask the user to provide a set (possibly singleton) of valid inputs.</li>
+<li>The fuzzer will search for crashes and hangs in the vicinity of these valid inputs</li>
+<li>These valid inputs will be called a “population”</li>
+<li>Randomly pick an input from the population and mutate it. The mutation could be
+<ul>
+<li>delete a character</li>
+<li>add a character at a randomly chosen position</li>
+<li>change an existing character</li>
+</ul></li>
+<li>Example: a URL fuzzer</li>
+<li>These mutation types require no user guidance</li>
+<li>Other user-assisted mutation types are: introduce a word from user-supplied dictionary
+<ul>
+<li>e.g., HTML tags, C keywords, etc.</li>
+</ul></li>
+<li>A mutation fuzzer vs. a random input fuzzer
+<ul>
+<li>the percentage of valid inputs that a mutation fuzzer generates can be much higher</li>
+</ul></li>
+<li>Coverage-guided Mutation Fuzzing
+<ul>
+<li>Have a coverage metric
+<ul>
+<li>code coverage</li>
+<li>edge coverage</li>
+</ul></li>
+<li>Have a method for measuring the coverage metric
+<ul>
+<li>compiler-based instrumentation</li>
+<li>binary translation</li>
+<li>sampling</li>
+</ul></li>
+<li>Estimate the coverage of the mutated input</li>
+<li>If the coverage due to the mutated input has increased, add the mutated input to the population
+<ul>
+<li>the idea is to move towards increasing the coverage of the tests</li>
+<li>for instrumentation-based coverage measurement, a single run is often enough to measure the coverage</li>
+</ul></li>
+</ul></li>
+<li>American Fuzzy Lop is a fuzzer based on this coverage-guided mutation approach
+<ul>
+<li>By far the most frequently used fuzzer these days for practical programs</li>
+<li>Allows you to supply a dictionary
+<ul>
+<li>the better your dictionary, the better your fuzzer</li>
+</ul></li>
+<li>Surprisingly effective at identifying bugs</li>
+</ul></li>
+<li>Run the fuzzer for hours, days</li>
+<li><p>This kind of thing is exactly wht penetration testers do today.</p></li>
+<li><p>Show a fuzzing effectiveness graph</p></li>
+<li>Fuzzing with Generators
+<ul>
+<li>Regular Languages (a^n) -&gt; Context Free Languages (a<sup>nb</sup>n) -&gt; Context Sensitive Languages -&gt; Universal Languages</li>
+<li>Consider a CFG as follows<br />
+E -&gt; int | (E + E) | (E * E)</li>
+<li>Do CFG.fuzz() to generate a random expression from this CFG</li>
+<li>Attach a generator to the “int” to restrict the values of the leaf nodes to say lie between 10 and 20
+<ul>
+<li>Produces syntactically-valid inputs</li>
+</ul></li>
+<li>Many possibilities for generator-based fuzzing. Generators are turing complete so you can compute anything with them.</li>
+<li>CFGs are a sweet spot with small doses of turing complete functions (e.g., at leaf nodes) – so that we retain the declarative nature of CFGs without having long generator functions that may become super-specific to one particular domain (Andreas Zeller).</li>
+</ul></li>
+<li>Greybox Fuzzing with Grammars
+<ul>
+<li>Swapping Input Elements</li>
+<li>Region swapping (a region is a subtree)</li>
+</ul></li>
+</ul>
+<h1 id="symbolic-analysis">Symbolic Analysis</h1>
