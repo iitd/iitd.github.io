@@ -77,4 +77,65 @@ def fuzzer(max\_length : int = 100, char\_start : int = 32, char\_range: int = 3
 
 # Symbolic Analysis
 
+Find an input that crashes this program.  Construct a first-order logic formula, and use a "SAT/SMT Solver" to solve for its satisfiability.
+```
+int f(int y) {
+  z = y * 2;
+  assert(z != 12);
+  ...
+}
+```
 
+Tackle branches using the _Weakest Precondition Calculus_.
+```
+int f(int y) {
+  z = y * 2;
+  if (z <= 12) {
+    x = w + y;
+    assert(x > 4);
+  }
+  ...
+}
+```
+
+Avoid exponential-sized first-order logic formulas
+```
+int f(int y) {
+  z = y;
+  if (a) {
+    z = f1(z);
+  } else {
+    z = f2(z);
+  }
+  if (b) {
+    z = f3(z);
+  } else {
+    z = f4(z);
+  }
+  if (c) {
+    z = f5(z);
+  } else {
+    z = f6(z);
+  }
+  if (d) {
+    z = f7(z);
+  } else {
+    z = f8(z);
+  }
+  assert(z != 0);
+}
+```
+
+Tackle loops!
+```
+int f(int y, int w) {
+  z = y;
+  a = w;
+  while (a) {
+    z = f1(z); //z = z + 1;
+    a = f2(a); //a = a - 1;
+  }
+  assert(z + a != 0);
+}
+```
+Does there exist an input `y`, such that the assertion fails?  This is undecidable in Turing's model of computation with an infinite tape.

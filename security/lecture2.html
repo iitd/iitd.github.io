@@ -107,3 +107,54 @@ E -&gt; int | (E + E) | (E * E)</li>
 </ul></li>
 </ul>
 <h1 id="symbolic-analysis">Symbolic Analysis</h1>
+<p>Find an input that crashes this program. Construct a first-order logic formula, and use a “SAT/SMT Solver” to solve for its satisfiability.</p>
+<pre><code>int f(int y) {
+  z = y * 2;
+  assert(z != 12);
+  ...
+}</code></pre>
+<p>Tackle branches using the <em>Weakest Precondition Calculus</em>.</p>
+<pre><code>int f(int y) {
+  z = y * 2;
+  if (z &lt;= 12) {
+    x = w + y;
+    assert(x &gt; 4);
+  }
+  ...
+}</code></pre>
+<p>Avoid exponential-sized first-order logic formulas</p>
+<pre><code>int f(int y) {
+  z = y;
+  if (a) {
+    z = f1(z);
+  } else {
+    z = f2(z);
+  }
+  if (b) {
+    z = f3(z);
+  } else {
+    z = f4(z);
+  }
+  if (c) {
+    z = f5(z);
+  } else {
+    z = f6(z);
+  }
+  if (d) {
+    z = f7(z);
+  } else {
+    z = f8(z);
+  }
+  assert(z != 0);
+}</code></pre>
+<p>Tackle loops!</p>
+<pre><code>int f(int y, int w) {
+  z = y;
+  a = w;
+  while (a) {
+    z = f1(z); //z = z + 1;
+    a = f2(a); //a = a - 1;
+  }
+  assert(z + a != 0);
+}</code></pre>
+<p>Does there exist an input <code>y</code>, such that the assertion fails? This is undecidable in Turing’s model of computation with an infinite tape.</p>
