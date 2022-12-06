@@ -65,6 +65,10 @@ def fuzzer(max\_length : int = 100, char\_start : int = 32, char\_range: int = 3
   - Allows you to supply a dictionary
     - the better your dictionary, the better your fuzzer
   - Surprisingly effective at identifying bugs
+
+
+![AFL Screenshot](afl.png "AFL Screenshot")
+
 - Run the fuzzer for hours, days
 - This kind of thing is exactly wht penetration testers do today.
 
