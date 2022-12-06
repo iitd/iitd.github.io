@@ -156,3 +156,15 @@ int f(int y, int w) {
 }
 ```
 Does there exist an input `y`, such that the assertion fails?  This is undecidable in Turing's model of computation with an infinite tape.
+
+Example output:
+```
+=input.src.llvm-mem
+1 : ([ 536870912; 2147483647 ] -> 0, [ 3221225471; 3221225471 ] -> 128, { [ 0; 536870911 ], [ 2147483648; 3221225470 ], [ 3221225472; 4294967295 ], } -> (RAC: m_multiplier -> 49 , m_adder -> 103), ) : ARRAY[BV:32 -> BV:8]
+=input.src.llvm-mem.alloc
+1 : ([ 0; 536870911 ] -> memlabel-mem--heap, [ 536870912; 650084367 ] -> memlabel-mem--esp, [ 650084368; 650084371 ] -> memlabel-mem--local./*___y___memrchr__x__=L0%0%argnum0=/, [ 650084372; 1769861115 ] -> memlabel-mem--esp, [ 1769861116; 1769861119 ] -> memlabel-mem--local./*___y___memrchr__x__=L0%0%argnum1=/, [ 1769861120; 1992261623 ] -> memlabel-mem--esp, [ 1992261624; 1992261627 ] -> memlabel-mem--local./*___y___memrchr__x__=L0%0%argnum2=/, [ 1992261628; 2147483647 ] -> memlabel-mem--esp, [ 2147483648; 4294959612 ] -> memlabel-mem--heap, [ 4294959613; 4294959615 ] -> memlabel-mem--symbol.1.0, [ 4294959616; 4294963200 ] -> memlabel-mem--heap, [ 4294963201; 4294966877 ] -> memlabel-mem--rodata, [ 4294966878; 4294966878 ] -> memlabel-mem--heap, [ 4294966879; 4294966908 ] -> memlabel-mem--symbol.2.0, [ 4294966909; 4294967295 ] -> memlabel-mem--heap, ) : ARRAY[BV:32 -> MEMLABEL]
+=input.src.local./*___y___memrchr__x__=L0%0%argnum1=/
+1 : 1769861116 { 0x697deffc +1.98388624e83 } : BV:32
+=input.src.llvm-%c
+1 : 0 { 0x0 +1.0e129 } : BV:32
+```
