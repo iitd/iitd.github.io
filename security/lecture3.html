@@ -74,3 +74,12 @@ while (condition) {
 </ol>
 <p>Proof: For integer arithmetic, this process converges within N iterations where N is the number of variables (which are being attempted to be related through an affine invariant).</p>
 <h1 id="symbolic-analysis-modeling-memory">Symbolic Analysis : Modeling Memory</h1>
+<p>Memory is represented as an <em>array</em>. An array is a function that maps addresses to data, e.g., 32-bit address to 8-bit data. It additionally supports the <em>select</em> and <em>store</em> operations.</p>
+<pre><code>select(store(A, a, d), a) == d</code></pre>
+<p>However, this representation is usually not sufficient to model the state of a high-level program, e.g., a C program. In the abstract machine of a C program, the array is segmented into heap, stack, global variables, and local variables.</p>
+<h2 id="segmenting-memory">Segmenting Memory</h2>
+<p>For simplicity, here we will only consider heap, stack, and global variables. Tackling local variables is slightly tricker because they can be dynamically allocated, and their static identification often requires reasoning about non-contiguous regions of memory. That said, our equivalence checker efficiently models dynamically-allocated local variables while supporting discontiguity, etc.</p>
+<p>Each global variable can be identified by a start address and a size. Similarly, the stack can be identified by a start address and a (maximum) size. All other memory belongs to the heap. These constraints can be encoded by encoding the facts that the intervals defined by these <code>(start,size)</code> pairs do not intersect, while submitting them to the SAT/SMT solver. Further, we can encode aliasing constraints (e.g., <code>x</code> can only point within the heap) using similar logical conditions. When we get back the counter-example, it will respect the constraints we encoded using logical formulae.</p>
+<h1 id="side-channel-attacks">Side-Channel Attacks</h1>
+<p>Examples of side-channels: time, power, radio-frequency, heat, cache misses, network messages, …</p>
+<h2 id="timing-side-channel">Timing side-channel</h2>

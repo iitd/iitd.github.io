@@ -101,3 +101,23 @@ Proof: For integer arithmetic, this process converges within N iterations where 
 
 
 # Symbolic Analysis : Modeling Memory
+
+Memory is represented as an _array_.  An array is a function that maps addresses to data, e.g., 32-bit address to 8-bit data.  It additionally supports the _select_ and _store_ operations.
+
+```
+select(store(A, a, d), a) == d
+```
+
+However, this representation is usually not sufficient to model the state of a high-level program, e.g., a C program.  In the abstract machine of a C program, the array is segmented into heap, stack, global variables, and local variables.
+
+## Segmenting Memory
+
+For simplicity, here we will only consider heap, stack, and global variables.  Tackling local variables is slightly tricker because they can be dynamically allocated, and their static identification often requires reasoning about non-contiguous regions of memory.  That said, our equivalence checker efficiently models dynamically-allocated local variables while supporting discontiguity, etc.
+
+Each global variable can be identified by a start address and a size.  Similarly, the stack can be identified by a start address and a (maximum) size.  All other memory belongs to the heap.  These constraints can be encoded by encoding the facts that the intervals defined by these `(start,size)` pairs do not intersect, while submitting them to the SAT/SMT solver.  Further, we can encode aliasing constraints (e.g., `x` can only point within the heap) using similar logical conditions.  When we get back the counter-example, it will respect the constraints we encoded using logical formulae.
+
+# Side-Channel Attacks
+
+Examples of side-channels: time, power, radio-frequency, heat, cache misses, network messages, ...
+
+## Timing side-channel
