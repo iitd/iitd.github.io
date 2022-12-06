@@ -75,4 +75,29 @@ The final precondition is: "v+w == 12".
 
 ## Data-driven
 
-## Counterexample-driven
+A very relevant example relates to affine invariants:
+
+1. The grammar of affine invariants is `c0+c1*x1+c2*x2+...+cn*xn = 0`
+
+2. Instrument the program to collect the concrete values of variables and the corresponding behaviour, e.g., does this set of values eventually led to an assertion failure.  Each set of values can be called a _point_.
+
+3. Identify the _smallest affine space_ that contains these points, and use that as a candidate.
+
+4. If the candidate does not satisfy all the Hoare triples, then try the _bigger affine spaces_.  But, the number of bigger affine spaces can be too large to enumerate exhaustively.  For example, a large number of distinct planes can pass through a line.
+
+## Counterexample-guided
+
+Again, we will use the example of affine invariants:
+
+1. Start with the empty space
+
+2. Check each hoare-triple.  If all hoare triples are satisfied, we are done.
+
+3. If some hoare triple is not satisfied, we get a counter-example
+
+4. Use the counter-example to _enlarge the affine space_ and goto step 2.
+
+Proof: For integer arithmetic, this process converges within N iterations where N is the number of variables (which are being attempted to be related through an affine invariant).
+
+
+# Symbolic Analysis : Modeling Memory
