@@ -1,0 +1,60 @@
+<h1 id="symbolic-analysis-invariant-inference">Symbolic Analysis : Invariant Inference</h1>
+<h2 id="guess-and-check">Guess-and-Check</h2>
+<ol type="1">
+<li>In the code below, what are some affine-equality invariants at the loop head and the loop tail that may relate the different variables <code>i</code>, <code>sum1</code>, and <code>sum2</code>?</li>
+</ol>
+<pre><code>int foo(int n)
+{
+  int sum1 = 0, sum2 = 0;
+  for (int i = 0; i &lt; n; i++) {
+    sum1 += i;
+    sum2 = i*(i + 1);
+  }
+  assert(sum1 &gt;= n + 5);
+  return sum1 + sum2;
+}</code></pre>
+<ol start="2" type="1">
+<li>Hoare triple: {Precondition} Program {Postcondition}</li>
+</ol>
+<p>Some examples</p>
+<pre><code>{x &gt; 0} y := x + 1 { x &gt; 0 and y &gt; 1 }
+{x &gt; 0 and y--&gt;heap and *g1=0} *y := x { x &gt; 0 and y--&gt;heap and *g1=0 and *y &gt; 0 }
+{x &gt; 0 and y--&gt;heap/g1 and *g1=0} *y := x { x &gt; 0 and y--&gt;heap/g1 and *g1&gt;=0 and *y &gt; 0 }</code></pre>
+<ol start="3" type="1">
+<li>How do you identify if this is indeed a valid loop invariant?</li>
+</ol>
+<pre><code>{Precondition}
+while (condition) {
+   //Candidate Loop Invariant
+   LoopBody
+}
+{Postcondition}</code></pre>
+<p>For a candidate loop invariant, check the following Hoare triples:</p>
+<pre><code>{ Precondition } condition is true { Candidate Loop Invariant }
+{ Candidate Loop Invariant } LoopBody ; condition is true { Candidate Loop Invariant}
+{ Candidate Loop Invariant } condition is false { Postcondition }</code></pre>
+<ol start="4" type="1">
+<li>How should you set the precondition/postcondition? Depends on the application you are targetting.</li>
+</ol>
+<p>If you are interested in identifying the properties that would hold after the loop (e.g., for optimization or verification purposes), then you would set the precondition to whatever is known beginning from the start of the program.</p>
+<p>If you are interested in identifying the precondition of a given assertion-failure, then you would set the postcondition to the assert-fail condition.</p>
+<p>For the following example:</p>
+<pre><code>int foo(int v, int w)
+{
+  x = v;
+  a = w;
+  while (c()) {
+    //candidate
+    x := x + 1;
+    a := a - 1;
+  }
+  assert(x + a != 12);
+}</code></pre>
+<p>The required hoare triples are</p>
+<pre><code>{Candidate} x:=x+1; a:=a-1; c() is true {Candidate}
+{Candidate} x:=x+1; a:=a-1; c() is false {x + a == 12}</code></pre>
+<p>Does the candidate “x+a == v + w” work?</p>
+<p>What about “x+a == 12”?</p>
+<p>The final precondition is: “v+w == 12”.</p>
+<h2 id="data-driven">Data-driven</h2>
+<h2 id="counterexample-driven">Counterexample-driven</h2>
