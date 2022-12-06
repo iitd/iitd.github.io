@@ -78,8 +78,70 @@ while (condition) {
 <pre><code>select(store(A, a, d), a) == d</code></pre>
 <p>However, this representation is usually not sufficient to model the state of a high-level program, e.g., a C program. In the abstract machine of a C program, the array is segmented into heap, stack, global variables, and local variables.</p>
 <h2 id="segmenting-memory">Segmenting Memory</h2>
-<p>For simplicity, here we will only consider heap, stack, and global variables. Tackling local variables is slightly tricker because they can be dynamically allocated, and their static identification often requires reasoning about non-contiguous regions of memory. That said, our equivalence checker efficiently models dynamically-allocated local variables while supporting discontiguity, etc.</p>
+<p>For simplicity, we will first consider only the heap, stack, and global variables. Tackling local variables is slightly tricker because they can be dynamically allocated, and their static identification often requires reasoning about non-contiguous regions of memory. That said, our equivalence checker efficiently models dynamically-allocated local variables while supporting discontiguity, etc.</p>
 <p>Each global variable can be identified by a start address and a size. Similarly, the stack can be identified by a start address and a (maximum) size. All other memory belongs to the heap. These constraints can be encoded by encoding the facts that the intervals defined by these <code>(start,size)</code> pairs do not intersect, while submitting them to the SAT/SMT solver. Further, we can encode aliasing constraints (e.g., <code>x</code> can only point within the heap) using similar logical conditions. When we get back the counter-example, it will respect the constraints we encoded using logical formulae.</p>
+<p>Example:</p>
+<pre><code>int g[100];
+int f(int* p, int k, int m, int n, int o)
+{
+  int l[20];
+  int* h = malloc(10);
+  l[m] = p[n] + h[(m+n)/2] + 2;
+  p[m] = 2*p[o];
+  g[m-o] = 20;
+  h[k] = 10;
+}</code></pre>
 <h1 id="side-channel-attacks">Side-Channel Attacks</h1>
 <p>Examples of side-channels: time, power, radio-frequency, heat, cache misses, network messages, …</p>
 <h2 id="timing-side-channel">Timing side-channel</h2>
+<p>The time taken by a proram may leak some information about some secret that is used by the program for some processing. A timing-difference of say 1-2 microseconds is often enough for the attacker to obtain a reliable signal to be able to deconstruct (a part of) the secret bit-by-bit.</p>
+<p>Simple example (also a part of your lab):</p>
+<pre><code>int check_password(char const* input_password, char const* expected_password)
+{
+  char const* p = input_password;
+  char const* q = expected_password;
+  while (*p == *q) {
+    //some computation that may take 1-2us
+    if (*p == &#39;\0&#39;) {
+      return 1; //paswwords match
+    }
+    p++;
+    q++;
+  }
+  return 0; //passwords mismatch
+}</code></pre>
+<p>Invoke this function with different strings for <code>input_password</code> and time the program.</p>
+<p>Researchers have shown that timing-based attacks can be remotely mounted over the network on the RSA implementations to identify 200 bits of a private key in Apache2/SSL.</p>
+<h2 id="cache-based-side-channel">Cache-based side-channel</h2>
+<p>If we can identify the accessed memory addresses as a function of a secret that is used for processing by a privileged proram, a concurrently running unprivileged program can profile the cache to identify the likely address that may have been accessed, and map it back to the possible bits of the secret key. e.g., content-based caching, memoization, etc.</p>
+<pre><code>char secret[100];
+
+foo() {
+  // read/write a[secret[i]]
+}</code></pre>
+<p>If the attacker is able to co-locate on the same physical machine as the target, then the attacker can do one of the following two things:</p>
+<h3 id="first-idea">First idea</h3>
+<ol type="1">
+<li><p>It can warm up all the cache lines with its own data, e.g., by repeately accessing all the addresses until the cache is full.</p></li>
+<li><p>Then invoke the target on a carefully crafted input</p></li>
+<li><p>Then read its own data back and time these reads. For reads that take longer than others, it is likely that those addresses have been accessed by the target too, which caused cache replacement of the attacker’s data for those reads.</p></li>
+<li><p>By carefully analyzing this cache-timing information, it can try and reconstruct the secret (on which the memory accesses may depend).</p></li>
+</ol>
+<h3 id="second-idea">Second idea</h3>
+<p>If the attacker and target can possibly share common pages, e.g., they are running in the same address space (e.g., sharing a common service), then:</p>
+<ol type="1">
+<li><p>Instead of warming the cache, first flush the cache</p></li>
+<li><p>Get the target to run</p></li>
+<li><p>Access all the memory regions that <em>may</em> have been accessed by the target, and profile these accesses. The data that was brought in the cache by the target will be accessed faster.</p></li>
+</ol>
+<h3 id="mitigation">Mitigation</h3>
+<p>Ensure in software that the accessed memory addresses and CPU usage are mostly independent of the secret key.</p>
+<h2 id="spectre-v1">Spectre V1</h2>
+<p>Let’s say that that the memory of the target contains public data and secret data stored close to each other. Also, let’s say that the accessed memory addresses depend on some of the public data.</p>
+<pre><code>char public[10];
+char secret[100];
+
+foo() {
+  // read/write a[public[i]] in a loop
+}</code></pre>
+<p>But as a prefetching/speculative mechanism, the hardware processor may also read <code>a[secret[j]]</code> for small values of <code>j</code>. This can allow the attacker to mount cache-line based side-channel attacks even though the software program was careful to not allow memory accesses to be a function of the secret.</p>
