@@ -5,7 +5,7 @@ sudo apt install virtualbox
 
 # Download and untar the VM image
 ```
-$ wget www.cse.iitd.ac.in/~sbansal/tmp/ubuntu20.tbz2
+$ wget [http://vayu.cse.iitd.ac.in/ubuntu20.tar](http://vayu.cse.iitd.ac.in/ubuntu20.tar)
 $ tar xf ubuntu20.tbz2
 ```
 
