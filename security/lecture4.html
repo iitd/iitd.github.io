@@ -53,4 +53,21 @@ foo() {
 }</code></pre>
 <p>But as a prefetching/speculative mechanism, the hardware processor may also read <code>a[secret[j]]</code> for small values of <code>j</code>. This can allow the attacker to mount cache-line based side-channel attacks even though the software program was careful to not allow memory accesses to be a function of the secret.</p>
 <h1 id="quine">Quine</h1>
+<p>A quine is a computer program which takes no input and produces a copy of its own source code as its only output. The standard terms for these programs in the computability theory and computer science literature are “self-replicating programs”, “self-reproducing programs”, and “self-copying programs”.</p>
+<pre><code># Example C. Note that %r will quote automatically.
+c = &#39;c = %r; print(c %% c)&#39;; print(c % c)</code></pre>
 <h1 id="reflections-on-trusting-trust">Reflections on Trusting Trust</h1>
+<p><a href="https://www.cs.cmu.edu/~rdriley/487/papers/Thompson_1984_ReflectionsonTrustingTrust.pdf">Turing Award Lecture by Ken Thompson</a></p>
+<p>“To what extent should one trust a statement that a program is free of Trojan horses? Perhaps it is more important to trust the people who wrote the software.”</p>
+<p>“The C compiler is written in C. What I am about to describe is one of many”chicken and egg" problems that arise when compilers are written in their own language."</p>
+<p><img src="thompson2.1.png" title="Escape Character Sequence Check" alt="Escape Character Sequence Check" /> “Figure (shown above) is an idealization of the code in the C compiler that interprets the character escape sequence. This is an amazing piece of code. It <em>knows</em> in a completely portable way what character code is compiled for a new line in any character set. The act of knowing then allows it to recompile itself, thus perpetuating the knowledge.”</p>
+<p>If in a different character set, the ASCII code of ‘’ is different, then we will get that character set’s value (the information is baked into the compiler that will be used to compile this compiler).</p>
+<p>Suppose we wish to add a new character ’ that represents a vertical tab as follows. But this will not work at the compiler has not yet <em>learnt</em> the escape-sequence for the vertical tab character.</p>
+<figure>
+<img src="thompson2.2.png" title="Escape Character Sequence Check with Vertical Tab Portable" alt="Escape Character Sequence Check with Vertical Tab Portable" /><figcaption>Escape Character Sequence Check with Vertical Tab Portable</figcaption>
+</figure>
+<p>So we create a temporary <em>non portable</em> implementation as follows</p>
+<figure>
+<img src="thompson2.3.png" title="Escape Character Sequence Check with Vertical Tab Non Portable" alt="Escape Character Sequence Check with Vertical Tab Non Portable" /><figcaption>Escape Character Sequence Check with Vertical Tab Non Portable</figcaption>
+</figure>
+<p>Once the compiler has learned the escape sequence through the non-portable implementation, we can go back to the portable implementation.</p>
