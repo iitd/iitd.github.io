@@ -1,5 +1,5 @@
 #CC = ../day2/afl-2.52b/afl-gcc
-CC = gcc
+CC = clang 
 CLANG = clang
 OPT = opt
 LLC = llc
@@ -26,4 +26,4 @@ login-with-backdoor: login.o password-checker-with-backdoor.o
 	$(CC) -c $< -o $@
 
 clean::
-	rm -rf *.o *.bc *.s *.ll $(TARGETS)
+	rm -rf *-with-backdoor.o password-checker.o *.bc *.s *.ll $(TARGETS)

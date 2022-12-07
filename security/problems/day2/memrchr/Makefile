@@ -12,8 +12,14 @@ $(FUZZ_TARGETS): %: %.o dietlibc.o openbsd.o glibc.o fuzz_harness.o
 %.o: %.c
 	$(CC) -c $< -o $@
 
-fuzz::
-	$(AFL_FUZZ) -i in -o out ./fuzzgoat @@
+run_fuzz_dietlibc_glibc::
+	$(AFL_FUZZ) -i in -o out ./fuzz_dietlibc_glibc @@
+
+run_fuzz_dietlibc_openbsd::
+	$(AFL_FUZZ) -i in -o out ./fuzz_dietlibc_openbsd @@
+
+run_fuzz_openbsd_glibc::
+	$(AFL_FUZZ) -i in -o out ./fuzz_openbsd_glibc @@
 
 test1::
 	$(EQ32) -f memrchr dietlibc.c openbsd.c > test1.out 2>&1
