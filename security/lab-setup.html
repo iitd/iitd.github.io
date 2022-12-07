@@ -21,3 +21,56 @@ $ tar xf ubuntu20.tbz2</code></pre>
 <pre><code>VBoxManage controlvm &quot;ubuntu20&quot; resume --type headless</code></pre>
 <p>Power-off the VM:</p>
 <pre><code>VBoxManage controlvm &quot;ubuntu20&quot; poweroff --type headless</code></pre>
+<h1 id="disabling-aslr-address-space-layout-randomization-inside-the-vm">Disabling ASLR (Address Space Layout Randomization) inside the VM</h1>
+<pre><code>$ echo 0 | sudo tee /proc/sys/kernel/randomize_va_space</code></pre>
+<p>To permanently disable ASLR, edit <code>/etc/sysctl.d/01-disable-aslr.conf</code> to add <code>kernel.randomize_va_space = 0</code>.</p>
+<h1 id="equivalence-checking-examples">Equivalence Checking Examples</h1>
+<p>Consider the following simple implementation of the <code>strlen</code> function:</p>
+<pre><code>#include &lt;stddef.h&gt;
+
+size_t strlen(char *s)
+{
+  char *p ;
+  for (p = s; *p; ++p);
+  return p-s ;
+}</code></pre>
+<p>Now, consider the following optimized implementation of <code>strlen</code> (taken from glibc):</p>
+<pre><code>#include &lt;stddef.h&gt;
+#include &lt;limits.h&gt;
+
+size_t strlen(char * str)
+{
+  char *ptr ;
+  unsigned long *longword_ptr;
+  unsigned long longword, himagic, lomagic;
+  for (ptr = str; ((unsigned long)ptr &amp; sizeof(unsigned long)) != 0; ++ptr)
+    if (*ptr == &#39;\0&#39;)
+      return ptr-str ;
+  longword_ptr = (unsigned long*)ptr ;
+#if ULONG_MAX == 0xFFFFFFFFFFFFFFFF
+  himagic = 0x8080808080808080L;
+  lomagic = 0x0101010101010101L;
+#else
+  himagic = 0x80808080L;
+  lomagic = 0x01010101L;
+#endif
+  for (;;)
+  {
+    longword = *longword_ptr++;
+    if ((longword - lomagic) &amp; ~longword &amp; himagic) {
+      char *cp = (char *)(longword_ptr - 1);
+      if (cp[0] == 0) return cp - str ;
+      if (cp[1] == 0) return cp - str + 1;
+      if (cp[2] == 0) return cp - str + 2;
+      if (cp[3] == 0) return cp - str + 3;
+      if (cp[4] == 0) return cp - str + 4;
+      if (cp[5] == 0) return cp - str + 5;
+      if (cp[6] == 0) return cp - str + 6;
+      if (cp[7] == 0) return cp - str + 7;
+    }
+  }
+}</code></pre>
+<p>Copy these two <code>strlen</code> programs (simple and optimized) into separate files, say <code>strlen_unopt.c</code> and <code>strlen_opt.c</code>, and check them for equivalence using the following command:</p>
+<pre><code>eq32 --unroll-factor 8 strlen_unopt.c strlen_opt.c</code></pre>
+<p>The equivalence check should succeed. Now trying modifying the optimized program in various ways, and see if the equivalence check still succeeds.</p>
+<p>Fun fact: these two implementations are only equivalent if the page-size of the underlying machine architecture is a multiple of eight — on the x86 architecture, the page size is 4096 (which is a multiple of eight). What can go wrong if the page size was not a multiple of eight, i.e., what is an input for which the two programs would have different behaviour if the page size was not a multiple of eight?</p>
