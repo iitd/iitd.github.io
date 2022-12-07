@@ -71,3 +71,22 @@ c = &#39;c = %r; print(c %% c)&#39;; print(c % c)</code></pre>
 <img src="thompson2.3.png" title="Escape Character Sequence Check with Vertical Tab Non Portable" alt="Escape Character Sequence Check with Vertical Tab Non Portable" /><figcaption>Escape Character Sequence Check with Vertical Tab Non Portable</figcaption>
 </figure>
 <p>Once the compiler has learned the escape sequence through the non-portable implementation, we can go back to the portable implementation.</p>
+<p>“This is a deep concept. It is as close to a ‘learning’ program as I have seen. You simply tell it once, then you can use this self-referencing definition.”</p>
+<h2 id="now-the-attack">Now the attack</h2>
+<p>The following represents a crude version of a compiler that accepts a string (program source code) and returns the executable code.</p>
+<figure>
+<img src="thompson3.1.png" title="Compiler Operation" alt="Compiler Operation" /><figcaption>Compiler Operation</figcaption>
+</figure>
+<p>Now, let’s say we use some code like the following in the compiler to plant a trojan horse. Let’s say that the <em>pattern</em> checks to see if we are compiling the <code>login</code> program.</p>
+<figure>
+<img src="thompson3.2.png" title="Trojan in Compiler Source Code" alt="Trojan in Compiler Source Code" /><figcaption>Trojan in Compiler Source Code</figcaption>
+</figure>
+<p>However, such a trojan can be easily detected even through a casual browse/review of the compiler’s source code. Now, comes the final idea.</p>
+<figure>
+<img src="thompson3.3.png" title="Two Trojans in Compiler Source Code" alt="Two Trojans in the Compiler Source Code" /><figcaption>Two Trojans in the Compiler Source Code</figcaption>
+</figure>
+<p>In this, the second pattern matches to check if we are compiling a compiler. Further the “bug2” that is inserted is a <em>quine</em> that contains both the trojans as the payload.</p>
+<p>Once you have compiled this compiler into an executable <span class="math inline"><em>C</em></span>, you can now remove the trojans from the compiler source code. If the compiler source code is compiled using <span class="math inline"><em>C</em></span>, then it will always have the trojan (even if the source code seems correct on a manual review). Further, this is a perpetuates as the compiler has <em>learned</em> the trojan.</p>
+<h2 id="moral">Moral</h2>
+<p>Quote from Ken Thompson: “The moral is obvious. You can’t trust code that you did not totally create yourself. (Especially code from companies that employ people like me.) No amount of source-level verification or scrutiny will protect you from using untrusted code. In demonstrating the possibility of this kind of attack, I picked on the C compiler. I could have picked on any program-handling program such as an assembler, a loader, or even hardware microcode. As the level of program gets lower, these bugs will be harder and harder to detect. A well-installed microcode bug will be almost impossible to detect.”</p>
+<p>My take: Use our equivalence checker that is also now available commercially through our startup called CompilerAI Labs ;-).</p>

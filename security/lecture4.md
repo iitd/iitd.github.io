@@ -123,3 +123,34 @@ So we create a temporary _non portable_ implementation as follows
 
 Once the compiler has learned the escape sequence through the non-portable
 implementation, we can go back to the portable implementation.
+
+"This is a deep concept. It is as close to a 'learning'
+program as I have seen. You simply tell it once, then
+you can use this self-referencing definition."
+
+## Now the attack
+
+The following represents a crude version of a compiler that accepts a string (program source code) and returns the executable code.
+
+![Compiler Operation](thompson3.1.png "Compiler Operation")
+
+Now, let's say we use some code like the following in the compiler to plant a trojan horse.  Let's say that the _pattern_ checks to see if we are compiling the `login` program.
+
+![Trojan in Compiler Source Code](thompson3.2.png "Trojan in Compiler Source Code")
+
+However, such a trojan can be easily detected even through a casual browse/review of the compiler's source code.  Now, comes the final idea.
+
+![Two Trojans in the Compiler Source Code](thompson3.3.png "Two Trojans in Compiler Source Code")
+
+In this, the second pattern matches to check if we are compiling a compiler.  Further the "bug2" that is inserted is a _quine_ that contains both the trojans as the payload.
+
+Once you have compiled this compiler into an executable $C$, you can now remove the trojans from the compiler source code.  If the compiler source code is compiled using $C$, then it will always have the trojan (even if the source code seems correct on a manual review).  Further, this is a perpetuates as the compiler has _learned_ the trojan.
+
+## Moral
+
+Quote from Ken Thompson:
+"The moral is obvious. You can't trust code that you did not totally create yourself. (Especially code from companies that employ people like me.) No amount of
+source-level verification or scrutiny will protect you from using untrusted code. In demonstrating the possibility of this kind of attack, I picked on the C compiler. I could have picked on any program-handling program such as an assembler, a loader, or even hardware microcode. As the level of program gets lower, these bugs will be harder and harder to detect. A well-installed microcode bug will be almost impossible to detect."
+
+My take:
+Use our equivalence checker that is also now available commercially through our startup called CompilerAI Labs ;-).
