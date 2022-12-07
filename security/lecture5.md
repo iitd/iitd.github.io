@@ -11,6 +11,8 @@ In case the ordering is not respected. Talk about soft-updates
 - Application buffers and swap space
 - Compiler removing dead code
 
+## Architectural Extensions for Security (e.g., Intel SGX)
+
 ## Capabilities and ACLs
 - capabilities
   - file descriptors, secret keys/passwords, document URL, fingerprints
