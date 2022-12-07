@@ -24,7 +24,7 @@ $ tar xf ubuntu20.tbz2</code></pre>
 <h1 id="disabling-aslr-address-space-layout-randomization-inside-the-vm">Disabling ASLR (Address Space Layout Randomization) inside the VM</h1>
 <pre><code>$ echo 0 | sudo tee /proc/sys/kernel/randomize_va_space</code></pre>
 <p>To permanently disable ASLR, edit <code>/etc/sysctl.d/01-disable-aslr.conf</code> to add <code>kernel.randomize_va_space = 0</code>.</p>
-<h1 id="equivalence-checking-examples">Equivalence Checking Examples</h1>
+<h1 id="equivalence-checking-example-source-to-source">Equivalence Checking Example: Source-to-Source</h1>
 <p>Consider the following simple implementation of the <code>strlen</code> function:</p>
 <pre><code>#include &lt;stddef.h&gt;
 
@@ -74,3 +74,9 @@ size_t strlen(char * str)
 <pre><code>eq32 --unroll-factor 8 strlen_unopt.c strlen_opt.c</code></pre>
 <p>The equivalence check should succeed. Now trying modifying the optimized program in various ways, and see if the equivalence check still succeeds.</p>
 <p>Fun fact: these two implementations are only equivalent if the page-size of the underlying machine architecture is a multiple of eight — on the x86 architecture, the page size is 4096 (which is a multiple of eight). What can go wrong if the page size was not a multiple of eight, i.e., what is an input for which the two programs would have different behaviour if the page size was not a multiple of eight?</p>
+<h1 id="equivalence-checking-example-source-to-assembly">Equivalence Checking Example: Source-to-Assembly</h1>
+<p>Now run the equivalence checks with <code>unroll-factor=16</code> for the following pairs of C and assembly programs:</p>
+<ol type="1">
+<li><p><a href="s443.c">s443.c</a> vs. <a href="s443.gcc.eqchecker.O3.i386.s">s443.gcc.O3.i386.s</a></p></li>
+<li><p><a href="s441.c">s441.c</a> vs. <a href="s441.gcc.eqchecker.O3.i386.s">s441.gcc.O3.i386.s</a></p></li>
+</ol>

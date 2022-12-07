@@ -52,7 +52,7 @@ $ echo 0 | sudo tee /proc/sys/kernel/randomize_va_space
 ```
 To permanently disable ASLR, edit `/etc/sysctl.d/01-disable-aslr.conf` to add `kernel.randomize_va_space = 0`.
 
-# Equivalence Checking Examples
+# Equivalence Checking Example: Source-to-Source
 
 Consider the following simple implementation of the `strlen` function:
 ```
@@ -112,3 +112,12 @@ eq32 --unroll-factor 8 strlen_unopt.c strlen_opt.c
 The equivalence check should succeed.  Now trying modifying the optimized program in various ways, and see if the equivalence check still succeeds.
 
 Fun fact: these two implementations are only equivalent if the page-size of the underlying machine architecture is a multiple of eight --- on the x86 architecture, the page size is 4096 (which is a multiple of eight).  What can go wrong if the page size was not a multiple of eight, i.e., what is an input for which the two programs would have different behaviour if the page size was not a multiple of eight?
+
+# Equivalence Checking Example: Source-to-Assembly
+
+Now run the equivalence checks with `unroll-factor=16` for the following pairs of C and assembly programs:
+
+1. [s443.c](s443.c) vs. [s443.gcc.O3.i386.s](s443.gcc.eqchecker.O3.i386.s)
+
+2. [s441.c](s441.c) vs. [s441.gcc.O3.i386.s](s441.gcc.eqchecker.O3.i386.s)
+
