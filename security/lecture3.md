@@ -38,7 +38,7 @@ For a candidate loop invariant, check the following Hoare triples:
 ```
 { Precondition } condition is true { Candidate Loop Invariant }
 { Candidate Loop Invariant } LoopBody ; condition is true { Candidate Loop Invariant}
-{ Candidate Loop Invariant } condition is false { Postcondition }
+{ Candidate Loop Invariant } LoopBody ; condition is false { Postcondition }
 ```
 
 4. How should you set the precondition/postcondition? Depends on the application you are targetting.
@@ -64,14 +64,14 @@ int foo(int v, int w)
 The required hoare triples are
 ```
 {Candidate} x:=x+1; a:=a-1; c() is true {Candidate}
-{Candidate} x:=x+1; a:=a-1; c() is false {x + a == 12}
+{Candidate} x:=x+1; a:=a-1; c() is false {x + a != 12}
 ```
 
-Does the candidate "x+a == v + w" work?
+Does the candidate "x+a != v + w" work?
 
-What about "x+a == 12"?
+What about "x+a != 12"?
 
-The final precondition is: "v+w == 12".
+The final precondition is: "v+w != 12".
 
 ## Data-driven
 

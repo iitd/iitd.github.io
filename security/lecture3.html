@@ -32,7 +32,7 @@ while (condition) {
 <p>For a candidate loop invariant, check the following Hoare triples:</p>
 <pre><code>{ Precondition } condition is true { Candidate Loop Invariant }
 { Candidate Loop Invariant } LoopBody ; condition is true { Candidate Loop Invariant}
-{ Candidate Loop Invariant } condition is false { Postcondition }</code></pre>
+{ Candidate Loop Invariant } LoopBody ; condition is false { Postcondition }</code></pre>
 <ol start="4" type="1">
 <li>How should you set the precondition/postcondition? Depends on the application you are targetting.</li>
 </ol>
@@ -52,10 +52,10 @@ while (condition) {
 }</code></pre>
 <p>The required hoare triples are</p>
 <pre><code>{Candidate} x:=x+1; a:=a-1; c() is true {Candidate}
-{Candidate} x:=x+1; a:=a-1; c() is false {x + a == 12}</code></pre>
-<p>Does the candidate “x+a == v + w” work?</p>
-<p>What about “x+a == 12”?</p>
-<p>The final precondition is: “v+w == 12”.</p>
+{Candidate} x:=x+1; a:=a-1; c() is false {x + a != 12}</code></pre>
+<p>Does the candidate “x+a != v + w” work?</p>
+<p>What about “x+a != 12”?</p>
+<p>The final precondition is: “v+w != 12”.</p>
 <h2 id="data-driven">Data-driven</h2>
 <p>A very relevant example relates to affine invariants:</p>
 <ol type="1">
