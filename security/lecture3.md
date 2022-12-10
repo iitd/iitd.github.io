@@ -61,17 +61,17 @@ int foo(int v, int w)
   assert(x + a != 12);
 }
 ```
-The required hoare triples are
+The required hoare triples to trigger the assertion failure are
 ```
 {Candidate} x:=x+1; a:=a-1; c() is true {Candidate}
-{Candidate} x:=x+1; a:=a-1; c() is false {x + a != 12}
+{Candidate} x:=x+1; a:=a-1; c() is false {x + a == 12}
 ```
 
-Does the candidate "x+a != v + w" work?
+Does the candidate "x+a == v + w" work?
 
-What about "x+a != 12"?
+What about "x+a == 12"?
 
-The final precondition is: "v+w != 12".
+The final precondition is: "v+w == 12".
 
 ## Data-driven
 

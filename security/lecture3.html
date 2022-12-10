@@ -50,12 +50,12 @@ while (condition) {
   }
   assert(x + a != 12);
 }</code></pre>
-<p>The required hoare triples are</p>
+<p>The required hoare triples to trigger the assertion failure are</p>
 <pre><code>{Candidate} x:=x+1; a:=a-1; c() is true {Candidate}
-{Candidate} x:=x+1; a:=a-1; c() is false {x + a != 12}</code></pre>
-<p>Does the candidate “x+a != v + w” work?</p>
-<p>What about “x+a != 12”?</p>
-<p>The final precondition is: “v+w != 12”.</p>
+{Candidate} x:=x+1; a:=a-1; c() is false {x + a == 12}</code></pre>
+<p>Does the candidate “x+a == v + w” work?</p>
+<p>What about “x+a == 12”?</p>
+<p>The final precondition is: “v+w == 12”.</p>
 <h2 id="data-driven">Data-driven</h2>
 <p>A very relevant example relates to affine invariants:</p>
 <ol type="1">
