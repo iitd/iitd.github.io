@@ -97,6 +97,15 @@ Password successfully changed to &#39;secret&#39;</code></pre>
 <li>This time gap between the <em>time-of-check</em> (call to <code>access</code>) and the <em>time-of-use</em> (call to <code>open</code>) can be exploited by the attacker to change the filesystem state in the middle of the two calls.</li>
 </ul></li>
 </ol>
+<h1 id="references">References</h1>
+<ol type="1">
+<li><p><a href="http://www.phrack.com/issues.html?issue=49&amp;id=14#article">Aleph One - Smashing the Stack for Fun</a></p></li>
+<li><p><a href="http://phrack.org/issues/60/10.html">blexim - Basic Integer Overflows</a></p></li>
+<li><p><a href="https://cs155.stanford.edu/papers/formatstring-1.2.pdf">scut/team teso - Exploiting Format String Vulnerabilities</a></p></li>
+<li><p><a href="http://www.phrack.com/issues.html?issue=57&amp;id=9#article">anonymous - Once upon a free()</a></p></li>
+<li><p><a href="http://dl.packetstormsecurity.net/papers/bypass/GOT_Hijack.txt">c0ntex - How to hijack the Global Offset Table with pointers for root shellsa</a></p></li>
+<li><p><a href="https://www.intel.com/content/www/us/en/architecture-and-technology/64-ia-32-architectures-software-developer-vol-1-manual.html">Intel - Intel Architecture Guide for Software Developers , Ch. 3 and 6.</a></p></li>
+</ol>
 <!--
 7. What if the OS implements "Data Execution Protection"? i.e., the executable code is in a separate region from the data/stack. i.e., the bytes in the stack cannot be executed.
 ```

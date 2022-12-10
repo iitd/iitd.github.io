@@ -119,6 +119,20 @@ Assume that the owner of the executable file is the super-user (root).
      _time-of-use_ (call to `open`) can be exploited by the attacker to
      change the filesystem state in the middle of the two calls.
 
+# References
+
+1. [Aleph One - Smashing the Stack for Fun](http://www.phrack.com/issues.html?issue=49&id=14#article)
+
+2. [blexim - Basic Integer Overflows](http://phrack.org/issues/60/10.html)
+
+3. [scut/team teso - Exploiting Format String Vulnerabilities](https://cs155.stanford.edu/papers/formatstring-1.2.pdf)
+
+4. [anonymous - Once upon a free()](http://www.phrack.com/issues.html?issue=57&id=9#article)
+
+5. [c0ntex - How to hijack the Global Offset Table with pointers for root shellsa](http://dl.packetstormsecurity.net/papers/bypass/GOT_Hijack.txt)
+
+6. [Intel - Intel Architecture Guide for Software Developers , Ch. 3 and 6.](https://www.intel.com/content/www/us/en/architecture-and-technology/64-ia-32-architectures-software-developer-vol-1-manual.html)
+
 <!--
 7. What if the OS implements "Data Execution Protection"? i.e., the executable code is in a separate region from the data/stack. i.e., the bytes in the stack cannot be executed.
 ```
