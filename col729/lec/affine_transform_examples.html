@@ -1,0 +1,65 @@
+<h3>Minor variants of examples in Figure 11.35</h3>
+
+<p>Re-indexing example with order/dependencies between s1 and s2 reversed
+<pre>
+for (i = 1; i &lt;=N; i++) {
+  X[i] = Y[i - 1];  //s1
+  Y[i] = Z[i];  //s2
+}
+</pre>
+
+The processor mapping obtained for this example will be the same as our re-indexing example:
+<pre>
+s1: p = i - 1
+s2: p = i
+</pre>
+
+The transformed code becomes:
+<pre>
+if (N &gt;= 1) X[1] = Y[0];
+for (p = 1; p &lt;= N-1; p++) {
+  for (i = 1; i &lt;=N; i++) {
+    if (p == i - 1) {
+      X[i] = Y[i - 1]; //s1
+    }
+    if (p == i) {
+      Y[i] = Z[i]; //s2
+    }
+  }
+}
+if (N &gt;=1) Y[N] = Z[N];
+</pre>
+The iteration space interval for s1 is [p+1,p+1] while the iteration space interval for s2 is [p,p]. Both are disjoint and
+so there are only two sub-intervals, with the second sub-interval occuring before the first sub-interval. We get:
+<pre>
+if (N &gt;= 1) X[1] = Y[0];
+for (p = 1; p &lt;= N-1; p++) {
+  Y[p] = Z[p]; //s2
+  X[p + 1] = Y[p]; //s1
+}
+if (N &gt;=1) Y[N] = Z[N];
+</pre>
+Hence, the re-ordering happens when we split the intervals into sub-intervals and <em>order</em> them based on their precedence order.
+
+<h3>Reasoning about spatial locality in this framework</h3>
+Consider the permutation example. If the array Z is stored in row-major format, then this transformation will change the
+access pattern and could potentially be worse than the original code (even though it improves temporal locality).
+
+<p>To model spatial locality, recall that we approximate a whole row (last index in case of row-major) as a single element.
+In this case, to do this, we would transform the original code into something like the following:
+<pre>
+for (i = 1; i &lt;=N; i++) {
+  for (j = 0; j &lt;=M; j++) {
+    tmp = Read Z[i]
+    tmp = Modify(tmp, Z[i-1]);
+    Z[i] = Write tmp
+  }
+}
+</pre>
+We consider the entire row Z[i] as a single element, and perform a read-modify-write operation on it. Now, if we construct
+the dependencies, we see that different iterations of the inner loop are also dependent on each other (because they are
+accessing the common "element" Z[i]). This means that the dependency is in both dimensions i and j, and hence there is
+no parallelism, and the loop nest is left unchanged.
+
+Notice that if we consider Z to be column-major and then reason about spatial locality in this example, we would end up
+interchanging the loops as before.

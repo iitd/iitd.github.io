@@ -1,0 +1,252 @@
+<h3>Local Optimization</h3>
+<ul>
+	<li>The simplest form of optimization</li>
+	<li>Optimize one basic block. (No need to analyze the whole procedure body).</li>
+</ul>
+
+<p>Some statements can be deleted
+<pre>
+x := x + 0
+x := x * 1
+</pre>
+Eliminating these instructions are great optimizations as we are removing an entire instruction.
+
+<p>Some statements can be simplified
+<pre>
+x := x * 0  =&gt;  x := 0
+</pre>
+Maybe the instruction on the right is faster than the instruction on the right. More importantly, assigning to a constant allows more cascading optimizations, as we will see later.
+
+<p>Another example:
+<pre>
+y := y ** 2  =&gt; y := y * y
+</pre>
+Typically, an architecture will not have the exponentiation instruction and
+so this operator may have to be implemented by an exponentiation loop in
+software. For the special cases (e.g., exponent = 2), we can simply replace
+by multiplication.
+
+<p>Another example:
+<pre>
+x := x * 8  =&gt; x := x &lt;&lt; 3
+x := x * 15  =&gt; t := x &lt;&lt; 4; x := t - x
+</pre>
+Replace multiplication by a power-of-two to a shift-left operation. Can also do this for non powers-of-two. On some machines, left-shift is faster than multiply, but not on all! Modern machines have their own "rewriting logic" in hardware that can deal with these special cases really fast.  In other words, some of these compiler local optimizations may become less relevant on modern hardware.
+
+<p>All these transformations are examples of <em>algebraic simplifications</em>.
+
+<p>Operations on constants can be computed at compile time
+<ul>
+	<li>If there is a statement <code>x := y op z</code></li>
+	<li>And <code>y</code> and <code>z</code> are constants.</li>
+	<li>Then <code>y op z</code> can be computed at compile time.
+</ul>
+
+<p>Examples
+<ul>
+	<li><code> x:= 2 + 2</code> can be changed to <code>x := 4</code></li>
+	<li><code>if 2 &lt; 0 jump L</code> can be deleted.</li>
+	<li><code>if 2 &gt; 0 jump L</code> can be replaced by <code>jump L</code></li>
+</ul>
+This class of optimizations is called <em>constant folding</em>. One of the most consequential and most common optimizations performed by compilers.
+
+<p>Another important optimization: eliminate unreachable basic blocks (dead code):
+<ul>
+	<li>Code that is unreachable from the initial block
+		<ul>
+			<li>e.g., basic blocks that are not the target of any jump or "fall through" from a conditional</li>
+		</ul>
+	</li>
+	<li>Removing unreachable code makes the program smaller
+		<ul>
+			<li>And sometimes also faster
+				<ul>
+					<li>Due to memory cache effects</li>
+					<li>Increased spatial locality</li>
+				</ul>
+			</li>
+		</ul>
+</ul>
+Called dead-code elimination.
+
+<p>Why would unreachable basic blocks occur?
+<ul>
+	<li> e.g., <code>if (DEBUG) then { .... }</code>
+			<ul>
+				<li>Need constant propagation followed with dead-code elimination to remove this whole code.</li>
+			</ul>
+	</li>
+  <li>Libraries: a library may supply a 100 methods but we are using only a 3 of those methods, the other 97 are dead-code.</li>
+	<li>Usually other optimizations may result in more dead code</li>
+</ul>
+
+<p>Some optimizations are simplified if each register occurs only once on the left-hand side of an assignment.
+<ul>
+	<li>Rewrite intermediate code in <em>single assignment</em> form
+	<pre>
+x := z + y
+a := x
+z := 2 * x
+	</pre>
+	Change to
+	<pre>
+b := z + y
+a := b
+x := 2 * b
+	</pre>
+</ul>
+More complicated in general, due to loops
+
+<p>If
+<ul>
+	<li>Basic block is in single assignment form</li>
+	<li>A definition <code>x := </code> is the first use of <code>x</code> in a block
+</ul>
+Then
+<ul>
+	<li>When two assignments have the same rhs, they compute the same value.
+</ul>
+Example
+<pre>
+x := y + z
+....
+....
+w := y + z
+</pre>
+We can be sure that the values of <code>x</code>, <code>y</code>, and <code>z</code> do not change in the code. Hence, we can replace the assignment to <code>w</code> as follows:
+<pre>
+x := y + z
+....
+....
+w := x
+</pre>
+This optimization is called <em>common-subexpression elimination</em>. This is also another very common and consequential compiler optimization.
+
+<p>If we see <code>w := x</code> appears in a block, replace subsequent uses
+of <code>w</code> with uses of <code>x</code>
+<ul>
+	<li>Assumes single assignment form</li>
+</ul>
+Example:
+<pre>
+b := z + y
+a := b
+x := 2 * a
+</pre>
+This can be replaced with
+<pre>
+b := z + y
+a := b
+x := 2 * b
+</pre>
+This is called <em>copy propagation</em>. This is useful for enabling
+other optimizations
+<ul>
+	<li>Constant folding. e.g., if the propagated value is a constant</li>
+	<li>Dead code elimination. e.g., the copy statement can be eliminated as it is inconsequential.</li>
+</ul>
+
+<p>Example:
+<pre>
+a := 5
+x := 2 * a
+y := x + 6
+t := x * y
+</pre>
+gets transformed to
+<pre>
+a := 5
+x := 10
+y := 16
+t := x &gt;&gt; 4
+</pre>
+We could have also assigned 160 to <code>t</code>. That would be even better.
+
+<p>If <code>w := rhs</code> appears in a basic block and <code>w</code> does not appear anywhere else in the program, THEN the statement <code>w := rhs</code> is dead and can be eliminated.
+<ul>
+	<li>Dead: does not contribute to the program's result</li>
+</ul>
+In our copy-propagation example, one of the assignments is dead and can be eliminated.
+
+<p>
+<ul>
+	<li>Each local optimization does little by itself</li>
+	<li>Typical optimizations interact
+		<ul>
+			<li>Performing one optimization enables another</li>
+		</ul>
+	</li>
+	<li>Optimizing compilers can be thought of as a <em>big bag of tricks</em>.</li>
+	<li>Optimizing compilers repeat optimizations until no improvement is possible
+		<ul>
+			<li>The optimizer can also be stopped at any point to limit compilation time</li>
+			<li>Certain properties on these transformations (tricks) ensure that we converge (and not oscillate) in this fixed point procedure. e.g., we always <em>improve</em> for some notion of improvement. This means that we are uni-directional and can never oscillate.
+		</ul>
+	</li>
+</ul>
+
+<p>Example
+<pre>
+a := x ** 2
+b := 3
+c := x
+d := c * c
+e := b * 2
+f := a + d
+g := e + f
+</pre>
+
+<p>Final form
+<pre>
+a := x * x
+f := a + a
+g := 6 * f
+</pre>
+Possible to simplify further, but the compiler may get stuck in "local minima". e.g., should it have changed a + a to 2 * a, it would have had a better optimization opportunity (replacing g = 12*f and eliminating computation of f).
+
+<h3>Peephole optimization</h3>
+<ul>
+	<li>Optimizations can be directly applied to assembly code. Typically for optimizations that got missed at IR stage (perhaps due to local minima problem).</li>. At the assembly-level, we have greater visibility into instruction costs and instruction opcodes. E.g., hardware opcodes may be higher-level than IR opcodes.
+	<li>Peephole optimization is effective for improving assembly code
+		<ul>
+			<li>The "peephole" is a short sequence of (usually contiguous) instructions</li>
+			<li>The optimizer replaces the sequence with another equivalent one (but faster)</li>
+		</ul>
+	</li>
+</ul>
+
+<p>Peephole optimizations are usually written as replacement rules
+<pre>
+i1; i2; i3; ..; in --&gt; j1; j2; ..; jm
+</pre>
+Example:
+<pre>
+move $a $b; move $b $a --&gt; move $a $b
+</pre>
+Works if the second instruction is not the target of a jump (i.e., both instructions belong to a basic block).
+
+<p>Another example:
+<pre>
+addiu $a $a i; addiu $a $a j --&gt; addiu $a $a (i+j)
+</pre>
+
+<p>Many (but not all) of the basic block optimizations can be cast as peephole optimizations
+<ul>
+	<li>Example: <code>addiu $a $b 0</code> --&gt; <code>move $a $b</code></li>
+	<li>Example: <code>move $a $a</code> --&gt; </li>
+	<li>These two together eliminate <code>addiu $a $a 0</code>.
+</ul>
+
+<p>As for local optimizations, peephole optimizations must be applied repeatedly
+for maximum effect
+<ul>
+	<li>Need to ensure that the replacement rules cannot cause oscillations. e.g., each replacement rule can only "improve" the code.
+</ul>
+
+<p>Many simple optimizations can still be applied on assembly language.
+
+<p>"Program optimiztion" is grossly misnamed
+<ul>
+	<li>Code "optimizers" have no intention or even pretense of working towards the optimal program.
+	<li>Code "improvers" is a better term.
+</ul>
