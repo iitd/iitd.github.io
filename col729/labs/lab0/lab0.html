@@ -1,13 +1,19 @@
 <html>
 <head>
-  <title>COL729 Lab 0 : Benchmarking</title>
 </head>
+  <head>
+    <title>COL729 Lab 0 : Benchmarking</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="Stylesheet" type="text/css" href="style.css">
+  </head>
+
 
 <body>
   <h1><font color="blue">COL729 Lab 0 : Benchmarking</font></h1>
 
-  <h2>Due date - 23:55, 28 February 2021</h2>
-  <h2>Weightage: 10%</h2>
+  <h2>Due date - 23:55, 25 January 2023</h2>
+  <h3>Weightage: 10%</h3>
 
   <p>In this assignment, we will benchmark a few common C/C++ applications and examine
   the effect of different compilers and different compiler optimization levels on program
@@ -16,15 +22,13 @@
   <h3>Instructions</h3>
 
   <ul>
-    <li>Install an Ubuntu 18.04 system</li>
+    <li>Install an Ubuntu 20.04 system</li>
 
-    <li>Install GCC and Clang
-      <pre> sudo apt-get install gcc clang </pre>
-    </li>
+    <li>Install GCC and Clang: <code> sudo apt-get install gcc clang </code> </li>
 
-    <li>Install ICC by obtaining the academic license: <a href=
-    "https://software.intel.com/en-us/qualify-for-free-software/student">Follow these
-    instructions</a>.</li>
+    <li>Download ICC from <a href=
+    "https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html?operatingsystem=linux&distributions=offline"
+    >intel's website</a>.</li>
 
     <li>Install SPEC CPU 2017 benchmark suite (please note that this is an IITD-internal
     link only; this benchmark suite is proprietary so please do not share it outside IIT
@@ -38,7 +42,7 @@
         "https://www.spec.org/cpu2017/Docs/install-guide-unix.html">https://www.spec.org/cpu2017/Docs/install-guide-unix.html</a>
         to install and run the CPU 2017 benchmark suite</li>
 
-        <li>Optional: you can use the commands in this file to run any benchmark
+        <li><i>Optional</i>: you can use the commands in this file to run any benchmark
         individually: <a href="cpu2017_cmdlines.sh">cpu2017_cmdlines.sh</a>.</li>
       </ul>
     </li>
@@ -57,11 +61,11 @@
 
       <ul>
         <li>Build with the unoptimised (may not be default) versions of GCC/Clang/ICC (on
-        Ubuntu 18.04) for 32-bit and 64-bit x86 architectures.</li>
+        Ubuntu 20.04) for 32-bit and 64-bit x86 architectures.</li>
 
         <li>Build with different optimization options: -O1, -O2, -O3, etc.</li>
 
-        <li>You may choose to skip the Fortran benchmark (<code>548.exchange2_r</code>).</li>
+        <li>You may choose to skip the Fortran benchmark (548.exchange2_r).</li>
 
         <li>Plot your runtime results, make conclusions
 
@@ -78,8 +82,9 @@
     </li>
   </ul>
   
+  <h3>Turn in</h3>
   <b>Prepare a report summarizing your findings</b>:
-  <p>Your report should be succinct yet insightful.  It must inclue discussions on the following questions:</p>
+  <p>Your report should be succinct yet insightful.  It must include discussions on the following questions:</p>
   <ul>
     <li>Which are the most consequential and the least consequential optimizations to runtime?</li>
     <li>Which compilers are better in what aspects?</li>
