@@ -168,6 +168,38 @@ We could have also assigned 160 to <code>t</code>. That would be even better.
 </ul>
 In our copy-propagation example, one of the assignments is dead and can be eliminated.
 
+<p>Why Static Single Assignment (SSA)?
+<ul>
+<li>Optimization algorithms become simpler and more efficient if each variable has only one definition: instead of tracking (variable-value-at-PC), simply track (variable-value).</li>
+<li>Unrelated uses of the same variable become independent (eliminates Write-After-Write dependencies).</li>
+<li>More values become available at each program point.</li>
+</ul>
+
+<p>Converting to SSA
+<ul>
+<li>Replace the target of each assignment with a new variable</li>
+<li>Replace each use of a variable with the version of the variable reaching that point.</li>
+</ul>
+Show two acyclic examples: one straight-line and one with a diamond structure.
+
+<p>The need for phi nodes: show a diamond structure where two different versions of the same variable reach the same point.  Define y3=phi(y1,y2) at the beginning of the meet point.
+<ul>
+<li>Phi function chooses the version depending on the incoming edge.</li>
+<li>The phi node is present only at the beginning of a basic block.</li>
+</ul>
+
+Inserting PHI nodes:
+<em>Path convergence criterion</em>: need Phi node for a variable <code>a</code> at node z iff:
+<ul>
+<li>There is a block x containing definition of <code>a</code>.</li>
+<li>There is a block <code>y!=x</code> containing a definition of <code>a</code>.
+<li>There are non-empty paths Pxz and Pyz from x-to-z and y-to-z respectively.</li>
+<li>Pxz and Pyz don't have any node in common except <code>z</code>.
+<li>The node <code>z</code> does not appear within <em>both</em> Pxz and Pyz prior to the end. Ok if <code>z</code> appears in only one.
+</ul>
+
+</ul>
+
 <p>
 <ul>
 	<li>Each local optimization does little by itself</li>
