@@ -133,13 +133,14 @@ What if the graph cannot be colored with the available number of registers? e.g.
 Eventually we should get a colorable graph, because we are making the RIG much sparser by by significantly reducing the <em>live range</em> of the
 variables. For example, the new variables <code>f1</code>, ... are only live at the instruction using them and the one preceding/succeeding them (for load/store resp.).
 
+<p>Does it help if the IR is in SSA form? It does --- because different assignments to the same temporary now become different temporaries, the register allocator can now take different allocation decisions for these different temporaries.
+
 <h3>Limitations of this method of register allocation</h3>
 The primary limitation of this algorithm is that it allocates registers <em>statically</em>. For example, if we have two regions of the program, one where <code>t1</code> is used heavily and another where <code>t1</code> is used sparingly, then it would make sense to register-allocate <code>t1</code> in the first region and spill it in the second region. However the current algorithm makes an all-or-nothing choice.
 
 <p>Region-based register allocator: partition the program into <em>regions</em>, assign temporaries to registers or memory within each region, and resolve discrepancies at region boundaries. The overall quality of the solution depends heavily on the region partitioning. Some example heuristics:
 <ul>
 	<li>A region for each loop region.</li>
-	<li>Regions based on register pressure.</li>
 	<li>Regions based on register pressure.</li>
 </ul>
 
