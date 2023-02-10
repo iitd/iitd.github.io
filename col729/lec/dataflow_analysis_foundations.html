@@ -1,7 +1,6 @@
 <h1>Foundations of Dataflow Analysis</h1>
 
 <h3>Global constant propagation algorithm</h3>
-<p>Consider an alternate representation of constant information using sets.
 <p>Consider the following example:
 <pre>
 d0: y = 3
@@ -9,7 +8,23 @@ d1: x = y + 4
 d2: y = 11
 d3: if e ...
 </pre>
-<ul>
+If we do CP for each variable separately, then the order of picking the
+variables has an effect on the precision of the final solution. In the
+example above, if we pick <code>y</code> before <code>x</code>, we get a
+more precise solution.
+
+<p>Consider an alternate representation of constant information using sets
+where all variables are tracked simultaneously.  This representation can
+provide both better precision and better efficiency, than running
+the single-variable implementation multiple times.
+
+<p>
+There are two options for the transfer function for <code>d1</code>: either
+use the <code>in</code> value to determine that <code>x</code> is a constant
+too, or simply represent the transfer function as a GEN/KILL set (as a function
+of the statement, but independent of the input value).
+
+<!--<ul>
 <li>in[d0] = empty set</li>
 <li>out[d0] = in[d0] U (y,3)</li>
 <li>in[d1] = out[d0]</li>
@@ -17,14 +32,15 @@ d3: if e ...
 <li>in[d2] = out[d1]</li>
 <li>out[d2] = (in[d2] - (y,3)) U (y,11)</li>
 <li>in[d3] = out[d2]</li>
-</ul>
+</ul>-->
+<p>
 This representation allows transfer functions to be written using <b>generate</b> (Gen[s]) and <b>propagate</b> (in[s] - Kill[s]) definitions.
 
 <p>Can summarize a basic block through its own composite transfer function as follows:
 <ul>
-<li>Gen[d0] = (y,3), Kill[d0] = empty, out[d0] = (in[d0] - Kill[d0]) U Gen[d0]</li>
-<li>Gen[d1] = (x,7), Kill[d1] = empty, out[d1] = (in[d1] - Kill[d1]) U Gen[d1]</li>
-<li>Gen[d2] = (y,11), Kill[d2] = (y,3), out[d2] = (in[d2] - Kill[d2]) U Gen[d2]</li>
+<li>Gen[d0] = (y,3), Kill[d0] = (y,*), out[d0] = (in[d0] - Kill[d0]) U Gen[d0]</li>
+<li>Gen[d1] = empty, Kill[d1] = (x,*), out[d1] = (in[d1] - Kill[d1]) U Gen[d1]</li>
+<li>Gen[d2] = (y,11), Kill[d2] = (y,*), out[d2] = (in[d2] - Kill[d2]) U Gen[d2]</li>
 <li>...</li>
 </ul>
 out[B] = fd2(fd1(fd0(in[B[)))
