@@ -11,139 +11,316 @@
   <h1><font color="darkblue">COL729 Lab 1 : Anticipated (Needed) Expressions Analysis</font></h1>
 
   <h2>Due date - 23:55, 10 March 2023</h2>
-  <h3>Weightage: 40%</h3>
+  <h3>Weight: 40%</h3>
 
-  <h3>Overview</h3>
-  <p>In this assignment you will implement Anticipated or Needed Expressions Analysis (<a href="../../lec/lazy_code_motion.html">notes</a>, <a href="https://www.youtube.com/watch?v=zPLbAOdIqRw&list=PLf3ZkSCyj1tf3rPAkOKY5hUzDrDoekAc7&index=108">video</a>).  Make sure you understand it before proceeding ahead.</p>
+  <h2>Overview</h2>
+    <p>
+    In this assignment you will implement Anticipated (Needed) Expressions Analysis (<a href="../../lec/lazy_code_motion.html">notes</a>, <a href="https://www.youtube.com/watch?v=zPLbAOdIqRw&list=PLf3ZkSCyj1tf3rPAkOKY5hUzDrDoekAc7&index=108">video</a>).  Make sure you understand the analysis before proceeding ahead.
+    </p>
 
-  <p>In order to implement the analysis, we need (broadly) two things: (1) a framework to represent programs as flow graphs which and, (2) a DFA frawework within which we can implement our analysis.
-  For this assignment we will work with the <code>compilerai</code> framework (developed in-house here at IITD).  We give a brief overview of the framework below (for more details refer to <code>doc/</code> directory of <code>superopt-project</code>).
-  </p>
-  <h4 id="compilerai-framework">Compilerai framework</h4>
-  <p>Programs are represented as Control Flow Graphs (CFGs) and are referred to as <b>TFGs</b> (Transfer Function Graphs) in the code.</p>
+    <p>
+    In order to implement a data-flow analysis analysis, (broadly) two things are required: (1) a framework to represent the target program as flow graph and, (2) a DFA frawework within which the schema can be implemented.
+    </p>
+
+    <p>
+    The <em>CompilerAI</em> framework -- developed in-house here at IITD -- provides both and you will be implementing your analyses in this framework for this and future labs.
+    The next subsection gives a (very) brief conceptual overview of the framework.</p>
+    </p>
+  <h3 id="compilerai-framework">CompilerAI framework</h3>
+    <h4>TFG representation</h4>
+      <p>
+      A program is represented as Control Flow Graph (CFG) and is referred to as <em>TFG</em> (Transfer Function Graph) in the code.
+      </p>
+    <h5>Constituents of a TFG</h5>
+    A TFG is associated with a set of nodes and a set of edges.
     <ul>
-      <li>Each node of a TFG represents to a program point and is referred to as <b>PC</b> in the code.  PCs are uniquely identified by their labels.  Labels look like this:<code>L0%0%1</code>, <code>Lfor.cond%1%1</code>, etc.
+      <li>A <em>node</em> of the TFG represents a program point and is referred to as a <em>PC</em> in the code.  A PC is uniquely identified by its <em>label</em> which can be serialized as a string, e.g., <code>Lfor.cond%1%1</code>.
         <blockquote>
-          <strong>On PC labels</strong>: PC Labels are composed of three subcomponents: Block-ID (AKA index), Statement-ID (AKA subindex), Sub-statement-ID (AKA subsubindex).  Concatenation of these three components, separated by <code>%</code> and prefixed by <code>L</code>, generates the label string.  For example, the three components of <code>Lfor.cond%1%1</code> are:
-          <pre>
-     +--------&gt; for.cond :  Block-ID -- corresponds to LLVM basic block
-     |    +---&gt; 1        :  Statement-ID -- first statement of the basic block
-     |    | +-&gt; 1        :  Sub-statement-ID -- first sub-statement of the statement
-     |    | |
-Lfor.cond%1%1</pre>
-          Further, using this information the PC locations can be mapped back into source (LLVM) locations.  In the above example, <code>Lfor.cond%1%1</code> refers to the location just before the first statement of the LLVM basic block <code>for.cond</code> (note that in the textual representation of LLVM IR a <code>%</code> is pre-prepended before the basic block label, i.e. <code>for.cond</code> will be referred to as <code>%for.cond</code>).
+          <details>
+            <summary>More on PC</summary>
+            <span>
+              <p>
+              A PC label is a tuple of three components: a block-ID (AKA index), a statement-ID (AKA subindex), and a sub-statement-ID (AKA subsubindex).  The string represenation of label is obtained by concatenating the three components, separated by a <code>%</code> and prefixed by <code>L</code>.  For example, the string representation of PC label <code>(for.cond,1,1)</code> is <code>"Lfor.cond%1%1"</code>.
+              </p>
+              <p>
+              Further, a PC label has a useful interpretation when the source program for the TFG is an LLVM program.  In this interpretation, the block-ID/index corresponds to an LLVM basic block ID, the statement-ID/subindex corresponds to the basic block's statement index, and sub-statement/subindex corresponds to "sub-statement" index.
+              </p>
+              <pre>
+       +----  ----&gt; for.cond :  Block-ID         -- corresponds to an LLVM basic block
+       |      +---&gt; 1        :  Statement-ID     -- corresponds first statement of a basic block
+       |      | +-&gt; 1        :  Sub-statement-ID -- corresponds first "sub-statement" of a statement
+       |      | |
+  Lfor.cond%  1%1
+              </pre>
+              <p>
+              This interpretation allows a reverse mapping to source program (i.e., LLVM) location.  In the above example, <code>Lfor.cond%1%1</code> refers to the location just before the first statement of the LLVM basic block <code>for.cond</code> (note that in the textual representation of LLVM IR a <code>%</code> is pre-prepended before the basic block label, i.e. <code>for.cond</code> will be referred to as <code>%for.cond</code>).
+              </p>
+            </span>
+          </details>
         </blockquote>
       </li>
-      <li>Each edge of a TFG represents a guarded basic block where the guard is the condition under the edge shall be taken.
+      <li>An <em>edge</em> of the TFG represents a guarded basic block and has three* components: a from-,to-PC pair, a guard (AKA <em>edge condition</em> or <em>edgecond</em>), and a <em>to-state</em> mapping.  The from-,to-PC pair identify the nodes which are connected by the edge, the guard encodes the boolean condition under which the edge shall be taken, and the to-state mapping encodes the state transformation corresponding to the basic-block which the edge is representing.
+        <p>
+        The to-state mapping is a map (function) from <em>state</em> to <em>state</em> where <em>state</em> is the set of all variables used in the program including the implicit memory element (the members of state are referred to as state elements).
+        The input state is the state corresponding to the from-PC of the program and the output state is the state corresponding to the to-PC of the program.
+        The to-state, thus, describes a set of assignments, or, in other words, how the program state elements are modified when the edge is taken.
+        <blockquote>
+          <details>
+            <summary>Delta mapping</summary>
+            In the to-state map, we only maintain non-identity mappings.
+            The transformation for the missing entries are defined to be identity.
+            <p>
+            For example, if the map has two entries <code>{ x &#8614; y, p &#8614; q }</code> and the program state is <code>{ x, y, z, p, q, r, s}</code> then the "missing" mappings for variables <code>{ y, z, q, r, s}</code> are defined to be identity: the full mapping thus is <code>{ x &#8614; y, y &#8614; y, z &#8614; z, p &#8614; q, q &#8614; q, r &#8614; r,  s &#8614; s }</code>.
+            </p>
+            <span>
+            </span>
+          </details>
+        </blockquote>
+        </p>
+        <h5>An example</h5>
+        The C statement, <code> if (i &gt;= 0) ret += i;</code> can be encoded as two TFG edges:
+        <p>
+        Edge 1:
+        <ol>
+          <li>from-PC: "LX%1%1"</li>
+          <li>to-PC: "LX%3%1"</li>
+          <li>edgecond: <code>(i &gt;= 0)</code></li>
+          <li>to-state: <code>{ ret &#8614; (ret + i) }</code></li>
+        </ol>
+        Edge 2:
+        <ol>
+          <li>from-PC: "LX%1%1"</li>
+          <li>to-PC: "LX%3%1"</li>
+          <li>edgecond: <code>!( i &gt;= 0)</code></li>
+          <li>to-state: <code>{ }</code></li>
+        </ol>
+        </p>
+        <em>Explanation:</em>
         <ul>
-          <li>An edge from a PC, say <code>L0%0%1</code>, to a PC, say <code>L1%1%1</code>, is specified by its <b>edge condition</b> (guard is referred to as edge condition in the code) and a <b>to-state</b> which summarizes the effect of that basic block.</li>
-          <li>The edge condition of <code>L0%0%1 => L1%1%1</code> (short for "from PC <code>L0%0%1</code> to PC <code>L1%1%1</code>") may look something like "<code>not(eq(input.src.llvm-%7, 0))</code>", which says that this edge will be taken if the "state element" <code>input.src.llvm-%7</code> is not equal to 0.
-          <li>The to-state for the same edge may look like
-            <pre>
-input.  src.llvm-%8 &lt;-- bvadd(input.src.llvm-%7, 1)
-input.  src.llvm-%9 &lt;-- 0</pre>
-            <ul>
-              <li>This is saying that <em>after</em> the execution of this edge state element <code>input.src.llvm-%8</code> will be assigned the value <code>(input.src.llvm-%7 + 1)</code> where <code>input.src.llvm-%7</code> refers to the value of the state element "input.src.llvm-%7" just <em>before</em> the execution of this edge.</li>
-              <li>Similarly, state element <code>input.src.llvm-%9</code> gets assigned the value 0.</li>
-            </ul>
-          <blockquote><strong>On sequencing and order of evaluation</strong>: It is important to note that there is no sequencing in the to-state of a TFG edge; every assignment is assumed to happen simultaneously (the notion of sequencing comes from combination of edges).
-            <br>
-            In the simplest case you would have one TFG edge for each program statement (for example, one TFG edge per LLVM statement) and sequencing would look <q>normal</q>.  However, you can also have a single TFG edge for a <i>maximal</i> basic block (i.e., a basic block which has multiple input edges and multiple outgoing edges) and in that case it might be somewhat difficult to imagine what the to-state would look like.
-            <br>
-            Consider the following sequence of C statements:
-            <pre>
-x = y+z;
-q = x+1;</pre>
-            The to-state of the TFG edge which represents the above sequence will look like:
-            <pre>
-x &lt;-- bvadd(y, z);           #1
-q &lt;-- bvadd(bvadd(y, z), 1); #2</pre>
-            Notice that instead of referencing <code>x</code> in <code>#2</code> we substituted the expression which is assigned to <code>x</code>.  Thus, there is no dependence between <code>#1</code> and <code>#2</code> and the assignments can happen in any order (or even simultaneously).
-          </blockquote>
+          <li>Both edges start at the same location and end at the same location and have complementing edge condition, thus ensuring that they cover all possible control-flow from the from-PC to the to-PC.</li>
+          <li>Edge 1, with the edge condition <code>i &gt;= 0</code> has a non-empty to-state corresponding to the write of value <code>ret+i</code> to the variable <code>ret</code>.
+            <ul><li>Note that the there are two different <code>ret</code> here: one corresponding to the from-PC location and the other corresponding to the to-PC location.</li></ul>
           </li>
-          <li>Further, for completeness, an edge also has a set of "assumes" but they are not relevant in this assignment and will not be discussed.</li>
+          <li>Edge 2, with the complementary edge condition <code>!(i &gt;= 0)</code>, corresponds to the control flow when <code>i</code> is not greater-than or equal to <code>0</code> and where <code>ret</code> remains unmodified.</li>
         </ul>
-      </li>
-      <li>The <b>state</b> of the program is the set of all variables used in the program and an extra memory element.  For example, for the following LLVM IR program
-        <pre>
-define i32 @sum(i32 %n) {
-entry:
-  br label %for.cond
-
-for.cond:                                         ; preds = %for.inc, %entry
-  %ret.0 = phi i32 [ 0, %entry ], [ %add, %for.inc ]
-  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ]
-  %cmp = icmp slt i32 %i.0, %n
-  br i1 %cmp, label %for.body, label %for.end
-
-for.body:                                         ; preds = %for.cond
-  %add = add nsw i32 %ret.0, %i.0
-  br label %for.inc
-
-for.inc:                                          ; preds = %for.body
-  %inc = add nsw i32 %i.0, 1
-  br label %for.cond
-
-for.end:                                          ; preds = %for.cond
-  ret i32 %ret.0
-}</pre>
-        <ul>
-          <li>The state of the above program would have (among others) the following elements: <code>%n, %ret.0, %i.0, %cmp, %add, %inc</code>.</li>
-          <li>The "to-state" of an edge specifies the elements that were modified along with the corresponding modification.</li>
-        </ul>
+        <blockquote>
+          <details>
+            <summary>On sequencing and order of evaluation in an edge</summary>
+            <span>
+              It is important to note that there is no sequencing in the to-state of a TFG edge; every assignment is assumed to happen simultaneously (the notion of sequencing comes from combination of edges).
+              <br>
+              In the simplest case you would have one TFG edge for each program statement (for example, one TFG edge per LLVM statement) and sequencing would look <q>normal</q>.  However, you can also have a single TFG edge for a <i>maximal</i> basic block (i.e., a basic block which has multiple input edges and multiple outgoing edges) and in that case it might be somewhat difficult to imagine what the to-state would look like.
+              <br>
+              Consider the following sequence of C statements:
+              <pre>
+x = y+z;      #1
+q = x+1;      #2</pre>
+              The to-state of the TFG edge which represents the above sequence will look like:
+              <pre>
+x &#8614; y + z
+q &#8614; ((y + z) + 1);</pre>
+              Note that the <code>y</code>, <code>z</code> on the RHS of <code>&#8614;</code> refer to the state elements corresponding to the from-PC of the edge.
+              To obtain the mapping for <code>q</code> in terms of from-PC state elements, we substitute <code>x</code> with the RHS of <code>=</code> in #1. Because the mappings are expressed in terms of from-PC elements, there is no need for sequencing and the assignments can happen in any order (or even simultaneously).
+            </span>
+          </details>
+        </blockquote>
       </li>
     </ul>
+    <details>
+      <summary><b>A C to TFG transformation example</b></summary>
+      <span>
+  			C code
+  			<pre class="code_syntax" style="color:#000020;background:#f6f8ff;">
+<span class="line_wrapper"><span style="color:#200080; font-weight:bold; ">int</span> sum<span style="color:#308080; ">(</span><span style="color:#200080; font-weight:bold; ">int</span> n<span style="color:#308080; ">)</span></span>
+<span class="line_wrapper"><span style="color:#406080; ">{</span></span>
+<span class="line_wrapper">  <span style="color:#200080; font-weight:bold; ">int</span> ret <span style="color:#308080; ">=</span> <span style="color:#008c00; ">0</span><span style="color:#406080; ">;</span></span>
+<span class="line_wrapper">  <span style="color:#200080; font-weight:bold; ">for</span> <span style="color:#308080; ">(</span><span style="color:#200080; font-weight:bold; ">int</span> i <span style="color:#308080; ">=</span> <span style="color:#008c00; ">0</span><span style="color:#406080; ">;</span> i <span style="color:#308080; ">&lt;</span> n<span style="color:#406080; ">;</span> <span style="color:#308080; ">+</span><span style="color:#308080; ">+</span>i<span style="color:#308080; ">)</span> <span style="color:#406080; ">{</span></span>
+<span class="line_wrapper">    ret <span style="color:#308080; ">+</span><span style="color:#308080; ">=</span> i<span style="color:#406080; ">;</span></span>
+<span class="line_wrapper">  <span style="color:#406080; ">}</span></span>
+<span class="line_wrapper">  <span style="color:#200080; font-weight:bold; ">return</span> ret<span style="color:#406080; ">;</span></span>
+<span class="line_wrapper"><span style="color:#406080; ">}</span></span>
+<span class="line_wrapper"></span></pre>
+  			LLVM code
+				<pre class="code_syntax" style="color:#000020;background:#f6f8ff;"><span class="line_wrapper"><span style="color:#200080; font-weight:bold; ">define</span> <span style="color:#1060b6; ">i32</span> @sum(<span style="color:#1060b6; ">i32</span> %n) {</span>
+<span class="line_wrapper"><span style="color:#e34adc; ">entry:</span></span>
+<span class="line_wrapper">  <span style="color:#200080; font-weight:bold; ">br</span> <span style="color:#200080; font-weight:bold; ">label</span> %for.cond</span>
+<span class="line_wrapper"></span>
+<span class="line_wrapper"><span style="color:#e34adc; ">for.cond:</span>                                         <span style="color:#595979; ">; preds = %for.inc, %entry</span></span>
+<span class="line_wrapper">  %<span style="color:#200080; font-weight:bold; ">ret</span>.<span style="color:#008c00; ">0</span> = <span style="color:#200080; font-weight:bold; ">phi</span> <span style="color:#1060b6; ">i32</span> [ <span style="color:#008c00; ">0</span>, %entry ], [ %<span style="color:#200080; font-weight:bold; ">add</span>, %for.inc ]</span>
+<span class="line_wrapper">  %i.<span style="color:#008c00; ">0</span> = <span style="color:#200080; font-weight:bold; ">phi</span> <span style="color:#1060b6; ">i32</span> [ <span style="color:#008c00; ">0</span>, %entry ], [ %inc, %for.inc ]</span>
+<span class="line_wrapper">  %cmp = <span style="color:#200080; font-weight:bold; ">icmp</span> <span style="color:#200080; font-weight:bold; ">slt</span> <span style="color:#1060b6; ">i32</span> %i.<span style="color:#008c00; ">0</span>, %n</span>
+<span class="line_wrapper">  <span style="color:#200080; font-weight:bold; ">br</span> <span style="color:#1060b6; ">i1</span> %cmp, <span style="color:#200080; font-weight:bold; ">label</span> %for.body, <span style="color:#200080; font-weight:bold; ">label</span> %for.end</span>
+<span class="line_wrapper"></span>
+<span class="line_wrapper"><span style="color:#e34adc; ">for.body:</span>                                         <span style="color:#595979; ">; preds = %for.cond</span></span>
+<span class="line_wrapper">  %<span style="color:#200080; font-weight:bold; ">add</span> = <span style="color:#200080; font-weight:bold; ">add</span> nsw <span style="color:#1060b6; ">i32</span> %<span style="color:#200080; font-weight:bold; ">ret</span>.<span style="color:#008c00; ">0</span>, %i.<span style="color:#008c00; ">0</span></span>
+<span class="line_wrapper">  <span style="color:#200080; font-weight:bold; ">br</span> <span style="color:#200080; font-weight:bold; ">label</span> %for.inc</span>
+<span class="line_wrapper"></span>
+<span class="line_wrapper"><span style="color:#e34adc; ">for.inc:</span>                                          <span style="color:#595979; ">; preds = %for.body</span></span>
+<span class="line_wrapper">  %inc = <span style="color:#200080; font-weight:bold; ">add</span> nsw <span style="color:#1060b6; ">i32</span> %i.<span style="color:#008c00; ">0</span>, <span style="color:#008c00; ">1</span></span>
+<span class="line_wrapper">  <span style="color:#200080; font-weight:bold; ">br</span> <span style="color:#200080; font-weight:bold; ">label</span> %for.cond</span>
+<span class="line_wrapper"></span>
+<span class="line_wrapper"><span style="color:#e34adc; ">for.end:</span>                                          <span style="color:#595979; ">; preds = %for.cond</span></span>
+<span class="line_wrapper">  <span style="color:#200080; font-weight:bold; ">ret</span> <span style="color:#1060b6; ">i32</span> %<span style="color:#200080; font-weight:bold; ">ret</span>.<span style="color:#008c00; ">0</span></span>
+<span class="line_wrapper">}</span></pre>
+  			TFG (abbreviated)
+  		<pre class="code_syntax" style="color:#000020;background:#f6f8ff;">
+=Input:
+	%n	
 
-  <h3>Instructions</h3>
+=Output:
+	%ret-reg	
 
-  <p>The source code for the framework is available in the form of a Git repository in the server machine provided to you for lab work.  You will clone it in your home directory and work on it from there only (see also: <code>doc/GettingStarted.md</code> and <code>doc/discipline.md</code>).</p>
+=Nodes:
 
-  <h4 id="getting-started">Getting started</h4>
-  <p>Please follow the following steps to get started:</p>
+	"L0%0%d"
+	"Lfor.cond%1%bbentry"
+	"Lfor.cond%2%d"
+	"Lfor.body%1%d"
+	"Lfor.end%1%d"
+	"E0%0%d"
+
+=Edges:
+
+	"L0%0%d" => "Lfor.cond%1%bbentry"
+		Guard: true
+		To-State:
+			%i.0 &#8614; 0
+			%ret.0 &#8614; 0
+
+	"Lfor.cond%1%bbentry" => "Lfor.cond%2%d"
+		Guard: true
+		To-State:
+			%cmp &#8614; %i.0 &lt; %n
+
+
+	"Lfor.cond%2%d" => "Lfor.body%1%d"
+		Guard: %cmp
+		To-State:
+
+	"Lfor.body%1%d" => "Lfor.cond%1%bbentry"
+		Guard: true
+		To-State:
+			%i.0 &#8614; %i.0 + 1
+			%ret.0 &#8614; %ret.0 + %i.0
+
+	"Lfor.cond%2%d" => "Lfor.end%1%d"
+		Guard: !(%cmp)
+		To-State:
+
+	"Lfor.end%1%d" => "E0%0%d"
+		Guard: true
+		To-State:
+			%ret-reg &#8614; %ret.0</pre>
+				Graphical representation of edges
+				<br>
+		 		<img src="sum.svg"/>
+			</span>
+    </details>
+  <h2>Instructions</h2>
+
+  <p>The source code for the framework is available in the form of a Git repository in the server machine provided to you for lab work.  You will create it a local copy of it and submit your changes as a patch against the reference code.</p>
+
+  <h3 id="getting-started">Getting started</h3>
+  <p>Follow the steps below to get started.</p>
   <ol>
-    <li>Clone the Git repo in your local: <code>scratch</code> directory: <code>git clone --recursive /home/abhishek/scratch/superopt-project</code>
-      <blockquote>You are advised to use <code>scratch</code> as the rootfs does not have enough free space for everyone.</blockquote>
+    <li>Clone the Git repo in your home directory: <code>git clone --recursive /home2/col729-common/superopt-project</code>
     </li>
     <li>Change directory to <code>superopt-project</code>.</li>
-    <li>Copy the <code>tars</code> directory: <code>cp -r /home/abhishek/scratch/superopt-project/tars .</code>.</li>
+    <li>Link-in the <code>tars</code> directory: <code>ln -s /home2/col729-common/tars .</code>.</li>
     <li>Build the project: <code>make</code>.
-      <blockquote>If you get any issues in this step, please make a post on Piazza with full logs (i.e. the full output of <code>make</code>).</blockquote>
+      <blockquote>If you get any issues in this step, make a post on Teams with full output of <code>make</code>.</blockquote>
     </li>
   </ol>
 
-  <p>At this point we have completed the initial setup and can now start working with the code.</p>
-  <p>Change directory to <code>superopt</code>, this is the repository where you will implement the analysis.  From now we will assume that you are already in the root of <code>superopt</code>.  The primary places where you need to make changes have been marked with <em>COL729_LAB1 TODO</em>.  Search for them using <code>git grep 'COL729_LAB1 TODO'</code>.</p>
+  <p>At this point the initial setup is complete.</p>
+  <p>Change directory to <code>superopt</code>, this is the top-level directory under which you will make your changes.  Henceforth it is assumed that you are already in the root of <code>superopt</code>.  The primary places where you need to make changes have been marked with <em>COL729_LAB1 TODO</em>.  Search for them using <code>git grep 'COL729_LAB1 TODO'</code>.</p>
 
-  <h4 id="working-with-the-code">Working with the code</h4>
+  <h3 id="working-with-the-code">Working with the code</h3>
 
-  <p>Recall that in our framework a program is represented using TFG, in the code we have a class named <code>tfg</code> for the same.  In fact, <code>tfg</code> is part of a hierarchy of classes which build upon each other to achieve more complex functionality.  At the bottom of this hierarchy is the <code>graph</code> class which is mostly concerned with "graph" properties i.e. edges and nodes.  On the other hand, at the top are specialized classes such as <code>tfg_llvm_t</code> which represent a TFG created from LLVM IR.  The relevant source code paths are <code>include/graph/</code> and <code>include/tfg/</code>.</p>
-  <p>The DFA framework builds upon <code>graph</code> and provides an implementation of the worklist algorithm.  To implement an analysis, one needs to subclass the <code>data_flow_analysis</code> and provide overriding implementation for the <code>xfer_and_meet()</code> function which accepts 3 parameters: (1) the corresponding edge, (2) input value (i.e. IN), (3) output value (i.e. OUT) passed as reference.  The function is supposed to compute the new OUT value using the IN value and the old OUT value (by using <code>meet()</code> for the latter), and indicate as return value whether there was a change in OUT value.  The DFA framework itself is defined in <code>include/graph/dfa.h</code>, and the files <code>include/graph/avail_exprs_dfa.h</code>, <code>include/graph/liveness_dfa.h</code> contain implementation of available expressions and liveness analysis using the DFA framework.  The available expressions analysis is actually implemented as a super dataflow analysis.  You can find the implementation of its <code>xfer_and_meet()</code> in <code>lib/graph/graph_with_aliasing.cpp</code>, line <code>1362</code> under the function name <code>avail_exprs_xfer_and_meet()</code>.</p>
-  <p>Studying the implementation of <code>xfer_and_meet</code> of available expressions analysis would give you enough information to implement the anticipated expressions analysis.  Most things remain same in both analyses: you would need the expressions generated and killed in each edge (<code>populate_gen_and_kill_sets_for_edge()</code>), you would have to kill those expressions which depend on a killed expression (<code>get_locs_potentially_read_in_expr_using_locs_map()</code> and <code>set_intersect(deps, killed_locs)</code>) and so on.
-  <blockquote><strong>On locs</strong>: As you must have noticed, instead of returning expressions (or set of <code>expr_ref</code>), the function <code>populate_gen_and_kill_sets_for_edge()</code> returns <em>locs</em>.  A <b>loc</b> is one of the following: an LLVM variable, a register, or a unit of memory whose size and location are known (these are called memory slots or <em>memslot</em> for short).  It represents a unit of memory about which the framework can reason about.  For example, a write to an LLVM variable would modify the <em>loc</em> corresponding to that variable, a write to a memory location would modify all memory slots whose address can potentially alias with the target of memory write and so on.  It is possible to convert a <em>loc</em> (<code>graph_loc_id_t</code> in code) to an expression (<code>expr_ref</code>) and vice-versa using two special mappings maintained by TFG: <code>exprid2locid_map</code> and <code>locid2expr_map</code>.</blockquote>
-  <blockquote><strong>On expressions</strong>: We represent an expression with the <code>expr</code> class (see <code>include/expr/expr.h</code>).  In the code, however, you would mostly see references to <code>expr_ref</code> only.  This is because an <code>expr_ref</code> is a reference to an immutable <code>expr</code> object which is reference-counted in order to simplify memory management.</blockquote>
+	<h4>TFG</h4>
+  <p>
+  Recall that a program is represented using TFG.  Conceptually, a TFG is a graph with additional features (like input/output).  The code follows this conceptual structure where a TFG, represented by <code>tfg</code> class, has a <em>is-a</em> relationship with a graph, represented by <code>graph</code> class.  The <code>graph</code> class is mostly concerned with "graph" properties: edges and nodes, and the <code>tfg</code> class and its more specialized cases such as <code>tfg_llvm_t</code> represent a program (in the present case, a C function) created from LLVM IR (which itself is created from a C program).  The relevant source code paths for "graph" and "TFG" related functionality are <code>include/graph/</code> and <code>include/tfg/</code>, respectively.
+  </p>
 
-  <p>In order to simplify things for the lab assignment and allow you to focus on only the important parts, some skeleton code has been provided.  In particular:
+	<h4>DFA</h4>
+  <p>
+  The DFA framework provides a parameterized implementation of the worklist algorithm.  The parameterization allows the user to reuse the same base code for implementing all data-flow analyses.
+  </p>
+  <p>
+  To implement an analysis in the DFA framework, one needs to subclass the <code>data_flow_analysis</code> and provide overriding implementation for the <code>xfer_and_meet()</code> function which accepts 3 parameters: (1) the corresponding edge, (2) input value (i.e. IN), (3) output value (i.e. OUT) passed as reference.  The function is supposed to compute the new OUT value using the IN value and the old OUT value (by using <code>meet()</code> for the latter), and indicate as return value whether there was a change in OUT value.  The DFA framework itself is defined in <code>include/graph/dfa.h</code>.  Some already existing analyses can be found in files <code>include/graph/var_liveness_dfa.h</code> and <code>include/tfg/liveness_dfa.h</code>.
+  <p>
+  Studying the implementation of <code>xfer_and_meet</code> of existing analyses would give you enough information to implement the anticipated expressions analysis.  You may also find the generic <em>loc</em> (see next subsection) "DFA value" class definiton (defined in <code>include/graph/graph_per_loc_dfa_val.h</code>) helpful.   Most things remain same in the analyses: you need the expressions generated and killed in each edge (see <code>populate_gen_and_kill_sets_for_edge()</code>), you need to kill those expressions which depend on a killed expression (see <code>graph_get_locs_potentially_read_in_expr()</code>) and so on.
+
+  <h4>Expressions and <em>Locs</em></h4>
+  <h5>Expressions (<code>expr</code>)</h5>
+    <p>
+    We represent an (AST) expression using the <code>expr</code> class (see <code>include/expr/expr.h</code>).  <code>expr</code> is a sum type which represents either a variable, a constant, or an operation over <code>expr</code>s.  Each <code>expr</code> is associated with a <code>sort</code> which represents the <em>sort</em> (or type) of the value the <code>expr</code> is holding.
+    <p>
+    As an <code>expr</code> is essentially a DAG (directed acyclic graph) of values (which could be <code>expr</code>s), it is serialized as a DAG.
+    The serialization format is a sequence of statements where each statement is an <code>expr</code> potentially referring to earlier <code>expr</code>:
+    <pre>
+      EXPR_ID : NAME or VALUE or OPERATION : SORT
+    </pre>
+    Here, <code>EXPR_ID</code> is an integer identifier which can be used to refer to this <code>expr</code>, <code>NAME</code> is a variable name, <code>VALUE</code> is a constant value, and <code>OPERATION</code> is an operation (operator applied to (references to) earlier expressions), and <code>SORT</code> is, well, the <em>sort</em> of the <code>expr</code>.
+    Some examples:
+    <ul>
+      <li>a variable of bitvector of width 32 sort:
+        <pre>1 : input.src.llvm-%n : BV:32</pre>
+      </li>
+      <li>a constant of boolean sort:
+        <pre>1 : 0 : BOOL</pre>
+      </li>
+      <li>a bitvector add operation:
+        <pre>
+1 : input.src.llvm-%a : BV:32
+2 : input.src.llvm-%b : BV:32
+3 : bvadd(1, 2) : BV:32</pre>
+      </li>
+    </ul>
+    </p>
+    <p>
+    <em>expr_ref</em>: In the code, you would mostly see references to <code>expr_ref</code> instead of <code>expr</code>.  This is because an <code>expr_ref</code> is a reference (pointer) to an immutable <code>expr</code> object which is reference-counted in order to simplify memory management.
+    </p>
+    <h5>Locs (<code>graph_loc_id_t</code>)</h5>
+    <p>
+    Conceptually, a <em>loc</em> represents a memory location which can have an associated expression (<code>expr</code>).
+    Thus, a <em>loc</em> is one of the following: an LLVM variable, a register, a memory region (a <em>masked/selected</em> region of memory AKA a <code>memmask</code>), a unit of memory whose size and location are known (a <em>memory slot</em> AKA a <code>slot</code>).  The framework reasons about memory locations using locs.  For example, a write to an LLVM variable would modify the <em>loc</em> corresponding to that variable, a write to a memory location would modify all memory slots whose address can potentially alias with the target of memory write and so on.
+    </p>
+    <p>
+    It is possible to get the <code>expr_ref</code> associated with a <em>loc</em> (<code>graph_loc_id_t</code> in code) and vice-versa using two using helper functions: <code>graph_loc_get_expr()</code> and <code>graph_get_locs_potentially_read_in_expr()</code>.
+    </p>
+    <p>
+    Note that some useful functions such as <code>populate_gen_and_kill_sets_for_edge()</code> return <em>locs</em> instead of expressions.
+    </p>
+	<h4>Skeleton code</h4>
+  <p>In order to simplify things and allow you to focus on the analysis relevant parts, some skeleton code is provided.  In particular:
   <ul>
-    <li>A class which represents anticipated expressions as a set of <code>expr_ref</code> has been defined at <code>include/graph/anticipated_exprs.h</code>.</li>
-    <li>A class for anticipated expressions DFA value has been defined at <code>include/graph/anticipated_exprs_dfa.h</code>.  You are expected to fill-in definitions of <code>meet</code> and <code>top</code> here (see <code>include/graph/avail_exprs_dfa.h</code>).</li>
-    <li>A class for defining the DFA schema for anticipated expressions analysis is defined at <code>include/graph/anticipated_exprs_dfa.h</code>.  You are expected to fill-in definition of <code>xfer_and_meet</code> and make other changes (as required) here.</li>
+    <li>A class which represents anticipated expressions as a set of <code>expr_ref</code> is defined at <code>include/graph/anticipated_exprs.h</code>.</li>
+    <li>A class for anticipated expressions DFA value is defined at <code>include/graph/anticipated_exprs_dfa.h</code>.  You are expected to fill-in definitions of <code>meet</code> and <code>top</code> here (see <code>include/graph/avail_exprs_dfa.h</code> for a sample).</li>
+    <li>A class for defining the DFA schema for anticipated expressions analysis is defined at <code>include/graph/anticipated_exprs_dfa.h</code>.  You are expected to fill-in definition of <code>xfer_and_meet</code> and make other changes, as required, here.</li>
   </ul>
 
-  <h4 id="running-testing">Running and testing your changes</h4>
+  <h3 id="running-testing">Running and testing your changes</h3>
 
-  <p>Once you have filled-in the required code, you need to first uncomment the lines 575-587 and comment line 588 to run the anticipated expressions analysis.</p>
+  <p>Once you have filled-in the required code, you need to uncomment the driver code in <code>compute_anticipated_exprs()</code> function of <code>lib/graph/graph_with_locs.cpp</code> to run the anticipated expressions analysis.  Do not forget to delete the <code>return {};</code> line.</p>
   <p>Steps for building and running the code:</p>
   <ol>
     <li>Run <code>make</code> in <code>superopt-project</code> to build your changes.</li>
     <li>Now switch directory to <code>lab1_test</code> and run <code>./c2bc.sh a.c</code> to compile C file <code>a.c</code> to LLVM bitcode <code>a.c.bc</code>.</li>
     <li>While still in <code>lab1_test</code>, run <code>./run.sh a.c.bc</code> to convert LLVM bitcode to TFG and run the analysis.  The output TFG file name will be named <code>${INPUT_FILENAME}.etfg</code>, e.g., <code>a.c.bc.etfg</code> for <code>a.c.bc</code>.  Log (stdout) of run is automatically saved in <code>last_run.log</code>.
-      <blockquote>You can turn on debug output by appending <code>--dyn_debug=DEBUG_CLASS</code> to <code>llvm2tfg</code> command in <code>run.sh</code>.  <code>DYN_DEBUG</code> statements in your code will get executed if their <code>DEBUG_CLASS</code> matches the supplied <code>DEBUG_CLASS</code>.  For example, in order execute this statement: <pre>DYN_DEBUG(anticipated_analysis, cout &lt;&lt; "Here" &lt;&lt; endl);</pre>you will supply <code>--dyn_debug=anticipated_analysis</code> to <code>llvm2tfg</code>.</blockquote>
+      <blockquote>You can turn on debug output by appending <code>--dyn_debug=DEBUG_CLASS</code> to <code>llvm2tfg</code> command in <code>run.sh</code>.  <code>DYN_DEBUG</code> statements in your code will get executed if their <code>DEBUG_CLASS</code> matches the supplied <code>DEBUG_CLASS</code>.  For example, in order to execute this statement: <pre>DYN_DEBUG(anticipated_analysis, cout &lt;&lt; "Here" &lt;&lt; endl);</pre>you will supply <code>--dyn_debug=anticipated_analysis</code> to <code>llvm2tfg</code>.</blockquote>
     </li>
   </ol>
 
-  <blockquote><strong>Visual representation of TFG</strong>: For debugging you may also find the <code>etfg2dot</code> tool helpful.  <code>etfg2dot</code> converts an LLVM TFG to Graphviz's dot file, which can then be viewed graphically using <code>xdot</code> or similar dot viewers.  You can build <code>etfg2dot</code> by switching to <code>superopt</code> and then running <code>make etfg2dot</code>.  For running, use this command: <code>superopt/build/etfg_i386/etfg2dot --collapse false ${FunctionName} ${TFGfile}</code>, e.g. <code>superopt/build/etfg_i386/etfg2dot --collapse false sum a.c.bc.etfg</code>.</blockquote>
+  <h4>Visual representation of TFG</h4>
+  <p>
+  For debugging you may also find the <code>to_dot.sh</code> tool (present in <code>lab1_test/to_dot.sh</code>), helpful.  It makes a Graphviz DOT file out of a TFG.  The created DOT file can be visualized using <code>xdot</code> or similar DOT viewer to see the graphical structure of the TFG.  The tool accepts two paramters: function name and TFG file name, where function name is the name of the function for which graphviz DOT graph is to be created.  The output file name is named as "&lt;TFG file name&gt;.&lt;function name&gt;.dot".  Example: <code>./to_dot.sh sum a.c.bc.etfg</code> will create <code>a.c.bc.etfg.sum.dot</code>.
+  </p>
+  <p>
+  FWIW, the graph in the example above was created using this tool.
+  </p>
 
-  <h5 id='interp-results'>Interpreting the results</h5>
+  <h3 id='interp-results'>Interpreting the results</h3>
 
   The result of your anticipated expressions analysis will be available in serialized format in the output TFG file: search for text <code>=Anticipated expressions in</code>.  Example:
   <pre>
@@ -168,17 +345,17 @@ for.end:                                          ; preds = %for.cond
 ...</pre>
   The above example represents the following information: at PC <code>L0%0%1</code>, the expression <code>bvslt(0, input.src.llvm-%n)</code>, i.e. <code>(0 &lt; %n)</code> is anticipated (we can probably guess here that the first statement of the corresponding C code has a check with <code>n &gt; 0</code> in it, where <code>n</code> is a parameter).
 
-  <h5>Requirements</h5>
+  <h3>Requirements</h3>
 
   Your implementation should be able find <em>all</em> anticipated expressions at every PC in the input program.  As the framework can transparently handle things like aliasing and function calls, your implementation should not assume absence of any program features.
 
-  <h3>Turn in</h3>
-  Submit your changes to <code>superopt</code> repository in the form of a compressed patch file:
+  <h2>Turn in</h2>
+  Submit your changes in the form of a compressed patch file:
   <ul>
     <li><code>git diff col729_lab1 | gzip &gt; ${your_group_members_entry_nums}.gz</code></li>
     <li>Submit <code>${your_group_members_entry_nums}.gz</code> to moodle</li>
   </ul>
-  <p>NOTE: It is your responsibility to ensure that a sequence of <code>gunzip -c ${your_group_members_entry_nums}.gz | patch -p1</code>, when executed in <code>superopt</code> root with HEAD at <code>col728_lab1</code>, produces a tree equivalent to yours.</p>
-  <blockquote><strong>NOTE:</strong> Please start early in this lab.  This is the first time we are using this framework for teaching, therefore the documentation (and code) is not very beginner friendly.  We may not have <em>anticipated</em> all newbie problems and you might have trouble understanding the code/docs initially.</blockquote>
+  <p>NOTE: It is your responsibility to ensure that a sequence of <code>gunzip -c ${your_group_members_entry_nums}.gz | patch -p1</code>, when executed in <code>superopt-project</code> root with HEAD at <code>col728_lab1</code>, produces a tree equivalent to yours.</p>
+  <blockquote><strong>NOTE:</strong> Please start early in this lab.  Frankly, the documentation is almost non-existent and the code is not very beginner friendly.  It may take quite some time to get used to it and be able to make any changes.</blockquote>
 </body>
 </html>
