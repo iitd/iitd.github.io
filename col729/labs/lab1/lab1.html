@@ -15,15 +15,15 @@
 
   <h2>Overview</h2>
     <p>
-    In this assignment you will implement Anticipated (Needed) Expressions Analysis (<a href="../../lec/lazy_code_motion.html">notes</a>, <a href="https://www.youtube.com/watch?v=zPLbAOdIqRw&list=PLf3ZkSCyj1tf3rPAkOKY5hUzDrDoekAc7&index=108">video</a>).  Make sure you understand the analysis before proceeding ahead.
+    In this assignment, you will implement Anticipated (Needed) Expressions Analysis (<a href="../../lec/lazy_code_motion.html">notes</a>, <a href="https://www.youtube.com/watch?v=zPLbAOdIqRw&list=PLf3ZkSCyj1tf3rPAkOKY5hUzDrDoekAc7&index=108">video</a>).  Make sure you understand the analysis before proceeding ahead.
     </p>
 
     <p>
-    In order to implement a data-flow analysis analysis, (broadly) two things are required: (1) a framework to represent the target program as flow graph and, (2) a DFA frawework within which the schema can be implemented.
+    In order to implement a data-flow analysis, (broadly) two things are required: (1) a framework to represent the target program as a flow graph and, (2) a DFA frawework within which the schema can be implemented.
     </p>
 
     <p>
-    The <em>CompilerAI</em> framework -- developed in-house here at IITD -- provides both and you will be implementing your analyses in this framework for this and future labs.
+    The <em>CompilerAI</em> framework -- developed in-house here at IITD -- provides both, and you will be implementing your analyses in this framework for this and future labs.
     The next subsection gives a (very) brief conceptual overview of the framework.</p>
     </p>
   <h3 id="compilerai-framework">CompilerAI framework</h3>
@@ -34,7 +34,7 @@
     <h5>Constituents of a TFG</h5>
     A TFG is associated with a set of nodes and a set of edges.
     <ul>
-      <li>A <em>node</em> of the TFG represents a program point and is referred to as a <em>PC</em> in the code.  A PC is uniquely identified by its <em>label</em> which can be serialized as a string, e.g., <code>Lfor.cond%1%1</code>.
+      <li>A <em>node</em> of the TFG represents a program point and is referred to as a <em>PC</em> in the code.  A PC is uniquely identified by its <em>label</em>, which can be serialized as a string, e.g., <code>Lfor.cond%1%1</code>.
         <blockquote>
           <details>
             <summary>More on PC</summary>
@@ -59,10 +59,12 @@
           </details>
         </blockquote>
       </li>
-      <li>An <em>edge</em> of the TFG represents a guarded basic block and has three* components: a from-,to-PC pair, a guard (AKA <em>edge condition</em> or <em>edgecond</em>), and a <em>to-state</em> mapping.  The from-,to-PC pair identify the nodes which are connected by the edge, the guard encodes the boolean condition under which the edge shall be taken, and the to-state mapping encodes the state transformation corresponding to the basic-block which the edge is representing.
+      <li>An <em>edge</em> of the TFG represents a guarded basic block with three* components:
+      	a &lt;from-PC, to-PC&gt; pair, a guard (AKA <em>edge condition</em> or <em>edgecond</em>), and a <em>to-state</em> mapping.
+      	The &lt;from-PC, to-PC&gt; pair identifies the nodes which are connected by the edge, the guard encodes the boolean condition under which the edge shall be taken, and the to-state mapping encodes the state transformation corresponding to the basic block which the edge is representing.
         <p>
-        The to-state mapping is a map (function) from <em>state</em> to <em>state</em> where <em>state</em> is the set of all variables used in the program including the implicit memory element (the members of state are referred to as state elements).
-        The input state is the state corresponding to the from-PC of the program and the output state is the state corresponding to the to-PC of the program.
+        The to-state mapping is a map (function) from <em>state</em> to <em>state</em> where the <em>state</em> is the set of all variables used in the program, including the implicit memory element (the members of the state are referred to as state elements).
+        The input state is the state corresponding to the from-PC of the program, and the output state is the state corresponding to the to-PC of the program.
         The to-state, thus, describes a set of assignments, or, in other words, how the program state elements are modified when the edge is taken.
         <blockquote>
           <details>
@@ -97,9 +99,9 @@
         </p>
         <em>Explanation:</em>
         <ul>
-          <li>Both edges start at the same location and end at the same location and have complementing edge condition, thus ensuring that they cover all possible control-flow from the from-PC to the to-PC.</li>
+          <li>Both edges start at the same location and end at the same location and have edge conditions that are complements of each other, thus ensuring that they cover all possible control-flow from the from-PC to the to-PC.</li>
           <li>Edge 1, with the edge condition <code>i &gt;= 0</code> has a non-empty to-state corresponding to the write of value <code>ret+i</code> to the variable <code>ret</code>.
-            <ul><li>Note that the there are two different <code>ret</code> here: one corresponding to the from-PC location and the other corresponding to the to-PC location.</li></ul>
+            <ul><li>Note that there are two different <code>ret</code> here: one corresponding to the from-PC location and the other corresponding to the to-PC location.</li></ul>
           </li>
           <li>Edge 2, with the complementary edge condition <code>!(i &gt;= 0)</code>, corresponds to the control flow when <code>i</code> is not greater-than or equal to <code>0</code> and where <code>ret</code> remains unmodified.</li>
         </ul>
@@ -218,7 +220,8 @@ q &#8614; ((y + z) + 1);</pre>
     </details>
   <h2>Instructions</h2>
 
-  <p>The source code for the framework is available in the form of a Git repository in the server machine provided to you for lab work.  You will create it a local copy of it and submit your changes as a patch against the reference code.</p>
+  <p>The source code for the framework is available in the form of a Git repository in the server machine provided to you for lab work.
+  You will create a local copy of it and submit your changes as a patch against the reference code.</p>
 
   <h3 id="getting-started">Getting started</h3>
   <p>Follow the steps below to get started.</p>
@@ -232,14 +235,14 @@ q &#8614; ((y + z) + 1);</pre>
     </li>
   </ol>
 
-  <p>At this point the initial setup is complete.</p>
-  <p>Change directory to <code>superopt</code>, this is the top-level directory under which you will make your changes.  Henceforth it is assumed that you are already in the root of <code>superopt</code>.  The primary places where you need to make changes have been marked with <em>COL729_LAB1 TODO</em>.  Search for them using <code>git grep 'COL729_LAB1 TODO'</code>.</p>
+  <p>At this point, the initial setup is complete.</p>
+  <p>Change directory to <code>superopt</code>.  This is the top-level directory under which you will make your changes.  Henceforth it is assumed that you are already in the root of <code>superopt</code>.  The primary places where you need to make changes have been marked with <em>COL729_LAB1 TODO</em>.  Search for them using <code>git grep 'COL729_LAB1 TODO'</code>.</p>
 
   <h3 id="working-with-the-code">Working with the code</h3>
 
 	<h4>TFG</h4>
   <p>
-  Recall that a program is represented using TFG.  Conceptually, a TFG is a graph with additional features (like input/output).  The code follows this conceptual structure where a TFG, represented by <code>tfg</code> class, has a <em>is-a</em> relationship with a graph, represented by <code>graph</code> class.  The <code>graph</code> class is mostly concerned with "graph" properties: edges and nodes, and the <code>tfg</code> class and its more specialized cases such as <code>tfg_llvm_t</code> represent a program (in the present case, a C function) created from LLVM IR (which itself is created from a C program).  The relevant source code paths for "graph" and "TFG" related functionality are <code>include/graph/</code> and <code>include/tfg/</code>, respectively.
+  Recall that a program is represented using TFG.  Conceptually, a TFG is a graph with additional features (like input/output).  The code follows this conceptual structure where a TFG, represented by <code>tfg</code> class, has an <em>is-a</em> relationship with a graph, represented by the <code>graph</code> class.  The <code>graph</code> class is mainly concerned with "graph" properties: edges and nodes, and the <code>tfg</code> class and its more specialized cases, such as <code>tfg_llvm_t</code> represent a program (in the present case, a C function) created from LLVM IR (which itself is created from a C program).  The relevant source code paths for "graph" and "TFG" related functionality are <code>include/graph/</code> and <code>include/tfg/</code>, respectively.
   </p>
 
 	<h4>DFA</h4>
@@ -247,30 +250,29 @@ q &#8614; ((y + z) + 1);</pre>
   The DFA framework provides a parameterized implementation of the worklist algorithm.  The parameterization allows the user to reuse the same base code for implementing all data-flow analyses.
   </p>
   <p>
-  To implement an analysis in the DFA framework, one needs to subclass the <code>data_flow_analysis</code> and provide overriding implementation for the <code>xfer_and_meet()</code> function which accepts 3 parameters: (1) the corresponding edge, (2) input value (i.e. IN), (3) output value (i.e. OUT) passed as reference.  The function is supposed to compute the new OUT value using the IN value and the old OUT value (by using <code>meet()</code> for the latter), and indicate as return value whether there was a change in OUT value.  The DFA framework itself is defined in <code>include/graph/dfa.h</code>.  Some already existing analyses can be found in files <code>include/graph/var_liveness_dfa.h</code> and <code>include/tfg/liveness_dfa.h</code>.
+  To implement an analysis in the DFA framework, one needs to subclass the <code>data_flow_analysis</code> and provide an overriding implementation for the <code>xfer_and_meet()</code> function, which accepts three parameters: (1) the corresponding edge, (2) input value (i.e. IN), (3) output value (i.e. OUT) passed as a reference.  The function is supposed to compute the new OUT value using the IN value and the old OUT value (by using <code>meet()</code> for the latter) and indicate as the return value whether there was a change in the OUT value.  The DFA framework is defined in <code>include/graph/dfa.h</code>.  Some already existing analyses can be found in files <code>include/graph/var_liveness_dfa.h</code> and <code>include/tfg/liveness_dfa.h</code>.
   <p>
-  Studying the implementation of <code>xfer_and_meet</code> of existing analyses would give you enough information to implement the anticipated expressions analysis.  You may also find the generic <em>loc</em> (see next subsection) "DFA value" class definiton (defined in <code>include/graph/graph_per_loc_dfa_val.h</code>) helpful.   Most things remain same in the analyses: you need the expressions generated and killed in each edge (see <code>populate_gen_and_kill_sets_for_edge()</code>), you need to kill those expressions which depend on a killed expression (see <code>graph_get_locs_potentially_read_in_expr()</code>) and so on.
+  Studying the implementation of <code>xfer_and_meet</code> of existing analyses would give you enough information to implement the anticipated expressions analysis.  You may also find the generic <em>loc</em> (see following subsection) "DFA value" class definition (defined in <code>include/graph/graph_per_loc_dfa_val.h</code>) helpful.   Most things remain the same in the analyses: you need the expressions generated and killed in each edge (see <code>populate_gen_and_kill_sets_for_edge()</code>), you need to kill those expressions which depend on a killed expression (see <code>graph_get_locs_potentially_read_in_expr()</code>) and so on.
 
   <h4>Expressions and <em>Locs</em></h4>
   <h5>Expressions (<code>expr</code>)</h5>
     <p>
-    We represent an (AST) expression using the <code>expr</code> class (see <code>include/expr/expr.h</code>).  <code>expr</code> is a sum type which represents either a variable, a constant, or an operation over <code>expr</code>s.  Each <code>expr</code> is associated with a <code>sort</code> which represents the <em>sort</em> (or type) of the value the <code>expr</code> is holding.
+    We represent an (AST) expression using the <code>expr</code> class (see <code>include/expr/expr.h</code>).  <code>expr</code> is a sum type (also known as union type) representing either a variable, a constant, or an operation over sub-expression(s), which are also <code>expr</code>s themselves.  Each <code>expr</code> is associated with a <code>sort</code> representing the <em>sort</em> (or type) of the value the <code>expr</code> is holding.
     <p>
     As an <code>expr</code> is essentially a DAG (directed acyclic graph) of values (which could be <code>expr</code>s), it is serialized as a DAG.
-    The serialization format is a sequence of statements where each statement is an <code>expr</code> potentially referring to earlier <code>expr</code>:
+    The serialization format is a sequence of statements where each statement is an <code>expr</code> potentially referring to an earlier <code>expr</code>:
     <pre>
-      EXPR_ID : NAME or VALUE or OPERATION : SORT
-    </pre>
-    Here, <code>EXPR_ID</code> is an integer identifier which can be used to refer to this <code>expr</code>, <code>NAME</code> is a variable name, <code>VALUE</code> is a constant value, and <code>OPERATION</code> is an operation (operator applied to (references to) earlier expressions), and <code>SORT</code> is, well, the <em>sort</em> of the <code>expr</code>.
+      EXPR_ID : NAME or VALUE or OPERATION : SORT</pre>
+    Here, <code>EXPR_ID</code> is an integer identifier that can be used to refer to this <code>expr</code>, <code>NAME</code> is a variable name, <code>VALUE</code> is a constant value, <code>OPERATION</code> is an operation (operator applied to (references to) earlier expressions), and <code>SORT</code> is, well, the <em>sort</em> of the <code>expr</code>.
     Some examples:
     <ul>
-      <li>a variable of bitvector of width 32 sort:
+      <li>a variable of <em>bit-vector of width 32</em> sort:
         <pre>1 : input.src.llvm-%n : BV:32</pre>
       </li>
-      <li>a constant of boolean sort:
+      <li>a constant of <em>boolean</em> sort:
         <pre>1 : 0 : BOOL</pre>
       </li>
-      <li>a bitvector add operation:
+      <li>a <em>bit-vector add</em> operation:
         <pre>
 1 : input.src.llvm-%a : BV:32
 2 : input.src.llvm-%b : BV:32
@@ -279,42 +281,49 @@ q &#8614; ((y + z) + 1);</pre>
     </ul>
     </p>
     <p>
-    <em>expr_ref</em>: In the code, you would mostly see references to <code>expr_ref</code> instead of <code>expr</code>.  This is because an <code>expr_ref</code> is a reference (pointer) to an immutable <code>expr</code> object which is reference-counted in order to simplify memory management.
+    <em>expr_ref</em>: In the code, you mostly see references to <code>expr_ref</code> instead of <code>expr</code>.  It is because an <code>expr_ref</code> is a reference (pointer) to an immutable <code>expr</code> object which is reference-counted to simplify memory management.
     </p>
     <h5>Locs (<code>graph_loc_id_t</code>)</h5>
     <p>
-    Conceptually, a <em>loc</em> represents a memory location which can have an associated expression (<code>expr</code>).
-    Thus, a <em>loc</em> is one of the following: an LLVM variable, a register, a memory region (a <em>masked/selected</em> region of memory AKA a <code>memmask</code>), a unit of memory whose size and location are known (a <em>memory slot</em> AKA a <code>slot</code>).  The framework reasons about memory locations using locs.  For example, a write to an LLVM variable would modify the <em>loc</em> corresponding to that variable, a write to a memory location would modify all memory slots whose address can potentially alias with the target of memory write and so on.
+    Conceptually, a <em>loc</em> represents a memory location that can have an associated expression (<code>expr</code>).
+    Thus, a <em>loc</em> is one of the following:
+    <ul>
+      <li>an LLVM variable,</li>
+      <li>a register,</li>
+      <li>a memory region (a <em>masked/selected</em> region of memory, AKA a <code>memmask</code>),</li>
+      <li>a unit of memory whose size and location are known (a <em>memory slot</em>, AKA a <code>slot</code>).</li>
+    </ul>
+    The framework reasons about memory locations using locs.  For example, a write to an LLVM variable would modify the <em>loc</em> corresponding to that variable, a write to a memory location would modify all memory slots whose address can potentially alias with the target of memory write, and so on.
     </p>
     <p>
     It is possible to get the <code>expr_ref</code> associated with a <em>loc</em> (<code>graph_loc_id_t</code> in code) and vice-versa using two using helper functions: <code>graph_loc_get_expr()</code> and <code>graph_get_locs_potentially_read_in_expr()</code>.
     </p>
     <p>
-    Note that some useful functions such as <code>populate_gen_and_kill_sets_for_edge()</code> return <em>locs</em> instead of expressions.
+    Some useful functions, such as <code>populate_gen_and_kill_sets_for_edge()</code>, return <em>locs</em> instead of expressions.
     </p>
 	<h4>Skeleton code</h4>
-  <p>In order to simplify things and allow you to focus on the analysis relevant parts, some skeleton code is provided.  In particular:
+  <p>In order to simplify things and allow you to focus on the analysis-relevant parts, some skeleton code is provided.  In particular:
   <ul>
-    <li>A class which represents anticipated expressions as a set of <code>expr_ref</code> is defined at <code>include/graph/anticipated_exprs.h</code>.</li>
+    <li>A class representing anticipated expressions as a set of <code>expr_ref</code> is defined at <code>include/graph/anticipated_exprs.h</code>.</li>
     <li>A class for anticipated expressions DFA value is defined at <code>include/graph/anticipated_exprs_dfa.h</code>.  You are expected to fill-in definitions of <code>meet</code> and <code>top</code> here (see <code>include/graph/avail_exprs_dfa.h</code> for a sample).</li>
-    <li>A class for defining the DFA schema for anticipated expressions analysis is defined at <code>include/graph/anticipated_exprs_dfa.h</code>.  You are expected to fill-in definition of <code>xfer_and_meet</code> and make other changes, as required, here.</li>
+    <li>A class for defining the DFA schema for anticipated expressions analysis is defined at <code>include/graph/anticipated_exprs_dfa.h</code>.  You are expected to fill-in the definition of <code>xfer_and_meet</code> and make other changes, as required, here.</li>
   </ul>
 
   <h3 id="running-testing">Running and testing your changes</h3>
 
-  <p>Once you have filled-in the required code, you need to uncomment the driver code in <code>compute_anticipated_exprs()</code> function of <code>lib/graph/graph_with_locs.cpp</code> to run the anticipated expressions analysis.  Do not forget to delete the <code>return {};</code> line.</p>
+  <p>Once you have filled-in the required code, you need to uncomment the driver code in <code>compute_anticipated_exprs()</code> function of <code>lib/graph/graph_with_locs.cpp</code> to run the anticipated expressions analysis.  Remember to delete the <code>return {};</code> line.</p>
   <p>Steps for building and running the code:</p>
   <ol>
     <li>Run <code>make</code> in <code>superopt-project</code> to build your changes.</li>
-    <li>Now switch directory to <code>lab1_test</code> and run <code>./c2bc.sh a.c</code> to compile C file <code>a.c</code> to LLVM bitcode <code>a.c.bc</code>.</li>
-    <li>While still in <code>lab1_test</code>, run <code>./run.sh a.c.bc</code> to convert LLVM bitcode to TFG and run the analysis.  The output TFG file name will be named <code>${INPUT_FILENAME}.etfg</code>, e.g., <code>a.c.bc.etfg</code> for <code>a.c.bc</code>.  Log (stdout) of run is automatically saved in <code>last_run.log</code>.
+    <li>Now switch the directory to <code>lab1_test</code> and run <code>./c2bc.sh a.c</code> to compile C file <code>a.c</code> to LLVM bitcode <code>a.c.bc</code>.</li>
+    <li>While still in <code>lab1_test</code>, run <code>./run.sh a.c.bc</code> to convert the LLVM bitcode to TFG and run the analysis.  The output TFG file name will be named <code>${INPUT_FILENAME}.etfg</code>, e.g., <code>a.c.bc.etfg</code> for <code>a.c.bc</code>.  The log (stdout) of run is automatically saved in <code>last_run.log</code>.
       <blockquote>You can turn on debug output by appending <code>--dyn_debug=DEBUG_CLASS</code> to <code>llvm2tfg</code> command in <code>run.sh</code>.  <code>DYN_DEBUG</code> statements in your code will get executed if their <code>DEBUG_CLASS</code> matches the supplied <code>DEBUG_CLASS</code>.  For example, in order to execute this statement: <pre>DYN_DEBUG(anticipated_analysis, cout &lt;&lt; "Here" &lt;&lt; endl);</pre>you will supply <code>--dyn_debug=anticipated_analysis</code> to <code>llvm2tfg</code>.</blockquote>
     </li>
   </ol>
 
   <h4>Visual representation of TFG</h4>
   <p>
-  For debugging you may also find the <code>to_dot.sh</code> tool (present in <code>lab1_test/to_dot.sh</code>), helpful.  It makes a Graphviz DOT file out of a TFG.  The created DOT file can be visualized using <code>xdot</code> or similar DOT viewer to see the graphical structure of the TFG.  The tool accepts two paramters: function name and TFG file name, where function name is the name of the function for which graphviz DOT graph is to be created.  The output file name is named as "&lt;TFG file name&gt;.&lt;function name&gt;.dot".  Example: <code>./to_dot.sh sum a.c.bc.etfg</code> will create <code>a.c.bc.etfg.sum.dot</code>.
+  For debugging, you may also find the <code>to_dot.sh</code> tool (present in <code>lab1_test/to_dot.sh</code>), helpful.  It makes a Graphviz DOT file out of a TFG.  The created DOT file can be visualized using <code>xdot</code> or a similar DOT viewer to see the graphical structure of the TFG.  The tool accepts two parameters: function name and TFG file name, where the function name is the function&#39;s name for which graphviz DOT graph is to be created.  The output file name is named as "&lt;TFG file name&gt;.&lt;function name&gt;.dot".  Example: <code>./to_dot.sh sum a.c.bc.etfg</code> will create <code>a.c.bc.etfg.sum.dot</code>.
   </p>
   <p>
   FWIW, the graph in the example above was created using this tool.
@@ -347,7 +356,7 @@ q &#8614; ((y + z) + 1);</pre>
 
   <h3>Requirements</h3>
 
-  Your implementation should be able find <em>all</em> anticipated expressions at every PC in the input program.  As the framework can transparently handle things like aliasing and function calls, your implementation should not assume absence of any program features.
+  Your implementation should be able to find <em>all</em> anticipated expressions at every PC in the input program.  As the framework can transparently handle things like aliasing and function calls, your implementation should not assume the absence of any program features.
 
   <h2>Turn in</h2>
   Submit your changes in the form of a compressed patch file:
@@ -356,6 +365,6 @@ q &#8614; ((y + z) + 1);</pre>
     <li>Submit <code>${your_group_members_entry_nums}.gz</code> to moodle</li>
   </ul>
   <p>NOTE: It is your responsibility to ensure that a sequence of <code>gunzip -c ${your_group_members_entry_nums}.gz | patch -p1</code>, when executed in <code>superopt-project</code> root with HEAD at <code>col728_lab1</code>, produces a tree equivalent to yours.</p>
-  <blockquote><strong>NOTE:</strong> Please start early in this lab.  Frankly, the documentation is almost non-existent and the code is not very beginner friendly.  It may take quite some time to get used to it and be able to make any changes.</blockquote>
+  <blockquote><strong>NOTE:</strong> Please start early in this lab.  The documentation is almost non-existent, and the code could be more beginner-friendly.  It may take some time to get used to it and be able to make any changes.</blockquote>
 </body>
 </html>
