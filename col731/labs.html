@@ -1,0 +1,27 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252"><title>COL731: Advanced Compiler Techniques</title>
+</head><body><h1><font color="blue">COL731: Advanced Compiler Techniques</font></h1>
+
+<h2><i>Lab 1 : Experiment with LLVM's SLPVectorizer</i></h2>
+
+<ol>
+<li> Clone the LLVM Repository at <a href=https://github.com/llvm/llvm-project>https://github.com/llvm/llvm-project</a>.</li>
+<li> Study and experiment with the SLPVectorizer at path <code>llvm/lib/Transforms/Vectorize/SLPVectorizer.cpp</code>.</li>
+<li> Create a report on your experiments that must contain at least the following information:
+<ul>
+<li> What is the algorithm of LLVM's SLP Vectorizer, and how does it differ from the SLP paper that we studied in class? Show the pseudo-code of LLVM's SLP vectorizer, similar to how it is shown in the SLP paper.</li>
+<li> What are the LLVM analysis passes that the SLP Vectorizer depends upon?</li>
+<li> What are the functions defined in the CPP file and what is the brief summary of what each function does?</li>
+<li> Compile an example vectorizable program using <code>clang12 -O3 -mllvm -print-after-all -mllvm -print-before-all -c example.c</code>.  Compare the input/output of the SLP vectorizer pass, and discuss the transformations in your report.
+<ul>
+<li>Choose your example vectorizable program carefully, so that the discussion becomes more interesting.</li>
+<li>Identify at least one analysis or transformation pass (on which the SLP vectorizer depends) such that if you disable that pass, the SLP vectorization becomes less effective (or ineffective) on your example program.  Explain why this happens.
+</ul>
+</ul>
+</li>
+</ol>
+<em>Submission</em>: Email a PDF copy of your report to the instructor.
+
+<!--<li> <a href=labs/lab3/lab3.html>Lab 3 : Experimenting with the polyhedral model</a> </li>-->
+
+</ul>
