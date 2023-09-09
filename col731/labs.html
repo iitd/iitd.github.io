@@ -99,6 +99,12 @@ implementation. We provide some relevant references below:
 <li> Through experiments on compiling small hand-written C programs (written by you), identify the strengths and limitations
 of the Polly framework.  Report your findings (along with the hand-written C programs that you used).
 </li>
+<li> In particular, identify the algorithm used in Polly to eliminate the predicates (guards) on individual statements through partitioning.  For example, consider a case where we are partitioning an inner loop, whose statement bounds (for each statement) are 1-D intervals where the lower and upper bounds are given by affine expressions of the surrounding loop indices.  Write example programs where:
+<ol>
+<li> The lower and upper bounds of each interval are statically identifiable during partitioning (after the space partitioning algorithm has identified a schedule and empty iterations have been eliminated).</li>
+<li> The lower and upper bounds of each interval are not statically identifiable (after the space partitioning algorithm has identified a schedule and empty iterations have been eliminated).</li>
+</ol>
+For each example, report what method is used by the Polly framework to identify the lower/upper bounds of each partition. Do they resort to runtime generation of partition bounds (to eliminate guards) or do they simply leave the guards in (to avoid the overhead of identifying partition bounds at runtime).
 </ol>
 <em>Submission</em>: Email a PDF copy of your report to the instructor. The PDF filename should contain your entry-number and name. For example if your entry number is 2121CS1000 and your name is ABC, then  your filename should be 2121CS1000_ABC.pdf
 
