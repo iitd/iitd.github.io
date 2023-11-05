@@ -133,7 +133,12 @@ For each example, report what method is used by the Polly framework to identify 
 <li>CompCert is a certified compiler written in the Coq proof assistant.  See if you can understand the high-level proof statement of CompCert.  Follow the steps below.
 <ul>
 <li> Read <a href=https://compcert.org/man/manual.pdf>Section 1.2 of the CompCert manual</a> to understand the ``Semantic Preservation Theorem''.</li>
-<li> Read <code>Theorem trans_program_correct</code> in file <code>backend/Constpropproof.v</code>.  See if you can explain this theorem informally by taking a look at the following:
+<li> Read <code>Theorem transf_c_program_correct</code> in file <code>driver/Compiler.v</code>.  This is the top-level correctness theorem for a compilation.  Can you try explaining this theorem?
+<ul>
+<li> [Optional, will not be graded] Try understanding the C language semantics, available in file <code>cfrontend/Csem.v</code>.  Also, try understanding the assembly language semantics, available in file <code>x86/Asm.v</code>.  Then, try explaining the <code>transf_c_program_correct</code> in light of these semantics.
+</ul>
+</li>
+<li> Now, let's look at a particular transformation pass within the compiler pipeline. Read <code>Theorem trans_program_correct</code> in file <code>backend/Constpropproof.v</code>.  See if you can explain this theorem informally by taking a look at the following:
 <ul>
 <li> Take a look at <code>Definition transf_prog</code> in file <code>backend/Constprop.v</code> </li>
 <li> Take a look at <code>Lemma transf_program_match</code> in file <code>backend/Constpropproof.v</code> </li>
