@@ -118,6 +118,16 @@ For each example, report what method is used by the Polly framework to identify 
 <li>One example where Alive incorrectly validates an (incorrect) peephole optimization. Ideally it should be manually hard to see that this peephole optimization is incorrect.</li>
 <!--<li>One example where Alive fails to validate a (correct) peephole optimization.</li>-->
 </ol>
+<li>Experiment with <a href=https://compsys-tools.ens-lyon.fr/z3/>Z3</a>:
+<ol>
+<li> Check commutativity of multiplication for integers and bitvectors </li>
+<li> Check if subtraction is the inverse of addition for integers</li>
+<li> Check if subtraction is the inverse of addition for bitvectors</li>
+<li> Check if division is the inverse of multiplication for non-zero integers </li>
+<li> Check if division is the inverse of multiplication for non-zero bitvectors</li>
+</ol>
+Report your findings.
+</li>
 <li>Experiment with CompCert
 <ul>
 <li>Download and install the <a href=https://compcert.org/>CompCert compiler</a>
