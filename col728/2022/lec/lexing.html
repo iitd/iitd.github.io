@@ -1,0 +1,168 @@
+<h3>Lexical analysis</h3>
+<pre>
+	if (x == y)
+	  z = 1;
+	else
+	  z = 2;
+</pre>
+
+will look like this to the lexical analyzer:
+
+<pre>
+\tif (x == y)\n\t  z = 1;\n\telse\n\t  z = 2;\n
+</pre>
+
+The lexical analyzer has to put dividers between different units. e.g., a divider between <code>\t</code> and <code>if</code> and <code>&lt;whitespace&gt;</code> and <code>(</code> and so on ...
+
+<h3>Token Class (or Class)</h3>
+<ul>
+	<li>In English: Noun, Verb, Adjective, ...
+	<li>In programming language: Identifier, Keyword, (, ), ...
+</ul>
+
+Token classes correspond to sets of strings
+<ul>
+  <li>Identifier: a string of letters or digits, starting with a letter.
+  <li>Integer: a non-empty string of digits
+  <li>Keyword: 'if', 'then', 'else', ';', etc.
+	<li>Whitespace: a non-empty sequence of blanks, newlines, and tabs
+</ul>
+Lexical analyzer classifies strings according to role (token class). Communicates tokens to parser.
+<pre>
+lexer :: string --> [ token ]
+token = &lt;class, string&gt;
+</pre>
+Example input:
+<pre>
+foo = 42
+</pre>
+Example output:
+<pre>
+&lt;Id, "foo"&gt; &lt;Op, "="&gt; &lt;Int, "42"&gt;
+</pre>
+In our original example
+<pre>
+\tif (x == y)\n\t  z = 1;\n\telse\n\t  z = 2;\n
+</pre>
+the relevant token classes are:
+<ul>
+	<li>Operator
+	<li>Whitespace
+	<li>Keywords
+	<li>Identifiers
+	<li>Numbers
+	<li>'('
+	<li>')'
+	<li>';'
+	<li>'='
+</ul>
+Work through the example to show the resulting list of tokens
+
+<p>A lexical analyzer needs to
+<ol>
+	<li>recognize substrings corresponding to tokens (called <em>lexemes</em>)
+	<li>recognize token class of each lexeme to generate &lt;token-class, lexeme&gt;
+</ol>
+
+<h3>Lexical analysis examples: Fortran</h3>
+In Fortran, whitespace is insignificant:
+<pre>
+VAR1
+</pre>
+is exactly the same as
+<pre>
+VA R1
+</pre>
+Fortran idea: removing all the whitespace should not change the meaning of the program.
+
+<p>
+Loop example
+<pre>
+DO 5 I = 1,25
+</pre>
+Here <code>DO</code> is a keyword representing a loop (similar to <code>FOR</code> in C), <code>I = 1,25</code> represents that the iteration variable <code>I</code> ranges from <code>1..25</code>. The number <code>5</code> represents that the loop extends from the <code>DO</code> statement till the statement with label 5, including all statements that are in between.
+
+<p>
+Another example:
+<pre>
+DO 5 I = 1.25
+</pre>
+The only difference in this code from the previous code is the replacement of <code>,</code> with <code>.</code>.  This simply means that the variable <code>DO5I = 1.25</code>, i.e., a variable has been assigned an integer (there is no loop).
+
+	The problem is that just by looking at the first three characters, I cannot tell whether <code>DO</code> is a keyword or a prefix of a variable name. Hence we need a <em>lookahead</em>. In this example, a large lookahead is required. Ideally, the language design should ensure that the lookahead is small.
+
+<ol>
+	<li> Goal: partition the string. Implemented by reading left-to-right, recognizing one token at a time</li>
+	<li> <em>Lookahead</em> may be required to decide where one token ends and the next token begins. We would like to minimize lookahead.</li>
+</ol>
+
+<h3>Lookahead is always required</h3>
+For example, when we read the first character of the keyword <code>else</code>,
+we need to lookahead to decide whether it is an identifier or a keyword. Similarly, we need lookahead to disambiguate between <code>==</code> and <code>=</code>.
+
+<p>PL/1: keywords are not reserved.
+<pre>
+IF ELSE THEN THEN = ELSE; ELSE ELSE = THEN
+</pre>
+This makes lexical analysis a bit more difficult -- need to decide what is a variable name and what is a keyword, and so need to look at what's going on in the rest of the expression.
+
+<p>
+In fact, there are examples where PL/1 may require unbounded lookahead!
+
+<p>Some of these problems exist in languages today: e.g., C++
+
+<p>
+C++ template syntax
+<pre>
+Foo&lt;Bar&gt;
+</pre>
+
+C++ stream syntax
+<pre>
+cin  &gt;&gt; var
+</pre>
+
+For a long time, you had to put a blank between two "&gt;" signs in the template syntax. Most C++ compilers have fixed this now.
+
+<h3>Regular Languages</h3>
+Typically, language designers would like to keep lexical analysis as simple as possible. Perhaps the most simple class of languages is <em>Regular Languages</em>. Hence, lexical analysis of most programming languages can be implemented by implementing a classifier for regular languages. Regular languages are the weakest formal languages widely used, and have many applications.
+
+<h3>Regular Expressions</h3>
+<pre>
+'c' = {"c"}
+</pre>
+
+<pre>
+\epsilon = {""}
+</pre>
+
+Note that \epsilon (a language that has a single element, namely the empty string) is not the same as \phi (empty language).
+
+<p><b>Union</b>: A + B = { a | a in A} U { b | b in B}
+
+<p><b>Concatenation</b>: AB = { ab | a in A and b in B}
+
+<p><b>Iteration (Kleene closure)</b>: A* = A0 + A1 + A2 + ... A\infinity<br>
+A0 = \epsilon<br>
+Ai = A concatenated with itself i times<br>
+
+<p>Definition: The regular expressions over \Sigma are the smallest set of expressions that includes the following:
+<pre>
+R =    \epsilon
+    |  'c'
+    |  R + R
+    |  RR
+    |  R*
+</pre>
+This is called the grammar of the regular expressions. We will learn more about grammars when we talk about parsing (not relevant at this stage).
+
+<p>\Sigma = {0, 1}<br>
+1* = all strings of 1s
+(1 + 0)1 = {11, 01}<br>
+0* + 1* = all strings of 0s UNION all strings of 1s
+(0 + 1)* = all strings of 0s and 1s (or all strings over the entire alphabet) = \Sigma* (special name for this language)
+
+<p>Many ways of writing any regular language</p>
+
+<p>Regular expressions specify regular languages
+<p>Five constructs: Two base cases (\epsilon, single-character strings). Three compound expressions (union, concatenation, iteration)

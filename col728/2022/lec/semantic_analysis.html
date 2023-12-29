@@ -1,0 +1,693 @@
+Catch errors that are not caught by parsing (because many constructs are not context-free).
+
+<p>Examples (C):
+<ol>
+	<li>All identifiers are declared
+	<li>Types
+	<li>...
+</ol>
+The set of legal programs is a subset of the parse-able programs.
+
+<h3>Scope</h3>
+<ul>
+	<li>Match identifier declarations with uses
+	<ul>
+		<li>Important static analysis step
+	</ul>
+	Example 1:
+	<pre>
+	void foo (int n) {
+	  int a = 0, i;
+    printf("a = %d\n", a);
+		for (i = 0; i &lt; n; i++) {
+      int a = 1;
+      printf("a + j = %d\n", a + j); //a's value is 1. where is j. error?
+		}
+    printf("a = %d\n", a);
+  }
+	</pre>
+	<li>The <em>scope</em> of an identifier is the porition of the program in which that identifier is accessible
+	<li> The same identifier may refer to different things in different parts of the program
+	<ul>
+		<li>Different scopes for same name don't overlap
+	</ul>
+	<li>An identifier may have restricted scope
+	<li> Most languages have <em>static</em> scope
+	<ul>
+		<li> Scope depends only on the program text, not run-time behaviour. e.g., C
+	</ul>
+	<li>A few languages are <em>dynamically</em> scoped
+	<ul>
+		<li>Lisp (earlier versions, now moved to static scoping), SNOBOL
+		<li>Scope depends on execution behaviour of a program
+	</ul>
+	<li> A dynamically-scoped variable refers to the closest enclosing binding in the execution of the program
+	<ul>
+		<li>Example:
+		<pre>
+void foo(int x)
+{
+  int a = 4;
+  bar(3);
+}
+void bar(int y)
+{
+  printf("a = %d\n", a); //refers to a in the closest enclosing binding in the execution of the program
+}
+		</pre>
+	</ul>
+	<li>We will talk about dynamic scope later ...
+	<li>In C, identifier bindings are introduced by:
+	<ul>
+		<li> Function definitions (introduces method names; only allowed at top-level)
+		<li> Struct definitions (introduces type names aka class names)
+		<li> Variable declarations (introduces objects of certain types; objects represent regions of memory)
+		<li> Structure field definitions (introduces objects)
+		<li> Function argument declarations (introduces objects of certain types)
+		<li> Typedefs (introduces type names)
+	</ul>
+	<li>Not all identifiers follow the most-closely nested rule
+	<ul>
+		<li>Function definitions in C cannot be nested
+		<li>Forward declarations are allowed for functions and variables (extern keyword). Thus a variable can be used before it is defined.
+		<li>In C++, you can use member functions for the type-variables even if they have never been declared/defined (type-variables are the arguments to the template keyword)
+		<li>In C++ class declaration, you can use a member variable in a method before it is defined.
+		<li>Some languages allow identifiers to be overridden within the same scope, others don't. Some languages allow identifiers to be overridden in different nested scopes, others may not. 
+	</ul>
+</ul>
+
+<h3>Symbol Tables</h3>
+<ul>
+	<li>Much of semantic analysis can be expressed as a recursive descent of an AST
+	<ul>
+		<li> <em>Before</em>: Process an AST node <code>n</code>
+		<li> <em>Recurse</em>: Process the children of <code>n</code>
+		<li> <em>After</em>: Finish processing the AST node <code>n</code>
+	</ul>
+	<li>When performing semantic analysis on a portion of the AST, we need
+	to know which identifiers are defined
+	<li>A <em>symbol table</em> is a data structure that tracks the current bindings of the identifiers
+	<li>Example: the scope of a variable declaration is one subtree of the AST
+	<pre>
+   { //new scope
+     int x = 4;  //declarations
+     f(x);
+   }
+   Tree:
+   NewScope --&gt;(left child) declarations x = 4
+   NewScope --&gt;(right child) statements
+	</pre>
+	On entry to the new scope, the new declarations will be added to the symbol table before recursing down right child (statements). On returning from the new scope, the new declarations will be removed and the old declarations of x (if any) will be restored in the symbol table.
+	<li> For implementing a symbol table, we can use a stack of scopes (assuming C89)
+	<ul>
+		<li> <code>enter_scope()</code>: start a new nested scope
+		<li> <code>find_symbol(x)</code>: search stack starting from top, for the first scope that contains <code>x</code>. Return first <code>x</code> found or NULL if none found
+		<li> <code>add_symbol(x)</code>: add a symbol to the current scope (top scope)
+		<li> <code>check_scope(x)</code>: true if <code>x</code> defined in the current scope (top scope). allows to check for double definitions.
+		<li> <code>exit_scope()</code>: exit current scope
+	</ul>
+	<li>For implementing forward declarations, or C++ style use-before-define styles, one may have to make multiple passes over the AST. First pass: gather all member names. Second pass: Do the checking. In general, semantic analysis requires multiple passes (often more than two). Easier to break the analysis into simpler passes, as opposed to one big complicated pass.
+</ul>
+
+<h3>Types</h3>
+<ul>
+	<li>What is a type
+	<ul>
+		<li>The notion varies from language to language
+		<li>Typically
+		<ul>
+			<li>A set of values
+			<li>A set of operations on those values
+		</ul>
+		<li>Classes are one instantiation of the modern notion of type
+	</ul>
+	<li>Consider the assembly language fragment:
+	<pre>
+  add $r1,$r2,$r3
+	</pre>
+	What are the types of $r1, $r2, $r3? Can't say. For all you know, r1 may represent a bit-pattern that represents a string. The only thing we can say is that these have the base-type <em>bitvector</em>.
+	<li>Types restrict the set of legal programs further
+	<ul>
+		<li>e.g., addition on a string seems quite unlikely
+		<li>Tradeoff: catch common mistakes (e.g., addition to string is quite unlikely), but may eliminate some more-optimized programs (we can still specify all programming functionality, just that the remaining set of programs may not be as optimized as the original set of programs).
+		<li>Different programming languages take different tradeoff points, e.g., OCaml has immutable variables (i.e., values are written only at time of creation) while C has mutable variables (values can be written at any time).
+		<li>Well-typed programs (or well-defined programs) are a subset of parseable programs that have all symbol uses matched with its corresponding definition.
+		<ul>
+			<li>A type checking logic can execute either at compile time or at runtime to disambiguate well-typed programs from not-well-typed programs
+			<li><em>or</em> this checking responsibility can be left to the programmer (undefined behaviour)
+		</ul>
+	</ul>
+	<li>Certain operations are legal for values of each type
+	<ul>
+		<li>It doesn't make sense to add a function pointer and an integer in C.
+		<li>It does make sense to add two integers
+		<li>But both have the same assembly language implementation!
+	</ul>
+	<li>A language's type system specifies which operations are valid for which types
+	<li>The goal of type checking is to ensure that operations are used with correct types
+	<ul>
+		<li>Enforces intended interpretation of values, because nothing else will!
+	</ul>
+	<li>Three kind of languages
+	<ul>
+		<li>Statically typed: All or almost all checking of types is done as part of compilation (C, Java)
+		<li>Dynamically typed: Almost all checking of types is done as part of program execution (Scheme, Lisp, Python, Perl)
+		<li>Untyped: No type checking. All strings in the language (e.g., CFG) are valid strings. e.g., machine code
+	</ul>
+	<li>Another variation of typing: undefined behaviour. Accessing word beyond the length of an array is not type-checked in C. But if this happens at runtime, the program is not well-defined (or well-typed). The type-system is in programmer's head, but nobody will check it for you!
+	<li>Competing views on static vs. dynamic typing
+	<ul>
+		<li>Long-standing debate which is better
+	</ul>
+	<li>Static typing proponents say:
+	<ul>
+		<li>Static checking catches many programming errors at compile time
+		<li>Avoids overhead of runtime checks
+	</ul>
+	<li>Dynamic typing proponents say:
+	<ul>
+		<li>Static type systems are restrictive. Restricts the programs that you can write (even though they may be well-typed at runtime)
+		<ul>
+			<li>Array de-reference quite hard to verify statically. Restricting programs to only those programs that can be verified statically is a non-starter. Java decides to use runtime checks (dynamic type-checking).
+		</ul>
+		<li>Rapid prototyping difficult within a static type system
+	</ul>
+	<li>Some strange things about typing
+	<ul>
+		<li>A lot of code is written in statically typed languages with an "escape" mechanism
+		<ul>
+			<li>Unsafe casts in C, Java
+			<li>Philosophy: if the programmer knows what she is doing, let her do whatever she wants. e.g., addition on strings. If the programmer is making a mistake, the program will behave badly, but the language does not provide any guarantees (after all you took the matter in your hands)
+		</ul>
+		<li>People retrofit static typing to dynamically typed languages
+		<ul>
+			<li>Avoid runtime costs
+			<li>Debugging
+			<li>This can only be best-effort, no guarantees. Some dynamic checks may remain
+		</ul>
+	</ul>
+	<li>In C
+	<ul>
+		<li>The user declares types for identifiers
+		<li>The compiler infers types for expressions
+	</ul>
+	<li><em>Type checking</em> is the process of verifying fully typed programs. Types are already available. We just check if the type rules are obeyed.
+	<li><em>Type inference</em> is the process of filling in missing type information.
+	<li>Type-checking and type-interference are different terms, but people often use them interchangeably.
+</ul>
+
+<h3>Type checking formalism</h3>
+<ul>
+	<li>Inference rules have the form
+	<ul>
+		<li>If Hypothesis is true, then Conclusion is true
+	</ul>
+	<li>Type checking computes via reasoning
+	<ul>
+		<li>If E1 and E2 have certain types, then E3 has a certain type
+	</ul>
+	<li>Rules of inference are a compact notation for "If-Then" statements
+	<li>The notation is easy to read with practice
+	<li>We will start with a simplified system and gradually add features
+	<li>Building blocks
+	<ul>
+		<li>Symbol ^ is "and"
+		<li>Symbol =&gt; is "if-then"
+		<li>x:T is "x has type T"
+	</ul>
+	<li>If <code>e1</code> has type <code>Int</code> and <code>e2</code> has type <code>Int</code>, then <code>e1+e2</code> has type Int
+	<li><code>(e1:Int ^ e2:Int) =&gt; e1+e2:Int</code>
+	<li><code>(e1:Int ^ e2:Int) =&gt; e1+e2:Int</code> is a special case of <code>Hypothesis1 ^ Hypothesis2 ... ^ HypothesisN =&gt; Conclusion</code></li>
+		<ul>
+			This is an inference rule
+		</ul>
+	<li>By tradition inference rules are written
+	<pre>
+|- Hypothesis ... |- Hypothesis
+-------------------------------
+     |- Conclusion
+	</pre>
+	<li>e.g., C types have hypotheses and conclusions of the form
+	<pre>
+|- e:T
+	</pre>
+	<li> <code>|-</code> means "it is provable that ..."
+</ul>
+
+<h4>Some rules</h4>
+<pre>
+i is an integer literal (constant)
+----------------------------------  [Int]
+     |- i:int
+</pre>
+<pre>
+|-e1:int    |-e2:int
+----------------------------------  [Add]
+     |-e1+e2:int
+</pre>
+
+<ul>
+<li>These rules give templates describing how to type integers and + expressions
+<li>By filling in the templates, we can produce complete typings for expressions
+<pre>
+1 is an int literal
+-------------------
+  |- 1:int
+
+2 is an int literal
+-------------------
+  |- 2:int
+
+|-1:int   |-2:int
+-----------------
+   |-1+2:int
+</pre>
+</ul>
+
+<ul>
+	<li>A type system is <em>sound</em> if
+	<ul>
+		<li>Whenever <code>|-e:T</code>
+		<li>Then <code>e</code> evaluates to a value of type <code>T</code>
+	</ul>
+	<li>We only want sound rules
+	<ul>
+		<li>But some sound rules are better than others!
+<pre>
+1 is an integer literal
+-----------------------
+   |-1:void
+</pre>
+This is correct (sound) but not the most precise typing rule. e.g., it will not allow 1 to be added because voids cannot be added. assumption: <code>int</code> is a subtype of <code>void</code>
+	</ul>
+</ul>
+
+<h4>Type Checking</h4>
+<ul>
+	<li>Type checking proves facts <code>e:T</code>
+	<ul>
+		<li>Proof is on the structure of the AST
+		<li>Proof has the shape of the AST
+		<li>One type rule is used for each AST node
+	</ul>
+	<li>In the type rule used for a node <code>e</code>:
+	<ul>
+		<li>Hypotheses are the proofs of types of <code>e</code>'s subexpressions
+		<li>Conclusion is a type of <code>e</code>
+	</ul>
+	<li>Types are computed in a bottom-up pass over the AST
+</ul>
+
+<h4>Type Environments</h4>
+<pre>
+------------------  [false]
+  |- false : bool
+</pre>
+<pre>
+ s is a character literal
+------------------------- [char]
+  |- s : char
+</pre>
+<pre>
+   |-s:T
+----------------------- [address-of]
+  |- &amp;s : T *
+</pre>
+<pre>
+ s is a string literal
+----------------------- [string]
+  |- s : char *
+</pre>
+<pre>
+    |-b:bool
+----------------------- [Not]
+  |- !b : bool
+</pre>
+<pre>
+    |-x:T
+----------------------- [Expr-Stmt]
+  |- x=y; : T
+</pre>
+
+<pre>
+ |-x:T  |-y:T
+----------------------- [Assignment-Stmt]
+  |- x=y : T
+</pre>
+<pre>
+ |-e:bool  |-x:T
+------------------------- [While-Stmt]
+  |- while (e) x : void
+</pre>
+This is a design decision. One could have said that the type of a while loop is the type of the last statement that executes. But then what if the statement didn't execute even once?  Hence a type 'void' means that the statement has a type which is not usable. Similarly for if-then-else: the types in the two branches can be different, so the final type is void.
+
+<p>But what is the type of a variable reference?
+<pre>
+   x is a variable
+  ----------------  [Var]
+      |- x:?
+</pre>
+The local, structural rule does not carry enough information to give <code>x</code> a type.
+
+<p>Solution: put more information in the rules!
+
+<p>A <em>type environment</em> gives types for <em>free</em> variables
+<ul>
+	<li>A type environment is a function from ObjectIdentifiers to Types
+	<li>A variable is free in an expression if it is not defined within the expression
+	<ul>
+		<li><code>x</code> is free in expression <code>x</code>
+		<li><code>x</code> is free in expression <code>x+y</code>
+		<li><code>x</code> is free in expression <code>{int y = ...; x+y;}</code>
+		<li><code>y</code> is a <em>bound variable</em> in expression <code>{int y = ...; x+y;}</code>
+	</ul>
+</ul>
+
+<p>The sentence <code>O |- e:T</code> is read
+<ul>
+	<li>Under the assumption that free variables have the types given by O, it is provable (|-) that expression <code>e</code> has the type <code>T</code>
+</ul>
+<pre>
+i is an integer literal (constant)
+----------------------------------  [Int]
+    O |- i:int
+</pre>
+<pre>
+ O |- e1:int    O |- e2:int
+----------------------------------  [Add]
+    O |- e1+e2:int
+</pre>
+Notice that the same assumptions are required in both the hypotheses and the conclusion.
+
+<p>And we can write new rules
+<pre>
+O(x) = T
+---------  [Var]
+O |- x:T
+</pre>
+<pre>
+      O[T0/x] |- e1:T1
+----------------------------    [Let-No-Init]
+ O |- { T0 x; e1 } : T1
+</pre>
+O[T/x] represents one function, where
+<pre>
+O[T/x](x) = T
+O[T/x](y) = O(y)
+</pre>
+When we enter the scope, we add a new assumption in our type environment.
+When we leave the scope, we remove the assumption.
+
+<p>This terminology reminds us of the symbol table. So the type-environment is
+stored in the symbol table.
+
+<ul>
+	<li>The type environment gives types to the free identifiers in the current scope
+	<li>The type environment is passed down the AST from the root towards the leaves
+	<ul>
+		<li>To check the type of a new scope, we will see which rules can be applied
+		<li>The Let-Init/Let-No-Init rule will indicate that we should try type-checking the body of the new scope with an updated environment (top-down): O[T/x]
+	</ul>
+	<li>Types are computed up the AST from the leaves towards the root.
+</ul>
+
+<pre>
+      O[T0/x] |- e1:T1
+         O |- e2:T0
+----------------------------    [Let-Init]
+ O |- { T0 x = e2; e1 } : T1
+</pre>
+Notice that this rule says that the initializer <code>e2</code> should have the same type <code>T0</code> as <code>x</code>. This is quite weak. In general, we should allow such assignment as long as <code>e2</code> is of a subtype of <code>T0</code>.
+
+<p>Define a relation &lt;= on C++ classes
+<ul>
+	<li>X &lt;= X
+	<li>X &lt;= Y if X inherits from Y
+	<li>X &lt;= Z if X &lt;=Y and Y &lt;= Z
+</ul>
+A better version of [Let-Init] using subtyping:
+<pre>
+      O[T0/x] |- e1:T1
+         O |- e2:T0
+       T0 &lt;= T
+----------------------------    [Let-Init]
+ O |- { T x = e2; e1 } : T1
+</pre>
+A better version of [Assignment-Stmt] using subtyping
+<pre>
+ O|-x:T0  O|-e1:T1 T1 &lt;=T0
+------------------------------ [Assignment-Stmt]
+  |- x=e1 : T0
+</pre>
+(Notice that the type of the assignment statement is T1, so it can participate in more operations than T0)
+
+<p>X?y:z with subtyping. define least-upper-bound. use least-upper-bound to type this ternary operator. Compare with if-then-else
+
+<h3>Typing Methods</h3>
+C++ example
+<pre>
+        O |- e1:T1
+        ...
+        O |- en:T1
+------------------------------ [Dispatch]
+   O |- f(e1,e2,...,en):?
+</pre>
+Also maintain a mapping for method signatures in O
+<pre>
+O(f) = (T1,...,Tn,T(n+1))
+</pre>
+means that there is a method f such that
+<pre>
+f(x1:T1,x2:T2,x3:T3,...,xn:Tn):T(n+1)
+</pre>
+Hence, our dispatch rule becomes:
+<pre>
+        O |- e1:T1
+        ...
+        O |- en:Tn
+        O |- f:(T1',..,Tn',T(n+1)')
+        T1&lt;=T1',...Tn&lt;=Tn'
+---------------------------------------- [Dispatch]
+   O |- f(e1,e2,...,en):T(n+1)
+</pre>
+
+Object-oriented languages also implement encapsulation (e.g., some functions are only visible in certain classes, etc.). To handle them, one can
+extend O to be a function from a tuple of class-name and the identifier-name.
+Further, to express inheritance, we will use the subtype-relation for the
+"this" object in the method dispatch.
+<pre>
+        O |- e0:T0
+        O |- e1:T1
+        ...
+        O |- en:Tn
+        O |- C::f : (T1',..,Tn',T(n+1)')
+        T0 &lt; T
+        T1&lt;=T1',...Tn&lt;=Tn'
+---------------------------------------- [Static-Dispatch]
+   O |- e0@T.f(e1,e2,...,en):T(n+1)
+</pre>
+For object-oriented languages, you also need to know the "current class" C in which the expression is sitting.
+<p>The form of a <em>sentence</em> in the logic is:
+<pre>
+O,C |- e:T
+</pre>
+E.g.,
+<pre>
+ O,C |- e1:int    O,C |- e2:int
+----------------------------------  [Add]
+    O,C |- e1+e2:int
+</pre>
+
+<b>General themes</b>
+<ul>
+	<li>Type rules are defined on the structure of expressions (through structural induction)</li>
+	<li>Types of variables are modeled by an environment</li>
+</ul>
+Warning: Type rules are very compact! A lot of information in compact rules and it takes time to interpret them.
+
+<h3>Implementing Type Checking</h3>
+<ul>
+<li>C type checking can be implemented in a single traversal over the AST.  This is not true for some other languages like OCaml for example, where multiple passes may be required.
+<li>Type environment is passed down the tree
+<ul>
+	<li>From parent to child
+	<li>Other languages may require multiple passes to construct the type environment at each node
+</ul>
+<li>Types are passed up the tree
+<ul>
+	<li>From child to parent
+</ul>
+</ul>
+
+Let's consider the following rule:
+<pre>
+ O,C |- e1:int    O,C |- e2:int
+----------------------------------  [Add]
+    O,C |- e1+e2:int
+</pre>
+This says that to type-check <code>e1+e2</code>, then we have to type-check
+<code>e1</code> and <code>e2</code> separately in the same O,C environment.
+
+<pre>
+TypeCheck(Environment, e1+e2) = {
+  T1 = TypeCheck(Environment, e1);
+  Check T1 == int;
+  T2 = TypeCheck(Environment, e2);
+  Check T2 == int;
+  return int;
+}
+</pre>
+
+Let's consider a more complex example:
+<pre>
+         O |- e0:T0
+      O[T0/x] |- e1:T1
+       T0 &lt;= T
+----------------------------    [Let-Init]
+ O |- { T x = e0; e1 } : T1
+</pre>
+Let's look at the corresponding type-checking implementation:
+<pre>
+TypeCheck(Environment, { T x = e0; e1 }) = {
+  T0 = TypeCheck(Environment, e0);
+  T1 = TypeCheck(Environment.add(x:T), e1);
+  Check subtype(T0,T1);
+  return T1;
+}
+</pre>
+
+<h3>Static vs. Dynamic Typing</h3>
+<ul>
+	<li>Static type systems detect common errors at compile time
+	<li>But some correct programs are disallowed
+	<ul>
+		<li>Some argue for dynamic type checking instead. e.g., Python, Perl, ..
+		<li>Others want more expressive static type checking. e.g., fancier and fancier type systems. But can become quite complex making it harder for programming with such highly-expressive type-systems.
+	</ul>
+</ul>
+
+<ul>
+	The dynamic type of an object is the class C that is used in the "<code>new C</code>" expression that created it.
+	<ul>
+		<li>A run-time notion
+		<li>Even languages that are not statically typed have the notion of dynamic type
+	</ul>
+	<li>The static type of an expression captures all dynamic types the expression could have
+	<ul>
+		<li>A compile-time notion
+	</ul>
+</ul>
+Formalizing the relationship:
+<p>Soundness theorem: for all expressions E, dynamic_type(E) = static_type(E)
+
+<p>In all executions, E evaluates to values of the type inferred by the compiler. You have to actually run the program to get the dynamic_type. In the early days of programming languages, this was the type of property that was proved for their type systems.
+
+
+<p>Consider C++ program:
+<pre>
+class A { ... }
+class B : public A { ... }
+void foo() {
+  A foo;
+  B bar;
+  ....
+  foo =  bar
+}
+</pre>
+Static type of foo is "A", but the dynamic type of foo is "A" and "B" at different program points.
+
+<p>Soundness theorem for object-oriented languages that allow subtyping.
+<pre>
+\forall{E}{dynamic_type(E) &lt;= static_type(E)}
+</pre>
+All operations that can be used on an object of type C can also be used on an object of type C' &lt;= C.
+<ul>
+	<li>Such as fetching the value of an attribute
+	<li>Or invoking a method on the object
+</ul>
+Subclasses <em>only add</em> attributes or methods (they never remove attributes/methods).
+
+	<p>The dynamic type is obtained through the execution semantics of the program, e.g., if we have an expression <code>x++</code>, and the current state of the program determines <code>x</code> to be of type <code>int</code>, there is a dynamic typing rule that says that the type of the new expression is also <code>int</code>. Consider the example <code>{ T x = e0; x; }</code> where <code>e0:T0 &lt;= T</code>; here the dynamic type of the expression is <code>T0</code> (not <code>T</code>!). Similarly, the dynamic
+type of <code>if x then y:T1 else Y:T2</code> will be either <code>T1</code> or <code>T2</code> (not <code>lub(T1,T2)</code> or <code>void</code>).
+
+<p>In other words, soundness states that the static type system will not accept any incorrect program (that will not pass the dynamic type check of equal power). A dynamic type check for array-bounds is not of equal power (it has more checks enabled); a sound static type check for array-bounds would reject all incorrect programs (but it will also reject a few more that will actually pass the dynamic type check).
+
+<p>Soundness of static type system: all dynamically-type-incorrect programs will be rejected. Ensured by ensuring that static_type is a supertype of dynamic_type. A trivial static-type system that rejects all programs is sound (but not useful).
+
+<p>Completeness: all dynamically-type-correct programs will be accepted. Not possible to ensure in general.
+
+<p>Methods can be redefined but with same type! e.g., C++, Java override.
+
+<h3>Example where static type system can be too restrictive</h3>
+While a static type system may be sound, it may be too restrictive and
+may disallow certain programs that may be dynamically well-typed.
+<pre>
+class Count {
+  int i = 0; //default value = 0
+	Count inc() { i &lt;-- i + 1; return *this; }
+};
+</pre>
+Now consider a subclass <code>Stock</code> of <code>Count</code>:
+<pre>
+class Stock : public Count {
+  string name; //name of the item
+};
+</pre>
+And the following use of <code>Stock</code>:
+<pre>
+Stock a;
+Stock b = a.inc();
+... b.name ...
+</pre>
+This code does not type-check because the return value of <code>inc</code>
+is <code>Count</code> which is not a subtype of <code>Stock</code>.
+
+<p>This seems like a major limitation as now the derived classes (subtypes) will be unable to use the <code>inc</code> method.
+
+<p><code>a.inc()</code> has <em>dynamic type</em> <code>Stock</code>.
+
+<p>So it is legitimate to write:
+<code>
+	Stock b &lt;-- a.inc();
+</code>
+
+<p>But this is not well-typed
+<ul>
+	<li><code>a.inc()</code> has <em>static type</em> <code>Count</code>.
+</ul>
+
+<ul>
+	<li>We can extend the type system. Different languages extend the type system in different directions
+	<li>Option 1: Use <code>dynamic_cast</code>: returns nullptr at runtime if not-successful; else returns a pointer to the object of the new type. Allows bypassing the static type system. May entail runtime cost.
+	<li>Option 2: C++ Template : pass type as argument
+	<ul>
+		<li>
+		<pre>
+template&lt;typename T&gt;
+class Count&lt;T&gt; {
+  int i = 0;
+	T inc() { i &lt;-- i + 1; return *static_cast&lt;T *&gt;(this); } //static_cast gets checked at compile-time!
+}
+
+class Stock : public Count&lt;Stock&gt;
+{
+  ...
+}
+</pre>
+<li>Another option: provide <code>dynamic_cast</code> operator. Will fail at runtime if the cast cannot be executed successfully. The compiler just treats this as an operator that either returns <code>nullptr</code> (cast not successful) or (a pointer to) an element of the new type. In both cases, the compiler can perform the rest of the static type-check using the new type.
+	</ul>
+	<li>Accept more correct programs
+	<li>Increase the expressive power of the type system
+</ul>
+
+<h3>Error Recovery</h3>
+<ul>
+	<li> Detecting where errors occur is easier than in parsing
+	<li> Introduce a new type <code>No_type</code> for use with ill-typed expressions
+	<li>Define <code>No_type &lt;= C</code> for all types <code>C</code>. Avoids cascading type errors due to one type-error.
+	<li>Thus, every operation is defined for <code>No_type</code>
+	<ul>
+		<li>With a <code>No_type</code> result
+	</ul>
+	<li>The type hierarchy is not a tree anymore, it is a DAG with <code>No_type</code> at the bottom
+

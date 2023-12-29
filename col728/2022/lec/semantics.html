@@ -1,0 +1,450 @@
+<h3>Operational Semantics</h3>
+<h4>Semantics Overview</h4>
+<p>We must specify for every C expression what happens when it is evaluated. (this is not exactly C, but close).
+<ul>
+	<li>This is the "meaning" of an expression
+</ul>
+
+<p>The definition of a programming language:
+<ul>
+	<li>The tokens --&gt; lexical analysis
+	<li>The grammar --&gt; syntactic analysis
+	<li>The typing rules --&gt; semantic analysis
+	<li>The evaluation rules --&gt; code generation and optimization
+</ul>
+
+<p>We have specified evaluation rules indirectly
+<ul>
+	<li>The compilation of a C program to a stack machine
+	<li>The evaluation rules of the stack machine
+</ul>
+
+<p>This is a complete description
+<ul>
+	<li>Why isn't it good enough?
+	<ul>
+		<li>This is an overspecification. We need the exact specification as that would allow more freedom in code generation and optimization. Overspecification restricts these choices
+	</ul>
+</ul>
+
+<p>Assembly-language descriptions of language implementations have irrelevant detail
+<ul>
+	<li>Whether to use a stack machine or not
+	<li>Which way the stack grows
+	<li>How integers are represented
+	<li>The particular instruction set of the architecture
+</ul>
+We need a complete description that is not overly restrictive. We need a high-level way of describing the behaviour of languages.
+
+<p>Another approach: reference implementations. Again, there will be artifacts of the particular way it was implemented that you didn't mean to be a part of the language (over-specification)
+
+<p>Many ways to specify semantics
+<ul>
+	<li>All equally precise/powerful in their specification (do not under/over-specify)
+	<li>Some more suitable to various tasks than others
+</ul>
+
+<p>Operational semantics
+<ul>
+	<li>Describes program evaluation via execution rules
+	<ul>
+		<li>on an abstract machine
+	</ul>
+	<li>Most useful for specifying implementations</li>
+	<li>Two types: big-step and small-step
+		<ul>
+			<li>Big-step semantics specify the value of the full expression in terms of its constituent expressions. Below, we will use big-step semantics for our language.</li>
+			<li>Small-step semantics specify how a single step (small step) is taken in the evaluation of a program. These are also called reduction semantics. For example, see Norrish's paper on small-step semantics for the C programming language: <a href=https://www.semanticscholar.org/paper/An-abstract-dynamic-semantics-for-C-Norrish/215781dcb9c37f2a86e0501eb1d6fdc04c8c235b>An abstract dynamic semantics for C</a>
+		</ul>
+</ul>
+
+<p>Denotational semantics
+<ul>
+	<li>Program's meaning is a mathematical function
+	<ul>
+		<li>A mathematical function that maps input to output
+		<li>Elegant approach
+		<li>Adds complexity through functions that we don't really need to consider for the purposes of describing an implementation
+	</ul>
+</ul>
+
+<p>Axiomatic semantics
+<ul>
+	<li>Program behaviour described via logical formulae
+	<ul>
+		<li>If execution begins in state satisfying X, then it ends in state satisfying Y
+		<li>X, Y formulas in logic
+	</ul>
+	<li>Foundation of many program verification systems. e.g., static analysis systems to verify properties or discover bugs
+</ul>
+
+<h3>Operational semantics</h3>
+<p>Notation: Logical rules of inference, as in type checking
+
+<p>Recall the typing judgement
+<pre>
+Context |- e:C
+</pre>
+	In the given <em>context</em>, expression <code>e</code> has type <code>C</code>.
+
+<p>We use something similar for evaluation
+<pre>
+Context |- e:v
+</pre>
+In the given <em>context</em> (the meaning of context is different from the context for typing judgements), expression <code>e</code> evaluates to value <code>v</code>.
+
+<p>Example
+<pre>
+Context |- e1: 5
+Context |- e2 : 7
+-----------------
+Context |- e1+e2 : 12
+</pre>
+The <code>Context</code> does not do much in this rule. In general, <code>Context</code> may provide mappings from variables to values for the variables used in <code>e1</code> and <code>e2</code>.
+
+<p>Example
+<pre>
+y &lt;-- x + 1
+</pre>
+We track variables and their values with:
+<ul>
+	<li>An <em>environment</em>: <em>where</em> in memory a variable is
+	<li>A <em>store</em>: <em>what</em> is in the memory
+</ul>
+For C/C++: environment maps <em>variables</em> to <em>memory locations</em>
+<br>store maps <em>memory locations</em> to <em>values</em>
+
+<p>A variable environment maps variables to locations
+<ul>
+	<li>Keeps track of which variables <u>are in scope</u>
+	<li>Tells us where those variables are
+</ul>
+<pre>
+E = [a:l1, b:l2]
+</pre>
+
+<p>Store maps memory locations to values
+<pre>
+S = [l1 --&gt; 5, l2 --&gt; 7]
+</pre>
+
+<p>
+<code>S' = S[12/l1]</code> defines a store S' such that
+<pre>
+S'(l1) = 12
+S'(l) = S(l) if l != l1
+</pre>
+
+<p>C++ values are objects
+<ul>
+	<li>All objects are instances of some type or class
+</ul>
+
+<p><code>X(a1=l1, ..., an=ln)</code> is a C++ object where
+<ul>
+	<li><code>X</code> is the class of the object
+	<li><code>ai</code> are the attributes (including inherited ones)
+	<li><code>li</code> is the location where the value of <code>ai</code> is stored
+</ul>
+
+<p>Notice that the specification is deliberately keeping things as abstract as possible (avoiding over-specification). e.g., the layout of the object is not specified.
+
+<p>There are constant values in C/C++ that do not have associated memory locations; they only have values., e.g., <code>(int)5</code>, <code>(bool)true</code>, (char const *)"constant string", \ldots
+
+<p>There is a special value <code>void</code>:
+<ul>
+	<li>No operations can be performed on it
+	<li>Concrete implementations might use any representation of <code>void</code> value
+</ul>
+
+<p>The evaluation judgement is:
+<pre>
+s0, E,S |- e:v, S'
+</pre>
+<ul>
+	<li>Given <code>s0</code> the current (this/self) object
+	<li>Given <code>E</code> the current variable environment
+	<li>Given <code>S</code> the current store
+	<li>If the evaluation of <code>e</code> terminates then
+	<ul>
+		<li>The value of <code>e</code> is <code>v</code>
+		<li>And the new store is <code>S'</code>
+	</ul>
+</ul>
+Notice: the current self object <code>s0</code> and the current environment <code>E</code> does not change by evaluating an expression. These are invariant under evaluation. However, the contents of the memory may change.
+
+<p>Also notice: there is a qualification which says that if the evaluation of <code>e</code> terminates. Read as "if <code>e</code> terminates..."
+
+<p>"Result" of evaluation is a value and a new store
+<ul>
+	<li>New store models the side-effects
+</ul>
+
+<p>Some things don't change
+<ul>
+	<li>The variable environment
+	<li>The operational semantics allows for non-terminating evaluations
+</ul>
+
+<h3>Operational Semantics for C</h3>
+<p>Start with simple operational-semantic rules and work our way up to more complex rules.
+<pre>
+------------------------------     [bool-true]
+s0,E,S |- true: bool(true), S
+</pre>
+<pre>
+--------------------------------   [bool-false]
+s0,E,S |- false: bool(false), S
+</pre>
+
+<pre>
+i is an integer literal
+-----------------------   [int]
+s0,E,S |- i: int(i), S
+</pre>
+
+<pre>
+s is a string literal
+----------------------------------  [string-lit]
+s0,E,S |- s: (char const *)(s), S
+</pre>
+
+<pre>
+E(id) = lid
+S(lid) = v
+----------------  [id]
+s0,E,S |- id:v,S
+</pre>
+
+<pre>
+-------------------- [this]
+s0,E,S|- this: s0, S
+</pre>
+
+<p>
+<pre>
+s0,E,S |- e:v, S1
+E(id) = lid
+S2 = S[v/lid]
+--------------------------- [assignment]
+s0,E,S |- id &lt;-- e:v, S2
+</pre>
+(e.g., <code>x &lt;-- 1 + 1</code>)
+
+<p>
+<pre>
+s0,E,S |- e1:v1, S1
+s0,E,S1 |- e2:v2, S2
+---------------------------  [add]
+s0,E,S |- e1+e2 : v1+v2, S2
+</pre>
+(notice that the store used while evaluating <code>e2</code> includes the side-effects of evaluating <code>e1</code>). These stores also dictate the order of evaluation of the expressions --- e1 needs to be evaluated first to get S1 which is needed by evaluation of <code>e2</code>
+
+<p>
+<pre>
+s0,E,S |- e1:v1, S1
+s0,E,S1 |- e2:v2, S2
+----------------------- [stmt]
+s0,E,S |- e1;e2 : v2,S2
+</pre>
+
+<p>
+<pre>
+s0,E,S |- e:v,S1
+----------------------- [stmt-block]
+s0,E,S |- {e} : v,S1
+</pre>
+
+<p>Example: Consider the expression
+<pre>
+{ X &lt;-- 7 + 5; 4; }
+</pre>
+Let's say that initially, <code>s0=s0</code>, <code>E=x:l</code>, <code>l&lt;-0</code>. Let's evaluate this expression in this context (start-state/environment/store).
+
+<p>
+<pre>
+   ....
+   .....
+
+---------------------------------------------   -------------------------------
+s0,[X:l],[l&lt;-0] |- X&lt;-7+5:12,[l&lt;-12}    s0,[x:l],[l:..] |- 4:4,[l:...]
+------------------------------------------------------------------------
+s0,[X:l],[l&lt;-0] |- {X &lt;- 7+5; 4 } : 4, [l:12]
+
+</pre>
+
+<h3>More evaluation rules</h3>
+<p>
+<pre>
+s0,E,S |- e1:bool(true),S1
+s0,E,S1 |- e2:v,S2
+--------------------------------------  [ite-true]
+s0,E,S |- if e1 then e2 else e3 : v,S2
+</pre>
+
+<p>
+<pre>
+s0,E,S |- e1:bool(false),S1
+s0,E,S1 |- e3:v,S3
+--------------------------------------  [ite-false]
+s0,E,S |- if e1 then e2 else e3 : v,S3
+</pre>
+
+<p>
+<pre>
+s0,E,S |- e1 : bool(false), S1
+------------------------------------ [while-false]
+s0,E,S |- while (e1) {e2} : void, S1 
+</pre>
+
+<p>
+<pre>
+s0,E,S |- e1 : bool(true), S1
+s0,E,S1 |- e2 : v, S2
+s0,E,S2 |- while e1 {e2} : void, S3
+------------------------------------ [while-true]
+s0,E,S |- while (e1) {e2} : void, S3
+</pre>
+
+<h3>Declarations</h3>
+<p>Partial rule
+<pre>
+s0,E,S |- e1 : v1, S1
+s0,?,? |- e2: v2, S2
+---------------------------------------------
+s0,E,S |- { Decl(id:T &lt;-- e1); e2 } v2, S2
+</pre>
+In what context should <code>e2</code> be evaluated?
+<ul>
+	<li>Environment like <code>E</code> but with a new binding of <code>id</code> to a fresh location <code>lnew</code>.
+	<li>Store like <code>S1</code> but with <code>lnew</code> mapped to <code>v1</code>.
+</ul>
+
+<p>We write <code>lnew = newloc(S)</code> to say that <code>lnew</code> is a location not already used in <code>S</code>.
+<ul>
+	<li><code>newloc</code> is like the memory allocation function
+	<li>Notice that the spec does not say anything about stack, etc. Just that some memory location is allocated that is not already used.
+</ul>
+
+<p>Complete rule
+<pre>
+s0,E,S |- e1 : v1, S1
+lnew = newloc(S1)
+s0,E[lnew/id],S1[v1/lnew] |- e2: v2, S2
+---------------------------------------------
+s0,E,S |- { Decl(id:T &lt;-- e1); e2 } v2, S2
+</pre>
+
+<h3>Allocation of a new object</h3>
+Informal semantics of <code>new T</code>
+<ul>
+	<li>Allocate locations to hold all attributes of an object of class <code>T</code>
+	<ul>
+		<li>Essentially, allocate a new object
+	</ul>
+	<li>Set attributes with their default values
+	<li>Evaluate the initializers and set the resulting attribute values
+	<li>Return the newly allocated object
+</ul>
+
+<p>Let's assume that for each type <code>A</code>, there is a default value <code>D_A</code>. In reality, C/C++ have a notion of uninitialized variables, and associated undefined behaviour.
+<ul>
+	<!--<li><code>D_int = int(0)</code>
+	<li><code>D_bool = bool(false)</code>
+	<li><code>D_(T *) = (T *)(NULL)</code>-->
+	<li><code>D_A = void</code> for any <code>A</code> (could have had default values for some types, e.g., <code>D_int = int(0)</code>).
+</ul>
+
+<p>For a class <code>A</code>, we write
+<pre>
+class(A) = (a1:T1 &lt;-- e1, a2:T2 &lt;-- e2, ..., an &lt;-- en}
+</pre>
+where
+<ul>
+	<li><code>ai</code> are the attributes (including the inherited ones)
+	<li><code>Ti</code> are the attributes' declared types
+	<li><code>ei</code> are the initializers
+	<li>attributes are listed in the <em>greatest-ancestor-first</em> order
+	<ul>
+		<li>If  C(c1,c2) &lt; B(b1,b2) &lt; A(a1,a2), then
+		<pre>
+class(C) = (a1:.., a2:..., b1:.., b2:.., c1:.., c2:..)
+		</pre>
+	</ul>
+</ul>
+
+<p>
+<pre>
+class(T) = (a1:T1 &lt;- e1, ..., an:Tn &lt;- en)
+l1 = newloc(S) for i = 1,..,n
+v = T(a1=l1,..an=ln)
+S1=S[DT1/l1,...,DTn/ln]
+E'=[a1:l1, ..., an:ln]
+v,E',S1 |- { a1 &lt;-- e1; ... an &lt;-- en; } : vn, S2
+----------------------------------------------------------
+s0,E,S |- new T : v,S2
+</pre>
+Notice that <code>E'</code> has nothing to do with <code>E</code>, <code>E'</code> is due to a completely different scope. Also  notice that the evaluation of <code>e1</code>, ..., <code>en</code> follows the same order as in <code>class T</code> (greatest ancestore first). Also notice that the initializers are evaluated with a new value of the self object (<code>v</code>). Also notice that <code>vn</code> is ignored.
+
+<p>Summarizing:
+<ul>
+	<li>The first three steps allocate the object
+	<li>The remaining steps initialize it
+	<ul>
+		<li>By evaluating a sequence of assignments
+	</ul>
+	<li>State in which the initializers are evaluated
+	<ul>
+		<li> <code>this</code> is the current object
+		<li> Only the attributes are in scope (same as in typing)
+		<li> Initial values of attributes are the defaults
+	</ul>
+</ul>
+
+<h3>Dispatch</h3>
+Informal semantics of <code>e0.f(e1,...,en)</code>
+<ul>
+	<li>Evaluate the arguments in order <code>e1,..., en</code>
+	<li>Let <code>e0</code> be the target object
+	<li>Let <code>X</code> be the <u>dynamic</u> type of the target object
+	<li>Fetch from <code>f</code> the definition of <code>f</code> (with <code>n</code> args).
+	<li>Create <code>n</code> new locations and an environment that maps <code>f</code>'s formal arguments to those locations
+	<li>Initialize the locations with the actual arguments
+	<li>Set <code>self</code> to the target object and evaluate <code>f</code>'s body
+</ul>
+
+<p>For a class <code>A</code> and a method <code>f</code> of <code>A</code> (possibly inherited):
+<pre>
+impl(A, f) = (x1, ..., xn, ebody)
+</pre>
+where
+<ul>
+	<li> <code>xi</code> are the names of the formal arguments
+	<li> <code>ebody</code> is the body of the method
+</ul>
+
+<p>Complete rule
+<pre>
+s0,E,S |- e1 : v1,S1
+s0,E,S1 |- e2 : v2,S2
+...
+s0,E,S(n-1) |- en : vn,Sn
+s0,E,Sn |- e0 : v0,S(n+1)
+v0 = X(a1=l1, ..., am=lm)
+impl(X,f) = (x1,..,xn, ebody)
+lxi = newloc(Sn+1) for i=1..n
+E' = [a1:l1, ..., am:lm][x1/lx1,...,xn/lxn]
+S(n+2) = S(n+1)[v1/lx1,...,vn/lxn]
+v0,E',S(n+2) |- ebody:v,S(n+3)
+---------------------------------------------- [dispatch]
+s0,E,S |- e0.f(e1,...,en) : v, S(n+3)
+</pre>
+We are interested in the class-tag of <code>v0</code> (<code>X</code>) and its attributes. Notice that this is the dynamic type of the object v0. (This provides dynamic dispatch).
+
+<p>What are the names in scope of the method <code>f</code>: all attributes and all the formal arguments. <code>E'</code> assigns locations to all these names.
+
+<p>The construction of <code>E'</code> is interesting because it two square brackets: this is because it is possible that a formal parameter may have the same name as an attribute name, and we want to capture this overriding semantics.
+
+<p>The function body is evaluated in an updated store, where the locations of formal arguments are replaced by expression values (call-by-value). Also the self object is v0. Notice that E' has nothing to do with <code>E</code> (static scoping). Dynamic scoping may have E' that is dependent on E.
+
+<p> We did not delete the locations <code>lxi</code> after finishing the execution of <code>ebody</code>.  Is that a problem?

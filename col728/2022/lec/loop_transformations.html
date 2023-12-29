@@ -1,0 +1,378 @@
+<h3>An example loop transformation: loop inversion</h3>
+<pre>
+t = m + n;
+for (i = 0; i &lt; n; i++) {
+  A[i] = t;
+}
+</pre>
+to
+<pre>
+t = m + n;
+if (n &gt; 0) {
+  i = 0;
+  do {
+    A[i] = t;
+    i++;
+  } while (i &lt; n);
+}
+</pre>
+This can be thought-of as a special case of <em>loop peeling</em> (peeling of the first few iterations in the loop header). Here, we peel-off the check of the first iteration. It happens to be a very common optimization in modern compilers as it can be applied to <em>any</em> loop.
+
+<p>Optimizations that make a loop faster are usually very consequential and so much effort has gone into this.
+
+
+<h3>What is a loop?</h3>
+Goal:
+<ul>
+	<li>Define a loop in graph-theoretic terms (control-flow graph)</li>
+	<li>Not sensitive to input syntax: a uniform treatment of all loops (e.g., for, while, repeat-until, do-while, etc.).</li>
+</ul>
+Informally, a natural loop has
+<ul>
+	<li>edges that form at least a cycle.</li>
+	<li>a single entry point.</li>
+</ul>
+Example:
+<pre>
+BB1-&gt;BB2
+BB1-&gt;BB3
+BB2-&gt;BB4
+BB3-&gt;BB4
+BB4-&gt;BB5
+BB5-&gt;BB4
+BB5-&gt;BB2
+</pre>
+While BB4-BB5 are a natural loop, BB2-BB4-BB5 are not a natural loop (BB3 can jump into the middle of this loop).
+
+<p>Most loops in common programs are <em>natural loops</em>.
+
+<h3>Dominators</h3>
+<ul>
+	<li>Node <code>d</code> dominates node <code>n</code> in a graph (<code>d dom n</code>) if:
+		<ul>
+			<li>Every path from the start node to <code>n</code> goes through <code>d</code>.</li>
+			<li>A node dominates itself.</li>
+		</ul>
+	</li>
+	<li>Immediate dominance: <code>d idom n</code>: <code>d dom n</code>, <code>d != n</code>, <code>\not_exists m, s.t., d dom m and m dom n</code>.</li>
+	<li>Immediate dominance relationships form a tree.</li>
+</ul>
+
+<h3>Definition of Natural loops</h3>
+<ul>
+	<li>A single entry point: <b>header</b>(d): a header dominates all nodes in the loop.</li>
+	<li>A <b>back edge</b> (n -&gt; d) in a flow graph is an edge whose destination dominates its source (<code>d dom n</code>)</li>
+	<li>The <b>natural loop of a back edge</b> (n-&gt;d) is <code>d</code>+ <code>{nodes that can reach <code>n</code> without going through <code>d</code>}</code>.</li>
+</ul>
+
+<h3>Algorithm to find natural loops</h3>
+<ol>
+	<li>Find the dominator relations in a flow graph.</li>
+	<li>Identify the back edges.</li>
+	<li>Find the natural loop associated with the back edge.</li>
+</ol>
+<h3>Finding dominators</h3>
+A node <code>d</code> dominates <code>n</code> in a graph (<code>d dom n</code>) if every path from the start node to
+<code>n</code> goes through <code>d</code>.
+<ul>
+	<li>Domain of values: all sets of basic blocks.</li>
+	<li>Direction: forward</li>
+	<li>Meet operator: intersection</li>
+	<li>Transfer function: f(x) = x \union b</li>
+	<li>Boundary condition: out[entry] = {start}</li>
+	<li>Initialization to Top for all non-entry blocks: out[b] = set of all blocks</li>
+	<li>Bottom: empty set</li>
+</ul>
+Can do in one reverse postorder pass.
+
+<h3>Finding back edges</h3>
+Any edge whose destination dominate source.
+
+<h3>Constructing natural loops</h3>
+Remove <code>d</code> from the graph, find all predecessors of <code>n</code>.
+
+<h3>Inner loops</h3>
+<ul>
+	<li>If two loops do not have the same header:
+		<ul>
+			<li>They are either disjoint, or</li>
+			<li>One is entirely contained (nested within) the other
+				<ul>
+					<li>Inner loop: the one that contains no other loop.</li>
+				</ul>
+			</li>
+		</ul>
+	</li>
+	<li>If two loops share the same header:
+		<ul>
+			<li>Hard to tell which is the inner loop</li>
+			<li>Combine as one.</li>
+		</ul>
+</ul>
+
+<h3>Induction variables</h3>
+Example
+<pre>
+BB1-&gt;BB2
+BB2-&gt;BB2
+BB2-&gt;BB3
+
+BB1: a=0
+BB2: a = a+1
+</pre>
+<ul>
+	<li>Summarize the loop body with a transfer function fb: m' = fb(m)
+		<ul>
+			<li><code>m'(a)=m(a)+1</code>; <code>m'(x)=m(x)</code> for <code>x != a</code></li>
+		</ul>
+	</li>
+	<li>Summarize the effect after i iterations: m' = fb^i(m)
+		<ul>
+			<li><code>m'(a)=m(a)+i</code>; <code>m'(x)=m(x)</code> for <code>x != a</code></li>
+			<li>Can now execute each iteration independently (e.g., in parallel).</li>
+		</ul>
+	</li>
+	<li>Summarize the effect of the entire loop with n iterations: m' = fb^n(m)
+		<ul>
+			<li>If n is a constant: <code>m'(a)=m(a)+n</code>; <code>m'(x)=m(x)</code> for <code>x != a</code></li>
+			<li>If n is unknown: <code>m'(a)=unknown</code>; <code>m'(x)=m(x)</code> for <code>x != a</code></li>
+			<li>Can now execute each iteration independently (e.g., in parallel).</li>
+		</ul>
+	</li>
+  <li>Closure of a function: direct evaluation of i applications of a function.</li>
+</ul>
+
+<h3>Region-based analysis</h3>
+<ul>
+	<li>A <b>region</b>: a group of nodes with a single entry and possibly multiple exits</li>
+	<li>Assume a <b>reducible flow graph</b></li>
+	<li>Find natural loops: each defines:
+		<ul>
+			<li>loop body (acyclic graph of sub-regions)</li>
+			<li>loop (one sub-region and back edges)</li>
+		</ul>
+	</li>
+	<li><b>Bottom-up analysis</b>: compute transfer function from entry to all exits for each sub-region.</li>
+	<li><b>Top-down analysis</b>: Apply the <em>summary transfer functions</em> (for each sub-region) to compute data flow values of the entire region with its loop's back-edges.</li>
+</ul>
+
+<h3>Example: a semi-lattice of transfer functions</h3>
+<ul>
+	<li>Example: reaching definition: <code>fi(x) = geni \union (x - killi)</code>.</li>
+	<li>o : composition of transfer functions (for paths): <code>(f2 o f1)(x) = gen2 \union ((gen1 \union (x-kill1)) - kill2)</code>.</li>
+	<li>^ : meet of transfer functions (for confluence points): union: <code>(f1 ^ f2)(x) = (gen1 \union (x-kill1)) \union (gen2 \union (x-kill2))</code></li>
+	<li>*(kleene star) operator: closure of transfer functions (for cycles): f* = meet over f^0, f^1, f^2, ..., f^n for n-&gt;\infinity. f^0 is the identity function.</li>
+	<li>In this example: f^2(x) = f(x)</li>
+	<li>f*(x) = x \union f(x) = gen \union x</li>
+</ul>
+
+<h3>Bottom-up analysis</h3>
+<ul>
+	<li>Acyclic region: find transfer function to end of every subregion. Apply composition and meet of transfer functions based on paths.</li>
+	<li>Cyclic region:
+		<ul>
+			<li>After (i-1)st complete iterations
+				<ul>
+					<li>fj: transfer function from loop header to back-edge source.</li>
+					<li>fj^(i-1)</li>
+				</ul>
+			</li>
+			<li>For each loop exit <code>e</code>:
+				<ul>
+					<li>fe: transfer function from loop head to exit</li>
+					<li>After i iterations: fe o fj^(i-1)</li>
+					<li>After an unknown number of iterations: fe o fj*</li>
+				</ul>
+		</ul>
+</ul>
+
+<h3>Top-down analysis</h3>
+<ul>
+	<li>Given boundary value at the beginning of program: in[entry]</li>
+	<li>Acyclic region R, for each subregion S:
+		<ul>
+			<li>out[S] = f(in[R]), where f is the transfer function from in[R] to the exit of S</li>
+			<li>in[S] = in[R] if S is the header of region R</li>
+			<li>in[S] = \meet (out[p]) for all predecessors p of S (if S is not the header of region R)</li>
+		</ul>
+	<li>Cyclic region R, with one subregion S:
+		<ul>
+			<li>in[S] = fj*(in[R]), where fj is the transfer function from in[R] to back-edge source</li>
+		</ul>
+	</li>
+</ul>
+Region-based analysis broken down into bottom-up and top-down analysis is useful for more
+precise analysis by passing appropriate summaries from bottom-up analysis to top-down analysis.
+For example, if we have two functions f and g (callers), calling the same function h (callee).
+Using a summary callee function for h allows us to avoid flow of information from f to g and g to f.
+In this case, the call to h can be summarized as a transfer function with one entry and one exit.
+
+<h3>Induction variables</h3>
+Example1
+<pre>
+for (j = ...) {
+  //A[j] = 0
+  t1 = 4*j
+  t2 = &amp;A
+  t3 = t1+t2
+  *t3 = 0
+}
+//t1 = 4j; t3 = &amp;A+4j in iteration j
+</pre>
+to
+<pre>
+t3 = &amp;A
+for (j = ...) {
+  *t3=0
+  t3 = t3+4
+}
+</pre>
+
+<p>Example2
+<pre>
+loop:
+b = a
+a = a + 1
+c = a + b
+d = r + b
+e = f
+f = read()
+g = 2 * f
+a = a + 1
+p = p + 1
+q = p + a
+</pre>
+Let <code>m</code> be a map of var-&gt;val at start of loop body.
+
+<p>At the end of each statement:
+<pre>
+b = m(a)
+a = m(a) + 1
+c = 2*m(a) + 1
+d = m(r) + m(a)
+e = m(f)
+f = unknown
+g = unknown
+a = m(a) + 2
+p = m(p) + 1
+q = m(p) + m(a) + 3
+</pre>
+
+<p>Let <code>m'</code> be a map of var-&gt;val at start of loop at end of i-1 iteration
+<pre>
+m'(r)=m(r)
+m'(a)=m(a)+2i-2
+m'(p)=m(p)+i-1
+m'(f)=unknown
+</pre>
+
+<p>At end of each statement in i'th iter:
+<pre>
+b=m(a)+2i-2
+a=m(a)+2i-1
+c=2m(a)+4i-3
+d=m(r)+m(a)+2i-2
+e=unknown
+f=unknown
+g=unknown
+a=m(a)+2i
+p=m(p)+i
+q=m(p)+m(a)+3i
+</pre>
+Wherever possible, represent values as <em>affine expressions</em> on the loop iteration index.
+
+<h3>Strength reduction</h3>
+Replace multiplications with additions
+<pre>
+for (i = ....) {
+  j = c0 + c1*i
+  ... j ...
+}
+</pre>
+to
+<pre>
+j = c0 + c1;
+for (i = ...) {
+  ... j ...
+  j += c1
+}
+</pre>
+
+<h3>Induction Variable</h3>
+Variables
+<ul>
+	<li>All the variables in the program</li>
+	<li>A normalized index <code>i</code> for each loop, with values 1, 2, ... for 1st, 2nd iterations etc.</li>
+</ul>
+Find variables that are afffine expressions of loop indices and loop-invariant variables. Formulate as a bottom-up region based analysis.
+
+<h3>Transfer function of a statement</h3>
+<ul>
+	<li>Let <code>f</code> be the transfer function of statement: <code>x = c0+c1*y + c2*z</code>
+		<ul>
+			<li>m' = f(m)</li>
+			<li>For each variable v, m'(v) =
+				<ul>
+					<li>m(v) if v != x</li>
+					<li>c0 + c1*m(y) + c2*m(z) if v = x</li>
+					<li>unknown (bottom) otherwise</li>
+				</ul>
+			</li>
+		</ul>
+</ul>
+
+<h3>Composition of transfer functions</h3>
+<ul>
+	<li>Composition of transfer function: f2 o f1 : --&gt; f1 --&gt; f2 --&gt;</li>
+	<li>Let m1=f1(m) and m'=f2of1(m)</li>
+	<li>Let f2 be the transfer function of the statement: <code>x = c0 + c1*y + c2*z</code></li>
+	<li>For each variable v, m'(v) =
+		<ul>
+			<li>m1(v) if v != x</li>
+			<li>c0+c1*m1(y)+c2*m2(z) if v=x and m1(y),m1(z) is not unknown</li>
+			<li>unknown otherwise</li>
+		</ul>
+</ul>
+
+<h3>Meet of transfer function</h3>
+<ul>
+	<li>Meet of transfer function: f2 ^ f1</li>
+	<li>Let m1 = f1(m), m2=f2(m), m' = f1^f2(m)</li>
+	<li>For each variable v, <code>m'(v) =</code>
+		<ul>
+			<li>m1(v) if m1(v)=m2(v)</li>
+			<li>unknown otherwise</li>
+		</ul>
+	</li>
+</ul>
+
+<h3>Closure</h3>
+<ul>
+	<li>Closure of transffer function: f^i</li>
+	<li>Let m1=f(m0), m(i-1) = f^(i-1)(m0), m(i) = fof^(i-1)(m0)</li>
+	<li>After i-1 iterations
+		<ul>
+			<li>Loop invariant: m1(v) = m0(v) =&gt; m(i-1)(v) = m0(v)</li>
+			<li><u>Basic</u> induction: m1(v) = m0(v) + c =&gt; m(i-1)(v) = m0(v) + c(i-1)</li>
+		</ul>
+	</li>
+	<li>After the ith iteration:
+	<ul>
+		<li>m1(v) = c0 + \sum_k{ck*m0(vk)} + \sum_j{cj*m0(vj)} where vk is a loop invariant variable, and vj is a <u>basic</u> induction variable incremented by Cj (capital C is different from small c)</li>
+		<li>=&gt; mi(v) = c0 + \sum_k{ck*m(i-1)(vk)} + \sum_j{cj*m(i-1)(vj)}</li>
+		<li>=&gt; mi(v) = c0 + \sum_k{ck*m0(vk)} + \sum_j{cj*(m0(vj) + Cj(i-1))}</li>
+		<li>otherwise =&gt; mi(v) = unknown</li>
+	</ul>
+	</li>
+	<li>After unknown number of iterations: Let m* = f*(m)
+		<ul>
+		<li>m1(v) = c0 + \sum_k{ck*m0(vk)} where vk is a loop invariant variable</li>
+		<li>=&gt; m*(v) = c0 + \sum_k{ck*m0(vk)}</li>
+		<li>otherwise =&gt; m*(v) = unknown</li>
+		</ul>
+	</li>
+</ul>
+
+<p>Summary: region-based analysis is an alternate algorithm for iterative data-flow. It works in <em>transfer function</em> space with composition (o), meet (^) and kleene start (*) operators. Bottom-up analysis summarizes the effect of regions with transfer functions.
+
+<p>Induction variable analysis is useful for strength reduction and for symbolic analysis for parallelization.</p>
