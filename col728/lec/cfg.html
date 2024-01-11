@@ -145,6 +145,8 @@ E --&gt; Id
 
 <p>Multiple parse trees are possible for the same input (even for this example)
 
+<p>Two derivations may produce the same or different parse trees.
+
 <p>The parse tree shows the association of the operations, the original input does not.
 
 <p>The example we discussed is a <em>leftmost-derivation</em>: at each step, replace the left-most non-terminal. There is an equivalent notion of a <em>rightmost-derivation</em>.
@@ -186,10 +188,10 @@ E --&gt;   MIF   /* all if are matched with else */
          | UIF   /* some if is unmatched */
 
 MIF --&gt;   if E then MIF else MIF
-           | ...
+           | id
 
 UIF --&gt;   if E then MIF else UIF  /* the then expression is MIF, because if it were UIF then this else should have matched it! */
-           | ...
+           | if E then E
 </pre>
 Show the two parse trees, and show which one is rejected by this new grammar.
 
