@@ -214,7 +214,7 @@ Example: E -&gt; E + E | E * E | Int
 <br>The order of this specification says which one has higher precedence in case of ambiguity
 <br>Show how these precedence rules eliminate one of the parse trees
 
-<p>The parser will use these declarations to decide which move to take in case of ambiguity.
+<p>The parser will use these declarations to decide which move to take in case of ambiguity. There are primarily three common types of ambiguity resolution in PLs: associativity (left or right), precedence (* before +), and bind-to-innermost (or bind-to-outermost). The first two types are easy to specify in parser generators; the last type is harder and requires the programmer to manually change the grammar.
 
 <h3>Error handling</h3>
 <p>Purpose of a compiler is:
