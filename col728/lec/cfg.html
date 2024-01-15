@@ -314,8 +314,13 @@ After lexical analysis, a list of tokens
 <pre>
 int5 '+' '(' 'int2' '+' 'int3' ')'
 </pre>
-During parsing we build a parse tree
-<em>Draw a parse tree</em>root = E, second level expands E + E, third level expands the first E into int5 and the second E into (E), and so on...
+During parsing we build a parse tree.
+
+<p>
+<em>Draw a parse tree</em>.
+
+<p>
+root = E, second level expands E + E, third level expands the first E into int5 and the second E into (E), and so on...
 
 The parse tree is sufficient for compilation (it captures the nesting structure) but it has too much information, such as parantheses and single-successor nodes, etc. AST is a cleaned-up and more concise version of the parse tree. Parentheses are redundant because the tree structure tells us the grouping already
 
