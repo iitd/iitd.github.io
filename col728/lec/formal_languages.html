@@ -187,3 +187,12 @@ Error = all strings not in the lexical specification
 	<li>Even more space-efficient implementation: Use a table for the NFA (not the DFA): In this case, an element of the table would be a set of states. The table will be relatively small, because the number of states is limited by the number of NFA states and the size of the input alphabet. However, simulating the NFA is now more expensive, because we have to deal with sets of states (instead of single states). For each transition, we have to look at all the current set of possible states, to generate the next set of possible states. Again, this is a Space vs. Time tradeoff
 </ul>
 In practice, lexical analysis give you configuration options to choose between DFAs and NFAs-based implementations (for the user to choose between space-time tradeoffs).
+
+<h3>Relationship between the lookahead and maximal munch</h3>
+<p>The lookahead is the maximum number of characters that I need to scan forward before I can start checking for membership.  In other words, the maximal munch is guaranteed to match within the next lookahead characters (and no string longer than the lookahead can potentially match). For example, in C, the lookahead could stop at the next space character or the next parenthesis, etc. 
+
+<p>If the size of the lookahead string is M, then in the maximal munch algorithm, we may be forced to look at a character at most M times. Thus, the smaller the lookahead string the better.
+
+<p>In addition to the membership, the DFA/NFA accepting states could encode the token class which should be emitted if the string ends at that state. Priority resolution between multiple states can be done similarly.
+
+<p>However note that this is the simplest and the most general form of an algorithm. In practice, for a given language, the lexer is specialized for the set of token classes of that language (e.g., C).  Moreover, the DFA is optimized so that if you end in a non-accepting state (due to trying maximal munch), then that state encodes the state and the input position we should resume from (to be able to identify the next token).
