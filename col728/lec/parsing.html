@@ -183,6 +183,7 @@ This left recursion can also be eliminated (see Dragon book for general algorith
 
 <p>Example
 <pre>
+S --&gt; E$
 E --&gt; T + E | T
 T --&gt; int | int * T | (E)
 </pre>
@@ -191,6 +192,7 @@ Here, with one lookahead, hard to predict because:
 	<li>we cannot choose the first two productions of T by one lookahead
 	<li>the same problem exists with E, because two productions start with non-terminal T. Here it is a non-terminal, but still there is an issue, because we do not know which production to use for one lookahead
 </ul>
+In fact, this grammar cannot be parsed for any constant-k lookahead. e.g., consider parsing 2*3+2$ or 2*(1+3+....)+2.
 
 <h3>Left factoring a grammar</h3>
 Basic idea: Factor out common prefix into a single production
@@ -213,6 +215,9 @@ X --&gt; +E | \epsilon
 T --&gt; int Y | (E)
 Y --&gt; \epsilon | * T
 </ul>
+In this example, left factoring yields an LL(1) grammar.  This is not true in general, e.g., S --&gt; SS | (S) | \epsilon does not yield an LL(1) grammar after left factoring.
+
+<p>
 LL(1) parsing table (assume it is somehow given, later we will discuss how to construct this):
 <pre>
      int     *     +     (     )          $
@@ -285,8 +290,14 @@ First(X) = {t | X --&gt;* t \alpha} U {\epsilon | X --&gt;* \epsilon}
 	<ul>
 		<li>if X --&gt; \epsilon
 		<li>if X --&gt; A1A2..An   AND  \epsilon \in First(Ai) for all i
+<ul>
+Also, \epsilon \in{} First(A1A2..An). (We construct First sets for all RHSes of productions).
+</ul>
 	</ul>
 	<li>First(\alpha) \subset First(X) if X --&gt; A1..An \alpha and \epsilon \in First(Ai) for all i
+<ul>
+Also, First(\alpha) \subset{} First(A1A2..An\alpha). (We construct First sets for all RHSes of productions).
+</ul>
 </ol>
 
 <p>Example
@@ -310,6 +321,12 @@ First(E) \superset First(T)
 First(T) = {'(', 'int')}
 First(X) = {+, \epsilon}
 First(Y) = {*, \epsilon}
+First(TX) = {'(', 'int'}
+First(+E) = {+}
+First(\epsilon) = {\epsilon}
+First(int Y) = {int}
+First('('E')') = {'('}
+First(*T) = {'*'}
 </pre>
 
 <p>Constructing <b>Follow sets</b>
@@ -423,3 +440,9 @@ Follow(S) = {$, a}
 In this case, both productions will appear at T[S, b]. If an entry is multiply defined (more than one productions appear in a table cell), G is not LL(1). Examples: a grammar that is ambiguous, not left-factored, left-recursive will all be not LL(1). But there are more grammars that may not be LL(1)
 
 <p>Most programming language CFGs are not LL(1). More powerful formulations for describing practical grammars that assemble some of these ideas in more sophisticated ways to develop more parsers
+
+<p>
+<a href=https://notes.eatonphil.com/parser-generators-vs-handwritten-parsers-survey-2021.html>Parser generators vs. handwritten parsers (2021 survey)</a>
+
+<p>
+Interesting observation: An LL(0) grammar can accept at most a single finite string.
