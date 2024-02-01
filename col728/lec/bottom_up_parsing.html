@@ -44,6 +44,10 @@ int * int + int
 			  E
 </pre>
 
+<p>
+Consequence: Whenever we reduce <code>abw -&gt; aXw</code> (using <code>X -&gt; b</code>),
+it must be true that <code>w</code> is a string of terminals.
+
 <h3>Shift-reduce parsing : strategy used by bottom-up parsers</h3>
 Important fact #1 has an interesting consequence:
 <ul>
@@ -61,7 +65,8 @@ Important fact #1 has an interesting consequence:
 	<li>Left substring has terminals and non-terminals
 	<li>The dividing point is marked by |
 	<ul>
-		<li> <code>aX|w</code>
+		<li> <code>a|w</code> where <code>a</code> is a string
+of terminals and non-terminals, and <code>w</code> is a string of only terminals.</li>
 	</ul>
 	<li>Need two kind of moves: shift-move (discussed next) and reduce-move (already discussed)
 	<li>The shift-move moves | to the right by one character (signifying that the parser has seen this character)
@@ -104,8 +109,11 @@ Left string can be implemented by a stack, because we only reduce the suffix of 
 <p>In either case, the parser does not know what to do, and we either need to rewrite the grammar, or need to give the parser a hint on what to do in this situation.
 
 <h3>Deciding when to shift and when to reduce</h3>
+<p>Solution 1: backtracking: try both shift and reduce (exponential search space)
+
+<p>Solution 2: predictive LR(k)
+
 <p>Example : <code>int * int + int</code>
-<br>Assume an oracle tells us whether to shift of reduce
 <pre>
 |int * int  + int                     shift
 int |* int + int                      shift
@@ -123,6 +131,22 @@ But this would be a fatal mistake because there is no way we can reduce to E (th
 S --&gt;* \alpha X \omega --&gt; \alpha \beta \omega
 </pre>
 Then <code>\alpha \beta</code> is a handle of <code>\alpha \beta \omega</code>
+
+<p>Is <code>int</code> a handle of <code>int*int+int</code>?
+<pre>E --&amp; T+E --&amp; T+T --&amp; T+int --&amp; int*T+int --&amp; ...</pre>
+The <code>int</code> at the leftmost position was produced from <code>T--&amp;int*T</code> and not a reduction
+to only <code>int</code>.  Hence, <code>int</code> is <em>not</em> a handle of <code>int*int+int</code>.
+
+<p>Is <code>int*T</code> a handle of <code>int*int+int</code>? Yes.
+
+<p>Is <code>int*T+E</code> a handle of <code>int*int+int</code>?
+<pre>E --&gt; T+E --&gt; T + T --&gt; ...</pre>
+Because, in a rightmost deriviation, we produce <code>T</code> from <code>E</code> at the rightmost position in
+the very beginning, <code>int*T+E</code> is not a handle of <code>int*int+int</code>.
+
+<p>Is <code>\epsilon<code> a handle of <code>int*int+int</code>?
+<pre>E --&gt; T+E --&gt; ...</pre>
+No.  We never produce $\epsilon$ at the leftmost position in this rightmost derivation.
 
 <p>Handles formalize the intuition: A handle is a reduction that allows further reductions back to the start symbol.
 
@@ -149,27 +173,65 @@ For an arbitrary grammar, no efficient algorithms known to recognize handles.
 
 <p>Heuristics to identify handles. On certain types of CFGs, heuristics are always correct.
 
-<p>Venn diagram:  All CFGs \superset Unambiguous CFGs \superset LR(k) CFGs \superset LALR(k) CFGs \superset SLR(k) \superset LR(0)
+<p>Strategy: try and rule out non-handles.  Even better: rule out <em>prefixes</em> that can never result in handles.
 
-<p>LR(k) are quite general, but most practical grammers are LALR(k). SLR(k) are simplifications over LALR(k) [simple LR grammars]. There are grammars that are SLR(k) but not LALR(k) and so on.
+<p><code>int|*int+int</code>: With lookahead one, the parser knows that the next token is <code>*</code>.  If the string begins with <code>T*</code>, it has <em>no hope</em> of being reduced to <code>E</code> (for any possible string of terminals that follows).  In other words, <code>T *</code> is not a viable prefix.
 
-<p>\alpha is a <em>viable prefix</em> if there is a valid right-most derivation of the string: S' --&gt; ...  --&gt; \alpha\omega --&gt; ... --&gt; string. e.g., \epsilon is a viable prefix
+<p>If there is a valid right-most derivation of the string: <code>S --&gt; ...  --&gt; \alphaX\omega --&gt; \alpha\beta{}\omega --&gt; ... --&gt; string</code>, then <code>\alpha{}\beta{}</code> and all its prefixes are <em>viable prefixes</em>.  e.g., <code>\epsilon</code> is always a viable prefix
 
-<p>In other words, \alpha is a <em>viable prefix</em> if there is an \omega such that \alpha|\omega is a state of a shift-reduce parser. Here \alpha is the stack and \omega is the rest of the input. It can lookahead at \omega, but the parser does not know the whole think. The parser knows the whole stack.
+<p>Example:
+<pre>
+S --&gt; E$
+E --&gt; T
+T --&gt; int
+</pre>
+A rightmost derivation is: <code>S --&gt; E$ --&gt; T$ --&gt; int$</code>.  Here <code>E$</code> is a viable prefix (production <code>S--&gt;E$</code> with <code>X=S</code> and <code>\beta=E$</code>). <code>T</code> is a viable prefix (with <code>X=E</code> and <code>\beta=T</code>).  But <code>T$</code> is <em>not</em> a viable prefix, as there is nothing that generates <code>T$</code> in one step. Similarly, <code>int$</code> is not a viable prefix.
+
+<p>Examples.  Consider the grammar below.
+<pre>
+S --&gt; E$
+E --&gt; T+E | T
+T --&gt; int*T | int | (E)
+</pre>
+Which of these are viable prefixes?
+<ul>
+<li> <code>T</code>? Yes, because <code>S --&gt; E$ --&gt; T+E$ --&gt; ...</code> is a valid rightmost derivation.</li>
+<li> <code>\epsilon</code>? Yes, always.</li>
+<li> <code>int*</code>? Yes, <code>S --&gt; E$ --&gt; T+E$ --&gt; ... -&gt; int*T+...</code></li>
+<li> <code>T*</code>? Consider the possibilities: <code>S --&gt; E$ --&gt; T+E --&gt; </code> is not helpful; neither is <code>S--&gt; E$ --&gt; T --&gt; ...</code>.  So, no.
+<li> <code>int*T+T</code>? No.  (I must first produce the rightmost <code>T</code> to something before I can expand the left <code>T</code> to <code>int*T</code>).
+<li> <code>E</code>? Yes.
+</ul>
+
+<p>In other words, \alpha is a <em>viable prefix</em> iff there is an \omega such that \alpha|\omega is an intermediate state of a shift-reduce parser in a valid parse of <em>any</em> string. Here $\alpha$ is the stack and $\omega$ is the rest of the input. It can lookahead at $\omega$, but the parser does not know the whole thing. The parser knows the whole stack.
 
 <p>What does this mean? A viable prefix does not extend past the right end of the handle. It's a viable prefix because it is a prefix of the handle. As long as a parser has viable prefixes on the stack, no parsing error has been detected.
 
-<p>An item is a production with a "." somewhere on the RHS in the production:
-e.g., the items for <code>T --&gt; (E)</code> are: <code>T --&gt; .(E)</code>, <code>T --&gt; (.E)</code>, <code>T --&gt; (E.)</code>, <code>T --&gt; (E).</code>.
-
-<p>The only item for an \epsilon production, <code>X --&gt; \epsilon</code> is <code>X --&gt; .</code>. Items are often called "LR(0) items".
-
-<p>The problem in recognizing viable prefixes is that the stack has only bits and pieces of the RHS of productions
+<p>Predictive shift-reduce parsing: based on the lookahead, check if any of the shift or reduce choices do not produce a viable prefix.  If so, discard that choice. For example, for lookahead one, consider the following state:
+<pre>
+\alpha\beta\gamma|a\omega
+<pre>
 <ul>
-	<li>If it had a complete RHS, we could reduce
+<li>Option 1: Shift. Is <code>\alpha\beta\gamma{}a</code> a viable prefix?</li>
+<li>Option 2: Reduce using X--&gt;\gamma. Is <code>\alpha\beta{}Xa</code> a viable prefix?
 </ul>
-These bits and pieces are always prefixes of RHS of some production(s).
 
+<p>Conversely, In a string is parse-able through the bottom-up parser, then every potential state of the stack should always be a viable prefix.
+
+<p>Consider the string <code>(int * int)</code>:
+<ul>
+	<li><code>int *|int)</code> is a state of a shift-reduce parse
+	<li>"(" is a prefix of the RHS of <code>T --&gt; (E)</code>
+	<li>"\epsilon" is a prefix of the RHS of <code>E --&gt; T</code>. This is an interesting case as we are considering "\epsilon" as a prefix too!
+	<li>"int *" is a prefix of the RHS of <code>T --&gt; int * T</code>
+</ul>
+
+
+<p>Venn diagram:  All CFGs \superset Unambiguous CFGs \superset LR(1) CFGs \superset LALR(1) CFGs \superset SLR \superset LR(0)
+
+<p>LR(k) are quite general, but most practical grammers are LALR(k). SLR(k) are simplifications over LALR(k) [simple LR grammars].
+
+<p>LL(1) is a subset of LR(1) but can cut across LR(0), SLR, LALR(1).
 <p>Consider the input <code>(int)</code> for the grammar:
 <pre>
 E --&gt; T + E | T
@@ -205,29 +267,21 @@ S --&gt; \epsilon | [S]
 </pre>
 is
 <pre>
-\epsilon | "["* | "["*S | "["*S"]"
+\epsilon | "["* | "["*S | "["+S"]"
 </pre>
+Notice that <code>"["*S"]]"</code> is <em>not</em> a viable prefix.
 
-<p>The language of viable prefixes for the example grammar:
-<pre>
-S --&gt; \epsilon | [S] | S.S
-</pre>
-is
-<pre>
-X = \epsilon | "[" | "["* | "["*S | "["*S"]"
-Y = "["*S.(X | Y)*
-Z = X + Y
-</pre>
-
-<p>Conversely, In a string is parse-able through the bottom-up parser, then every potential state of the stack should always be a viable prefix.
-
-<p>Consider the string <code>(int * int)</code>:
+<p>The problem in recognizing viable prefixes is that the stack has only bits and pieces of the RHS of productions
 <ul>
-	<li><code>int *|int)</code> is a state of a shift-reduce parse
-	<li>"(" is a prefix of the RHS of <code>T --&gt; (E)</code>
-	<li>"\epsilon" is a prefix of the RHS of <code>E --&gt; T</code>. This is an interesting case as we are considering "\epsilon" as a prefix too!
-	<li>"int *" is a prefix of the RHS of <code>T --&gt; int * T</code>
+	<li>If it had a complete RHS, we could reduce
 </ul>
+These bits and pieces are always prefixes of RHS of some production(s).
+
+<p>An item is a production with a "." somewhere on the RHS in the production:
+e.g., the items for <code>T --&gt; (E)</code> are: <code>T --&gt; .(E)</code>, <code>T --&gt; (.E)</code>, <code>T --&gt; (E.)</code>, <code>T --&gt; (E).</code>.
+
+<p>The only item for an \epsilon production, <code>X --&gt; \epsilon</code> is <code>X --&gt; .</code>. Items are often called "LR(0) items".
+
 Alternatively, we can represent this as a "stack of items"
 <pre>
 T --&gt; (.E)
@@ -310,6 +364,19 @@ in a state <code>s</code> containing <code>I</code>.
 We can see this by looking at the DFA, which will keep looping into the same DFA state for each open paren.
 
 <code>Need to show the NFA and DFA construction for our example grammar, and the valid items for these string prefixes.  Will need a laptop and a projector!</code>
+
+<p>The language of viable prefixes for the example grammar:
+<pre>
+S --&gt; \epsilon | [S] | S.S
+</pre>
+is
+<pre>
+X = \epsilon | "[" | "["* | "["*S | "["*S"]"
+Y = "["*S.(X | Y)*
+Z = X + Y
+</pre>
+
+
 
 <h3>Simple LR (SLR) parsing</h3>
 <ul>
