@@ -294,8 +294,14 @@ First(X) = {t | X --&gt;* t \alpha} U {\epsilon | X --&gt;* \epsilon}
 	<ul>
 		<li>if X --&gt; \epsilon
 		<li>if X --&gt; A1A2..An   AND  \epsilon \in First(Ai) for all i
+<ul>
+Also, \epsilon \in{} First(A1A2..An). (We construct First sets for all RHSes of productions).
+</ul>
 	</ul>
 	<li>First(\alpha) \subset First(X) if X --&gt; A1..An \alpha and \epsilon \in First(Ai) for all i
+<ul>
+Also, First(\alpha) \subset{} First(A1A2..An\alpha). (We construct First sets for all RHSes of productions).
+</ul>
 </ol>
 
 <p>Example
@@ -319,6 +325,12 @@ First(E) \superset First(T)
 First(T) = {'(', 'int')}
 First(X) = {+, \epsilon}
 First(Y) = {*, \epsilon}
+First(TX) = {'(', 'int'}
+First(+E) = {+}
+First(\epsilon) = {\epsilon}
+First(int Y) = {int}
+First('('E')') = {'('}
+First(*T) = {'*'}
 </pre>
 
 <p>Constructing <b>Follow sets</b>
@@ -432,3 +444,9 @@ Follow(S) = {$, a}
 In this case, both productions will appear at T[S, b]. If an entry is multiply defined (more than one productions appear in a table cell), G is not LL(1). Examples: a grammar that is ambiguous, not left-factored, left-recursive will all be not LL(1). But there are more grammars that may not be LL(1)
 
 <p>Most programming language CFGs are not LL(1). More powerful formulations for describing practical grammars that assemble some of these ideas in more sophisticated ways to develop more parsers
+
+<p>
+<a href=https://notes.eatonphil.com/parser-generators-vs-handwritten-parsers-survey-2021.html>Parser generators vs. handwritten parsers (2021 survey)</a>
+
+<p>
+Interesting observation: An LL(0) grammar can accept at most a single finite string.
