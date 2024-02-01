@@ -28,15 +28,19 @@ Walk through the input with an arrow left to right. Also try rules in order. As 
 Let TOKEN be the type of the tokens: e.g., INT, OPEN, CLOSE, PLUS, TIMES, ...
 Let <code>next</code> point to the next token in the input string (the arrow).
 
-<p>Define boolean functions that check for a match of:
+Define <em>function objects</em>, or a <em>functor</em>.  For a function <pre>void foo(int a) { ... }</pre>,
+create an object using <pre>objFoo = create foo(3)</pre>.  The function object <code>objFoo</code> can be
+later evaluated using <pre>eval objFoo</pre>.
+
+<p>Define boolean function objects that check for a match of:
 <ul>
 	<li> A given token terminal
 	<pre>
-	bool term(TOKEN, tok) { return *next++ == tok;  }//next pointer is incremented regardless!
+	bool term(TOKEN tok, objF) { return *next++ == tok &amp;&amp; eval objFoo();  }//next pointer is incremented regardless!
   Try the nth production of non-terminal S
-  bool Sn() { ... } //will succeed if input matches the nth production of S
+  bool Sn(objF) { ... &amp;&amp; eval objF; } //will succeed if input matches the nth production of S <em>and</em> rest of input matches <code>objF()</code>.
   Try all productions of S
-  bool S() { ... } //will succeed if input matches any production of S
+  bool S(objF) { ... &amp;&amp; eval objF; } //will succeed if input matches any production of S <em>and</em> rest of input matches <code>objF()</code>.
 	</pre>
 </ul>
 
@@ -44,18 +48,18 @@ Let <code>next</code> point to the next token in the input string (the arrow).
 <ul>
 	<li>For production <code>E --&gt; T</code>
 	<pre>
-   bool E1() { return T(); }
+   bool E1(objF) { objT = create T(objF); return eval objT; }
 	</pre>
 	<li>For production <code>E --&gt; T + E</code>
 	<pre>
-   bool E2() { return T() AND term(PLUS) AND E(); }
+   bool E2(objF) { objE = create E(objF); objPlus = create term(PLUS, objE); objT = create T(objPlus); return eval objT; }
 	</pre>
   <li>For all productions of <code>E</code> (with backtracking)
   <pre>
-   bool E() {
+   bool E(objF) {
       TOKEN *save = next;
-	    return    (next = save, E1())
-             || (next = save, E2());
+	    return    (next = save, E1(objF))
+             || (next = save, E2(objF));
    }
 	</pre>
 	The first rule that returns true will cause a return (we will not evaluate the remaining rules due to semantics of logical OR ||)
@@ -66,22 +70,22 @@ Let <code>next</code> point to the next token in the input string (the arrow).
 <ul>
 	<li>For production <code>T --&gt; int</code>
 	<pre>
-   bool T1() { return term(INT); }
+   bool T1(objF) { return term(INT) &amp;&amp; eval objF; }
 	</pre>
 	<li>For production <code>E --&gt; int * T</code>
 	<pre>
-	 bool T2() { return term(INT) AND term(TIMES) AND T(); }
+	 bool T2(objF) { objT = T(objF); objTimes = term(TIMES, objT); objInt = term(INT, objTimes); return eval objInt; }
 	</pre>
   <li>For production <code>E --&gt; (E)</code>
 	<pre>
-	 bool T3() { return term(OPEN) AND E() AND term(CLOSE); }
+	 bool T3(objF) { objClose = term(CLOSE, objF); objE = E(objClose); objOpen = term(OPEN, objE); return eval objE; }
 	</pre>
   <pre>
-   bool T() {
+   bool T(objF) {
       TOKEN *save = next;
-	    return    (next = save, T1())
-             || (next = save, T2())
-             || (next = save, T3());
+	    return    (next = save, T1(objF))
+             || (next = save, T2(objF))
+             || (next = save, T3(objF));
    }
 	</pre>
 	The first rule that returns true will cause a return (we will not evaluate the remaining rules due to semantics of logical OR ||)
@@ -103,8 +107,8 @@ Consider
 <pre>
 S --&gt; S a
 
-bool S1() { return S() AND term(a); }
-bool S() { return S1(); }
+bool S1(objF) { objA = term(A, objF); objS = S(objA); return eval objS; }
+bool S(objF) { return S1(objF); }
 </pre>
 This will go into an infinite loop for parsing <em>any</em> input.
 
