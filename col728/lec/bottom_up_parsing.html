@@ -282,22 +282,6 @@ e.g., the items for <code>T --&gt; (E)</code> are: <code>T --&gt; .(E)</code>, <
 
 <p>The only item for an \epsilon production, <code>X --&gt; \epsilon</code> is <code>X --&gt; .</code>. Items are often called "LR(0) items".
 
-Alternatively, we can represent this as a "stack of items"
-<pre>
-T --&gt; (.E)
-E --&gt; .T
-T --&gt; int * .T
-</pre>
-says that
-<ul>
-	<li>We have seen "(" of <code>T --&gt; (E)</code>
-	<li>We have seen "\epsilon" of <code>E --&gt; T</code>
-	<li>We have seen "int *" of <code>T --&gt; int * T</code>
-</ul>
-Reading backwards, the LHS of every item becomes the RHS of the predecessor production.
-
-<p>In other words, every viable prefix can be represented as a stack of items, where the (n+1)th item is a production for a non-terminal that follows the "." in the nth item.
-
 <p>To recognize viable prefixes, we must
 <ul>
 	<li>Recognize a sequence of partial RHS's of productions, where
@@ -331,6 +315,7 @@ NFA(stack) = yes if stack is a viable prefix
 		<li> Start state is (S' --&gt; .S)
 </ol>
 
+<!--
 <h3>Valid Items</h3>
 <ul>
 	<li>Can construct a DFA from NFA using the standard subset-of-states construction
@@ -339,9 +324,9 @@ NFA(stack) = yes if stack is a viable prefix
 		<li>The dragon book gives another way of constructing the LR(0) items
 	</ul>
 </ul>
-Item <code>X --&gt; \beta.\gamma</code> is <em>valid</em> for a viable prefix <code>\alpha\beta</code> if
+Item <code>X -&gt; \beta.\gamma</code> is <em>valid</em> for a viable prefix <code>\alpha\beta</code> if
 <pre>
-S' --&gt;* \alpha X \omega --&gt; \alpha \beta \gamma \omega
+S' -&gt;* \alpha X \omega -&gt; \alpha \beta \gamma \omega
 </pre>
 by a right-most derivation.
 
@@ -350,6 +335,23 @@ by a right-most derivation.
 <p>An item <code>I</code> is valid for a viable prefix <code>\alpha</code>
 if the DFA recognizing viable prefixes terminates on input <code>\alpha</code>
 in a state <code>s</code> containing <code>I</code>.
+-->
+The epsilon-closure of an NFA state (which is an item) is can be represented as a "stack of items"
+<pre>
+T --&gt; (.E)
+E --&gt; .T
+T --&gt; int * .T
+</pre>
+says that
+<ul>
+	<li>We have seen "(" of <code>T --&gt; (E)</code>
+	<li>We have seen "\epsilon" of <code>E --&gt; T</code>
+	<li>We have seen "int *" of <code>T --&gt; int * T</code>
+</ul>
+Reading backwards, the LHS of every item becomes the RHS of the predecessor production.
+
+<p>In other words, every viable prefix can be represented as a stack of items, where the (n+1)th item is a production for a non-terminal that follows the "." in the nth item.
+
 
 <p>The items in <code>s</code> describe what the top of the item stack might be after reading input \alpha
 
@@ -376,34 +378,43 @@ Y = "["*S.(X | Y)*
 Z = X + Y
 </pre>
 
-
-
-<h3>Simple LR (SLR) parsing</h3>
+<h3>LR(0) parsing</h3>
 <ul>
 	<li>LR(0) Parsing: Assume
 	<ul>
-		<li> stack contains \alpha
-		<li>next input is <code>t</code>
-		<li>DFA on input \alpha terminates in state <code>s</code>
+		<li>stack contains \alpha</li>
+		<li>next input is <code>t</code></li>
+		<li>DFA on input \alpha terminates in state <code>s</code></li>
 	</ul>
+  <li>Parse error if DFA stuck before reaching state <code>s</code>.</li>
 	<li>Reduce by <code>X --&gt; \beta</code> if
 	<ul>
-		<li> <code>s</code> contains item <code>X --&gt; \beta</code>
+		<li> <code>s</code> contains item <code>X --&gt; \beta</code></li>
 	</ul>
+  </li>
 	<li>Shift if
 	<ul>
-		<li> <code>s</code> contains item <code>X --&gt; \beta.t\omega</code>
-		<li> equivalent to saying that <code>s</code> has a transition labeled <code>t</code>
+		<li> <code>s</code> contains item <code>X --&gt; \beta.t\omega</code></li>
+		<li> equivalent to saying that <code>s</code> has a transition labeled <code>t</code></li>
 	</ul>
-	<li>LR(0) has a reduce/reudce conflict if:
+  </li>
+	<li>LR(0) has a reduce/reduce conflict if:
 	<ul>
-		<li>Any state has two reduce items: <code>X --&gt; \beta.</code> and <code>Y --&gt; \omega.</code>
+		<li>Any state has two reduce items: <code>X --&gt; \beta.</code> and <code>Y --&gt; \omega.</code></li>
 	</ul>
+  </li>
 	<li>LR(0) has a shift/reduce conflict if:
 	<ul>
-		<li>Any state has a reduce item and a shift item: <code>X --&gt; \beta.</code> and <code>Y --&gt; \omega.t\delta</code>
+		<li>Any state has a reduce item and a shift item: <code>X --&gt; \beta.</code> and <code>Y --&gt; \omega.t\delta</code></li>
 	</ul>
 </ul>
+If for any string, any of these conflicts is possible, then the grammar is not an LR(0) grammar.
+
+<p>Resolve conflicts by increasing lookahead. For example, during a shift-reduce conflict as shown in the example above, if the next token is not <code>t</code>, then the shift possibility can be discarded.
+
+<p>LR(1) parsing (we are not going to discuss this in detail): bake the lookahead into items. An item now looks like <code>X--&gt;\beta., t</code> to indicate that if the next terminal is <code>t</code>, then reduce (but do not reduce if the next terminal is not <code>t</code>).
+
+<h3>SLR parsing</h3>
 
 <p>SLR = "Simple LR": improves on LR(0) shift/reduce heuristics so fewer state have conflicts
 
@@ -414,7 +425,7 @@ Z = X + Y
 	<li> DFA on input \alpha terminates in state <code>s</code>
 </ul>
 <ul>
-	<li>Reduce by <code>X --&gt; \beta</code> if
+	<li>Reduce by <code>X --&gt; \beta</code> only if
 	<ul>
 		<li> s contains item <code>X --&gt; \beta</code>
 		<li> <code>t \in Follow(X)  [only change to LR(0)]
@@ -488,7 +499,7 @@ Z = X + Y
 	</ul>
 </ol>
 
-<p>If there is a conflict in the last step, grammar is not SLR(k).  k is the amount of lookahead (in practice, k = 1)
+<p>If there is a conflict in the last step, grammar is not SLR.
 
 <h3>SLR Improvements</h3>
 <ul>
@@ -572,8 +583,9 @@ Z = X + Y
 		<li>More accurate than just using follow sets
 		<li>Take a look at the LALR(1) automaton for your parser! (uses these items, but has a slight optimization over it)
 		<ul>
-			<li> LALR automaton is composed of states containing LR(1) items, with the added optimization that if two states differ only in lookahead then we combine those states. If the resulting states (after this minimization), have no conflict in the grammar, then that grammar is LALR also.
+			<li> LALR automaton is composed of states containing LR(1) items, with the added optimization that if two states differ only in lookahead then we combine those states. If the resulting states (after this minimization), have no conflict in the grammar, then that grammar is LALR also.</li>
 		</ul>
+    <li>Yacc uses LALR parsing</li>
 	</ul>
 </ul>
 
