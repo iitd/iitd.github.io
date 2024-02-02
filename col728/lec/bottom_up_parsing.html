@@ -117,7 +117,7 @@ Left string can be implemented by a stack, because we only reduce the suffix of 
 <pre>
 |int * int  + int                     shift
 int |* int + int                      shift
-
+</pre>
 At this point, we could reduce.
 
 T |* int + int                        reduce
@@ -133,19 +133,23 @@ S --&gt;* \alpha X \omega --&gt; \alpha \beta \omega
 Then <code>\alpha \beta</code> is a handle of <code>\alpha \beta \omega</code>
 
 <p>Is <code>int</code> a handle of <code>int*int+int</code>?
-<pre>E --&amp; T+E --&amp; T+T --&amp; T+int --&amp; int*T+int --&amp; ...</pre>
-The <code>int</code> at the leftmost position was produced from <code>T--&amp;int*T</code> and not a reduction
+<pre>E --&gt; T+E --&gt; T+T --&gt; T+int --&gt; int*T+int --&gt; ...</pre>
+The <code>int</code> at the leftmost position was produced from <code>T--&gt;int*T</code> and not a reduction
 to only <code>int</code>.  Hence, <code>int</code> is <em>not</em> a handle of <code>int*int+int</code>.
 
 <p>Is <code>int*T</code> a handle of <code>int*int+int</code>? Yes.
 
 <p>Is <code>int*T+E</code> a handle of <code>int*int+int</code>?
-<pre>E --&gt; T+E --&gt; T + T --&gt; ...</pre>
+<pre>
+E --&gt; T+E --&gt; T + T --&gt; ...
+</pre>
 Because, in a rightmost deriviation, we produce <code>T</code> from <code>E</code> at the rightmost position in
 the very beginning, <code>int*T+E</code> is not a handle of <code>int*int+int</code>.
 
-<p>Is <code>\epsilon<code> a handle of <code>int*int+int</code>?
-<pre>E --&gt; T+E --&gt; ...</pre>
+<p>Is <code>\epsilon</code> a handle of <code>int*int+int</code>?
+<pre>
+E --&gt; T+E --&gt; ...
+</pre>
 No.  We never produce $\epsilon$ at the leftmost position in this rightmost derivation.
 
 <p>Handles formalize the intuition: A handle is a reduction that allows further reductions back to the start symbol.
@@ -163,7 +167,7 @@ No.  We never produce $\epsilon$ at the leftmost position in this rightmost deri
 		<li>next handle must be to right of rightmost non-terminal, because this is a right-most derivation.
 		<li>i.e., sequence of shift moves reaches the next handle
 	</ul>
-</pre>
+</ol>
 Handles are never to the left of the rightmost non-terminal, and are always at the top of the stack.
 
 <p>Hence shift-reduce parsers can only shift or reduce at the top of the stack. However, how to recognize handles, i.e., when to shift and when to reduce?
@@ -210,7 +214,7 @@ Which of these are viable prefixes?
 <p>Predictive shift-reduce parsing: based on the lookahead, check if any of the shift or reduce choices do not produce a viable prefix.  If so, discard that choice. For example, for lookahead one, consider the following state:
 <pre>
 \alpha\beta\gamma|a\omega
-<pre>
+</pre>
 <ul>
 <li>Option 1: Shift. Is <code>\alpha\beta\gamma{}a</code> a viable prefix?</li>
 <li>Option 2: Reduce using X--&gt;\gamma. Is <code>\alpha\beta{}Xa</code> a viable prefix?
@@ -267,9 +271,9 @@ S --&gt; \epsilon | [S]
 </pre>
 is
 <pre>
-\epsilon | "["* | "["*S | "["+S"]"
+\epsilon | "["* | "["+S | "["+S"]"
 </pre>
-Notice that <code>"["*S"]]"</code> is <em>not</em> a viable prefix.
+Notice that <code>"[["+S"]]"</code> or <code>[]</code> are <em>not</em> viable prefixes.
 
 <p>The problem in recognizing viable prefixes is that the stack has only bits and pieces of the RHS of productions
 <ul>
@@ -428,7 +432,7 @@ If for any string, any of these conflicts is possible, then the grammar is not a
 	<li>Reduce by <code>X --&gt; \beta</code> only if
 	<ul>
 		<li> s contains item <code>X --&gt; \beta</code>
-		<li> <code>t \in Follow(X)  [only change to LR(0)]
+		<li> <code>t \in Follow(X)</code>  [only change to LR(0)]
 	</ul>
 	<li>Shift if
 	<ul>
@@ -458,7 +462,7 @@ If for any string, any of these conflicts is possible, then the grammar is not a
 <ul>
 	<li> Consider the ambiguous grammar:
 	<ul>
-		<li><code>E --&gt; E+E|E*E|(E)|int
+		<li><code>E --&gt; E+E|E*E|(E)|int</code>
 	</ul>
 	<li>The DFA for this grammar contains a state with the following items:
 	<ul>
@@ -486,16 +490,16 @@ If for any string, any of these conflicts is possible, then the grammar is not a
 	<ul>
 		<li> Let <code>\alpha|\omega</code> be current configuration
 		<li>Run <code>M</code> on current stack <code>\alpha</code>
-		<li>If <code>M</code>rejects <code>\alpha</code>, report parsing error
+		<li>If <code>M</code> rejects <code>\alpha</code>, report parsing error
 		<ul>
 			<li>Stack <code>\alpha</code> is not a viable prefix
 		</ul>
 		<li>If <code>M</code> accepts <code>\alpha</code> with items <code>I</code>, let <code>a</code> be next input
-		<code>
+		<ul>
 			<li>Shift if <code>X --&gt; \beta.a\gamma \in I</code>
 			<li>Reduce if <code>X --&gt; \beta. \in I</code> and <code>a \in Follow(X)</code>
 			<li>Report parsing error if neither applies
-		</code>
+		</ul>
 	</ul>
 </ol>
 
@@ -536,8 +540,8 @@ If for any string, any of these conflicts is possible, then the grammar is not a
 <ul>
 	<li>If <code>si</code> has item <code>X --&gt; \alpha.a\beta</code> and <code>goto[i,a] = j</code>, then <code>action[i,a] = shift j</code>
 	<li>If <code>si</code> has item <code>X --&gt; \alpha.</code> and <code>a \in Follow(X)</code> and <code>X != S'</code>, then <code>action[i,a] = reduce X--&gt;\alpha</code>
-	<li>If <code>si</code> has item <code>S'--&gt;S.</code>, then <code>action[i,$] = accept
-		<li>Otherwise, <code>action[i,a]=error
+	<li>If <code>si</code> has item <code>S'--&gt;S.</code>, then <code>action[i,$] = accept</code></li>
+  <li>Otherwise, <code>action[i,a]=error</code></li>
 </ul>
 
 <p>SLR Improvements
