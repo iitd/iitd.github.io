@@ -595,6 +595,7 @@ If for any string, any of these conflicts is possible, then the grammar is not a
 
 <h3>SLR Examples</h3>
 <pre>
+T --&gt; S'$
 S' --&gt; S
 S --&gt; Sa
 S --&gt; b
@@ -624,8 +625,11 @@ S --&gt; Sa.
 
 <p>The only state with a shift-reduce conflict is state3. Here, if we look at follow of S', we have only "$", and hence we can resolve this conflict by one lookahead. Hence this is an SLR grammar
 
+<p>If we get rid of non-terminal <code>S'</code> above, by short-cutting <code>T --&gt; S$</code>, the grammar above becomes LR0.
+
 <p>Another example grammar
 <pre>
+T --&gt; S'$
 S' --&gt; S
 S --&gt; SaS
 S --&gt; b
@@ -664,3 +668,5 @@ From here, if we get <code>a</code> again, we go back to state 4! If we get <cod
 <p>The only states that have conflicts are: state3 (resolved by follow as follow(S') = $) and state5 (has a shift/reduce conflict because <code>a</code> \in follow(S))
 
 <p>Thus this is not an SLR grammar
+
+<p>If we get rid of non-terminal <code>S'</code> above, by short-cutting <code>T --&gt; S$</code>, the grammar above becomes LR0!
