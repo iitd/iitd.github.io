@@ -193,7 +193,7 @@ void bar(int y)
 	</ul>
 	<li><em>Type checking</em> is the process of verifying fully typed programs. Types are already available. We just check if the type rules are obeyed.
 	<li><em>Type inference</em> is the process of filling in missing type information.
-	<li>Type-checking and type-interference are different terms, but people often use them interchangeably.
+  <li> Both type-checking and type-inference rely on the same set of <em>typing rules</em>.  Type-checking and type-interference are different terms, but people often use them interchangeably for this reason.
 </ul>
 
 <h3>Type checking formalism</h3>
@@ -202,13 +202,15 @@ void bar(int y)
 	<ul>
 		<li>If Hypothesis is true, then Conclusion is true
 	</ul>
+  <li>The hypothesis and conclusion can be written in arbitrary logic, e.g., propositional logic where the atomic propositions are formed using relational operators over values drawn
+from a set.  Another example is first-order logic.
+	<li>Rules of inference are a compact notation for "If-Then" statements
+	<li>The notation is easy to read with practice
+	<li>We will start with a simplified system and gradually add features
 	<li>Type checking computes via reasoning
 	<ul>
 		<li>If E1 and E2 have certain types, then E3 has a certain type
 	</ul>
-	<li>Rules of inference are a compact notation for "If-Then" statements
-	<li>The notation is easy to read with practice
-	<li>We will start with a simplified system and gradually add features
 	<li>Building blocks
 	<ul>
 		<li>Symbol ^ is "and"
@@ -264,24 +266,6 @@ i is an integer literal (constant)
 </pre>
 </ul>
 
-<ul>
-	<li>A type system is <em>sound</em> if
-	<ul>
-		<li>Whenever <code>|-e:T</code>
-		<li>Then <code>e</code> evaluates to a value of type <code>T</code>
-	</ul>
-	<li>We only want sound rules
-	<ul>
-		<li>But some sound rules are better than others!
-<pre>
-1 is an integer literal
------------------------
-   |-1:void
-</pre>
-This is correct (sound) but not the most precise typing rule. e.g., it will not allow 1 to be added because voids cannot be added. assumption: <code>int</code> is a subtype of <code>void</code>
-	</ul>
-</ul>
-
 <h4>Type Checking</h4>
 <ul>
 	<li>Type checking proves facts <code>e:T</code>
@@ -298,7 +282,69 @@ This is correct (sound) but not the most precise typing rule. e.g., it will not 
 	<li>Types are computed in a bottom-up pass over the AST
 </ul>
 
-<h4>Type Environments</h4>
+<h4>Subtyping relation between types</h4>
+  <ul>
+    <li><code>S &lt;: T</code> is read "S is a subtype of T" or "T is a supertype of S".
+    <li><code>S</code> is a subtype of <code>T</code> if any term of type <code>S</code> can be safely used in a context where a term of type <code>T</code> was expected.
+    <li>Subtype is the same as "derived" type in an OO language
+    <li>Supertype is the same as "base" type in an OO language
+    <li>Example: the following code is type-correct
+    <pre>
+class A { ... };
+class B : A { ... };
+A a = B();
+    </pre>
+    </li>
+    <li>Subtyping relation is reflexive, transitive, and anti-symmetric:
+    <ul>
+      <li> Reflexive: <code>S &lt;: S</code>
+      <li> Transitive: <code>S &lt;: T</code> and <code>T &lt;: U</code> implies <code>S &lt;: U</code>.
+      <li> Antisymmetric: <code>S &lt;: T</code> and <code>T &lt;: S</code> implies <code>S=T</code>.
+    </ul>
+  </ul>
+
+<h4>Soundness of a static typesystem</h4>
+  <ul>
+   <li>Let the <em>execution semantics</em> define that an <em>expression is evaluated to a value v</em>.  Further, let value <code>v</code> be of type <code>T</code>.</li>
+   <li>Let the <em>static typing rules</em> define that an <em>expression is of type T</em>, i.e., <code>e:T</code>.</li>
+   <li>A static typesystem is <em>sound</em>  with respect to an execution semantics if whenever <code>e:T</code>, then <code>e</code> evaluates to a value of subtype <code>S&lt;:T</code>.</li>
+   <li>The soundness of a static typesystem can be ascertained by checking the soundness of eeach type rule.
+   <li>We want only sound type rules, but some sound type rules are <em>better</em> (i.e., more precise) than others:
+   <ul>
+     <li>The following type rule is sound
+     <pre>
+|- 1 : int   |- 2 : int
+-----------------------
+    |- 1+2 : void
+     </pre>
+     </li>
+     <li>The following type rule is also sound
+     <pre>
+|- 1 : int   |- 2 : int
+-----------------------
+    |- 1+2 : int
+     </pre>
+     </li>
+    </ul>
+    Even though both type rules are sound, the second type rule is <em>more precise</em> than the first one.
+    In other words, the second type rule admits more desirable programs as type-correct than the first rule.
+    For example (1+2)+3 will be type-incorrect with the first rule, but will be type-correct with the second rule.
+    </li>
+    <li> [Optional discussion] What does <em>completeness</em> mean here?  A static typesystem would also be <em>complete</em>
+    with respect to an execution semantics if whenever <code>e</code> evaluates to a value of type <code>T</code>,
+    then <code>e:T</code> is provable. However, as we will see later, achieving completeness is not possible in the presence of loops.</li>
+  </ul>
+
+<h4>Our programming language</h4>
+Our programming language is a subset of C/C++ with the following exceptions/features:
+  <ul>
+    <li> Declarations appar only at the beginning of a scope.</li>
+    <li> Even statements represent values and are thus associated with a type.  For this reason, we will just call a statement, an expression.</li>
+    <li> Object-oriented features are supported with subtyping, i.e., the programmer can define custom types and subtypes.</li>
+    <li> <em>Important</em>: <code>void</code> is the supertype of all types.
+  </ul>
+
+<h4>Type rules for our programming language</h4>
 <pre>
 ------------------  [false]
   |- false : bool
