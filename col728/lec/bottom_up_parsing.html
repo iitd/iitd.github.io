@@ -503,7 +503,9 @@ If for any string, any of these conflicts is possible, then the grammar is not a
 	</ul>
 </ol>
 
-<p>If there is a conflict in the last step, grammar is not SLR.
+<p>If there can be a conflict in the last step, the grammar is not SLR.  To check
+if there can be a conflict, check if for some state, both shifting and reducing
+is an option.
 
 <h3>SLR Improvements</h3>
 <ul>
