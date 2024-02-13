@@ -301,6 +301,19 @@ A a = B();
       <li> Transitive: <code>S &lt;: T</code> and <code>T &lt;: U</code> implies <code>S &lt;: U</code>.
       <li> Antisymmetric: <code>S &lt;: T</code> and <code>T &lt;: S</code> implies <code>S=T</code>.
     </ul>
+    <li>In C/C++:
+    <ul>
+      <li> <code>char</code> is <em>not</em> a subtype of <code>int</code>.  Similarly, <code>int</code> is <em>not</em> a subtype of <code>float</code>.
+      <ul>
+        <li>Consider a function declaration of type <code>void foo(int i) { ... }</code>.  Strictly speaking, it is not legal to call <code>foo('c')</code> (where <code>'c'</code> is of <code>char</code> type. Similar is the case for <code>float</code> and <code>int</code>.</li>
+        <li>It is a different matter that compilers implement <em>implicit type conversion</em>, also called <em>implicity type casting</em> where they implicitly cast <code>char c</code> to <code>int</code>.  This casting could also have been done explicitly by the programmer, to make the program legal.  Recall that <em>type casting</em> is a backdoor provided in C to allow type conversions for programmer convenience.
+        <li>Why did the C designers choose not to make <code>char</code> a subtype of <code>int</code>?  Perhaps, because they wanted to allow the programmer to have (among other things) two versions of a function <code>foo</code>, one that accepts a value of type <code>char</code> as an argument, and another that accepts a value of type <code>int</code> as an argument, also called <em>function overloading</em>.
+        <li>Why not allow function overloading but still keep <code>char</code> as a subtype of <code>int</code>, and choose the most precisely fitting function definition for <code>foo</code> in case there are multiple choices?  That is an interesting proposal, but then we also need to tackle the case where <code>foo</code> takes multiple arguments, and one definition is <code>foo(int, char)</code> and another is <code>foo(char, int)</code>.  It is quite unclear what to do in this case.
+        <li>Implicit type casting is an optional feature in a compiler.
+        <li>The rules for <em>implicit type casting</em> in a compiler can also be expressed using inference rules.  However, in practice, so far, both type checking and implicit type casting is done directly in imperative code, instead of through a DSL to express these inference rules.  Yet, it is much easier to learn about these rules as succinct and neat inference rules.</li>
+        <li>There is a push towards specifying the language standards (e.g., C standard) through formal inference rules, they are currently specified using english text.</li>
+      </ul>
+    </ul>
   </ul>
 
 <h4>Soundness of a static typesystem</h4>
@@ -355,11 +368,6 @@ Our programming language is a subset of C/C++ with the following exceptions/feat
   |- s : char
 </pre>
 <pre>
-   |-s:T
------------------------ [address-of]
-  |- &amp;s : T *
-</pre>
-<pre>
  s is a string literal
 ----------------------- [string]
   |- s : char *
@@ -380,6 +388,12 @@ Our programming language is a subset of C/C++ with the following exceptions/feat
 ----------------------- [Assignment-Stmt]
   |- x=y : T
 </pre>
+<pre>
+   |-s:T
+----------------------- [address-of]
+  |- &amp;s : T *
+</pre>
+
 <pre>
  |-e:bool  |-x:T
 ------------------------- [While-Stmt]
