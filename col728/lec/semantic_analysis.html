@@ -419,15 +419,30 @@ For, example, the expression <code>{ { 2 + 3; 4; }; 5 }</code> evaluates to 5.
 </pre>
 This rule seems to be giving a valid type to the following expression: <code>1 := 2</code>, but this would be incorrect in our language. To support
 an assignment, we need to
-distinguish between a <em>reference type</em> and a <em>value type</em>.  For a primitive type <code>T</code>, its corresponding reference type is written <code>T&amp;</code>.
-A reference type represents an <em>object</em> (region of memory) holding the corresponding value type. Thus, the assignment rule now becomes:
+distinguish between a <em>reference type</em> and a <em>value type</em>.
+
+<p>
+For a primitive type <code>T</code>, its corresponding reference type is written <code>T&amp;</code>.
+A reference type represents an <em>object</em> (region of memory) holding the corresponding value type. 
+By
+definition, <code>T&amp;</code> is a
+subtype of <code>T</code>, i.e., <code>T&amp; &lt;: T</code>.
+
+<p>Example: the following subtyping relations can be present in our language: <code>U&lt;:T</code>, <code>T&amp;&lt;:T</code>,
+<code>U&amp;&lt;:U</code>, <code>U&amp;&lt;:T&amp;</code> (to form a diamond structure).
+
+<p>
+Thus, the assignment rule now becomes:
 <pre>
  |-x:T&amp;  |-y:T1 T0&lt;:T
 ----------------------------- [Assignment]
   |- x := y : T1
 </pre>
 Notice that the conclusion assigns a value type to the assignment expression, which <em>rejects</em> <code>(x := y) := z</code> expressions.
-This rule admits the following code to be well-typed:
+If we want <code>(x := y) := z</code>, we may want to change the inferred type in the conclusion to <code>T&amp;</code> (the type of <code>x</code>).
+
+<p>
+The assignment rule admits the following code to be well-typed:
 <pre>
 class A { ... };
 class B : A { int y; ... };
