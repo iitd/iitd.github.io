@@ -482,6 +482,13 @@ hold: <code>T2&lt;:U</code> and <code>T3&lt;U</code>.  A <code>least upper bound
 is defined so that <code>lub</code> is an upper-bound of <code>T2</code> and <code>T3</code>,
 and the further, for any other upper bound <code>U(T2,T3)</code>, <code>lub &lt;: U</code> holds.
 
+<p>The <code>lub</code> need not be unique for a partially ordered set (poset), even
+in the presence of a <code>void</code> type.  However, for our language,
+it turns out that <code>lub</code> is unique.  If <code>lub</code> is not unique, this rule
+should be modified appropriately, e.g., to resolve this ambiguity.  One option is to have
+a hypothesis that requires that there must exist a unique <code>lub</code> of <code>T2</code>
+and <code>T3</code> for this expression to be well-typed.
+
 <h4>Variable</h4>
 <p>But what is the type of a variable reference?
 <pre>
@@ -519,14 +526,19 @@ i is an integer literal (constant)
 </pre>
 Notice that the same assumptions are required in both the hypotheses and the conclusion.
 
-<p>And we can write new rules
+<p>And we can write our first rule that uses type environment <code>O</code>
 <pre>
 O(x) = T
 -------------  [Var]
 O |- x:T&amp;
 </pre>
+Notice that we choose to keep the value type in <code>O</code>, and use it
+to assign the reference type to <code>x</code> --- this is a succinct way
+of saying that all variables must be of a reference type.
+
+<p>
 <pre>
-  O[T0&amp;/x] |- e1:T1
+  O[T0/x] |- e1:T1
    T0 != void
 ----------------------------    [Let-No-Init]
  O |- { T0 x; e1 } : T1
@@ -536,6 +548,11 @@ O[T/x] represents one function, where
 O[T/x](x) = T
 O[T/x](y) = O(y)
 </pre>
+Notice that we use <code>T0/X</code> instead of <code>T0&amp;/X</code> --- that's because the <code>Var</code>
+rule only expects the value type of the variable in the type environment, and uses it to assign a
+reference type to the variable.
+
+<p>
 When we enter the scope, we add a new assumption in our type environment.
 When we leave the scope, we remove the assumption.
 
@@ -553,7 +570,7 @@ stored in the symbol table.
 
 Our language also allows the initialization of a newly-declared variable.
 <pre>
-      O[T0&amp;/x] |- e1:T1
+      O[T0/x] |- e1:T1
          O |- e2:T0
          T0 != void
 ----------------------------    [Let-Init]
@@ -563,7 +580,7 @@ Notice that this rule says that the initializer <code>e2</code> should have the 
 
 <p>A better version of [Let-Init] using subtyping:
 <pre>
-      O[T&amp;/x] |- e1:T1
+      O[T/x] |- e1:T1
          O |- e2:T0
        T0 &lt;: T
         T != void
