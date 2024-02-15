@@ -125,7 +125,8 @@ return f(2);
 </ul>
 
 <h3>Activation Records</h3>
-<p>What information to keep in an activation? That is what we will call the activation record.
+<p>The active activations can be maintained in a stack.  The information for each activation is stored in an <em>activation record</em>, also called a <em>frame</em>.
+What information to keep in an activation?
 <ul>
 	<li>The information needed to manage one procedure activation is called an <em>activation record</em> (AR) or <em>frame</em>
 	<li>If procedure <code>F</code> calls procedure <code>G</code>, then <code>G</code>'s activation record contains a mix of info about <code>F</code> and <code>G</code>
