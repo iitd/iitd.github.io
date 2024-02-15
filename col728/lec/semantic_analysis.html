@@ -345,7 +345,7 @@ A a = B();
     </li>
     <li> [Optional discussion] What does <em>completeness</em> mean here?  A static typesystem would also be <em>complete</em>
     with respect to an execution semantics if whenever <code>e</code> evaluates to a value of type <code>T</code>,
-    then <code>e:T</code> is provable. However, as we will see later, achieving completeness is not possible in the presence of loops.</li>
+    then <code>e:T</code> is provable. However, achieving completeness is not possible in the presence of loops. For example, completeness requires that all programs that can produce a value <code>v:T</code> should also statically evaluate to type <code>T</code>; however, in the presence of loops, a value may be computed only if the loop terminates. If the loop never terminates, the type-checker should assign a type that agrees with non-termination (e.g., <code>void</code> to indicate that this value can never be used, or a stronger type that indicates non-termination explicitly). This  would amount to statically identifying if the loop terminates, but that is the halting problem.</li>
   </ul>
 
 <h4>Our programming language</h4>
@@ -363,6 +363,11 @@ Our programming language is a subset of C/C++ with the following exceptions/feat
   |- false : bool
 </pre>
 <pre>
+------------------  [true]
+  |- true : bool
+</pre>
+
+<pre>
  s is a character literal
 ------------------------- [char]
   |- s : char
@@ -378,16 +383,36 @@ Our programming language is a subset of C/C++ with the following exceptions/feat
   |- !b : bool
 </pre>
 <pre>
-    |-x:T
------------------------ [Expr-Stmt]
-  |- x=y; : T
+  |-x:int  |-y:int
+----------------------- [Relational]
+  |- x&lt;y : bool
 </pre>
+Notice that <code>!i</code> where <code>i:int</code> is not well-typed in our language.
+Similarly, <code>true&lt;false</code> is not well-typed in our language.
 
+
+<p>Now let's consider an assignment expression (or statement).  Recall that an assignment expression evaluates to the value that has been assigned, and its type is the type of the assigned variable.
+<pre>
+ |-x:T  |-y:T0 T0&lt;:T
+----------------------- [Assignment]
+  |- x=y : T0
+</pre>
+This rule permits the following code to be well-typed:
+<pre>
+class A { ... };
+class B : A { ... };
+A a = B();
+</pre>
+If we replace this rule with a less general version like the following, then the code above does not remain well-typed.
 <pre>
  |-x:T  |-y:T
------------------------ [Assignment-Stmt]
+------------- [Assignment]
   |- x=y : T
 </pre>
+This above rule is sound but not precise, in the sense it does not admit all the program that we would like to admit. This is similar to how a previous imprecise rule did not admit <code>(1+2)+3</code>.
+
+<p>
+
 <pre>
    |-s:T
 ----------------------- [address-of]
