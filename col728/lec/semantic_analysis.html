@@ -354,10 +354,10 @@ Our programming language is a subset of C/C++ with the following exceptions/feat
     <li> Declarations appar only at the beginning of a scope.</li>
     <li> Even statements represent values and are thus associated with a type.  For this reason, we will just call a statement, an expression.</li>
     <li> Object-oriented features are supported with subtyping, i.e., the programmer can define custom types and subtypes.</li>
-    <li> <em>Important</em>: <code>void</code> is the supertype of all types.
+    <li> Primitive types include <code>bool</code> and <code>int</code>. <em>Important</em>: <code>void</code> is the supertype of all types.</li>
   </ul>
 
-<h4>Type rules for our programming language</h4>
+<h2>Type rules for our programming language</h2>
 <pre>
 ------------------  [false]
   |- false : bool
@@ -390,42 +390,85 @@ Our programming language is a subset of C/C++ with the following exceptions/feat
 Notice that <code>!i</code> where <code>i:int</code> is not well-typed in our language.
 Similarly, <code>true&lt;false</code> is not well-typed in our language.
 
+<p>Two expressions (or statements) may be sequenced using the semi-colon operator, such that the type of the compound expression is the same as the type of the second expression.
+If a new scope is created with an expression in its body, then the type of that new scope is the same as the type of its body.
+<pre>
+|- e1:T1    |- e2:T2
+-------------------- [Sequence]
+  |- e1;e2 : T2
+</pre>
+<pre>
+ |- e:T
+---------- [Scope]
+ |- {e}:T
+</pre>
+For, example, the expression <code>{ { 2 + 3; 4; }; 5 }</code> evaluates to 5.
 
+<h4>Assignment expression</h4>
 <p>Now let's consider an assignment expression (or statement).  Recall that an assignment expression evaluates to the value that has been assigned, and its type is the type of the assigned variable.
 <pre>
- |-x:T  |-y:T0 T0&lt;:T
------------------------ [Assignment]
-  |- x=y : T0
+ |-x:T0  |-y:T1 T1&lt;:T0
+-------------------------- [Assignment]
+  |- x := y : T1
 </pre>
-This rule permits the following code to be well-typed:
+This rule seems to be giving a valid type to the following expression: <code>1 := 2</code>, but this would be incorrect in our language. To support
+an assignment, we need to
+distinguish between a <em>reference type</em> and a <em>value type</em>.  For a primitive type <code>T</code>, its corresponding reference type is written <code>T&amp;</code>.
+A reference type represents an <em>object</em> (region of memory) holding the corresponding value type. Thus, the assignment rule now becomes:
+<pre>
+ |-x:T&amp;  |-y:T1 T0&lt;:T
+----------------------------- [Assignment]
+  |- x := y : T1
+</pre>
+Notice that the conclusion assigns a value type to the assignment expression, which <em>rejects</em> <code>(x := y) := z</code> expressions.
+This rule admits the following code to be well-typed:
 <pre>
 class A { ... };
-class B : A { ... };
+class B : A { int y; ... };
 A a = B();
 </pre>
 If we replace this rule with a less general version like the following, then the code above does not remain well-typed.
 <pre>
  |-x:T  |-y:T
-------------- [Assignment]
-  |- x=y : T
+---------------- [Assignment]
+  |- x := y : T
 </pre>
-This above rule is sound but not precise, in the sense it does not admit all the program that we would like to admit. This is similar to how a previous imprecise rule did not admit <code>(1+2)+3</code>.
+This above rule is sound but not precise, in the sense it does not admit all the programs that we would like to admit. This is similar to how a previous imprecise rule did not admit <code>(1+2)+3</code>.  
 
-<p>
+Notice that the conclusion assigns the more specific type <code>T1</code>, which <em>admits</em> <code>(A a = B()).y</code> as type correct.
 
+<h4>Address-of</h4>
 <pre>
-   |-s:T
+   |-s:T&amp;
 ----------------------- [address-of]
   |- &amp;s : T *
 </pre>
+Notice that the address-of operator is only well-typed when used on a reference type, e.g., it is illegal to say <code>&amp;1</code>.
 
+<h4>If-then-else</h4>
 <pre>
- |-e:bool  |-x:T
-------------------------- [While-Stmt]
-  |- while (e) x : void
+    |- e1 : bool
+    |- e2 : T2
+    |- e3 : T3
+--------------------------------  [if-then-else]
+|- if e1 then e2 else e3 : void
 </pre>
-This is a design decision. One could have said that the type of a while loop is the type of the last statement that executes. But then what if the statement didn't execute even once?  Hence a type 'void' means that the statement has a type which is not usable. Similarly for if-then-else: the types in the two branches can be different, so the final type is void.
+Notice that it is by design that <code>if-then-else</code> always returns type, even when <code>T2=T3</code>.
 
+<h4>Ternary</h4>
+<pre>
+    |- e1 : bool
+    |- e2 : T2
+    |- e3 : T3
+--------------------------------  [if-then-else]
+|- e1 ? e2 : e3 : lub(T2,T3)
+</pre>
+An <em>upper bound</em> <code>U(T2,T3)</code> of types <code>T2</code> and <code>T3</code>, is defined so that the following
+hold: <code>T2&lt;:U</code> and <code>T3&lt;U</code>.  A <code>least upper bound</code> <code>lub(T2,T3)</code>
+is defined so that <code>lub</code> is an upper-bound of <code>T2</code> and <code>T3</code>,
+and the further, for any other upper bound <code>U(T2,T3)</code>, <code>lub &lt;: U</code> holds.
+
+<h4>Variable</h4>
 <p>But what is the type of a variable reference?
 <pre>
    x is a variable
@@ -496,6 +539,7 @@ stored in the symbol table.
 	<li>Types are computed up the AST from the leaves towards the root.
 </ul>
 
+The type rule now becomes:
 <pre>
       O[T0/x] |- e1:T1
          O |- e2:T0
@@ -504,13 +548,7 @@ stored in the symbol table.
 </pre>
 Notice that this rule says that the initializer <code>e2</code> should have the same type <code>T0</code> as <code>x</code>. This is quite weak. In general, we should allow such assignment as long as <code>e2</code> is of a subtype of <code>T0</code>.
 
-<p>Define a relation &lt;= on C++ classes
-<ul>
-	<li>X &lt;= X
-	<li>X &lt;= Y if X inherits from Y
-	<li>X &lt;= Z if X &lt;=Y and Y &lt;= Z
-</ul>
-A better version of [Let-Init] using subtyping:
+<p>A better version of [Let-Init] using subtyping:
 <pre>
       O[T0/x] |- e1:T1
          O |- e2:T0
@@ -524,9 +562,17 @@ A better version of [Assignment-Stmt] using subtyping
 ------------------------------ [Assignment-Stmt]
   |- x=e1 : T0
 </pre>
-(Notice that the type of the assignment statement is T1, so it can participate in more operations than T0)
+Notice that the type of the assignment statement is T1, so it can participate in more operations than T0.
 
-<p>X?y:z with subtyping. define least-upper-bound. use least-upper-bound to type this ternary operator. Compare with if-then-else
+<h4>While loop</h4>
+<pre>
+ |-e:bool  |-x:T
+------------------------- [While-Stmt]
+  |- while (e) x : void
+</pre>
+This is a design decision. One could have said that the type of a while loop is the type of the last statement that executes. But then what if the statement didn't execute even once?  Hence a type 'void' means that the statement has a type which is not usable. Similarly for if-then-else: the types in the two branches can be different, so the final type is void.
+
+
 
 <h3>Typing Methods</h3>
 C++ example
