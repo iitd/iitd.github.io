@@ -2,6 +2,14 @@
 Most complexity in modern compilers is in the optimizer
 <ul>
 	<li>Also by far, the largest phase in terms of compile-time and in terms of source code size (recall: lexing, parsing, semantic analysis, optimization, code generation)
+  <li>Two goals:
+	<ul>
+		<li>Correctness
+		<li>Speed
+	</ul>
+  </li>
+	<li>Complications in code generation from trying to be fast as well as correct
+	<li>Over time, fairly elaborate structures have been developed on how to do code generation and runtime structures
 </ul>
 
 <p>When should we perform optimizations?
