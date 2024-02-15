@@ -152,7 +152,7 @@ void bar(int y)
 	<ul>
 		<li>Statically typed: All or almost all checking of types is done as part of compilation (C, Java)
 		<li>Dynamically typed: Almost all checking of types is done as part of program execution (Scheme, Lisp, Python, Perl)
-		<li>Untyped: No type checking. All strings in the language (e.g., CFG) are valid strings. e.g., machine code
+		<li>Type unchecked: No type checking. All strings in the language (e.g., CFG) are valid strings. e.g., machine code, or some parts of C, e.g., integer overflow.
 	</ul>
 	<li>Another variation of typing: undefined behaviour. Accessing word beyond the length of an array is not type-checked in C. But if this happens at runtime, the program is not well-defined (or well-typed). The type-system is in programmer's head, but nobody will check it for you!
 	<li>Competing views on static vs. dynamic typing
@@ -286,6 +286,10 @@ i is an integer literal (constant)
   <ul>
     <li><code>S &lt;: T</code> is read "S is a subtype of T" or "T is a supertype of S".
     <li><code>S</code> is a subtype of <code>T</code> if any term of type <code>S</code> can be safely used in a context where a term of type <code>T</code> was expected.
+    <li>The precise semantics of subtyping here crucially depends on the particulars of how "safely be used" and "any context" are defined by a given type formalism or programming language. The type system of a programming language essentially defines its own subtyping relation.</li>
+    <li>Consider two types <code>int</code> and <code>bool</code>.  Let's hypothetically say that every operator that is defined for a term of type <code>bool</code> is also defined for a term of type <code>int</code>, e.g., <code>1 &amp;&amp; 3</code> evaluates to say <code>4</code> (for some strange definition of the semantics of <code>&amp;&amp;</code> on integers. But that does not necessarily mean that <code>int</code> is a subtype of <code>bool</code>.
+    </li>
+    <li>Due to the subtyping relation, a term may belong to more than one type. Subtyping is therefore a form of type polymorphism.</li>
     <li>Subtype is the same as "derived" type in an OO language
     <li>Supertype is the same as "base" type in an OO language
     <li>Example: the following code is type-correct
@@ -301,6 +305,7 @@ A a = B();
       <li> Transitive: <code>S &lt;: T</code> and <code>T &lt;: U</code> implies <code>S &lt;: U</code>.
       <li> Antisymmetric: <code>S &lt;: T</code> and <code>T &lt;: S</code> implies <code>S=T</code>.
     </ul>
+    </li>
     <li>In C/C++:
     <ul>
       <li> <code>char</code> is <em>not</em> a subtype of <code>int</code>.  Similarly, <code>int</code> is <em>not</em> a subtype of <code>float</code>.
@@ -314,6 +319,7 @@ A a = B();
         <li>There is a push towards specifying the language standards (e.g., C standard) through formal inference rules, they are currently specified using english text.</li>
       </ul>
     </ul>
+    </li>
   </ul>
 
 <h4>Soundness of a static typesystem</h4>
@@ -343,9 +349,9 @@ A a = B();
     In other words, the second type rule admits more desirable programs as type-correct than the first rule.
     For example (1+2)+3 will be type-incorrect with the first rule, but will be type-correct with the second rule.
     </li>
-    <li> [Optional discussion] What does <em>completeness</em> mean here?  A static typesystem would also be <em>complete</em>
+    <li> [Optional discussion] What does <em>completeness</em> mean here?  A static typesystem would be <em>complete</em>
     with respect to an execution semantics if whenever <code>e</code> evaluates to a value of type <code>T</code>,
-    then <code>e:T</code> is provable. However, achieving completeness is not possible in the presence of loops. For example, completeness requires that all programs that can produce a value <code>v:T</code> should also statically evaluate to type <code>T</code>; however, in the presence of loops, a value may be computed only if the loop terminates. If the loop never terminates, the type-checker should assign a type that agrees with non-termination (e.g., <code>void</code> to indicate that this value can never be used, or a stronger type that indicates non-termination explicitly). This  would amount to statically identifying if the loop terminates, but that is the halting problem.</li>
+    then <code>e:T</code> is provable. However, achieving completeness is not possible in the presence of loops. For example, completeness requires that all programs that can produce a value <code>v:T</code> should also statically evaluate to type <code>T</code>; however, in the presence of loops, a value may be computed only if the loop terminates. If the loop never terminates, the type-checker should assign a type that agrees with non-termination (e.g., <code>void</code> to indicate that this value can never be used, or a stronger type that indicates non-termination explicitly). This  would amount to statically identifying if the loop terminates, but that is the halting problem. There is more discussion on completeness later.</li>
   </ul>
 
 <h4>Our programming language</h4>
@@ -429,13 +435,21 @@ A a = B();
 </pre>
 If we replace this rule with a less general version like the following, then the code above does not remain well-typed.
 <pre>
- |-x:T  |-y:T
----------------- [Assignment]
+ |-x:T&amp;  |-y:T
+------------------- [Assignment]
   |- x := y : T
 </pre>
 This above rule is sound but not precise, in the sense it does not admit all the programs that we would like to admit. This is similar to how a previous imprecise rule did not admit <code>(1+2)+3</code>.  
 
 Notice that the conclusion assigns the more specific type <code>T1</code>, which <em>admits</em> <code>(A a = B()).y</code> as type correct.
+
+<h4>While loop</h4>
+<pre>
+ |-e:TB  |-x:T  TB&lt;:bool
+---------------------------- [While]
+  |- while (e) x : void
+</pre>
+This is a design decision. One could have said that the type of a while loop is the type of the last statement that executes. But then what if the statement didn't execute even once?  Hence a type 'void' means that the statement has a type which is not usable.
 
 <h4>Address-of</h4>
 <pre>
@@ -475,9 +489,7 @@ and the further, for any other upper bound <code>U(T2,T3)</code>, <code>lub &lt;
   ----------------  [Var]
       |- x:?
 </pre>
-The local, structural rule does not carry enough information to give <code>x</code> a type.
-
-<p>Solution: put more information in the rules!
+The local, structural rule does not carry enough information to give <code>x</code> a type.  We need more information in the rules.
 
 <p>A <em>type environment</em> gives types for <em>free</em> variables
 <ul>
@@ -510,11 +522,12 @@ Notice that the same assumptions are required in both the hypotheses and the con
 <p>And we can write new rules
 <pre>
 O(x) = T
----------  [Var]
-O |- x:T
+-------------  [Var]
+O |- x:T&amp;
 </pre>
 <pre>
-      O[T0/x] |- e1:T1
+  O[T0&amp;/x] |- e1:T1
+   T0 != void
 ----------------------------    [Let-No-Init]
  O |- { T0 x; e1 } : T1
 </pre>
@@ -528,7 +541,6 @@ When we leave the scope, we remove the assumption.
 
 <p>This terminology reminds us of the symbol table. So the type-environment is
 stored in the symbol table.
-
 <ul>
 	<li>The type environment gives types to the free identifiers in the current scope
 	<li>The type environment is passed down the AST from the root towards the leaves
@@ -539,39 +551,37 @@ stored in the symbol table.
 	<li>Types are computed up the AST from the leaves towards the root.
 </ul>
 
-The type rule now becomes:
+Our language also allows the initialization of a newly-declared variable.
 <pre>
-      O[T0/x] |- e1:T1
+      O[T0&amp;/x] |- e1:T1
          O |- e2:T0
+         T0 != void
 ----------------------------    [Let-Init]
  O |- { T0 x = e2; e1 } : T1
 </pre>
-Notice that this rule says that the initializer <code>e2</code> should have the same type <code>T0</code> as <code>x</code>. This is quite weak. In general, we should allow such assignment as long as <code>e2</code> is of a subtype of <code>T0</code>.
+Notice that this rule says that the initializer <code>e2</code> should have the same type <code>T0</code> as <code>x</code>. This is imprecise, we should ideally allow such assignment as long as <code>e2</code> is of a subtype of <code>T0</code>.
 
 <p>A better version of [Let-Init] using subtyping:
 <pre>
-      O[T0/x] |- e1:T1
+      O[T&amp;/x] |- e1:T1
          O |- e2:T0
-       T0 &lt;= T
+       T0 &lt;: T
+        T != void
 ----------------------------    [Let-Init]
  O |- { T x = e2; e1 } : T1
 </pre>
-A better version of [Assignment-Stmt] using subtyping
-<pre>
- O|-x:T0  O|-e1:T1 T1 &lt;=T0
------------------------------- [Assignment-Stmt]
-  |- x=e1 : T0
-</pre>
-Notice that the type of the assignment statement is T1, so it can participate in more operations than T0.
+Notice that <code>T0</code> only needs to be a subtype of <code>T</code> and not a subtype of <code>T&amp;</code>.  This allows <code>int x = 3</code>.
+Notice that we disallow the construction of a term of type <code>void&amp;</code>.  Consequently, we also disallow the construction
+of a term of type <code>void*</code>.
 
-<h4>While loop</h4>
+<p>
+Similarly, a better version of [Assignment] using subtyping is:
 <pre>
- |-e:bool  |-x:T
-------------------------- [While-Stmt]
-  |- while (e) x : void
+ O|-x:T0&amp;  O|-e1:T1   T1&lt;:T0
+----------------------------------- [Assignment]
+       O |- x=e1 : T1
 </pre>
-This is a design decision. One could have said that the type of a while loop is the type of the last statement that executes. But then what if the statement didn't execute even once?  Hence a type 'void' means that the statement has a type which is not usable. Similarly for if-then-else: the types in the two branches can be different, so the final type is void.
-
+Notice that the type of the assignment statement is value type <code>T1</code>, so it can participate in more operations than <code>T0</code>. Also notice that it is not a reference type.
 
 
 <h3>Typing Methods</h3>
@@ -579,7 +589,7 @@ C++ example
 <pre>
         O |- e1:T1
         ...
-        O |- en:T1
+        O |- en:Tn
 ------------------------------ [Dispatch]
    O |- f(e1,e2,...,en):?
 </pre>
@@ -601,35 +611,102 @@ Hence, our dispatch rule becomes:
 ---------------------------------------- [Dispatch]
    O |- f(e1,e2,...,en):T(n+1)
 </pre>
+Notice that this tackles both call-by-value and call-by reference. For example,
+<code>T1'</code> could be a reference type.
 
+<p>
 Object-oriented languages also implement encapsulation (e.g., some functions are only visible in certain classes, etc.). To handle them, one can
-extend O to be a function from a tuple of class-name and the identifier-name.
-Further, to express inheritance, we will use the subtype-relation for the
-"this" object in the method dispatch.
+extend O to be a function from a tuple of class-name and the identifier-name, e.g., <code>C.f</code> instead of <code>f</code>.
+<!--  We can maintain a stack of <em>current class</em>,
+and whenever we enter the scope of a class <code>C</code>, we can push <code>C</code> to the stack, and pop it upon leaving the scope.-->
+
+<p>Example:
+The following shows an example syntax of a method declaration and dispatch.
 <pre>
-        O |- e0:T0
-        O |- e1:T1
-        ...
-        O |- en:Tn
-        O |- C::f : (T1',..,Tn',T(n+1)')
-        T0 &lt; T
-        T1&lt;=T1',...Tn&lt;=Tn'
+class C {
+   ....
+   ...foo(T1 a1, ..., Tn an) .... //method declaration.
+};
+
+C c;
+c.foo(....);
+</pre>
+
+<p>The following shows an example syntax of a method declaration and dispatch with inheritance (subtyping) where <code>D&lt;:C</code>.
+<pre>
+class C {
+   ....
+   ...foo(T1 a1, ..., Tn an) .... //method declaration.
+};
+
+D c;
+c.foo(x1,...,xn);
+</pre>
+In this case, we will use <em>scoping rules</em> to resolve "which <code>foo</code>?".  For example, in this case, the <code>foo</code>
+is <code>C</code>'s foo.  Notice that the scoping rule will need to know the type of <code>c</code> and potentially
+the types of <code>x1..xn</code> to be able to identify "which <code>foo</code>?",
+and so scoping and typing work hand-in-hand.  Irrespective, once the question has been answered, we annotate each such
+dispatch with the class name corresponding to the method being dispatched, e.g., the dispatch in the example above becomes:
+<pre>
+D c;
+c@C.foo(....);
+</pre>
+This disambiguation is required
+to determine the type of the return value, e.g., <code>C.foo</code> may have a different
+return type than <code>B.foo</code>.
+
+<p>
+To express inheritance, we will use the subtype-relation for the
+<code>this</code> object in the method dispatch.
+<pre>
+     O |- e0:T0
+     O |- e1:T1
+     ...
+     O |- en:Tn
+     O |- T.f : (T1',..,Tn',T(n+1))
+     T0 &lt;: T
+     T1&lt;:T1', ...,  Tn&lt;:Tn'
 ---------------------------------------- [Static-Dispatch]
    O |- e0@T.f(e1,e2,...,en):T(n+1)
 </pre>
-For object-oriented languages, you also need to know the "current class" C in which the expression is sitting.
-<p>The form of a <em>sentence</em> in the logic is:
+
+<h4>Type polymorphism examples</h4>
+The following definitions can co-exist.
+<ol>
+<li><pre>int foo(int)</pre>
+<li><pre>long foo(long)</pre>
+<li><pre>string foo(string)</pre>
+</ol>
+Notice that <code>string foo(int)</code> cannot co-exist with the first <code>foo</code>.
+
+<p>Type resolution in this case is performed by looking at the types of the arguments, and those definitions
+are enabled where the types of actual arguments are respective subtypes of the formal arguments.
+If more than one definitions are enabled, that is usually a type-ambiguity error.
+(Notice that using resolution rules here like, most closely matching type, etc., are unlikely to
+be intuitive for the programmer when there are multiple arguments and one argument matches more
+closely for one candidate while another argument matches more closely for another candidate).
+
+<h4>this keyword</h4>
+<p>
+For object-oriented languages, to resovle the <code>this</code>
+keyword, we also need to know the "current class" C in which the expression is sitting.
+To support this, we change the form of a typing rule (also called a <em>sentence</em> in logic) to:
 <pre>
 O,C |- e:T
 </pre>
-E.g.,
+For example,
 <pre>
  O,C |- e1:int    O,C |- e2:int
 ----------------------------------  [Add]
     O,C |- e1+e2:int
 </pre>
+The rule for the <code>this</code> keyword would be the following:
+<pre>
+---------------  [This]
+O,C : this: C*
+</pre>
 
-<b>General themes</b>
+<h4>Summary</h4>
 <ul>
 	<li>Type rules are defined on the structure of expressions (through structural induction)</li>
 	<li>Types of variables are modeled by an environment</li>
@@ -671,34 +748,29 @@ TypeCheck(Environment, e1+e2) = {
 
 Let's consider a more complex example:
 <pre>
-         O |- e0:T0
-      O[T0/x] |- e1:T1
+         O |- e2:T0
+      O[T&amp;/x] |- e1:T1
        T0 &lt;= T
+        T != void
 ----------------------------    [Let-Init]
- O |- { T x = e0; e1 } : T1
+ O |- { T x = e2; e1 } : T1
 </pre>
 Let's look at the corresponding type-checking implementation:
 <pre>
 TypeCheck(Environment, { T x = e0; e1 }) = {
   T0 = TypeCheck(Environment, e0);
-  T1 = TypeCheck(Environment.add(x:T), e1);
+  T1 = TypeCheck(Environment.add(x:T&amp;), e1);
   Check subtype(T0,T1);
   return T1;
 }
 </pre>
 
 <h3>Static vs. Dynamic Typing</h3>
-<ul>
-	<li>Static type systems detect common errors at compile time
-	<li>But some correct programs are disallowed
-	<ul>
-		<li>Some argue for dynamic type checking instead. e.g., Python, Perl, ..
-		<li>Others want more expressive static type checking. e.g., fancier and fancier type systems. But can become quite complex making it harder for programming with such highly-expressive type-systems.
-	</ul>
-</ul>
+Languages with static type checking also have a notion of dynamic types, just that they may or may not implement
+the dynamic checks. The dynamic type of a term is determined through the <em>execution semantics</em>.
 
 <ul>
-	The dynamic type of an object is the class C that is used in the "<code>new C</code>" expression that created it.
+	The dynamic type of an object is the class C that is used in the "<code>C c</code>" (object) or "<code>C()</code>" (value) expression that created it.
 	<ul>
 		<li>A run-time notion
 		<li>Even languages that are not statically typed have the notion of dynamic type
@@ -708,46 +780,68 @@ TypeCheck(Environment, { T x = e0; e1 }) = {
 		<li>A compile-time notion
 	</ul>
 </ul>
-Formalizing the relationship:
-<p>Soundness theorem: for all expressions E, dynamic_type(E) = static_type(E)
 
-<p>In all executions, E evaluates to values of the type inferred by the compiler. You have to actually run the program to get the dynamic_type. In the early days of programming languages, this was the type of property that was proved for their type systems.
-
+<p>If a typesystem is sound, we do not need to implement dynamic checks for the properties
+that have been checked statically. For example, we do not need to dynamically check during
+execution of <code>1+2</code> that <code>1</code> and <code>2</code> are both of type <code>int</code>.
 
 <p>Consider C++ program:
 <pre>
 class A { ... }
 class B : public A { ... }
 void foo() {
-  A foo;
-  B bar;
+  A* foo = new A;
+  B* bar = new B;
   ....
-  foo =  bar
+  foo =  bar;
 }
 </pre>
-Static type of foo is "A", but the dynamic type of foo is "A" and "B" at different program points.
+Static type of foo is "A*", but the dynamic type of foo is "A*" and "B*" at different program points.
 
-<p>Soundness theorem for object-oriented languages that allow subtyping.
+<p>Formalizing the relationship, for a sound typesystem: for all expressions E, dynamic_type(E) = static_type(E)
+
+<p>In all executions, E evaluates to values of the type inferred by the compiler. You have to actually run the program to get the dynamic_type. In the early days of programming languages, this was the type of property that was proved for their type systems.
+
+<!--<p>In other words, a static typechecker will not accept any program that would have failed
+the dynamic typechecker <em>of equal precision</em>. In other words, all dynamically
+type-incorrect programs (for the types being checked statically) would be rejected
+by the static typechecker.-->
+
+<p>Notice that rejecting all programs is sound.  That's why we also care about <em>precision</em>,
+i.e., how many programs we can willingly accept.
+
+<h4>Completeness</h4>
+
+All dynamically type-correct programs are <em>accepted</em> by the static typechecker. Consider the
+following program:
 <pre>
-\forall{E}{dynamic_type(E) &lt;= static_type(E)}
+C c;
+D d; //where D is a subtype of C
+....
+D d2 = cond ? c : d;
 </pre>
-All operations that can be used on an object of type C can also be used on an object of type C' &lt;= C.
+Let's say that at runtime <code>cond</code> can never be false, and so this program is dynamically type-correct.
+However, statically figuring out that <code>cond</code> is never false is undecidable.
+
+<p>Show a Venn diagram: statically-type-correct &lt; dynamically-type-correct &lt; parseable.
+For soundness, <code>statically-type-correct &lt; dynamically-type-correct</code> should hold.
+For completeness, <code>dynamically-type-correct &lt; statically-type-correct</code> should hold.
+
+<p>All operations that can be used on an object of type C can also be used on an object of type C' &lt;= C.
 <ul>
 	<li>Such as fetching the value of an attribute
 	<li>Or invoking a method on the object
 </ul>
 Subclasses <em>only add</em> attributes or methods (they never remove attributes/methods).
 
-	<p>The dynamic type is obtained through the execution semantics of the program, e.g., if we have an expression <code>x++</code>, and the current state of the program determines <code>x</code> to be of type <code>int</code>, there is a dynamic typing rule that says that the type of the new expression is also <code>int</code>. Consider the example <code>{ T x = e0; x; }</code> where <code>e0:T0 &lt;= T</code>; here the dynamic type of the expression is <code>T0</code> (not <code>T</code>!). Similarly, the dynamic
+<p>The dynamic type is obtained through the execution semantics of the program, e.g., if we have an expression <code>x++</code>, and the current state of the program determines <code>x</code> to be of type <code>int</code>, there is a dynamic typing rule that says that the type of the new expression is also <code>int</code>. Consider the example <code>{ T x = e0; x; }</code> where <code>e0:T0 &lt;= T</code>; here the dynamic type of the expression is <code>T0</code> (not <code>T</code>!). Similarly, the dynamic
 type of <code>if x then y:T1 else Y:T2</code> will be either <code>T1</code> or <code>T2</code> (not <code>lub(T1,T2)</code> or <code>void</code>).
 
 <p>In other words, soundness states that the static type system will not accept any incorrect program (that will not pass the dynamic type check of equal power). A dynamic type check for array-bounds is not of equal power (it has more checks enabled); a sound static type check for array-bounds would reject all incorrect programs (but it will also reject a few more that will actually pass the dynamic type check).
 
 <p>Soundness of static type system: all dynamically-type-incorrect programs will be rejected. Ensured by ensuring that static_type is a supertype of dynamic_type. A trivial static-type system that rejects all programs is sound (but not useful).
 
-<p>Completeness: all dynamically-type-correct programs will be accepted. Not possible to ensure in general.
-
-<p>Methods can be redefined but with same type! e.g., C++, Java override.
+<p>Completeness: all dynamically-type-correct programs will be accepted. Not possible to ensure both soundness and completeness in general.
 
 <h3>Example where static type system can be too restrictive</h3>
 While a static type system may be sound, it may be too restrictive and
@@ -755,7 +849,7 @@ may disallow certain programs that may be dynamically well-typed.
 <pre>
 class Count {
   int i = 0; //default value = 0
-	Count inc() { i &lt;-- i + 1; return *this; }
+	Count inc() { i := i + 1; return *this; }
 };
 </pre>
 Now consider a subclass <code>Stock</code> of <code>Count</code>:
@@ -777,22 +871,18 @@ is <code>Count</code> which is not a subtype of <code>Stock</code>.
 
 <p><code>a.inc()</code> has <em>dynamic type</em> <code>Stock</code>.
 
-<p>So it is legitimate to write:
+<p>So dynamically speaking, it is legitimate to write the following:
 <code>
-	Stock b &lt;-- a.inc();
+	Stock b := a.inc();
 </code>
+But this is not well-typed as
+<li><code>a.inc()</code> has <em>static type</em> <code>Count</code>.
 
-<p>But this is not well-typed
-<ul>
-	<li><code>a.inc()</code> has <em>static type</em> <code>Count</code>.
-</ul>
-
+<p>Common workarounds to the incompleteness of a static type system:
 <ul>
 	<li>We can extend the type system. Different languages extend the type system in different directions
 	<li>Option 1: Use <code>dynamic_cast</code>: returns nullptr at runtime if not-successful; else returns a pointer to the object of the new type. Allows bypassing the static type system. May entail runtime cost.
 	<li>Option 2: C++ Template : pass type as argument
-	<ul>
-		<li>
 		<pre>
 template&lt;typename T&gt;
 class Count&lt;T&gt; {
@@ -805,17 +895,13 @@ class Stock : public Count&lt;Stock&gt;
   ...
 }
 </pre>
-<li>Another option: provide <code>dynamic_cast</code> operator. Will fail at runtime if the cast cannot be executed successfully. The compiler just treats this as an operator that either returns <code>nullptr</code> (cast not successful) or (a pointer to) an element of the new type. In both cases, the compiler can perform the rest of the static type-check using the new type.
-	</ul>
-	<li>Accept more correct programs
-	<li>Increase the expressive power of the type system
 </ul>
 
 <h3>Error Recovery</h3>
 <ul>
 	<li> Detecting where errors occur is easier than in parsing
 	<li> Introduce a new type <code>No_type</code> for use with ill-typed expressions
-	<li>Define <code>No_type &lt;= C</code> for all types <code>C</code>. Avoids cascading type errors due to one type-error.
+	<li>Define <code>No_type &lt;: C</code> for all types <code>C</code>. Avoids cascading type errors due to one type-error.
 	<li>Thus, every operation is defined for <code>No_type</code>
 	<ul>
 		<li>With a <code>No_type</code> result
