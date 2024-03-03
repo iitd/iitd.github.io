@@ -44,6 +44,10 @@ int * int + int
 			  E
 </pre>
 
+<p>
+Consequence: Whenever we reduce <code>abw -&gt; aXw</code> (using <code>X -&gt; b</code>),
+it must be true that <code>w</code> is a string of terminals.
+
 <h3>Shift-reduce parsing : strategy used by bottom-up parsers</h3>
 Important fact #1 has an interesting consequence:
 <ul>
@@ -61,7 +65,8 @@ Important fact #1 has an interesting consequence:
 	<li>Left substring has terminals and non-terminals
 	<li>The dividing point is marked by |
 	<ul>
-		<li> <code>aX|w</code>
+		<li> <code>a|w</code> where <code>a</code> is a string
+of terminals and non-terminals, and <code>w</code> is a string of only terminals.</li>
 	</ul>
 	<li>Need two kind of moves: shift-move (discussed next) and reduce-move (already discussed)
 	<li>The shift-move moves | to the right by one character (signifying that the parser has seen this character)
@@ -104,12 +109,15 @@ Left string can be implemented by a stack, because we only reduce the suffix of 
 <p>In either case, the parser does not know what to do, and we either need to rewrite the grammar, or need to give the parser a hint on what to do in this situation.
 
 <h3>Deciding when to shift and when to reduce</h3>
+<p>Solution 1: backtracking: try both shift and reduce (exponential search space)
+
+<p>Solution 2: predictive LR(k)
+
 <p>Example : <code>int * int + int</code>
-<br>Assume an oracle tells us whether to shift of reduce
 <pre>
 |int * int  + int                     shift
 int |* int + int                      shift
-
+</pre>
 At this point, we could reduce.
 
 T |* int + int                        reduce
@@ -123,6 +131,26 @@ But this would be a fatal mistake because there is no way we can reduce to E (th
 S --&gt;* \alpha X \omega --&gt; \alpha \beta \omega
 </pre>
 Then <code>\alpha \beta</code> is a handle of <code>\alpha \beta \omega</code>
+
+<p>Is <code>int</code> a handle of <code>int*int+int</code>?
+<pre>E --&gt; T+E --&gt; T+T --&gt; T+int --&gt; int*T+int --&gt; ...</pre>
+The <code>int</code> at the leftmost position was produced from <code>T--&gt;int*T</code> and not a reduction
+to only <code>int</code>.  Hence, <code>int</code> is <em>not</em> a handle of <code>int*int+int</code>.
+
+<p>Is <code>int*T</code> a handle of <code>int*int+int</code>? Yes.
+
+<p>Is <code>int*T+E</code> a handle of <code>int*int+int</code>?
+<pre>
+E --&gt; T+E --&gt; T + T --&gt; ...
+</pre>
+Because, in a rightmost deriviation, we produce <code>T</code> from <code>E</code> at the rightmost position in
+the very beginning, <code>int*T+E</code> is not a handle of <code>int*int+int</code>.
+
+<p>Is <code>\epsilon</code> a handle of <code>int*int+int</code>?
+<pre>
+E --&gt; T+E --&gt; ...
+</pre>
+No.  We never produce $\epsilon$ at the leftmost position in this rightmost derivation.
 
 <p>Handles formalize the intuition: A handle is a reduction that allows further reductions back to the start symbol.
 
@@ -139,7 +167,7 @@ Then <code>\alpha \beta</code> is a handle of <code>\alpha \beta \omega</code>
 		<li>next handle must be to right of rightmost non-terminal, because this is a right-most derivation.
 		<li>i.e., sequence of shift moves reaches the next handle
 	</ul>
-</pre>
+</ol>
 Handles are never to the left of the rightmost non-terminal, and are always at the top of the stack.
 
 <p>Hence shift-reduce parsers can only shift or reduce at the top of the stack. However, how to recognize handles, i.e., when to shift and when to reduce?
@@ -149,27 +177,65 @@ For an arbitrary grammar, no efficient algorithms known to recognize handles.
 
 <p>Heuristics to identify handles. On certain types of CFGs, heuristics are always correct.
 
-<p>Venn diagram:  All CFGs \superset Unambiguous CFGs \superset LR(k) CFGs \superset LALR(k) CFGs \superset SLR(k) \superset LR(0)
+<p>Strategy: try and rule out non-handles.  Even better: rule out <em>prefixes</em> that can never result in handles.
 
-<p>LR(k) are quite general, but most practical grammers are LALR(k). SLR(k) are simplifications over LALR(k) [simple LR grammars]. There are grammars that are SLR(k) but not LALR(k) and so on.
+<p><code>int|*int+int</code>: With lookahead one, the parser knows that the next token is <code>*</code>.  If the string begins with <code>T*</code>, it has <em>no hope</em> of being reduced to <code>E</code> (for any possible string of terminals that follows).  In other words, <code>T *</code> is not a viable prefix.
 
-<p>\alpha is a <em>viable prefix</em> if there is a valid right-most derivation of the string: S' --&gt; ...  --&gt; \alpha\omega --&gt; ... --&gt; string. e.g., \epsilon is a viable prefix
+<p>If there is a valid right-most derivation of the string: <code>S --&gt; ...  --&gt; \alphaX\omega --&gt; \alpha\beta{}\omega --&gt; ... --&gt; string</code>, then <code>\alpha{}\beta{}</code> and all its prefixes are <em>viable prefixes</em>.  e.g., <code>\epsilon</code> is always a viable prefix
 
-<p>In other words, \alpha is a <em>viable prefix</em> if there is an \omega such that \alpha|\omega is a state of a shift-reduce parser. Here \alpha is the stack and \omega is the rest of the input. It can lookahead at \omega, but the parser does not know the whole think. The parser knows the whole stack.
+<p>Example:
+<pre>
+S --&gt; E$
+E --&gt; T
+T --&gt; int
+</pre>
+A rightmost derivation is: <code>S --&gt; E$ --&gt; T$ --&gt; int$</code>.  Here <code>E$</code> is a viable prefix (production <code>S--&gt;E$</code> with <code>X=S</code> and <code>\beta=E$</code>). <code>T</code> is a viable prefix (with <code>X=E</code> and <code>\beta=T</code>).  But <code>T$</code> is <em>not</em> a viable prefix, as there is nothing that generates <code>T$</code> in one step. Similarly, <code>int$</code> is not a viable prefix.
+
+<p>Examples.  Consider the grammar below.
+<pre>
+S --&gt; E$
+E --&gt; T+E | T
+T --&gt; int*T | int | (E)
+</pre>
+Which of these are viable prefixes?
+<ul>
+<li> <code>T</code>? Yes, because <code>S --&gt; E$ --&gt; T+E$ --&gt; ...</code> is a valid rightmost derivation.</li>
+<li> <code>\epsilon</code>? Yes, always.</li>
+<li> <code>int*</code>? Yes, <code>S --&gt; E$ --&gt; T+E$ --&gt; ... -&gt; int*T+...</code></li>
+<li> <code>T*</code>? Consider the possibilities: <code>S --&gt; E$ --&gt; T+E --&gt; </code> is not helpful; neither is <code>S--&gt; E$ --&gt; T --&gt; ...</code>.  So, no.
+<li> <code>int*T+T</code>? No.  (I must first produce the rightmost <code>T</code> to something before I can expand the left <code>T</code> to <code>int*T</code>).
+<li> <code>E</code>? Yes.
+</ul>
+
+<p>In other words, \alpha is a <em>viable prefix</em> iff there is an \omega such that \alpha|\omega is an intermediate state of a shift-reduce parser in a valid parse of <em>any</em> string. Here $\alpha$ is the stack and $\omega$ is the rest of the input. It can lookahead at $\omega$, but the parser does not know the whole thing. The parser knows the whole stack.
 
 <p>What does this mean? A viable prefix does not extend past the right end of the handle. It's a viable prefix because it is a prefix of the handle. As long as a parser has viable prefixes on the stack, no parsing error has been detected.
 
-<p>An item is a production with a "." somewhere on the RHS in the production:
-e.g., the items for <code>T --&gt; (E)</code> are: <code>T --&gt; .(E)</code>, <code>T --&gt; (.E)</code>, <code>T --&gt; (E.)</code>, <code>T --&gt; (E).</code>.
-
-<p>The only item for an \epsilon production, <code>X --&gt; \epsilon</code> is <code>X --&gt; .</code>. Items are often called "LR(0) items".
-
-<p>The problem in recognizing viable prefixes is that the stack has only bits and pieces of the RHS of productions
+<p>Predictive shift-reduce parsing: based on the lookahead, check if any of the shift or reduce choices do not produce a viable prefix.  If so, discard that choice. For example, for lookahead one, consider the following state:
+<pre>
+\alpha\beta\gamma|a\omega
+</pre>
 <ul>
-	<li>If it had a complete RHS, we could reduce
+<li>Option 1: Shift. Is <code>\alpha\beta\gamma{}a</code> a viable prefix?</li>
+<li>Option 2: Reduce using X--&gt;\gamma. Is <code>\alpha\beta{}Xa</code> a viable prefix?
 </ul>
-These bits and pieces are always prefixes of RHS of some production(s).
 
+<p>Conversely, In a string is parse-able through the bottom-up parser, then every potential state of the stack should always be a viable prefix.
+
+<p>Consider the string <code>(int * int)</code>:
+<ul>
+	<li><code>int *|int)</code> is a state of a shift-reduce parse
+	<li>"(" is a prefix of the RHS of <code>T --&gt; (E)</code>
+	<li>"\epsilon" is a prefix of the RHS of <code>E --&gt; T</code>. This is an interesting case as we are considering "\epsilon" as a prefix too!
+	<li>"int *" is a prefix of the RHS of <code>T --&gt; int * T</code>
+</ul>
+
+
+<p>Venn diagram:  All CFGs \superset Unambiguous CFGs \superset LR(1) CFGs \superset LALR(1) CFGs \superset SLR \superset LR(0)
+
+<p>LR(k) are quite general, but most practical grammers are LALR(k). SLR(k) are simplifications over LALR(k) [simple LR grammars].
+
+<p>LL(1) is a subset of LR(1) but can cut across LR(0), SLR, LALR(1).
 <p>Consider the input <code>(int)</code> for the grammar:
 <pre>
 E --&gt; T + E | T
@@ -205,44 +271,20 @@ S --&gt; \epsilon | [S]
 </pre>
 is
 <pre>
-\epsilon | "["* | "["*S | "["*S"]"
+\epsilon | "["* | "["+S | "["+S"]"
 </pre>
+Notice that <code>"[["+S"]]"</code> or <code>[]</code> are <em>not</em> viable prefixes.
 
-<p>The language of viable prefixes for the example grammar:
-<pre>
-S --&gt; \epsilon | [S] | S.S
-</pre>
-is
-<pre>
-X = \epsilon | "[" | "["* | "["*S | "["*S"]"
-Y = "["*S.(X | Y)*
-Z = X + Y
-</pre>
-
-<p>Conversely, In a string is parse-able through the bottom-up parser, then every potential state of the stack should always be a viable prefix.
-
-<p>Consider the string <code>(int * int)</code>:
+<p>The problem in recognizing viable prefixes is that the stack has only bits and pieces of the RHS of productions
 <ul>
-	<li><code>int *|int)</code> is a state of a shift-reduce parse
-	<li>"(" is a prefix of the RHS of <code>T --&gt; (E)</code>
-	<li>"\epsilon" is a prefix of the RHS of <code>E --&gt; T</code>. This is an interesting case as we are considering "\epsilon" as a prefix too!
-	<li>"int *" is a prefix of the RHS of <code>T --&gt; int * T</code>
+	<li>If it had a complete RHS, we could reduce
 </ul>
-Alternatively, we can represent this as a "stack of items"
-<pre>
-T --&gt; (.E)
-E --&gt; .T
-T --&gt; int * .T
-</pre>
-says that
-<ul>
-	<li>We have seen "(" of <code>T --&gt; (E)</code>
-	<li>We have seen "\epsilon" of <code>E --&gt; T</code>
-	<li>We have seen "int *" of <code>T --&gt; int * T</code>
-</ul>
-Reading backwards, the LHS of every item becomes the RHS of the predecessor production.
+These bits and pieces are always prefixes of RHS of some production(s).
 
-<p>In other words, every viable prefix can be represented as a stack of items, where the (n+1)th item is a production for a non-terminal that follows the "." in the nth item.
+<p>An item is a production with a "." somewhere on the RHS in the production:
+e.g., the items for <code>T --&gt; (E)</code> are: <code>T --&gt; .(E)</code>, <code>T --&gt; (.E)</code>, <code>T --&gt; (E.)</code>, <code>T --&gt; (E).</code>.
+
+<p>The only item for an \epsilon production, <code>X --&gt; \epsilon</code> is <code>X --&gt; .</code>. Items are often called "LR(0) items".
 
 <p>To recognize viable prefixes, we must
 <ul>
@@ -277,6 +319,7 @@ NFA(stack) = yes if stack is a viable prefix
 		<li> Start state is (S' --&gt; .S)
 </ol>
 
+<!--
 <h3>Valid Items</h3>
 <ul>
 	<li>Can construct a DFA from NFA using the standard subset-of-states construction
@@ -285,9 +328,9 @@ NFA(stack) = yes if stack is a viable prefix
 		<li>The dragon book gives another way of constructing the LR(0) items
 	</ul>
 </ul>
-Item <code>X --&gt; \beta.\gamma</code> is <em>valid</em> for a viable prefix <code>\alpha\beta</code> if
+Item <code>X -&gt; \beta.\gamma</code> is <em>valid</em> for a viable prefix <code>\alpha\beta</code> if
 <pre>
-S' --&gt;* \alpha X \omega --&gt; \alpha \beta \gamma \omega
+S' -&gt;* \alpha X \omega -&gt; \alpha \beta \gamma \omega
 </pre>
 by a right-most derivation.
 
@@ -296,6 +339,23 @@ by a right-most derivation.
 <p>An item <code>I</code> is valid for a viable prefix <code>\alpha</code>
 if the DFA recognizing viable prefixes terminates on input <code>\alpha</code>
 in a state <code>s</code> containing <code>I</code>.
+-->
+The epsilon-closure of an NFA state (which is an item) is can be represented as a "stack of items"
+<pre>
+T --&gt; (.E)
+E --&gt; .T
+T --&gt; int * .T
+</pre>
+says that
+<ul>
+	<li>We have seen "(" of <code>T --&gt; (E)</code>
+	<li>We have seen "\epsilon" of <code>E --&gt; T</code>
+	<li>We have seen "int *" of <code>T --&gt; int * T</code>
+</ul>
+Reading backwards, the LHS of every item becomes the RHS of the predecessor production.
+
+<p>In other words, every viable prefix can be represented as a stack of items, where the (n+1)th item is a production for a non-terminal that follows the "." in the nth item.
+
 
 <p>The items in <code>s</code> describe what the top of the item stack might be after reading input \alpha
 
@@ -311,32 +371,54 @@ We can see this by looking at the DFA, which will keep looping into the same DFA
 
 <code>Need to show the NFA and DFA construction for our example grammar, and the valid items for these string prefixes.  Will need a laptop and a projector!</code>
 
-<h3>Simple LR (SLR) parsing</h3>
+<p>The language of viable prefixes for the example grammar:
+<pre>
+S --&gt; \epsilon | [S] | S.S
+</pre>
+is
+<pre>
+X = \epsilon | "[" | "["* | "["*S | "["*S"]"
+Y = "["*S.(X | Y)*
+Z = X + Y
+</pre>
+
+<h3>LR(0) parsing</h3>
 <ul>
 	<li>LR(0) Parsing: Assume
 	<ul>
-		<li> stack contains \alpha
-		<li>next input is <code>t</code>
-		<li>DFA on input \alpha terminates in state <code>s</code>
+		<li>stack contains \alpha</li>
+		<li>next input is <code>t</code></li>
+		<li>DFA on input \alpha terminates in state <code>s</code></li>
 	</ul>
+  <li>Parse error if DFA stuck before reaching state <code>s</code>.</li>
 	<li>Reduce by <code>X --&gt; \beta</code> if
 	<ul>
-		<li> <code>s</code> contains item <code>X --&gt; \beta</code>
+		<li> <code>s</code> contains item <code>X --&gt; \beta</code></li>
 	</ul>
+  </li>
 	<li>Shift if
 	<ul>
-		<li> <code>s</code> contains item <code>X --&gt; \beta.t\omega</code>
-		<li> equivalent to saying that <code>s</code> has a transition labeled <code>t</code>
+		<li> <code>s</code> contains item <code>X --&gt; \beta.t\omega</code></li>
+		<li> equivalent to saying that <code>s</code> has a transition labeled <code>t</code></li>
 	</ul>
-	<li>LR(0) has a reduce/reudce conflict if:
+  </li>
+	<li>LR(0) has a reduce/reduce conflict if:
 	<ul>
-		<li>Any state has two reduce items: <code>X --&gt; \beta.</code> and <code>Y --&gt; \omega.</code>
+		<li>Any state has two reduce items: <code>X --&gt; \beta.</code> and <code>Y --&gt; \omega.</code></li>
 	</ul>
+  </li>
 	<li>LR(0) has a shift/reduce conflict if:
 	<ul>
-		<li>Any state has a reduce item and a shift item: <code>X --&gt; \beta.</code> and <code>Y --&gt; \omega.t\delta</code>
+		<li>Any state has a reduce item and a shift item: <code>X --&gt; \beta.</code> and <code>Y --&gt; \omega.t\delta</code></li>
 	</ul>
 </ul>
+If for any string, any of these conflicts is possible, then the grammar is not an LR(0) grammar.
+
+<p>Resolve conflicts by increasing lookahead. For example, during a shift-reduce conflict as shown in the example above, if the next token is not <code>t</code>, then the shift possibility can be discarded.
+
+<p>LR(1) parsing (we are not going to discuss this in detail): bake the lookahead into items. An item now looks like <code>X--&gt;\beta., t</code> to indicate that if the next terminal is <code>t</code>, then reduce (but do not reduce if the next terminal is not <code>t</code>).
+
+<h3>SLR parsing</h3>
 
 <p>SLR = "Simple LR": improves on LR(0) shift/reduce heuristics so fewer state have conflicts
 
@@ -347,10 +429,10 @@ We can see this by looking at the DFA, which will keep looping into the same DFA
 	<li> DFA on input \alpha terminates in state <code>s</code>
 </ul>
 <ul>
-	<li>Reduce by <code>X --&gt; \beta</code> if
+	<li>Reduce by <code>X --&gt; \beta</code> only if
 	<ul>
 		<li> s contains item <code>X --&gt; \beta</code>
-		<li> <code>t \in Follow(X)  [only change to LR(0)]
+		<li> <code>t \in Follow(X)</code>  [only change to LR(0)]
 	</ul>
 	<li>Shift if
 	<ul>
@@ -380,7 +462,7 @@ We can see this by looking at the DFA, which will keep looping into the same DFA
 <ul>
 	<li> Consider the ambiguous grammar:
 	<ul>
-		<li><code>E --&gt; E+E|E*E|(E)|int
+		<li><code>E --&gt; E+E|E*E|(E)|int</code>
 	</ul>
 	<li>The DFA for this grammar contains a state with the following items:
 	<ul>
@@ -408,20 +490,22 @@ We can see this by looking at the DFA, which will keep looping into the same DFA
 	<ul>
 		<li> Let <code>\alpha|\omega</code> be current configuration
 		<li>Run <code>M</code> on current stack <code>\alpha</code>
-		<li>If <code>M</code>rejects <code>\alpha</code>, report parsing error
+		<li>If <code>M</code> rejects <code>\alpha</code>, report parsing error
 		<ul>
 			<li>Stack <code>\alpha</code> is not a viable prefix
 		</ul>
 		<li>If <code>M</code> accepts <code>\alpha</code> with items <code>I</code>, let <code>a</code> be next input
-		<code>
+		<ul>
 			<li>Shift if <code>X --&gt; \beta.a\gamma \in I</code>
 			<li>Reduce if <code>X --&gt; \beta. \in I</code> and <code>a \in Follow(X)</code>
 			<li>Report parsing error if neither applies
-		</code>
+		</ul>
 	</ul>
 </ol>
 
-<p>If there is a conflict in the last step, grammar is not SLR(k).  k is the amount of lookahead (in practice, k = 1)
+<p>If there can be a conflict in the last step, the grammar is not SLR.  To check
+if there can be a conflict, check if for some state, both shifting and reducing
+is an option.
 
 <h3>SLR Improvements</h3>
 <ul>
@@ -458,8 +542,8 @@ We can see this by looking at the DFA, which will keep looping into the same DFA
 <ul>
 	<li>If <code>si</code> has item <code>X --&gt; \alpha.a\beta</code> and <code>goto[i,a] = j</code>, then <code>action[i,a] = shift j</code>
 	<li>If <code>si</code> has item <code>X --&gt; \alpha.</code> and <code>a \in Follow(X)</code> and <code>X != S'</code>, then <code>action[i,a] = reduce X--&gt;\alpha</code>
-	<li>If <code>si</code> has item <code>S'--&gt;S.</code>, then <code>action[i,$] = accept
-		<li>Otherwise, <code>action[i,a]=error
+	<li>If <code>si</code> has item <code>S'--&gt;S.</code>, then <code>action[i,$] = accept</code></li>
+  <li>Otherwise, <code>action[i,a]=error</code></li>
 </ul>
 
 <p>SLR Improvements
@@ -505,13 +589,15 @@ We can see this by looking at the DFA, which will keep looping into the same DFA
 		<li>More accurate than just using follow sets
 		<li>Take a look at the LALR(1) automaton for your parser! (uses these items, but has a slight optimization over it)
 		<ul>
-			<li> LALR automaton is composed of states containing LR(1) items, with the added optimization that if two states differ only in lookahead then we combine those states. If the resulting states (after this minimization), have no conflict in the grammar, then that grammar is LALR also.
+			<li> LALR automaton is composed of states containing LR(1) items, with the added optimization that if two states differ only in lookahead then we combine those states. If the resulting states (after this minimization), have no conflict in the grammar, then that grammar is LALR also.</li>
 		</ul>
+    <li>Yacc uses LALR parsing</li>
 	</ul>
 </ul>
 
 <h3>SLR Examples</h3>
 <pre>
+T --&gt; S'$
 S' --&gt; S
 S --&gt; Sa
 S --&gt; b
@@ -541,8 +627,11 @@ S --&gt; Sa.
 
 <p>The only state with a shift-reduce conflict is state3. Here, if we look at follow of S', we have only "$", and hence we can resolve this conflict by one lookahead. Hence this is an SLR grammar
 
+<p>If we get rid of non-terminal <code>S'</code> above, by short-cutting <code>T --&gt; S$</code>, the grammar above becomes LR0.
+
 <p>Another example grammar
 <pre>
+T --&gt; S'$
 S' --&gt; S
 S --&gt; SaS
 S --&gt; b
@@ -580,4 +669,6 @@ From here, if we get <code>a</code> again, we go back to state 4! If we get <cod
 
 <p>The only states that have conflicts are: state3 (resolved by follow as follow(S') = $) and state5 (has a shift/reduce conflict because <code>a</code> \in follow(S))
 
-<p>Thus this is not an SLR(1) grammar
+<p>Thus this is not an SLR grammar
+
+<p>If we get rid of non-terminal <code>S'</code> above, by short-cutting <code>T --&gt; S$</code>, the grammar above becomes LR0!
