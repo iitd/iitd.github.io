@@ -434,12 +434,13 @@ subtype of <code>T</code>, i.e., <code>T&amp; &lt;: T</code>.
 <p>
 Thus, the assignment rule now becomes:
 <pre>
- |-x:T0&amp;  |-y:T1 T1&lt;:T0
+ |-e0:T0&amp;  |-e1:T1 T1&lt;:T0
 ------------------------------- [Assignment]
-  |- x := y : T1
+  |- e0 := e1 : val(T1)
 </pre>
-Notice that the conclusion assigns a value type to the assignment expression, which <em>rejects</em> <code>(x := y) := z</code> expressions.
-If we want <code>(x := y) := z</code>, we may want to change the inferred type in the conclusion to <code>T&amp;</code> (the type of <code>x</code>).
+Here <code>val(T1)</code> returns the value type of <code>T1</code> if <code>T1</code> is a reference type; else it returns <code>T1</code> itself.
+Notice that the conclusion assigns a value type to the assignment expression, which <em>rejects</em> <code>(x := y) := z</code> expressions, but accepts <code>x := (y := z)</code>.
+If we want to admit <code>(x := y) := z</code>, we may want to change the inferred type in the conclusion to <code>T1&amp;</code> (the type of <code>x</code>), but that would be quite non-intuitive, as that would likely mean that we are assigning <code>z</code> to <code>y</code> in the execution semantics.
 
 <p>
 The assignment rule admits the following code to be well-typed:
@@ -490,7 +491,7 @@ Notice that it is by design that <code>if-then-else</code> always returns type, 
     |- e2 : T2
     |- e3 : T3
 --------------------------------  [if-then-else]
-|- e1 ? e2 : e3 : lub(T2,T3)
+|- e1 ? e2 : e3 : val(lub(T2,T3))
 </pre>
 An <em>upper bound</em> <code>U(T2,T3)</code> of types <code>T2</code> and <code>T3</code>, is defined so that the following
 hold: <code>T2&lt;:U</code> and <code>T3&lt;U</code>.  A <code>least upper bound</code> <code>lub(T2,T3)</code>
@@ -503,6 +504,8 @@ it turns out that <code>lub</code> is unique.  If <code>lub</code> is not unique
 should be modified appropriately, e.g., to resolve this ambiguity.  One option is to have
 a hypothesis that requires that there must exist a unique <code>lub</code> of <code>T2</code>
 and <code>T3</code> for this expression to be well-typed.
+
+<p>The <code>val</code> operator ensures that this cannot be now used in the LHS of an assignment.
 
 <h4>Variable</h4>
 <p>But what is the type of a variable reference?
@@ -551,7 +554,9 @@ Notice that we choose to keep the value type in <code>O</code>, and use it
 to assign the reference type to <code>x</code> --- this is a succinct way
 of saying that all variables must be of a reference type.
 
-<p>
+<p>We allow a declaration only at the beginning of a scope; moreover, there can be
+at most one declaration at the beginning of a scope, and multiple declarations require
+multiple nested scopes.
 <pre>
   O[T0/x] |- e1:T1
    T0 != void
@@ -606,15 +611,16 @@ Notice that <code>T0</code> only needs to be a subtype of <code>T</code> and not
 Notice that we disallow the construction of a term of type <code>void&amp;</code>.  Consequently, we also disallow the construction
 of a term of type <code>void*</code>.
 
+<!--
 <p>
 Similarly, a better version of [Assignment] using subtyping is:
 <pre>
  O|-x:T0&amp;  O|-e1:T1   T1&lt;:T0
------------------------------------ [Assignment]
+~---------------------------------~ [Assignment]
        O |- x=e1 : T1
 </pre>
 Notice that the type of the assignment statement is value type <code>T1</code>, so it can participate in more operations than <code>T0</code>. Also notice that it is not a reference type.
-
+-->
 
 <h3>Typing Methods</h3>
 C++ example
@@ -691,7 +697,7 @@ return type than <code>B.foo</code>.
 To express inheritance, we will use the subtype-relation for the
 <code>this</code> object in the method dispatch.
 <pre>
-     O |- e0:T0
+     O |- e0:T0&amp;
      O |- e1:T1
      ...
      O |- en:Tn
@@ -701,6 +707,8 @@ To express inheritance, we will use the subtype-relation for the
 ---------------------------------------- [Static-Dispatch]
    O |- e0@T.f(e1,e2,...,en):T(n+1)
 </pre>
+Notice that we require <code>e0</code> to be a reference type.  In other words,
+<code>e0</code> should represent of a region of memory, also called an <em>object</em>.
 
 <h4>Type polymorphism examples</h4>
 The following definitions can co-exist.
@@ -713,6 +721,8 @@ Notice that <code>string foo(int)</code> cannot co-exist with the first <code>fo
 
 <p>Type resolution in this case is performed by looking at the types of the arguments, and those definitions
 are enabled where the types of actual arguments are respective subtypes of the formal arguments.
+If no
+definitions are enabled, this is a type error.
 If more than one definitions are enabled, that is usually a type-ambiguity error.
 (Notice that using resolution rules here like, most closely matching type, etc., are unlikely to
 be intuitive for the programmer when there are multiple arguments and one argument matches more
@@ -726,6 +736,9 @@ To support this, we change the form of a typing rule (also called a <em>sentence
 <pre>
 O,C |- e:T
 </pre>
+We use C=null for a context which is free of any "current class".
+
+<p>
 For example,
 <pre>
  O,C |- e1:int    O,C |- e2:int
@@ -734,6 +747,7 @@ For example,
 </pre>
 The rule for the <code>this</code> keyword would be the following:
 <pre>
+  C != null
 ---------------  [This]
 O,C : this: C*
 </pre>
