@@ -121,7 +121,7 @@ return f(2);
 		<li>It will only keep track of the currently active activations
 		<li>Work the first example showing the tree and the active lifetimes (as a stack) over runtime
 	</ul>
-	<li>Let's look at the memory layout, where the first portion is occupied by the code. One of the important structures that goes in the "data area" is the stack of actie activations. The stack typically grows in one direction; usually downwards (by convention).
+	<li>Let's look at the memory layout, where the first portion is occupied by the code. One of the important structures that goes in the "data area" is the stack of active activations. The stack typically grows in one direction; usually downwards (by convention).
 </ul>
 
 <h3>Activation Records</h3>
@@ -136,7 +136,8 @@ What information to keep in an activation?
 		<li>Complete execution of <code>G</code>
 		<li>Resume execution of <code>F</code>
 	</ul>
-	<li>Example
+	<li>
+<!--Example
 	<pre>
 int g() { return 1; }
 int f(int x) { if (x == 0) then return g(); else return f(x- 1); }
@@ -145,7 +146,7 @@ int
 main() {
 return f(3);
 }
-	</pre>
+	</pre>-->
 	AR: (1) result , (2) arguments , (3) control-link : pointer to the caller's activation , (4) return address
 	<li>Executing this program by hand, show the AR for each function (except main). There can be two return addresses for <code>f</code>, and show them as "*" and "**" respectively. These represent addresses of the instructions in memory.
 	<li>This stack is not as abstract as a general stack. This stack has an array-like layout, and hence compiler writers will often play tricks to exploit this fact that activation records are adjacent in memory.
@@ -163,7 +164,7 @@ return f(3);
 	<ul>
 		<li>Can't store a global in an activation record
 	</ul>
-	<li>Global s are assigned a fixed address once
+	<li>Globals are assigned a fixed address once
 	<ul>
 		<li>Variables with fixed address are "statically allocated"
 	</ul>
@@ -195,10 +196,12 @@ Low-level but important detail that every compiler writer needs to be aware of.
 		<li>4 or 8 bytes in a word
 		<li>Machines are either byte or word addressable
 	</ul>
-	<li>Data is <em>word aligned</em> if it begins at a word boundary
+  <li>Did you know: C requires an object of type <code>int</code> to be aligned by <code>sizeof(int)</code>, which is typically <code>four</code>.  The compiler may need to generate padding bytes on stack to meet this requirement for local variables.
+  <li>On the other hand, a hardware machine may have its own alignment requirements, e.g., for certain opcodes to be executed legally.
+	<li>Data is <em>word aligned</em> if it begins at a word boundary, e.g., word=4bytes for 32-bit machine.
 	<li>Most machines have some alignment restrictions
 	<ul>
-		<li>E.g., undefined behaviour if access misaligned data
+		<li>e.g., exception if access misaligned data
 		<li>Or dramatic performance penalties for poor alignment (can be up to 10x depending on the machine)
 	</ul>
 	<li>Example: a string "Hello" takes 5 characters (without a terminating '\0').
