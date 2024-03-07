@@ -812,6 +812,16 @@ TypeCheck(Environment, { T x = e0; e1 }) = {
 }
 </pre>
 
+<p>Recall that we claimed that type inference and type checking are similar, in that they use the same typing rules.
+The typing rules can also be used to implement type inference.  We can modify the <code>TypeCheck</code> function,
+so that along with the <code>Environment</code>, it also passes down the acceptable types for a sub-expression, or
+more generally <em>type constraints</em>.  At the end, these constraints can be solved to identify the types of
+the leaf nodes of the AST to implement type inference.  If the constraints have no solution, it is a type error.
+If the constraints have more than one solution, either there is a type ambiguity error, or there is a rule
+to resolve the ambiguity. For example, the most <em>general</em> type may be used when
+all the candidate types are ordered by the subtyping relation, i.e., the type that is the supertype
+of all other candidates, e.g., \alpha-list is more general than int-list.
+
 <h3>Static vs. Dynamic Typing</h3>
 Languages with static type checking also have a notion of dynamic types, just that they may or may not implement
 the dynamic checks. The dynamic type of a term is determined through the <em>execution semantics</em>.
