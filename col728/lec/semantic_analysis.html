@@ -644,7 +644,7 @@ Hence, our dispatch rule becomes:
    O |- f(e1,e2,...,en):T(n+1)
 </pre>
 Notice that this tackles both call-by-value and call-by reference. For example,
-<code>T1'</code> could be a reference type.
+<code>T1'</code> could be a reference type.  Further, a reference-type can be used as an argument where a value-type was expected; but not vice-versa.
 
 <p>
 Object-oriented languages also implement encapsulation (e.g., some functions are only visible in certain classes, etc.). To handle them, one can
@@ -720,7 +720,7 @@ closely for one candidate while another argument matches more closely for anothe
 
 <h4>this keyword</h4>
 <p>
-For object-oriented languages, to resovle the <code>this</code>
+For object-oriented languages, to resolve the <code>this</code>
 keyword, we also need to know the "current class" C in which the expression is sitting.
 To support this, we change the form of a typing rule (also called a <em>sentence</em> in logic) to:
 <pre>
@@ -782,7 +782,7 @@ Let's consider a more complex example:
 <pre>
          O |- e2:T0
       O[T&amp;/x] |- e1:T1
-       T0 &lt;= T
+       T0 &lt;: T
         T != void
 ----------------------------    [Let-Init]
  O |- { T x = e2; e1 } : T1
@@ -793,6 +793,7 @@ TypeCheck(Environment, { T x = e0; e1 }) = {
   T0 = TypeCheck(Environment, e0);
   T1 = TypeCheck(Environment.add(x:T&amp;), e1);
   Check subtype(T0,T1);
+  Check T != void;
   return T1;
 }
 </pre>
@@ -830,9 +831,9 @@ void foo() {
 </pre>
 Static type of foo is "A*", but the dynamic type of foo is "A*" and "B*" at different program points.
 
-<p>Formalizing the relationship, for a sound typesystem: for all expressions E, dynamic_type(E) = static_type(E)
+<p>Formalizing the relationship, for a sound typesystem: for all expressions E, dynamic_type(E) &lt;: static_type(E)
 
-<p>In all executions, E evaluates to values of the type inferred by the compiler. You have to actually run the program to get the dynamic_type. In the early days of programming languages, this was the type of property that was proved for their type systems.
+<p>In all executions, E evaluates to values of the type inferred by the compiler. You have to actually run the program to get the dynamic_type. In the early days of programming languages, equality (instead of subtype relation) was proved for their type systems.
 
 <!--<p>In other words, a static typechecker will not accept any program that would have failed
 the dynamic typechecker <em>of equal precision</em>. In other words, all dynamically
@@ -866,7 +867,7 @@ For completeness, <code>dynamically-type-correct &lt; statically-type-correct</c
 </ul>
 Subclasses <em>only add</em> attributes or methods (they never remove attributes/methods).
 
-<p>The dynamic type is obtained through the execution semantics of the program, e.g., if we have an expression <code>x++</code>, and the current state of the program determines <code>x</code> to be of type <code>int</code>, there is a dynamic typing rule that says that the type of the new expression is also <code>int</code>. Consider the example <code>{ T x = e0; x; }</code> where <code>e0:T0 &lt;= T</code>; here the dynamic type of the expression is <code>T0</code> (not <code>T</code>!). Similarly, the dynamic
+<p>The dynamic type is obtained through the execution semantics of the program, e.g., if we have an expression <code>x++</code>, and the current state of the program determines <code>x</code> to be of type <code>int&amp;</code>, there is a dynamic typing rule that says that the type of the new expression is also <code>int&amp;</code>. Consider the example <code>{ T x = e0; x; }</code> where <code>e0:T0 &lt;: T</code>; here the dynamic type of the expression is <code>T0</code> (not <code>T</code>!). Similarly, the dynamic
 type of <code>if x then y:T1 else Y:T2</code> will be either <code>T1</code> or <code>T2</code> (not <code>lub(T1,T2)</code> or <code>void</code>).
 
 <p>In other words, soundness states that the static type system will not accept any incorrect program (that will not pass the dynamic type check of equal power). A dynamic type check for array-bounds is not of equal power (it has more checks enabled); a sound static type check for array-bounds would reject all incorrect programs (but it will also reject a few more that will actually pass the dynamic type check).
@@ -881,7 +882,7 @@ may disallow certain programs that may be dynamically well-typed.
 <pre>
 class Count {
   int i = 0; //default value = 0
-	Count inc() { i := i + 1; return *this; }
+  Count inc() { i := i + 1; return *this; }
 };
 </pre>
 Now consider a subclass <code>Stock</code> of <code>Count</code>:
@@ -914,7 +915,7 @@ But this is not well-typed as
 <ul>
 	<li>We can extend the type system. Different languages extend the type system in different directions
 	<li>Option 1: Use <code>dynamic_cast</code>: returns nullptr at runtime if not-successful; else returns a pointer to the object of the new type. Allows bypassing the static type system. May entail runtime cost.
-	<li>Option 2: C++ Template : pass type as argument
+	<li>Option 2: C++ Template : pass subtype as argument to the supertype
 		<pre>
 template&lt;typename T&gt;
 class Count&lt;T&gt; {
