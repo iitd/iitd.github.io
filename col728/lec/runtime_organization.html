@@ -74,7 +74,13 @@ constructs will depend on the ideas we will discuss.
 		<li>All the steps to execution <code>P</code>
 		<li>Including all the steps in procedures <code>P</code> calls
 	</ul>
-	<li>The <em>lifetime</em> of a variable <code>x</code> is the portion of execution in which <code>x</code> is defined, which includes:
+	<li>The <em>lifetime</em> of a variable <code>x</code> is the portion of execution in which <code>x</code> is defined.
+   <ul>
+     <li> For a global variable, this is the same as the lifetime of the program, also known as the lifetime of the <code>main()</code> function.</li>
+     <li> In languages like C, C++, Rust, a local variable's lifetime is contained within the lifetime of the procedure activation that created it.</li>
+     <li> In languages like Java, Python, OCaml, the allocation and deallocation of a local variable is performed on the heap and garbage-collected.  So its lifetime may extend beyond the lifetime of the procedure activation that created the variable.</li>
+   </ul>
+  </li>
 	<li>Note that
 	<ul>
 		<li>Lifetime is a dynamic (run-time) concept
@@ -125,7 +131,7 @@ return f(2);
 </ul>
 
 <h3>Activation Records</h3>
-<p>The active activations can be maintained in a stack.  The information for each activation is stored in an <em>activation record</em>, also called a <em>frame</em>.
+<p>The active activations can be maintained in a stack, also called the <em>call stack</em>.  The information for each activation is stored in an <em>activation record</em>, also called a <em>frame</em>.
 What information to keep in an activation?
 <ul>
 	<li>The information needed to manage one procedure activation is called an <em>activation record</em> (AR) or <em>frame</em>
@@ -204,12 +210,38 @@ Low-level but important detail that every compiler writer needs to be aware of.
 		<li>e.g., exception if access misaligned data
 		<li>Or dramatic performance penalties for poor alignment (can be up to 10x depending on the machine)
 	</ul>
+  </li>
 	<li>Example: a string "Hello" takes 5 characters (without a terminating '\0').
 	<ul>
 		<li>Show an array of bytes with word-boundaries marked with darker lines
 		<li>To word align next word, add 3 "padding" characters to the string
 		<li>The padding is not part of the string, it's just unused memory
 	</ul>
+  </li>
+  <li> Consider the following C declaration
+  <pre>
+    class foo {
+      int i1;
+      char s[5];
+      int i2; //the compiler will like introduce three "pad" bytes between s and i2, to ensure that integer accesses are four-byte aligned
+    };
+  </pre>
+  </li>
+  <li>Here is an example translation of the declaration of a local variable <code>x</code>:
+  <pre>
+  void foo(...) {
+     int x;
+     ...
+  }
+  </pre>
+  to the following x86 code:
+  <pre>
+  foo:
+    and $0xfffffffc, %esp
+    sub $4, %esp
+  </pre>
+  The mask through the <code>and</code> instruction implements the alignment restriction required in C.
+  </li>
 </ul>
 
 <h3>Stack machines</h3>
@@ -267,6 +299,15 @@ r = F(a1, ..., an):
 	<li>Invariant: after evaluating an expression <code>e</code>, the accumulator holds the value of <code>e</code> and the stack is unchanged
 	<ul>
 		<li>Important property: expression evaluation preserves the stack
+    <li>
+      <pre>
+      cgen(a + b) =  cgen(a)
+                  +  "push acc"
+                  +  cgen(b)
+                  +  "add"
+                  +  "pop"
+      </pre>
+    </li>
 	</ul>
 	<li>Another example: 3 + (7 + 5)
 	<ul>
