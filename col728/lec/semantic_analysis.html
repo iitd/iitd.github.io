@@ -952,6 +952,11 @@ class Stock : public Count&lt;Stock&gt;
   ...
 }
 </pre>
+The use of <code>static_cast</code> is only a convenience, as the compiler will check if it is guaranteed that
+<code>this</code> can be type-casted to <code>T*</code> at compile-time (potentially using an analysis that is
+external to the type-rules that we have discussed so far).  One could replace <code>static_cast</code> with
+<code>dynamic_cast</code> with the same effect (except that the compiler will no longer check the cast at compile time).
+</li>
 </ul>
 
 <h3>Error Recovery</h3>
@@ -963,5 +968,5 @@ class Stock : public Count&lt;Stock&gt;
 	<ul>
 		<li>With a <code>No_type</code> result
 	</ul>
-	<li>The type hierarchy is not a tree anymore, it is a DAG with <code>No_type</code> at the bottom
-
+	<li>The type hierarchy is not a tree anymore, it is a DAG with <code>No_type</code> at the bottom.  A DAG may also occur due to multiple inheritance for example.</li>
+</ul>
