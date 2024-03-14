@@ -154,7 +154,7 @@ return f(3);
 }
 	</pre>-->
 	AR: (1) result , (2) arguments , (3) control-link : pointer to the caller's activation , (4) return address
-	<li>Executing this program by hand, show the AR for each function (except main). There can be two return addresses for <code>f</code>, and show them as "*" and "**" respectively. These represent addresses of the instructions in memory.
+	<li>Executing this program by hand, show the AR for each function (except main). There can be two return addresses for <code>f</code>, and show them as "*" and "**" respectively. These represent addresses of the instructions in memory.  Show the ARs as abstract structures with pointers to each other --- do not show them as a part of the stack yet.
   <li>This stack is not as abstract as a general stack. This stack has an array-like layout, and hence compiler writers will often play tricks to exploit this fact that activation records are adjacent in memory.
   <li>Because the lifetime of a local variable is contained within the lifetime of the activation that created it, a local variable can also be stored in an AR.  Further, an AR may shrink and grow dynamically as the activation executes, e.g., to (de)allocate local variables. The AR format can be specialized for variadic procedures.</li>
 	<li>This is only one of many possible AR designs. e.g., many compilers don't use a control link, they rely on the fact that the stack is laid out linearly as an array. Similarly, the return address may be in a register (and not in the stack). The compiler determines the AR. Different compilers may employ different ARs. Some ARs are more efficient than others. Some ARs are easier to generate code for.</li>
