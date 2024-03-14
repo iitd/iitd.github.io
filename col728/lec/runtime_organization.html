@@ -155,8 +155,9 @@ return f(3);
 	</pre>-->
 	AR: (1) result , (2) arguments , (3) control-link : pointer to the caller's activation , (4) return address
 	<li>Executing this program by hand, show the AR for each function (except main). There can be two return addresses for <code>f</code>, and show them as "*" and "**" respectively. These represent addresses of the instructions in memory.
-	<li>This stack is not as abstract as a general stack. This stack has an array-like layout, and hence compiler writers will often play tricks to exploit this fact that activation records are adjacent in memory.
-	<li>This is only one of many possible AR designs. e.g., many compilers don't use a control link, they rely on the fact that the stack is laid out linearly as an array. Similarly, the return address may be in a register (and not in the stack). The compiler determines the AR. Different compilers may employ different ARs. Some ARs are more efficient than others. Some ARs are easier to generate code for.
+  <li>This stack is not as abstract as a general stack. This stack has an array-like layout, and hence compiler writers will often play tricks to exploit this fact that activation records are adjacent in memory.
+  <li>Because the lifetime of a local variable is contained within the lifetime of the activation that created it, a local variable can also be stored in an AR.  Further, an AR may shrink and grow dynamically as the activation executes, e.g., to (de)allocate local variables. The AR format can be specialized for variadic procedures.</li>
+	<li>This is only one of many possible AR designs. e.g., many compilers don't use a control link, they rely on the fact that the stack is laid out linearly as an array. Similarly, the return address may be in a register (and not in the stack). The compiler determines the AR. Different compilers may employ different ARs. Some ARs are more efficient than others. Some ARs are easier to generate code for.</li>
 </ul>
 <ul>
 	<li>The advantage of placing the result in the first word of the AR is that the caller can find the result at a fixed offset from its own activation (size of its AR + 1).
@@ -176,6 +177,7 @@ return f(3);
 	</ul>
 	<li>Depending on the language, there may be other statically allocated values
 	<li>Memory layout: Code, static data, stack (grows downwards)
+  <li>Mention the possibility of self-referential and self-modifying code, with possibly the example of variable shifting through constant-shifting instruction opcodes (using code modification at runtime).
 </ul>
 <p>Heap objects
 <ul>
@@ -199,18 +201,14 @@ Low-level but important detail that every compiler writer needs to be aware of.
 	<li>Most modern machines are 32 or 64 bit
 	<ul>
 		<li>8 bits in a byte
-		<li>4 or 8 bytes in a word
+		<li>4 or 8 bytes in a <em>word</em> in a 32 and 64-bit machine respectively.
 		<li>Machines are either byte or word addressable
+    <li>Machines are optimized for word-sized accesses (as all pointers are word-sized).
+    <li>A word-sized access should ideally be word-aligned (to avoid straddling across cache lines for example)
+    <li>For this reason, an unaligned access either throws an exception or is much slower, e.g., up to 10x slower.
+    <li>Alignment restrictions may be opcode specific.
 	</ul>
   <li>Did you know: C requires an object of type <code>int</code> to be aligned by <code>sizeof(int)</code>, which is typically <code>four</code>.  The compiler may need to generate padding bytes on stack to meet this requirement for local variables.
-  <li>On the other hand, a hardware machine may have its own alignment requirements, e.g., for certain opcodes to be executed legally.
-	<li>Data is <em>word aligned</em> if it begins at a word boundary, e.g., word=4bytes for 32-bit machine.
-	<li>Most machines have some alignment restrictions
-	<ul>
-		<li>e.g., exception if access misaligned data
-		<li>Or dramatic performance penalties for poor alignment (can be up to 10x depending on the machine)
-	</ul>
-  </li>
 	<li>Example: a string "Hello" takes 5 characters (without a terminating '\0').
 	<ul>
 		<li>Show an array of bytes with word-boundaries marked with darker lines
@@ -220,12 +218,13 @@ Low-level but important detail that every compiler writer needs to be aware of.
   </li>
   <li> Consider the following C declaration
   <pre>
-    class foo {
+    struct foo {
       int i1;
       char s[5];
       int i2; //the compiler will like introduce three "pad" bytes between s and i2, to ensure that integer accesses are four-byte aligned
     };
   </pre>
+  The expression <code>sizeof(struct foo)</code> would include the pad bytes.
   </li>
   <li>Here is an example translation of the declaration of a local variable <code>x</code>:
   <pre>
@@ -241,6 +240,8 @@ Low-level but important detail that every compiler writer needs to be aware of.
     sub $4, %esp
   </pre>
   The mask through the <code>and</code> instruction implements the alignment restriction required in C.
+  Some calling conventions require <code>esp</code> to be aligned at the start of every procedure-call (to avoid some
+  of these masking instructions).
   </li>
 </ul>
 
