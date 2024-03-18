@@ -101,7 +101,7 @@
 	<li>push/pop are "higher-level" opcodes: enables faster execution paths for these common operations
 </ul>
 
-<p>The stack-machine code for <code>7+5</code> in MIPS:
+<p>The one-register stack-machine code for <code>7+5</code> in MIPS:
 <pre>
 acc &lt;-- 7                      : li $a0, 7
 push acc                          : sw $a0, 0($sp)
