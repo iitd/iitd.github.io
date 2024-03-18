@@ -94,9 +94,9 @@
 	<ul>
 		<li><code>(%esp-4) &lt;-- reg/(memaddr)/imm; %esp &lt;-- %esp-4</code>
 	</ul>
-	<li> <code>pop %reg/(memaddr)/$imm</code>
+	<li> <code>pop %reg/(memaddr)</code>
 	<ul>
-		<li><code>reg/(memaddr)/imm &lt;-- (%esp); %esp &lt;-- %esp+4</code>
+		<li><code>reg/(memaddr) &lt;-- (%esp); %esp &lt;-- %esp+4</code>
 	</ul>
 	<li>push/pop are "higher-level" opcodes: enables faster execution paths for these common operations
 </ul>

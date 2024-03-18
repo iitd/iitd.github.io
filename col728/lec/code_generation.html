@@ -146,18 +146,16 @@ end_if:</code>
 <li>These are the only variables in this language
 </ul>
 <li>The stack discipline guarantees that on function exit <code>$sp</code> is the same as it was on function entry
-<ul>
-<li>No need for a control link (which is usually needed to find another activation).
-</ul>
 <li>We need the return address
 <li>A pointer to the current activation is useful
 <ul>
 <li>This pointer lives in the register <code>$fp</code> (frame pointer)
 </ul>
 <li>Summary: For this language, an AR with the caller's frame pointer, the actual parameters, and the return address suffices
-<li>Picture: Consider a call to <code>f(x,y)</code>, the AR is:
+<li>Picture: Consider a call to <code>f(x,y)</code>. At the callsite, before the call, the AR is:
 <pre>
-FP:
+FP -&gt; ....  args of caller
+      ....     temporary values of caller
       old fp  |
       y       } AR of f
       x       |
@@ -202,12 +200,12 @@ jal f_entry</code>
   <code style="color:red">cgen(def f(x1,x2,...,xn) = e) =
 </code><code style="color:blue">
 f_entry:
-move $fp $sp
+move $fp $sp   # moves from sp to fp
 sw $ra 0($sp)
 addiu $sp $sp -4</code><code style="color:red">
 cgen(e)</code><code style="color:blue">
 lw $ra 4($sp)
-addiu $sp $sp <em>z</em>
+addiu $sp $sp <em>z</em>  #z defined below as 4*n+8
 lw $fp 0($sp)
 jr $ra
 </code>
