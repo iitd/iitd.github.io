@@ -182,11 +182,11 @@ sw $fp 0($sp)
 addiu $sp $sp -4</code><code style="color:red">
 cgen(en)</code><code style="color:blue">
 sw $a0 0($sp)
-addiu $sp $sp - 4
+addiu $sp $sp -4
 ...</code><code style="color:red">
 cgen(e1)</code><code style="color:blue">
 sw $a0 0($sp)
-addiu $sp $sp - 4
+addiu $sp $sp -4
 jal f_entry</code>
 </pre>
 <ul>
@@ -201,10 +201,10 @@ jal f_entry</code>
 </code><code style="color:blue">
 f_entry:
 move $fp $sp   # moves from sp to fp
-sw $ra 0($sp)
+sw $ra 0($sp)  # notice that sp and fp are same here
 addiu $sp $sp -4</code><code style="color:red">
 cgen(e)</code><code style="color:blue">
-lw $ra 4($sp)
+lw $ra 4($sp)  # fp is sp+4 at this point
 addiu $sp $sp <em>z</em>  #z defined below as 4*n+8
 lw $fp 0($sp)
 jr $ra
