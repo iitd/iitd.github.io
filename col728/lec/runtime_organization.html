@@ -265,6 +265,24 @@ r = F(a1, ..., an):
 	<ul>
 		<li>Always the top of the stack
 	</ul>
+	<li>Invariant: after evaluating an expression <code>e</code>, the value of <code>e</code> is pushed to the top of the stack
+	<ul>
+		<li>Important property: expression evaluation preserves the stack (below the pushed value)
+    <li>
+      <pre>
+      cgen(i) =  push i
+      </pre>
+    </li>
+    <li>
+      <pre>
+      cgen(a + b) =  cgen(a)
+                  +  "push acc"
+                  +  cgen(b)
+                  +  "push acc"
+                  +  "add"
+      </pre>
+    </li>
+	</ul>
 	<li>In contrast to a <em>register machine</em>
 	<ul>
 		<li><code>add</code> instead of <code>add r1,r2,r3</code>
@@ -300,6 +318,12 @@ r = F(a1, ..., an):
 	<li>Invariant: after evaluating an expression <code>e</code>, the accumulator holds the value of <code>e</code> and the stack is unchanged
 	<ul>
 		<li>Important property: expression evaluation preserves the stack
+    <li>
+      <pre>
+      cgen(i) =  acc := i
+      </pre>
+    </li>
+
     <li>
       <pre>
       cgen(a + b) =  cgen(a)
