@@ -67,7 +67,12 @@ This assigment has multiple parts, each part depends on previous part.
   <li>The goal is to modify the <code>cc</code> program to emit (unoptimized) LLVM bitcode for the input C program.</li>
   <li>You will start with supporting the most basic C features (e.g., those that can compile the <code>hello_world.c</code> program), and then incrementally add more C features to the LLVM code generator.</li>
   <li>Please see the <a href=references.html>references</a> page for some good resources on generating LLVM bitcode. The generated LLVM bitcode should run as expected using the LLVM interpreter <code>lli</code>.</li>
-  <li>Please note that you will be evaluated on the <strong>correctness and elegance of your design/code</strong>, and on the <strong>generality/extensiveness of your handling of different C constructs</strong>.</li>
+  <li>Please note that you will be evaluated on the <strong>correctness and elegance of your design/code</strong>, and on the <strong>generality/extensiveness of your handling of different C constructs</strong>.
+  <ul>
+    <li> For correctness, we require that behaviour-preserving LLVM IR is generated for well-formed C code <em>and</em> an error is emitted for ill-formed C code.</li>
+    <li>For elegance, we have a subjective evaluation criteria to see how well the class hierarchy is designed and how easy it would be to add support for type checking, AST level optimizations, etc.  Also, other good software writing practices like code modularity, etc. will be considered .</li>
+  </ul>
+  </li>
 	<li>Further, you do not need to handle all C constructs, but we would like you to go as far as you can. The elegance of your design is likely to make your code simpler and easier to understand and debug, and is likely to allow you to make your implementation more general/extensive in the same amount of limited time.</li>
 </ul>
 </ul>
