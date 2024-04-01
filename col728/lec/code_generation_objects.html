@@ -34,6 +34,7 @@ class C inherits A {
 <p>For A methods to work correctly in A, B and C objects, attribute <code>a</code> must be in the same "place" in each object.
 
 <h3>Object layout</h3>
+For efficiency:
 <ul>
 	<li> Objects are laid out in contiguous memory
 	<li> Each attribute stored at a fixed offset in the object
@@ -63,8 +64,9 @@ Offset   Information stored
 	<li>Attributes in subsequent slots
 	<li>Lay out in contiguous memory
 </ul>
+The object size and dispatch pointer are arguably redundant (this information is derivable from the Class tag), but help with an efficient implementation.
 
-<p>Observation: Given a layout for class <code>A</code>, a layout for subclass <code>B</code> can be defined by <em>extending</em> the layout of <code>A</code> with additional slots for the additional attributes of <code>B</code>.
+<p>Observation: Given a layout for class <code>A</code>, a layout for subclass <code>B</code> can be defined by <em>extending</em> the layout of <code>A</code> with additional slots for the additional attributes of <code>B</code>.  This is a clever trick designed for efficiency and convenience; it is always possible to have a different version of the generated code for each different class.
 
 <p>Leaves the layout of <code>A</code> unchanged (<code>B</code> is an extension).
 
