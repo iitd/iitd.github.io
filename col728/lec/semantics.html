@@ -173,6 +173,12 @@ s0, E,S |- e:v, S'
 </ul>
 Notice: the current self object <code>s0</code> and the current environment <code>E</code> does not change by evaluating an expression. These are invariant under evaluation. However, the contents of the memory may change.
 
+<p>If a linked-list of two elements starting at variable <code>head</code> exists in the current context, then the following is a possible state of <code>E</code> and <code>S</code>:
+<pre>
+E = (head -&gt; l1)
+S = (l1 -&gt; NODE(1,l2); l2 -&gt; NODE(2,nil))
+</pre>
+
 <p>Also notice: there is a qualification which says that if the evaluation of <code>e</code> terminates. Read as "if <code>e</code> terminates..."
 
 <p>"Result" of evaluation is a value and a new store
@@ -215,6 +221,10 @@ S(lid) = v
 ----------------  [id]
 s0,E,S |- id:v,S
 </pre>
+The rule above is specifically for the <code>rvalue</code>
+use of <code>id</code>.  For uses as an <code>lvalue</code>,
+we use explicit rules for each potential use as an lvalue, e.g.,
+for assignment or address-of operations.
 
 <pre>
 -------------------- [this]
@@ -322,8 +332,9 @@ In what context should <code>e2</code> be evaluated?
 
 <p>We write <code>lnew = newloc(S)</code> to say that <code>lnew</code> is a location not already used in <code>S</code>.
 <ul>
-	<li><code>newloc</code> is like the memory allocation function
-	<li>Notice that the spec does not say anything about stack, etc. Just that some memory location is allocated that is not already used.
+	<li><code>newloc</code> is like the memory allocation function.</li>
+  <li><code>newloc</code> identifies a location that is unique from the domain of input <code>S</code>. Notice that this is a superset of the range of <code>E</code>, e.g., for a linked-list, only the <code>head</code> variable maps to a location in <code>E</code> but multiple <em>links</em> point to other allocated locations (and <code>newloc</code> should return a location distinct from existing locations).</li>
+	<li>Notice that the spec does not say anything about stack, etc. Just that some memory location is allocated that is not already used.</li>
 </ul>
 
 <p>Complete rule
@@ -334,6 +345,13 @@ s0,E[lnew/id],S1[v1/lnew] |- e2: v2, S2
 ---------------------------------------------
 s0,E,S |- { Decl(id:T &lt;-- e1); e2 } v2, S2
 </pre>
+
+Notice that the <code>S2</code> at the end of the scope will still contain mappings for <code>lnew</code>. This is acceptable because we assume that there is
+enough memory available.  In other words, the evaluation judgement <code>s0, E,S |- e:v, S'</code> should have the antecedant that "If all memory
+allocation requests succeed and if the evaluation of <code>e</code> terminates then ...".
+
+<p>As an aside: if we wanted to allow only a bounded set of locations, then we could potentially remove <code>lnew</code> from <code>S2</code> (say <code>S2-lnew</code>)
+in the conclusion of the declaration rule.
 
 <h3>Allocation of a new object</h3>
 Informal semantics of <code>new T</code>
@@ -352,7 +370,7 @@ Informal semantics of <code>new T</code>
 	<!--<li><code>D_int = int(0)</code>
 	<li><code>D_bool = bool(false)</code>
 	<li><code>D_(T *) = (T *)(NULL)</code>-->
-	<li><code>D_A = void</code> for any <code>A</code> (could have had default values for some types, e.g., <code>D_int = int(0)</code>).
+	<li>We use <code>D_A = void</code> for any <code>A</code> (could have had default values for some types, e.g., <code>D_int = int(0)</code>).
 </ul>
 
 <p>For a class <code>A</code>, we write
@@ -376,7 +394,7 @@ class(C) = (a1:.., a2:..., b1:.., b2:.., c1:.., c2:..)
 <p>
 <pre>
 class(T) = (a1:T1 &lt;- e1, ..., an:Tn &lt;- en)
-l1 = newloc(S) for i = 1,..,n
+li = newloc(S) for i = 1,..,n
 v = T(a1=l1,..an=ln)
 S1=S[DT1/l1,...,DTn/ln]
 E'=[a1:l1, ..., an:ln]
@@ -384,7 +402,7 @@ v,E',S1 |- { a1 &lt;-- e1; ... an &lt;-- en; } : vn, S2
 ----------------------------------------------------------
 s0,E,S |- new T : v,S2
 </pre>
-Notice that <code>E'</code> has nothing to do with <code>E</code>, <code>E'</code> is due to a completely different scope. Also  notice that the evaluation of <code>e1</code>, ..., <code>en</code> follows the same order as in <code>class T</code> (greatest ancestore first). Also notice that the initializers are evaluated with a new value of the self object (<code>v</code>). Also notice that <code>vn</code> is ignored.
+Notice that <code>E'</code> has nothing to do with <code>E</code>, <code>E'</code> is due to a completely different scope. Also  notice that the evaluation of <code>e1</code>, ..., <code>en</code> follows the same order as in <code>class T</code> (greatest ancestor first). Also notice that the initializers are evaluated with a new value of the self object (<code>v</code>). Also notice that <code>vn</code> is ignored.
 
 <p>Summarizing:
 <ul>
@@ -433,7 +451,7 @@ s0,E,Sn |- e0 : v0,S(n+1)
 v0 = X(a1=l1, ..., am=lm)
 impl(X,f) = (x1,..,xn, ebody)
 lxi = newloc(Sn+1) for i=1..n
-E' = [a1:l1, ..., am:lm][x1/lx1,...,xn/lxn]
+E' = [a1:l1, ..., am:lm][lx1/x1,...,lxn/xn]
 S(n+2) = S(n+1)[v1/lx1,...,vn/lxn]
 v0,E',S(n+2) |- ebody:v,S(n+3)
 ---------------------------------------------- [dispatch]
@@ -443,7 +461,7 @@ We are interested in the class-tag of <code>v0</code> (<code>X</code>) and its a
 
 <p>What are the names in scope of the method <code>f</code>: all attributes and all the formal arguments. <code>E'</code> assigns locations to all these names.
 
-<p>The construction of <code>E'</code> is interesting because it two square brackets: this is because it is possible that a formal parameter may have the same name as an attribute name, and we want to capture this overriding semantics.
+<p>The construction of <code>E'</code> is interesting because it has two square brackets: this is because it is possible that a formal parameter may have the same name as an attribute name, and we want to capture this overriding semantics.
 
 <p>The function body is evaluated in an updated store, where the locations of formal arguments are replaced by expression values (call-by-value). Also the self object is v0. Notice that E' has nothing to do with <code>E</code> (static scoping). Dynamic scoping may have E' that is dependent on E.
 
