@@ -346,9 +346,12 @@ s0,E[lnew/id],S1[v1/lnew] |- e2: v2, S2
 s0,E,S |- { Decl(id:T &lt;-- e1); e2 } v2, S2
 </pre>
 
-Notice that the <code>S2</code> at the end of the scope will still contain mappings for <code>lnew</code>. This is acceptable because we assume that there is
-enough memory available.  In other words, the evaluation judgement <code>s0, E,S |- e:v, S'</code> should have the antecedant that "If all memory
-allocation requests succeed and if the evaluation of <code>e</code> terminates then ...".
+Notice that the <code>S2</code> at the end of the scope will still contain mappings for <code>lnew</code>. We call this a <em>memory leak</em>. There are two types of consequences of this:
+<ul>
+<li>If the set of locations is bounded, it rejects correct programs because it may cause us to run out of memory due to the memory leaks when in fact there are no memory leaks in reality.
+</li>
+<li>It accepts programs that the designer may have wanted to be incorrect.  For example, it accepts a program that uses <code>lnew</code> in its values (mapped through <code>S</code>). This also puts additional burden on the code generator as the code generator is now burdened to preserve <code>lnew</code> even at the end of the scope in which it was declared. For example, it can no longer allocate <code>id</code> on the stack, as the lifetime of an AR on stack may be smaller than the lifetime of <code>id</code>.
+</ul>
 
 <p>As an aside: if we wanted to allow only a bounded set of locations, then we could potentially remove <code>lnew</code> from <code>S2</code> (say <code>S2-lnew</code>)
 in the conclusion of the declaration rule.
@@ -365,12 +368,12 @@ Informal semantics of <code>new T</code>
 	<li>Return the newly allocated object
 </ul>
 
-<p>Let's assume that for each type <code>A</code>, there is a default value <code>D_A</code>. In reality, C/C++ have a notion of uninitialized variables, and associated undefined behaviour.
+<p>Let's assume that for each type <code>A</code>, there is a default value <code>D_A</code>. In reality, C/C++ have a notion of uninitialized variables, and associated undefined behaviour. We use:
 <ul>
-	<!--<li><code>D_int = int(0)</code>
+	<li><code>D_int = int(0)</code>
 	<li><code>D_bool = bool(false)</code>
-	<li><code>D_(T *) = (T *)(NULL)</code>-->
-	<li>We use <code>D_A = void</code> for any <code>A</code> (could have had default values for some types, e.g., <code>D_int = int(0)</code>).
+	<li><code>D_(T *) = (T *)(NULL)</code>
+	<!--<li>We use <code>D_A = void</code> for any <code>A</code> (could have had default values for some types, e.g., <code>D_int = int(0)</code>).-->
 </ul>
 
 <p>For a class <code>A</code>, we write
@@ -394,7 +397,7 @@ class(C) = (a1:.., a2:..., b1:.., b2:.., c1:.., c2:..)
 <p>
 <pre>
 class(T) = (a1:T1 &lt;- e1, ..., an:Tn &lt;- en)
-li = newloc(S) for i = 1,..,n
+l1,l2,...,ln = newlocs(S,n)
 v = T(a1=l1,..an=ln)
 S1=S[DT1/l1,...,DTn/ln]
 E'=[a1:l1, ..., an:ln]
@@ -403,6 +406,8 @@ v,E',S1 |- { a1 &lt;-- e1; ... an &lt;-- en; } : vn, S2
 s0,E,S |- new T : v,S2
 </pre>
 Notice that <code>E'</code> has nothing to do with <code>E</code>, <code>E'</code> is due to a completely different scope. Also  notice that the evaluation of <code>e1</code>, ..., <code>en</code> follows the same order as in <code>class T</code> (greatest ancestor first). Also notice that the initializers are evaluated with a new value of the self object (<code>v</code>). Also notice that <code>vn</code> is ignored.
+
+<p><code>newlocs(S,n)</code> generates <code>n</code> distinct locs that are not already present in <code>S</code>.
 
 <p>Summarizing:
 <ul>
@@ -454,8 +459,8 @@ lxi = newloc(Sn+1) for i=1..n
 E' = [a1:l1, ..., am:lm][lx1/x1,...,lxn/xn]
 S(n+2) = S(n+1)[v1/lx1,...,vn/lxn]
 v0,E',S(n+2) |- ebody:v,S(n+3)
----------------------------------------------- [dispatch]
-s0,E,S |- e0.f(e1,...,en) : v, S(n+3)
+------------------------------------------------------- [dispatch]
+s0,E,S |- e0.f(e1,...,en) : v, S(n+3)-{lx1,lx2,...,lxn}
 </pre>
 We are interested in the class-tag of <code>v0</code> (<code>X</code>) and its attributes. Notice that this is the dynamic type of the object v0. (This provides dynamic dispatch).
 
@@ -465,4 +470,4 @@ We are interested in the class-tag of <code>v0</code> (<code>X</code>) and its a
 
 <p>The function body is evaluated in an updated store, where the locations of formal arguments are replaced by expression values (call-by-value). Also the self object is v0. Notice that E' has nothing to do with <code>E</code> (static scoping). Dynamic scoping may have E' that is dependent on E.
 
-<p> We did not delete the locations <code>lxi</code> after finishing the execution of <code>ebody</code>.  Is that a problem?
+<p> Notice that we delete the locations <code>lxi</code> (corresponding to call arguments) after finishing the execution of <code>ebody</code>.
