@@ -209,10 +209,11 @@ Inserting PHI nodes:
 		</ul>
 	</li>
 	<li>Optimizing compilers can be thought of as a <em>big bag of tricks</em>.</li>
-	<li>Optimizing compilers repeat optimizations until no improvement is possible
+	<li>One approach is to repeat optimizations until no improvement is possible --- called a <em>fixpoint algorithm</em>.
 		<ul>
 			<li>The optimizer can also be stopped at any point to limit compilation time</li>
-			<li>Certain properties on these transformations (tricks) ensure that we converge (and not oscillate) in this fixed point procedure. e.g., we always <em>improve</em> for some notion of improvement. This means that we are uni-directional and can never oscillate.
+			<li>To ensure that we converge (and not oscillate) in this fixed point procedure, each trick should be <em>monotonic</em>, i.e., with respect to some global cost function (for the whole program), each optimization should only decrease the cost of a program.
+      <li>In practice, it is expensive to run till a fixpoint is reached. Further, it is hard to ensure that each transformation is monotonic for a large production compiler.
 		</ul>
 	</li>
 </ul>
@@ -234,9 +235,115 @@ a := x * x
 f := a + a
 g := 6 * f
 </pre>
-Possible to simplify further, but the compiler may get stuck in "local minima". e.g., should it have changed a + a to 2 * a, it would have had a better optimization opportunity (replacing g = 12*f and eliminating computation of f).
+Possible to simplify further, but the compiler may get stuck in "local minima". e.g., should it have changed a + a to 2 * a, it would have had a better optimization opportunity (replacing g = 12*f and eliminating computation of f).  This is also called the <em>phase ordering problem</em>.
 
 <h3>Peephole optimization</h3>
+An optimization can be expressed as a <em>pattern-replacement rule</em> or a <em>peephole optimization</em>, which says that if a <em>code pattern</em> is seen in the input program, we may replace it with a <em>code replacement</em>.  In general, the pattern and replacement can be arbitrary.  However, a peephole optimization typically limits the shapes of patterns and replacements to ensure that it remains easy (and possible) to check a pattern and compute a replacement.  Here is an example of the shape of a pattern-replacement rule:
+<pre>
+i1; i2; i3; ..; in --&gt; j1; j2; ..; jm
+</pre>
+This is the most basic size of pattern, where the exact instructions are used for specifying the pattern (and replacement), and there is no precondition.
+Here is an example of a peephole optimization of this shape:
+<pre>
+move $a $b; move $b $a --&gt; move $a $b   (first operand is the destination)
+</pre>
+In this case, the names of the registers are <em>abstracted</em> by using identifiers <code>a</code> and <code>b</code>, i.e., <code>a</code> could
+match with any register name <code>r1</code>, <code>r2</code>, ...
+It may be desirable to generalize <code>a</code> so it represents either a register or a memory location.  But that would make it harder
+to ensure that the peephole optimization rules are correct, and more importantly, make it harder for the compiler to apply
+the peephole optimization ---- complex patterns are harder to match.  An preferrable alternative is to use multiple peephole
+optimizations, e.g., an optimization that tackles memory accesses could be:
+<pre>
+move 0($a) $b; move $b 0($a) --&gt; move 0($a) $b
+</pre>
+The rule above requires that the immediate offset in the memory address must be zero. This can be generalized to:
+<pre>
+move $i($a) $b; move $b $i($a) --&gt; move $i($a) $b
+</pre>
+where <code>$i</code> is an arbitrary immediate constant permitted by the <code>move</code> instruction with a
+memory operand.  For example, the immediate operand may be constrained to be a 16-bit signed constant.
+
+<p>Some peephole optimizations
+are strictly more general than others, in which case, the
+general versions should be preferred.
+Consider the following example peephole optimization:
+<pre>
+add $a $a 1; add $a $a 1 --&gt; add $a $a 2
+</pre>
+A more general version of the optimization above is:
+<pre>
+add $b $a 1; add $b $b 1 --&gt; add $b $a 2
+</pre>
+Notice that it is possible for both <code>a</code> and <code>b</code> to pattern match with the same register
+at application time.
+
+<p>Patterns for constants allow the specification of constant-folding optimizations as peephole
+optimizations, e.g.,:
+<pre>
+move $a $i; move $b $a --&gt; move $a $i; move $b $i
+</pre>
+This transformation removes a dependency on <code>$a</code> and could potentially cause dead-code elimination in the future.
+In fact, if we generalize the notion of a peephole optimization, so it also includes a <em>postcondition</em>
+that specifies if a value can potentially used in the future or not, or in other words, if a value is <em>live</em> at
+the end of the pattern's instruction sequence or not.
+<pre>
+post: $a is not live (cannot be used in the future)
+move $a $i; move $b $a --&gt; move $b $i
+</pre>
+Such generalizations can be used for more nuanced postconditions, e.g., we could track liveness at bit-granularity, i.e., if bit <code>b</code> of
+register <code>a</code> is live or not.  Here is an example of a peephole optimization that employs liveness at bit-granularity:
+<pre>
+post: bit <code>0</code> of $a is not live (cannot be used in the future)
+addiu $a $a $a; addiu $a $a $1 --&gt; shl $a 1
+</pre>
+In general, a postcondition can be made arbitrarily sophisticated, e.g., one could potentially want to specify that a
+tranformation is legal if the value of <code>$a+$b</code> can be used in the future but the individual values of
+<code>$a</code> and <code>$b</code> are not required --- i.e., <code>(1,2)</code> and <code>(3,0)</code> are
+indistinguishable as the output values of <code>$a,$b</code>.  However, such sophisticated postconditions become
+increasingly hard to ascertain for the compiler while deciding when a peephole optimization is applicable. In
+practice, current systems either do not use postconditions, or restrict themselves to liveness (either for full
+registers or for individual bits).
+
+Just like a peephole optimization can be generalized using a postcondition, a peephole optimization
+may require a precondition.  Consider the following example:
+<pre>
+addiu $b $a $i; addiu $b $b $j --&gt; addiu $b $a $(i+j)
+</pre>
+This transformation allows <code>i</code> and <code>j</code> to pattern-match with arbitrary
+16-bit constants (assuming <code>addiu</code> allows 16-bit constants).  Further, it allows
+the replacement to specify functions over the input constants, e.g., addition.
+However, this optimization is incorrect as it is possible for <code>i+j</code> to potentially
+overflow the bitwidth of an immediate constant (16 bits); thus, we need a precondition that
+the constants should be such that <code>i+j</code> does not overflow.
+<pre>
+precondition: i+j does not overflow
+addiu $b $a $i; addiu $b $b $j --&gt; addiu $b $a $(i+j)
+</pre>
+
+<p>
+In general, a peephole optimization could use both precondition and postcondition, and
+can become sophisticated enough.
+In practice, the level of sophistication of rules is mostly limited to a sequence of few instructions
+in the source pattern and a sequence of few instructions in the target replacement, with
+easily-checkable specifications of preconditions and postconditions.  Postconditions are usually
+limited to liveness.
+
+<p>A peephole optimization can be applied at any stage of the compilation pipeline.
+For example, while compiling a high-level language like
+TensorFlow, there are multiple representations: graph representation (that represents the
+program as a graph of operators), MLIR affine dialect (that represents high-level operators
+like matrix multiplication and affine access operators that are amenable to
+polyhedral analysis), LLVM, MachineIR (MIR-x86), and x86 assembly.
+A peephole optimization can be specified for any of these levels.  However,
+applying a peephole optimization at a higher level is fraught with the danger that
+it may preclude certain optimizations in the future translation and optimization
+passes of the compiler pipeline --- a peephole optimization may encode a variety of
+rules and a compiler does not typically analyze them to see if there is any possibility
+of future preclusion of optimization. For this reason, peephole optimizations were
+originally proposed for the assembly level.  Today, hundreds of peephole optimizations
+are used in LLVM, both at the IR and the assembly (MIR-x86) level.
+
+<!--
 <ul>
 	<li>Optimizations can be directly applied to assembly code. Typically for optimizations that got missed at IR stage (perhaps due to local minima problem).</li>. At the assembly-level, we have greater visibility into instruction costs and instruction opcodes. E.g., hardware opcodes may be higher-level than IR opcodes.
 	<li>Peephole optimization is effective for improving assembly code
@@ -248,24 +355,18 @@ Possible to simplify further, but the compiler may get stuck in "local minima". 
 </ul>
 
 <p>Peephole optimizations are usually written as replacement rules
-<pre>
-i1; i2; i3; ..; in --&gt; j1; j2; ..; jm
-</pre>
 Example:
-<pre>
-move $a $b; move $b $a --&gt; move $a $b
-</pre>
 Works if the second instruction is not the target of a jump (i.e., both instructions belong to a basic block).
 
 <p>Another example:
 <pre>
-addiu $a $a i; addiu $a $a j --&gt; addiu $a $a (i+j)
+addiu $a $a i; addiu $a $a j -~-&gt; addiu $a $a (i+j)
 </pre>
-
+-->
 <p>Many (but not all) of the basic block optimizations can be cast as peephole optimizations
 <ul>
-	<li>Example: <code>addiu $a $b 0</code> --&gt; <code>move $a $b</code></li>
-	<li>Example: <code>move $a $a</code> --&gt; </li>
+	<li>Example: <code>addiu $a $b 0</code> -~-&gt; <code>move $a $b</code></li>
+	<li>Example: <code>move $a $a</code> -~-&gt; </li>
 	<li>These two together eliminate <code>addiu $a $a 0</code>.
 </ul>
 
