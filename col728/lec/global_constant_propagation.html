@@ -19,18 +19,37 @@ must know: <em>On every path to the use of <code>x</code>, the last assignment
 	</tr>
 	<tr>
 		<td>\top</td>
-		<td>This statement never executes (or we have not executed it so far)</td>
+		<td>This statement is unreachable</td>
 	</tr>
 	<tr>
 		<td>C</td>
-		<td>X = constant C</td>
+		<td>X = constant C on all incoming paths</td>
 	</tr>
 	<tr>
 		<td>\bot</td>
-		<td>X is not a constant</td>
+		<td>X <em>may</em> not be a constant</td>
 	</tr>
 </table>
-\bot is our safe situation; we can always say that X is not a constant (means that we do not know if it is a constant or not).
+\bot is our safe situation; we can always say that X may not be a constant (means that we do not know if it is a constant or not).
+In other words, \bot has the least amount of information --- even if we do not do anything, we can always safely use the \bot value.
+
+<p>
+\top has the most amount of information.  Notice that if a statement <code>s</code> is unreachable, then <code>X=constant C</code>
+holds at the beginning (and end) of <code>S</code> vacuously.
+
+<p>The algorithm optimistically assumes the maximum amount of information (\top) in our solution initially.  However this assumption may be refuted
+by the possible executions of a program.  The \bot solution
+can never be refuted (because it imposes no restrictions).
+Whenever we have evidence that the assumption is refutable, we decrease the amount
+of information in our solution.  We keep doing this until no refutations are possible.  The act of "decreasing the amount of
+information" in a solution is also called <em>weakening a solution</em>.  In the worst case, the solution will get weakened to
+\bot at all program points.
+
+<p>This can be modeled as a fixed-point algorithm.  We first formulate a set of constraints that must hold for a solution to
+be irrefutable.  We start with the most optimistic solution, and if a constraint is violated, we weaken it the <em>minimum
+amount</em> such that the constraint is now satisfied --- recall that it is always possible to weaken a solution such that
+a constraint gets satisfied because \bot will always satisfy all the constraints.  The weakening by a "minimum amount"
+is the key to obtain useful (non-\bot) solutions.
 
 <pre>
 BB1:
@@ -187,7 +206,7 @@ Assume there is an edge from BB4 to BB3.
 
 <p>Intuitively, assigning some initial value allows the analysis to break cycles.
 
-<p>The initial value \top means "So far as we know, control never reaches this point". The initial value is not what is expected at the end but allows us to get going (by breaking the cycle).
+<p>The initial value \top means "So far as we know, control never reaches this point". The initial value is not what is expected at the end but allows us to get going (by breaking the cycle).  Moreover, it is the most optimistic value --- if it does not satisfy a constraint, it will get weakened anyway.  If we start with a less optimistic value, then we will still obtain a fixed-point solution that will satisfy all the constraints, but the solution obtained may have less information than what was actually possible.
 
 <p>Analyzing the example: if we run the algorithm assuming that C(BB4,x,out) is \top, then we will be able to reach a fixed-point solution.
 
