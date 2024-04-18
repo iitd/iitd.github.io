@@ -37,6 +37,8 @@ In other words, \bot has the least amount of information --- even if we do not d
 \top has the most amount of information.  Notice that if a statement <code>s</code> is unreachable, then <code>X=constant C</code>
 holds at the beginning (and end) of <code>S</code> vacuously.
 
+<p>Said differently, we can arrange the values with a higher value having more information than a lower value, such that a higher value implies the lower value.  For example \top implies c (for any c).  Similarly, c implies \bot.  Thus, if we determine a value <code>v</code> for X at a program point, then we can always use a value <code>w&lt;=v</code> at that point.
+
 <p>The algorithm optimistically assumes the maximum amount of information (\top) in our solution initially.  However this assumption may be refuted
 by the possible executions of a program.  The \bot solution
 can never be refuted (because it imposes no restrictions).
@@ -97,8 +99,7 @@ of <code>x</code> immediately before and after <code>s</code>
 	<li><code>C(x,s,in)</code> = value of <code>x</code> before <code>s</code>.</li>
 	<li><code>C(x,s,out)</code> = value of <code>x</code> after <code>s</code>.</li>
 </ul>
-
-<p>Define a <em>transfer function</em> that transfers information from one statement to another.
+We use &lt;= to denote the "less information" relation.  A lower value has less information than a higher value.
 
 <p>In the following rules, let statement <code>s</code> have immediate predecessor statements <code>p1, ..., pn</code>.
 <pre>
@@ -108,21 +109,18 @@ of <code>x</code> immediately before and after <code>s</code>
  ---&gt; s &lt;---
 </pre>
 <ol>
-	<li>if C(pi, x, out) = \bot for any i, then C(s, x, in) = \bot. For all we know, the execution may come down that predecessor, and so in that case we can make no prediction about the value of <code>x</code>.</li>
-	<li>if C(pi, x, out) = c and C(pi, x, out) = d and c &lt;&gt; d, then C(s, x, in) = \bot. We saw this in the example that we did by hand.</li>
-	<li>If C(pi, x, out) = c or \top for all i, then C(s, x, in) = c. If we come along a path where x=c, this is trivial to see. For a path with \top, it means that this never executes and so it can be ignored.</li>
-	<li>If C(pi, x, out) = \top for all i, then C(s, x, in) = \top. Every predecessor is unreachable, and so x itself is unreachable.</li>
+	<li>if C(x, pi, out) = \bot for any i, then C(s, x, in) = \bot. For all we know, the execution may come down that predecessor, and so in that case we can make no prediction about the value of <code>x</code>.</li>
+	<li>if C(x, pi, out) = c and C(x, pi, out) = d and c &lt;&gt; d, then C(x, s, in) = \bot. We saw this in the example that we did by hand.</li>
+	<li>if C(x, pi, out) = c or \top for all i (with at least one c), then C(x, s, in) &lt;= c. If we come along a path where x=c, this is trivial to see. For a path with \top, it means that this never executes and so it can be ignored.</li>
+	<li>If C(x, pi, out) = \top for all i, then C(x, s, in) &lt;= \top. Every predecessor is unreachable, and so x itself is unreachable.</li>
+  <li>If C(x, s, in)=\top then C(x, s, out)&lt;=\top, for all s. Let's call this rule 5.</li>
+  <li>If C(x, s, in)&lt;&gt;\top then C(x, x:=c, out) &lt;= c (where <code>c</code> is a constant).
+  <li>If C(x, s, in)&lt;&gt;\top then C(x:=f(...), x, out) = \bot if the value of <code>x</code> cannot be determined to be a constant after this statement.
+  <li>If C(x, s, in)&lt;&gt;\top then C(y:=..., x, out) &lt;= C(y:=..., x, in) if x&lt;&gt;y
 </ol>
+<p>Rules 1-4 relate the <em>out</em> of one statement to the <em>in</em> of the next statement. Rules 5-8 relate the <em>in</em> of a statement to the <em>out</em> of the same statement.
 
-<p>Rules 1-4 relate the <em>out</em> of one statement to the <em>in</em> of the next statement. Now we need rules relating the <em>in</em> of a statement to the <em>out</em> of the same statement.
-
-<p>If C(s,x,in)=\top then C(s,x,out)=\top, for all s. Let's call this rule 5.
-
-<p>C(x:=c, x, out) = c if <code>c</code> is a constant. This rule (rule 6) has lower priority than the previous rule (rule 5). i.e., this rule applies only if C(x:=c, x, in) = d or \bot.
-
-<p>C(x:=f(...), x, out) = \bot if the value of <code>x</code> cannot be determined to be a constant after this statement.
-
-<p>C(y:=..., x, out) = C(y:=..., x, in) if x&lt;&gt;y
+<p>Notice that the rules are <em>sound</em>, in that they determine something to be a constant only if it is definitely a constant but <em>incomplete</em>, in that they miss out certain cases where an unreachable or a constant value may be used (by using a bottom value).  This can happen due to a coarse-grained interpretation of <code>f</code> for example.  Or if the program was written as <code>x := 2; x := x + 1</code>.  Or if there was a condition branch of the form <code>if x = 3 goto BB</code>, etc.
 
 <p><u>Algorithm</u>
 <ul>
@@ -130,11 +128,13 @@ of <code>x</code> immediately before and after <code>s</code>
 	<li>For every other statement (non-entry), set <code>C(s,x,in)=C(s,x,out)=\top</code>.</li>
 	<li>Repeat until all points satisfy rules 1-8:
 		<ul>
-			<li>Pick <code>s</code> not satisfying 1-8 and update using the appropriate rule.</li>
+			<li>Pick <code>s</code> not satisfying a rule and minimally update the value in the "then" clause of that rule, so that the constraint gets satisfied.</li>
 		</ul>
 	</li>
 </ul>
 Notice we expect that at some point all rules will be satisfied at all points. This is called the <em>fixed-point</em> and the corresponding solution, the <em>fixed-point solution</em>.
+
+<p>When constraints are checked across a statement (rules 5-8), then the "out" value is minimally updated to satisfy a constraint.  This identification of a maximum "out" value from an "in" value (to help "minimally" update the current value) can be represented as a function, which we call a <em>transfer function</em>.
 
 <p>Let's run the algorithm on this example:
 <pre>
@@ -215,7 +215,7 @@ Assume there is an edge from BB4 to BB3.
 <pre>
 \bot &lt; c &lt; \top
 </pre>
-Drawing a picture with "lower" values drawn lower, we get
+Drawing a picture with "lower" (having less information) values drawn lower, we get
 <pre>
       \top
   /   / | \  \
@@ -253,9 +253,33 @@ Notice that this is a partial order; not all elements are comparable to each oth
 	<li>Thus, <code>C(s,x,_)</code> (for every statement, for every variable) can change at most twice.</li>
 </ul>
 
-<p>Also, we maintain the invariant that the value at any intermediate point of the algorithm is always <em>greater</em> than the best solution value. This is because we initialize all values to \top. Also, we relax minimally --- assuming this invariant is true for the predecessors, it is guaranteed to be true for the successor.
+<p>Also, we maintain the invariant that the value at any intermediate point of the algorithm is always <em>greater</em> than the best solution value. This is because we initialize all values to \top. Also, we relax minimally --- assuming this invariant is true for the predecessors, it is guaranteed to be true for the successor.  Thus, at a fixed point, we reach the best solution value.
 
 <p>Thus the constant propagation algorithm is linear in program size. Number of steps per variable = Number of C(...) values computed * 2 = Number of program statements * 4 (two C values per program statement, in and out).
+
+<h3>Generalization to multiple variables</h3>
+As the number of variables in a program are proportional to the size of a program,
+computing the "constant" information for each variable separately would have quadratic time complexity.
+We discussed this in the context of a single variable, just for its ease of exposition.
+In practice, the constant information is computed simultaneously for all variables.
+
+<p>For example, if there are two variables, say <code>(x,y)</code>, then we could have a constant value, say <code>Cx</code> for <code>x</code>, and
+a constant value, say <code>Cy</code> for <code>y</code>.   The partial order is defined so that <code>(Cx1,Cy1)&lt;=(Cx2,Cy2)</code>
+if and only if (<code>Cx1&lt;=Cx2</code> and <code>Cy1&lt;=Cy2</code>).  This can also be drawn pictorially, and can be generalized to <code>n</code>
+variables.  Further, we do not need separate <code>\top</code> values for <code>x</code> and <code>y</code>, and can use a common
+<code>\top</code> value (that indicates unreachability): this is because if one is unreachable, the other will also be unreachable.
+
+<p>Advantages of computing constant-information for multiple variables in one go:
+<ol>
+<li>The total number of possible values decreases (because <code>\top</code> does not need to be maintained separately for each variable).</li>
+<li>We can maintain a map from variables to their constant-values, with the optimization that if a value is <code>\bot</code> (common case), then we don't have an entry for that.  This can significantly reduce the iteration and copying work.</li>
+<li>When applying the transfer function across a statement <code>s</code>, we only need to potentially change the mapping for the variable <code>x</code> assigned-to in <code>s</code>; for all other variables, the constant-information can simply be copied.</li>
+<li>The analysis can be made more precise by leveraging the constant-values of other variables.  For example, if <code>(x,y)</code> map to <code>(0,0)</code> at the beginning of a program <code>x := y + 1; y := x + 2</code>, then it is now possible to define more transfer functions that leverage the constant-value of the other variable to obtain a precise solution <code>(1,3)</code> at the end of this program.  However, if we run the analysis separately for <code>x</code> and <code>y</code>, the results may be precise or imprecise depending on the order in which the analysis is run (e.g., imprecise if <code>x</code> analysis is run before the <code>y</code> analysis) even if we substitute after each analysis.  Further, here is an example of a program where the separate-analysis approach would be imprecise irrespective of the order of running the analyses: <code>if (...) x := y + 1 else y := x + 1;  if (...) x := y + 2 else y := x + 2;</code>.
+<ul>
+<li>
+</ul>
+</li>
+</ol>
 
 <h3>Liveness analysis</h3>
 Once constants have been globally propagated, we would like to eliminate
@@ -289,7 +313,13 @@ Y := X
 	<li>Liveness is an important concept.</li>
 </ul>
 
-<p>A variable <code>x</code> is live at statement <code>s</code> if
+<p><em>A precise definition</em>A variable <code>x</code> is live at statement <code>s</code> if its
+value at <code>s</code> can have an effect on the observable behaviour of the program's execution in the
+future.  This, however, is an undecidable problem, as the halting problem can be reduced
+to it. Consider the program <code> x:=e;  f();  print x</code> where <code>x</code> is live
+at the end of <code>x:=e</code> only if <code>f()</code> terminates.
+
+<p><em>An over-approximate definition that is computable</em>A variable <code>x</code> is live at statement <code>s</code> if
 <ul>
 	<li>There exists a statement <code>s'</code> that uses <code>x</code>.</li>
 	<li>There is a path from <code>s</code> to <code>s'</code>.</li>
@@ -311,20 +341,23 @@ Y := X
          |
          v
 </pre>
-Rule 1: <code>L(p,x,out) = OR{L(s,x,in) | s is a successor of p}</code>. <code>x</code> is live at <code>p</code> if <code>x</code> is live at one of the successor nodes of <code>p</code>.
 
-<p>Rule 2: s: ... := f(x). L(s,x,in) = true if <code>s</code> refers to <code>x</code> on the RHS.
-
-<p>Rule 3: s: x := e where <code>e</code> does not refer to <code>x</code>. <code>L(x:=e,x,in)=false</code> if <code>e</code> does not refer to <code>x</code>. <code>x</code> is dead before an assignment to <code>x</code> because the current value of <code>x</code> at that point will not be used in the future.
-
-<p>Rule 4: <code>L(s,x,in) = L(s,x,out)</code> if <code>s</code> does not refer to <code>x</code>.
+<p>
+Rules:
+<ol>
+<li><code>L(x,p,out) = OR{L(x,s,in) | s is a successor of p}</code>. <code>x</code> is live at <code>p</code> if <code>x</code> is live at one of the successor nodes of <code>p</code>.</li>
+<li>s: ... := f(x). L(x,s,in) = true if <code>s</code> refers to <code>x</code> on the RHS.</li>
+<li>s: x := e where <code>e</code> does not refer to <code>x</code>. <code>L(x,x:=e,in)&lt;=false</code> if <code>e</code> does not refer to <code>x</code>. <code>x</code> is dead before an assignment to <code>x</code> because the current value of <code>x</code> at that point will not be used in the future.</li>
+<li><code>L(x,s,in) &lt;= L(x,s,out)</code> if <code>s</code> does not refer to <code>x</code>.</li>
+</ol>
+This can be made more precise by adding a more precise transfer function, such that <code>L(x,x:=f(x),in)&lt;=false</code> if <code>L(x,x:=f(x),out)&lt;=false</code>.
 
 <p><u>Algorithm</u>
 <ol>
 	<li>Let all <code>L(...) = false</code> initially.</li>
 	<li>Repeat until all statements <code>s</code> satisfy rules 1-4
 		<ul>
-			<li>Pick <code>s</code> where one of 1-4 does not hold and update using the appropriate rule.</li>
+			<li>Pick <code>s</code> where one of 1-4 does not hold and minimally update the value in the "then" of that rule, so that the constraint gets satisfied.</li>
 		</ul>
 	</li>
 </ol>
@@ -366,6 +399,14 @@ return;
 </ul>
 
 <p>Notice that information flowed in the forward direction (in the direction of the program execution) for constant propagation but flowed in the reverse direction (against the direction of the program execution) for liveness analysis. The former types of analyses are called <em>forward dataflow analyses</em>. The latter types of analyses are called <em>backward dataflow analyses</em>.
+
+<h3>Liveness of multiple variables</h3>
+We can maintain a <em>set</em> of live variables at each program point.
+Just like constant-propagation, we can derive the efficiency benefits of
+maintaining liveness for all variables in one go.  Further, we can also
+derive precision benefits by making our transfer functions more precise (by
+relying on liveness of other variables).  For example, <code>L(y,x:=y+1,in)</code>
+can be <code>false</code> if <code>L(x,x:=y+1,out)</code> is <code>false</code>.
 
 <h3>Some other analyses that can be modeled as dataflow analyses</h3>
 <ul>
