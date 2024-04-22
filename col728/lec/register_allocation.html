@@ -37,12 +37,13 @@ r1 := r1 - 1
 <p>Compute live variables at each point
 <pre>
 BB1:
-           &lt;-- b,c,f
- a := b+c
+           &lt;-- b,e,f
+ a := b+e
            &lt;-- a,c,f
  d := -a
            &lt;-- c,d,f
  e := d + f
+           &lt;-- c,d,f,e
 
 BB1-&gt;BB2
 BB1-&gt;BB3
@@ -50,23 +51,23 @@ BB1-&gt;BB3
 BB2:
            &lt;-- c,e
  f := 2*e
-           &lt;-- c,f
+           &lt;-- c,f,e
 
 BB3:
            &lt;-- c,d,e,f
  b := d + e
            &lt;-- b,c,e,f
  e := e - 1
-           &lt;-- b,c,f
+           &lt;-- b,c,f,e
 
 BB2-&gt;BB4
 BB3-&gt;BB4
-BB4-&gt;BB5 (b live)
+BB3-&gt;BB5 (b live)
 
 BB4:
-          &lt;-- c,f
+          &lt;-- c,f,e
  b := f + c
-
+          &lt;-- b,e
 BB4-&gt;BB1
 BB4-&gt;BB6 (b live)
 </pre>
@@ -98,7 +99,7 @@ E.g., <code>b</code> and <code>c</code> cannot be in the same register while <co
 
 <p><em>Graph coloring</em>: This register allocation problem is identical to the graph-coloring problem. A <u>coloring of a graph</u> is an assignment of colors to nodes, such that nodes connected by an edge have different colors. A graph is <em>k-colorable</em> if it has a coloring with <code>k</code> colors. For us, colors = registers.
 
-<p>Our example graph: There is no coloring with less than 4 colors. THere are 4 colorings of the graph. Can assign temporaries to registers using one of the 4 colorings, and change the original program accordingly.
+<p>Our example graph: There is no coloring with less than 4 colors. There are 4 colorings of the graph. Can assign temporaries to registers using one of the 4 colorings, and change the original program accordingly.
 
 <h3>Spilling</h3>
 What if the graph cannot be colored with the available number of registers? e.g., what if the number of available registers is 3 in our example.
