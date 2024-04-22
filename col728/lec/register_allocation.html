@@ -25,7 +25,7 @@ f : = e - 1
 Assume <code>a</code> and <code>e</code> dead after use. A dead temporary can be "reused".
 
 <p>Can allocate <code>a</code>, <code>e</code>, and <code>f</code> all to one
-register (<code>r1</code>). <code>c</code>, <code>d</code> and <code>b</code> to <code>r2</code>, <code>r3</code>, and <code>r4</code> resp.
+register (<code>r1</code>). Assume that <code>c</code>, <code>d</code> and <code>b</code> to <code>r2</code>, <code>r3</code>, and <code>r4</code> resp.
 <pre>
 r1 := r2 + r3
 r1 := r1 + r4
@@ -140,7 +140,6 @@ The primary limitation of this algorithm is that it allocates registers <em>stat
 <p>Region-based register allocator: partition the program into <em>regions</em>, assign temporaries to registers or memory within each region, and resolve discrepancies at region boundaries. The overall quality of the solution depends heavily on the region partitioning. Some example heuristics:
 <ul>
 	<li>A region for each loop region.</li>
-	<li>Regions based on register pressure.</li>
 	<li>Regions based on register pressure.</li>
 </ul>
 
