@@ -161,8 +161,8 @@ logical_not = not (num1 > 0)  # Output: False
     number = float(input("Enter a number: "))
 
     # Check if the number is positive, negative, or zero
-    is_positive = number > 0
-    is_negative = number < 0
+    is_positive = # Fill in the code here
+    is_negative = # Fill in the code here
 
     if is_positive:
         print(f"{number} is positive.")
