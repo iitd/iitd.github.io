@@ -70,3 +70,8 @@ Unlimited number of registers, means IR code generation is simple. Contrast with
 	<li>The same IR may be used for multiple high-level programming languages. e.g., LLVM may be the target for both C and Java programs. Can again increase the complexity of LLVM IR, because we need to try and retain high-level semantics of all supported languages (making them too low-level for simplicity would preclude optimization).
 	<li>Yet, if one can design an IR successfully, it is all perhaps worth the effort. Do all the hard work related to optimization once and reap the benefits everywhere (for all languages, and for all ISAs).
 </ul>
+Example of complexities in LLVM IR:
+<ul>
+<li> <code>%0 = call float @llvm.fmuladd.f32(%a, %b, %c)</code> is equivalent to the <code>%a*%b+%c</code> except that it is unspecified whether rounding will be performed between the multiplication and addition steps. Fusion is not guaranteed, even if the target platform supports it. If a fused multiply-add is required, the corresponding llvm.fma intrinsic function should be used instead. See <a href=https://llvm.org/docs/LangRef.html#llvm-fmuladd-intrinsic>link</a> for details.</li>
+<li> Show example of signed integer overflow optimization. </li>
+</ul>
