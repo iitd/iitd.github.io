@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>assignment1.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="lab-1-introduction-to-linux-python-setup-and-your-first-python-program">Lab 1: Introduction to Linux, Python Setup, and Your First Python Program</h1>
+<h2 id="objectives">Objectives</h2>
+<ul>
+<li>Learn basic Linux terminal commands</li>
+<li>Set up Python3 on your local system</li>
+<li>Write and run your first Python program</li>
+</ul>
+<h2 id="setup-to-be-done-in-class">Setup (To be done in class)</h2>
+<p>Before we begin with the lab assignment, make sure you have the following setups done with the help of your TAs:</p>
+<ul>
+<li>Proxy login for internet access</li>
+<li>Getting to know VPL (Virtual Programming Lab) environment</li>
+</ul>
+<h2 id="part-1-basic-linux-terminal-commands">Part 1: Basic Linux Terminal Commands</h2>
+<ol>
+<li>
+<p><strong>Open the Terminal</strong></p>
+<ul>
+<li><strong>Windows</strong>: Use Windows Subsystem for Linux (WSL) or Git Bash.</li>
+<li><strong>macOS</strong>: Open Terminal from Applications &gt; Utilities.</li>
+<li><strong>Linux</strong>: Open Terminal from your applications menu.</li>
+</ul>
+</li>
+<li>
+<p><strong>Basic Commands</strong></p>
+<ul>
+<li>
+<p><code>pwd</code>: Print Working Directory</p>
+<pre class="hljs"><code><div><span class="hljs-built_in">pwd</span>
+</div></code></pre>
+<p>Outputs the current directory you are in.</p>
+</li>
+<li>
+<p><code>ls</code>: List Directory Contents</p>
+<pre class="hljs"><code><div>ls
+</div></code></pre>
+<p>Lists files and directories in the current directory.</p>
+</li>
+<li>
+<p><code>cd</code>: Change Directory</p>
+<pre class="hljs"><code><div><span class="hljs-built_in">cd</span> /path/to/directory
+</div></code></pre>
+<p>Changes the current directory to the specified path.</p>
+</li>
+<li>
+<p><code>mkdir</code>: Make Directory</p>
+<pre class="hljs"><code><div>mkdir my_directory
+</div></code></pre>
+<p>Creates a new directory named <code>my_directory</code>.</p>
+</li>
+<li>
+<p><code>touch</code>: Create a New File</p>
+<pre class="hljs"><code><div>touch myfile.txt
+</div></code></pre>
+<p>Creates a new empty file named <code>myfile.txt</code>.</p>
+</li>
+<li>
+<p><code>rm</code>: Remove File</p>
+<pre class="hljs"><code><div>rm myfile.txt
+</div></code></pre>
+<p>Deletes the file named <code>myfile.txt</code>.</p>
+</li>
+<li>
+<p><code>rmdir</code>: Remove Directory</p>
+<pre class="hljs"><code><div>rmdir my_directory
+</div></code></pre>
+<p>Deletes the directory named <code>my_directory</code> (must be empty).</p>
+</li>
+<li>
+<p><code>cp</code>: Copy Files or Directories</p>
+<pre class="hljs"><code><div>cp source_file destination_file
+</div></code></pre>
+<p>Copies <code>source_file</code> to <code>destination_file</code>.</p>
+</li>
+<li>
+<p><code>mv</code>: Move or Rename Files or Directories</p>
+<pre class="hljs"><code><div>mv old_name new_name
+</div></code></pre>
+<p>Renames <code>old_name</code> to <code>new_name</code> or moves <code>old_name</code> to <code>new_name</code> if it is a path.</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Exercise</strong>:</p>
+<ul>
+<li>Create a directory named <code>&lt;YourEntryNumber&gt;_COL100</code> (Eg <code>2024CS10001_COL100</code>).</li>
+<li>Inside <code>&lt;YourEntryNumber&gt;_COL100</code>, create a file named <code>hello.txt</code>.</li>
+<li>List the contents of <code>cs_intro</code> to verify the file exists.</li>
+<li>Rename <code>hello.txt</code> to <code>welcome.txt</code>.</li>
+<li>Delete <code>welcome.txt</code>.</li>
+</ul>
+</li>
+</ol>
+<h2 id="part-2-setting-up-python3">Part 2: Setting Up Python3</h2>
+<ol>
+<li>
+<p><strong>Check if Python is Installed</strong></p>
+<pre class="hljs"><code><div>python3 --version
+</div></code></pre>
+<p>If Python is installed, it will display the version number.</p>
+</li>
+<li>
+<p><strong>Installing Python3</strong></p>
+<ul>
+<li><strong>Windows</strong>:
+<ul>
+<li>Download the Python installer from <a href="https://www.python.org/downloads/">python.org</a>.</li>
+<li>Run the installer and follow the instructions (ensure &quot;Add Python to PATH&quot; is checked).</li>
+</ul>
+</li>
+<li><strong>macOS</strong>:
+<ul>
+<li>Python3 usually comes pre-installed. Use <code>python3 --version</code> to check.</li>
+<li>If not, install it using Homebrew:<pre class="hljs"><code><div>/bin/bash -c <span class="hljs-string">"<span class="hljs-variable">$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)</span>"</span>
+brew install python3
+</div></code></pre>
+</li>
+</ul>
+</li>
+<li><strong>Linux</strong>:
+<ul>
+<li>Install Python3 using your package manager:
+<ul>
+<li>Debian/Ubuntu:<pre class="hljs"><code><div>sudo apt update
+sudo apt install python3
+</div></code></pre>
+</li>
+<li>Fedora:<pre class="hljs"><code><div>sudo dnf install python3
+</div></code></pre>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Verify the Installation</strong></p>
+<pre class="hljs"><code><div>python3 --version
+</div></code></pre>
+<p>You should see the version number of Python3.</p>
+</li>
+</ol>
+<h2 id="part-3-writing-and-running-your-first-python-program">Part 3: Writing and Running Your First Python Program</h2>
+<ol>
+<li>
+<p><strong>Create a New Python File</strong></p>
+<ul>
+<li>Navigate to your <code>cs_intro</code> directory:<pre class="hljs"><code><div><span class="hljs-built_in">cd</span> cs_intro
+</div></code></pre>
+</li>
+<li>Create a new file named <code>hello.py</code>:<pre class="hljs"><code><div>touch hello.py
+</div></code></pre>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Write Your First Python Program</strong></p>
+<ul>
+<li>Open <code>hello.py</code> in a text editor (nano, vim, VS Code, etc.):<pre class="hljs"><code><div>nano hello.py
+</div></code></pre>
+</li>
+<li>Add the following code to <code>hello.py</code>:<pre class="hljs"><code><div>print(<span class="hljs-string">"Hello, world!"</span>)
+</div></code></pre>
+</li>
+<li>Save and exit the editor (in nano, press <code>CTRL + X</code>, then <code>Y</code>, then <code>Enter</code>).</li>
+</ul>
+</li>
+<li>
+<p><strong>Run Your Python Program</strong></p>
+<pre class="hljs"><code><div>python3 hello.py
+</div></code></pre>
+<p>You should see the output:</p>
+<pre class="hljs"><code><div>Hello, world!
+</div></code></pre>
+</li>
+</ol>
+<h2 id="additional-resources">Additional Resources</h2>
+<ul>
+<li><a href="https://cheatography.com/davechild/cheat-sheets/linux-command-line/">Linux Command Line Cheat Sheet</a></li>
+<li><a href="https://docs.python.org/3/">Python Official Documentation</a></li>
+</ul>
+
+</body>
+</html>
