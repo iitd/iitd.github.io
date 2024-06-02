@@ -380,17 +380,37 @@ code {
 <h2 id="using-range-with-for-loop">Using <code>range()</code> with <code>for</code> Loop</h2>
 <p>The <code>range()</code> function generates a sequence of numbers. When used in a <code>for</code> loop, it's commonly used to iterate a specific number of times.</p>
 <p><strong>Syntax:</strong></p>
-<pre class="hljs"><code><div>range(start, end+<span class="hljs-number">1</span>)
+<pre class="hljs"><code><div>range(n) <span class="hljs-comment"># Generates numbers from 0 till n-1</span>
+</div></code></pre>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(<span class="hljs-number">5</span>):  <span class="hljs-comment"># Generates numbers from 0 to 4</span>
+    print(i, end = <span class="hljs-string">" "</span>)
+<span class="hljs-comment"># Output: 0 1 2 3 4</span>
+</div></code></pre>
+<p><strong>Syntax:</strong></p>
+<pre class="hljs"><code><div>range(start, end) <span class="hljs-comment"># Generates numbers from start to end (excluding end, inclusive of start)</span>
 </div></code></pre>
 <p><strong>Example:</strong></p>
 <pre class="hljs"><code><div><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(<span class="hljs-number">1</span>, <span class="hljs-number">6</span>):  <span class="hljs-comment"># Generates numbers from 1 to 5</span>
     print(i)
-<span class="hljs-comment"># Output:</span>
+<span class="hljs-comment"># Output: </span>
 <span class="hljs-comment"># 1</span>
 <span class="hljs-comment"># 2</span>
 <span class="hljs-comment"># 3</span>
 <span class="hljs-comment"># 4</span>
 <span class="hljs-comment"># 5</span>
+</div></code></pre>
+<p><strong>Syntax:</strong></p>
+<pre class="hljs"><code><div>range(start, end, step) <span class="hljs-comment"># Generates numbers from start to end (excluding end and beyond) with a step size</span>
+</div></code></pre>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(<span class="hljs-number">1</span>, <span class="hljs-number">10</span>, <span class="hljs-number">2</span>):  <span class="hljs-comment"># Generates odd numbers from 1 to 9</span>
+    print(i, end = <span class="hljs-string">" "</span>)
+<span class="hljs-comment"># Output: 1 3 5 7 9</span>
+
+<span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(<span class="hljs-number">10</span>, <span class="hljs-number">1</span>, <span class="hljs-number">-2</span>):  <span class="hljs-comment"># Generates even numbers from 10 to 2</span>
+    print(i, end = <span class="hljs-string">" "</span>)
+<span class="hljs-comment"># Output: 10 8 6 4 2</span>
 </div></code></pre>
 <h2 id="iterating-with-index">Iterating with Index</h2>
 <pre class="hljs"><code><div>fruits = [<span class="hljs-string">"apple"</span>, <span class="hljs-string">"banana"</span>, <span class="hljs-string">"cherry"</span>]
@@ -475,7 +495,7 @@ print(result)  <span class="hljs-comment"># Output: (15, 5, 50, 2.0)</span>
 <hr>
 <pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">can_board_flight</span><span class="hljs-params">(W1, W2, W3, check_in_limit, carry_on_limit)</span>:</span>
     <span class="hljs-comment"># Fill the code in place of ... to check if you can board the flight(check each combination of bags and limits)</span>
-    
+
     <span class="hljs-keyword">if</span> (...):       <span class="hljs-comment"># Check if we can check-in (W1, W2) and carry W3:</span>
         <span class="hljs-keyword">return</span> <span class="hljs-string">"Yes"</span>
     
