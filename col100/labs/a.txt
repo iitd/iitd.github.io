@@ -1,6 +1,0 @@
-hi
-# Exercise Problems:
-
-**Problem Statement 1: Counting Vowels and Consonants in a String**
-
-Your task is to implement the function `count_vowels_consonants(s)` that counts the number of vowels and consonants in the input string `s`. The function should return a tuple `(vowels, consonants)` where `vowels` is the count of vowels in the string and `consonants` is the count of consonants in the string.
