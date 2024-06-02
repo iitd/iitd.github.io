@@ -81,7 +81,7 @@ print(gcd(81, 153))  # Expected output: 9
 You are given a grid with cells from `(0, 0)` to `(m, n)`. **You can only move either down or right at any point in time**. Write a recursive function `num_paths(m, n)` that calculates the number of unique paths to reach the bottom-right corner `(m, n)` of the grid from the top-left corner `(0, 0)`. Try to solve this question without using hints first. If you get stuck, you can refer to the hints below.
 
 **Hint 1:** Be very careful with the base cases, you should not make calls to num_paths with negative values or values that are out of the grid.<br><br>
-**Hint 2:** You should think about `num_paths(i, j)` as the number of total_paths from `(0, 0)` to `(i, 0)`. Can you use this to calculate `num_paths(m, n)`?<br><br>
+**Hint 2:** You should think about `num_paths(i, j)` as the number of total_paths from `(0, 0)` to `(i, j)`. Can you use this to calculate `num_paths(m, n)`?<br><br>
 **Hint 3:** There is only 1 path to reach `(0, j)` from `(0, 0)`. Similarly, there is only 1 path to reach `(i, 0)` from `(0, 0)` <br><br>
 **Hint 4:** For any cell `(i, j)` where `i>0` and `j>0`, the number of paths to reach it is the sum of the number of paths to reach the cell above it and the cell to the left of it. <br><br>
 

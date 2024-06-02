@@ -420,7 +420,7 @@ print(gcd(<span class="hljs-number">81</span>, <span class="hljs-number">153</sp
 <p><strong>Problem Statement 3: Calculate the number of paths</strong></p>
 <p>You are given a grid with cells from <code>(0, 0)</code> to <code>(m, n)</code>. <strong>You can only move either down or right at any point in time</strong>. Write a recursive function <code>num_paths(m, n)</code> that calculates the number of unique paths to reach the bottom-right corner <code>(m, n)</code> of the grid from the top-left corner <code>(0, 0)</code>. Try to solve this question without using hints first. If you get stuck, you can refer to the hints below.</p>
 <p><strong>Hint 1:</strong> Be very careful with the base cases, you should not make calls to num_paths with negative values or values that are out of the grid.<br><br>
-<strong>Hint 2:</strong> You should think about <code>num_paths(i, j)</code> as the number of total_paths from <code>(0, 0)</code> to <code>(i, 0)</code>. Can you use this to calculate <code>num_paths(m, n)</code>?<br><br>
+<strong>Hint 2:</strong> You should think about <code>num_paths(i, j)</code> as the number of total_paths from <code>(0, 0)</code> to <code>(i, j)</code>. Can you use this to calculate <code>num_paths(m, n)</code>?<br><br>
 <strong>Hint 3:</strong> There is only 1 path to reach <code>(0, j)</code> from <code>(0, 0)</code>. Similarly, there is only 1 path to reach <code>(i, 0)</code> from <code>(0, 0)</code> <br><br>
 <strong>Hint 4:</strong> For any cell <code>(i, j)</code> where <code>i&gt;0</code> and <code>j&gt;0</code>, the number of paths to reach it is the sum of the number of paths to reach the cell above it and the cell to the left of it. <br><br></p>
 <hr>
