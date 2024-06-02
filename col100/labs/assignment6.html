@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>assignment6.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="lab-6-introduction-to-lists-tuples-and-strings">Lab 6: Introduction to Lists, Tuples, and Strings</h1>
+<h2 id="lists">Lists</h2>
+<p>A list is a collection of items that are ordered, can be indexed, and are mutable. Lists are written with square brackets <code>[]</code>.</p>
+<h3 id="creating-lists">Creating Lists</h3>
+<p>You can create a list by placing all the items (elements) inside square brackets, separated by commas.</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Creating a list</span>
+fruits = [<span class="hljs-string">'apple'</span>, <span class="hljs-string">'banana'</span>, <span class="hljs-string">'cherry'</span>]
+print(fruits)  <span class="hljs-comment"># Output: ['apple', 'banana', 'cherry']</span>
+
+<span class="hljs-comment"># Creating an empty list</span>
+empty_list = []
+
+<span class="hljs-comment"># Creating a list with different data types</span>
+mixed_list = [<span class="hljs-number">10</span>, <span class="hljs-string">'hello'</span>, <span class="hljs-literal">True</span>, <span class="hljs-number">3.14</span>]
+
+<span class="hljs-comment"># Nested lists</span>
+nested_list = [[<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>], [<span class="hljs-string">'a'</span>, <span class="hljs-string">'b'</span>, <span class="hljs-string">'c'</span>]]
+
+<span class="hljs-comment"># List with repeated elements</span>
+repeated_list = [<span class="hljs-number">1</span>] * <span class="hljs-number">5</span>     <span class="hljs-comment"># same as repeated_list = [1, 1, 1, 1, 1]</span>
+
+<span class="hljs-comment">#Nested list with repeated elements</span>
+nested_repeated_list = [[<span class="hljs-number">0</span>] * <span class="hljs-number">3</span>] * <span class="hljs-number">4</span>    <span class="hljs-comment"># Same as nested_repeated_list = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]</span>
+
+<span class="hljs-comment"># List with range of numbers</span>
+numbers = list(range(<span class="hljs-number">1</span>, <span class="hljs-number">6</span>))  <span class="hljs-comment"># Output: [1, 2, 3, 4, 5]</span>
+</div></code></pre>
+<h3 id="length-of-list">Length of list</h3>
+<p>You can find the length of a list using the len() function.</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Length of list</span>
+print(len(fruits))  <span class="hljs-comment"># Output: 3</span>
+</div></code></pre>
+<h3 id="accessing-list-elements">Accessing List Elements</h3>
+<p>You can access the elements of a list by indexing. The index starts at 0. You can also access elements in nested lists as shown below. <br>
+You can also use negative indexing to access elements from the end of the list. The last element has an index of -1.</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Accessing elements</span>
+print(fruits[<span class="hljs-number">0</span>])  <span class="hljs-comment"># Output: apple</span>
+print(fruits[<span class="hljs-number">1</span>])  <span class="hljs-comment"># Output: banana</span>
+
+<span class="hljs-comment"># Accessing elements in nested list</span>
+print(nested_list[<span class="hljs-number">0</span>][<span class="hljs-number">1</span>])  <span class="hljs-comment"># Output: 2</span>
+print(nested_list[<span class="hljs-number">1</span>][<span class="hljs-number">2</span>])  <span class="hljs-comment"># Output: c</span>
+
+<span class="hljs-comment"># Accessing elements using negative indexing</span>
+print(fruits[<span class="hljs-number">-1</span>])  <span class="hljs-comment"># Output: cherry (last element)</span>
+print(fruits[<span class="hljs-number">-2</span>])  <span class="hljs-comment"># Output: banana (second last element)</span>
+
+</div></code></pre>
+<h3 id="modifying-list-elements">Modifying List Elements</h3>
+<p>Lists are mutable, meaning you can change their elements.</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Modifying elements</span>
+fruits = [<span class="hljs-string">'apple'</span>, <span class="hljs-string">'banana'</span>, <span class="hljs-string">'cherry'</span>]
+fruits[<span class="hljs-number">1</span>] = <span class="hljs-string">'blueberry'</span>
+print(fruits)  <span class="hljs-comment"># Output: ['apple', 'blueberry', 'cherry']</span>
+</div></code></pre>
+<h3 id="adding-elements-to-a-list">Adding Elements to a List</h3>
+<h4 id="append"><code>append()</code></h4>
+<p>Adds a single element to the end of the list.</p>
+<pre class="hljs"><code><div>fruits = [<span class="hljs-string">'apple'</span>, <span class="hljs-string">'banana'</span>, <span class="hljs-string">'cherry'</span>]
+fruits.append(<span class="hljs-string">'date'</span>)
+print(fruits)  <span class="hljs-comment"># Output: ['apple', 'banana', 'cherry', 'date']</span>
+</div></code></pre>
+<h4 id="insert"><code>insert()</code></h4>
+<p>Inserts an element at a specified position.</p>
+<pre class="hljs"><code><div>fruits = [<span class="hljs-string">'apple'</span>, <span class="hljs-string">'banana'</span>, <span class="hljs-string">'cherry'</span>]
+fruits.insert(<span class="hljs-number">1</span>, <span class="hljs-string">'blueberry'</span>)
+print(fruits)  <span class="hljs-comment"># Output: ['apple', 'blueberry', 'banana', 'cherry']</span>
+</div></code></pre>
+<h3 id="removing-elements-from-a-list">Removing Elements from a List</h3>
+<h4 id="remove"><code>remove()</code></h4>
+<p>Removes the first occurrence of a specified element.</p>
+<pre class="hljs"><code><div>fruits = [<span class="hljs-string">'apple'</span>, <span class="hljs-string">'banana'</span>, <span class="hljs-string">'cherry'</span>]
+fruits.remove(<span class="hljs-string">'banana'</span>)
+print(fruits)  <span class="hljs-comment"># Output: ['apple', 'cherry']</span>
+</div></code></pre>
+<h4 id="pop"><code>pop()</code></h4>
+<p>Removes and returns the element at a specified position. If no index is specified, it removes and returns the last element.</p>
+<pre class="hljs"><code><div>fruits = [<span class="hljs-string">'apple'</span>, <span class="hljs-string">'banana'</span>, <span class="hljs-string">'cherry'</span>]
+fruits.pop()
+print(fruits)  <span class="hljs-comment"># Output: ['apple', 'banana']</span>
+
+fruits.pop(<span class="hljs-number">0</span>)
+print(fruits)  <span class="hljs-comment"># Output: ['banana']</span>
+</div></code></pre>
+<h3 id="combining-and-extending-lists">Combining and Extending Lists</h3>
+<h4 id="concatenation">Concatenation</h4>
+<p>You can concatenate lists using the <code>+</code> operator.</p>
+<pre class="hljs"><code><div>fruits = [<span class="hljs-string">'apple'</span>, <span class="hljs-string">'banana'</span>]
+more_fruits = [<span class="hljs-string">'cherry'</span>, <span class="hljs-string">'date'</span>]
+combined_fruits = fruits + more_fruits
+print(combined_fruits)  <span class="hljs-comment"># Output: ['apple', 'banana', 'cherry', 'date']</span>
+</div></code></pre>
+<h4 id="extend"><code>extend()</code></h4>
+<p>Adds all elements of an iterable to the end of the list.</p>
+<pre class="hljs"><code><div>fruits = [<span class="hljs-string">'apple'</span>, <span class="hljs-string">'banana'</span>]
+more_fruits = [<span class="hljs-string">'cherry'</span>, <span class="hljs-string">'date'</span>]
+fruits.extend(more_fruits) <span class="hljs-comment"># Equivalent to fruits = fruits + more_fruits</span>
+print(fruits)  <span class="hljs-comment"># Output: ['apple', 'banana', 'cherry', 'date']</span>
+</div></code></pre>
+<h3 id="sorting-lists">Sorting Lists</h3>
+<h4 id="sorted"><code>sorted()</code></h4>
+<p>Returns a new sorted list from the elements of any iterable.</p>
+<pre class="hljs"><code><div>fruits = [<span class="hljs-string">'banana'</span>, <span class="hljs-string">'apple'</span>, <span class="hljs-string">'cherry'</span>]
+sorted_fruits = sorted(fruits)
+print(sorted_fruits)  <span class="hljs-comment"># Output: ['apple', 'banana', 'cherry']</span>
+print(fruits)  <span class="hljs-comment"># Output: ['banana', 'apple', 'cherry']</span>
+</div></code></pre>
+<h4 id="sort"><code>sort()</code></h4>
+<p>Sorts the list in place.</p>
+<pre class="hljs"><code><div>fruits = [<span class="hljs-string">'banana'</span>, <span class="hljs-string">'apple'</span>, <span class="hljs-string">'cherry'</span>]
+fruits.sort()
+print(fruits)  <span class="hljs-comment"># Output: ['apple', 'banana', 'cherry']</span>
+</div></code></pre>
+<h3 id="copying-lists">Copying Lists</h3>
+<h4 id="copy"><code>copy()</code></h4>
+<p>Returns a shallow copy of the list.</p>
+<pre class="hljs"><code><div>fruits = [<span class="hljs-string">'apple'</span>, <span class="hljs-string">'banana'</span>, <span class="hljs-string">'cherry'</span>]
+fruits_copy = fruits.copy()
+print(fruits_copy)  <span class="hljs-comment"># Output: ['apple', 'banana', 'cherry']</span>
+</div></code></pre>
+<h3 id="slicing-lists">Slicing Lists</h3>
+<p>You can slice a list to get a subset of elements.</p>
+<pre class="hljs"><code><div>numbers = [<span class="hljs-number">4</span>, <span class="hljs-number">7</span>, <span class="hljs-number">8</span>, <span class="hljs-number">2</span>, <span class="hljs-number">6</span>, <span class="hljs-number">5</span>, <span class="hljs-number">1</span>]
+print(numbers[<span class="hljs-number">1</span>:<span class="hljs-number">3</span>])  <span class="hljs-comment"># Output: [7, 8]</span>
+print(numbers[:<span class="hljs-number">3</span>])  <span class="hljs-comment"># Output: [4, 7, 8]</span>
+print(numbers[<span class="hljs-number">3</span>:])  <span class="hljs-comment"># Output: [2, 6, 5, 1]</span>
+print(numbers[:])  <span class="hljs-comment"># Output: [4, 7, 8, 2, 6, 5, 1]</span>
+
+<span class="hljs-comment">#We can also use the slicing syntax start:stop:step to get elements at a specific step size from start/end</span>
+print(numbers[<span class="hljs-number">1</span>:<span class="hljs-number">6</span>:<span class="hljs-number">2</span>])  <span class="hljs-comment"># Output: [7, 2, 5] </span>
+print(numbers[::<span class="hljs-number">2</span>])  <span class="hljs-comment"># Output: [4, 8, 6, 1] (prints the list starting at index 2 with step size 2)</span>
+print(numbers[::<span class="hljs-number">-1</span>])  <span class="hljs-comment"># Output: [1, 5, 6, 2, 8, 7, 4] (prints the reverse of the list)</span>
+print(numbers[<span class="hljs-number">5</span>:<span class="hljs-number">1</span>:<span class="hljs-number">-1</span>])  <span class="hljs-comment"># Output: [5, 6, 2, 8] (reverses the list from index 5 to 1)</span>
+print(numbers[<span class="hljs-number">6</span>:<span class="hljs-number">0</span>:<span class="hljs-number">-2</span>]) <span class="hljs-comment"># Output: [1, 6, 8] (reverses the list from index 6 to 0 with step size 2)</span>
+print(numbers[<span class="hljs-number">6</span>:<span class="hljs-number">-1</span>:<span class="hljs-number">-2</span>]) <span class="hljs-comment"># Output: [] (indices are out of bounds)</span>
+print(numbers[<span class="hljs-number">6</span>::<span class="hljs-number">-2</span>]) <span class="hljs-comment"># Output: [1, 6, 8, 4] (reverses the list from index 6 to 0 with step size 2) </span>
+</div></code></pre>
+<h2 id="tuples">Tuples</h2>
+<p>A tuple is a collection of items that are ordered and unchangeable. Tuples are written with round brackets <code>()</code>.</p>
+<h3 id="creating-tuples">Creating Tuples</h3>
+<p>You can create a tuple by placing all the items (elements) inside round brackets, separated by commas.</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Creating a tuple</span>
+colors = (<span class="hljs-string">'red'</span>, <span class="hljs-string">'green'</span>, <span class="hljs-string">'blue'</span>)
+print(colors)  <span class="hljs-comment"># Output: ('red', 'green', 'blue')</span>
+</div></code></pre>
+<h3 id="accessing-tuple-elements">Accessing Tuple Elements</h3>
+<p>You can access the elements of a tuple by indexing. The index starts at 0.</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Accessing elements</span>
+print(colors[<span class="hljs-number">0</span>])  <span class="hljs-comment"># Output: red</span>
+print(colors[<span class="hljs-number">1</span>])  <span class="hljs-comment"># Output: green</span>
+</div></code></pre>
+<h3 id="tuples-are-immutable">Tuples are Immutable</h3>
+<p>Once a tuple is created, you cannot change its elements.</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Trying to modify elements will raise an error</span>
+<span class="hljs-comment"># colors[1] = 'yellow'  # TypeError: 'tuple' object does not support item assignment</span>
+</div></code></pre>
+<h3 id="tuple-methods">Tuple Methods</h3>
+<p>Most of the methods between lists and tuples are similar. However, tuples have fewer methods compared to lists. Tuples do not have methods like <code>append()</code>, <code>insert()</code>, <code>remove()</code>, <code>pop()</code>, <code>extend()</code>, <code>sort()</code>, which attempt to modify the tuple as tuples are immutable.</p>
+<h2 id="strings">Strings</h2>
+<p>A string is a sequence of characters enclosed in single, or double quote</p>
+<h3 id="creating-strings">Creating Strings</h3>
+<p>You can create a string by enclosing characters in quotes.</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Creating a string</span>
+text = <span class="hljs-string">"Hello, world!"</span>
+print(text)  <span class="hljs-comment"># Output: Hello, world!</span>
+
+text = <span class="hljs-string">'Hello, world!'</span>
+print(text)  <span class="hljs-comment"># Output: Hello, world!</span>
+</div></code></pre>
+<h3 id="accessing-string-characters">Accessing String Characters</h3>
+<p>You can access the characters of a string by indexing. The index starts at 0.</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Accessing characters</span>
+print(text[<span class="hljs-number">0</span>])  <span class="hljs-comment"># Output: H</span>
+print(text[<span class="hljs-number">1</span>])  <span class="hljs-comment"># Output: e</span>
+</div></code></pre>
+<h3 id="string-methods">String Methods</h3>
+<p>Strings come with a variety of built-in methods.</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># String methods</span>
+print(text.upper())  <span class="hljs-comment"># Output: HELLO, WORLD!</span>
+print(text.lower())  <span class="hljs-comment"># Output: hello, world!</span>
+print(text.replace(<span class="hljs-string">'world'</span>, <span class="hljs-string">'Python'</span>))  <span class="hljs-comment"># Output: Hello, Python!</span>
+print(text.split(<span class="hljs-string">','</span>))  <span class="hljs-comment"># Output: ['Hello', ' world!']</span>
+print(text.startswith(<span class="hljs-string">'Hel'</span>))  <span class="hljs-comment"># Output: True</span>
+print(text.endswith(<span class="hljs-string">'world!'</span>))  <span class="hljs-comment"># Output: True</span>
+print(len(text))  <span class="hljs-comment"># Output: 13</span>
+
+</div></code></pre>
+<h3 id="string-concatenation">String Concatenation</h3>
+<p>You can concatenate strings using the <code>+</code> operator.</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Concatenating strings</span>
+greeting = <span class="hljs-string">"Hello"</span>
+name = <span class="hljs-string">"Alice"</span>
+message = greeting + <span class="hljs-string">", "</span> + name + <span class="hljs-string">"!"</span>
+print(message)  <span class="hljs-comment"># Output: Hello, Alice!</span>
+</div></code></pre>
+<hr>
+<h2 id="interconversion-between-lists-tuples-and-strings">Interconversion between Lists, Tuples, and Strings</h2>
+<p>The datatypes are easily interconvertible in Python. Given any iterable <code>x</code>, you can convert it to a list using <code>list(x)</code>, to a tuple using <code>tuple(x)</code>. The simplest way to make a string is to iterate over the elements of x and add it to a string</p>
+<pre class="hljs"><code><div>x = [<span class="hljs-string">'ab'</span>, <span class="hljs-string">'c'</span>, <span class="hljs-string">'def'</span>, <span class="hljs-number">4</span>, <span class="hljs-number">2</span>]
+string_x = <span class="hljs-string">""</span>
+<span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> x:
+    string_x += str(i)
+print(string_x)  <span class="hljs-comment"># Output: 'abcdef42'</span>
+</div></code></pre>
+<hr>
+<h1 id="exercise-problems">Exercise Problems:</h1>
+<p><strong>Problem Statement 1: Matrix Multiplication</strong></p>
+<p>You are given two matrices <code>A</code> and <code>B</code> of dimensions <code>m x n</code> and <code>n x p</code> respectively. Write a function <code>matrix_multiplication(A, B)</code> that returns the product of the two matrices. The product matrix will have dimensions <code>m x p</code>. The matrices are represented as lists of lists. You can assume that the dimensions of the input matrices are such that the multiplication is possible.</p>
+<p><strong>Hint:</strong> you can get the size of a matrix <code>A</code> using <code>len(A)</code> and <code>len(A[0])</code> to get the number of rows and columns respectively.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">matrix_multiplication</span><span class="hljs-params">(A, B)</span>:</span>
+    <span class="hljs-string">"""
+    Multiply two matrices A and B and return the result.
+    
+    Parameters:
+    A (list of list of int/float): The first matrix with dimensions m x n.
+    B (list of list of int/float): The second matrix with dimensions n x p.
+    
+    Returns:
+    list of list of int/float: The product matrix with dimensions m x p.
+
+    Example:
+    # Each inner list in the matrix represents a row.
+    A = [[1, 2, 3], [4, 5, 6]]
+    B = [[7, 8], [9, 10], [11, 12]]
+    print(matrix_multiplication(A, B))  # Output: [[58, 64], [139, 154], [220, 244]]
+    """</span>
+
+
+
+    <span class="hljs-comment"># Fill in the code to multiply the matrices A and B here</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<hr>
+<p><strong>Problem Statement 2: Flattening a Nested List</strong></p>
+<p>You are given a nested list of integers. Write a function <code>flatten_list(nested_list)</code> that flattens the nested list into a single list by removing the nesting. Your task is to implement the function <code>flatten_list(nested_list)</code> that takes a nested list as input and returns a single flattened list.</p>
+<p><strong>Hint:</strong> think of recursion.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">flatten_list</span><span class="hljs-params">(nested_list)</span>:</span>
+    <span class="hljs-string">"""
+    Flatten a nested list into a single list.
+    Example Input: [1, [2, [3, 4], 5], 6, [7, 8, [9, 10]]]
+    Example Output: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    """</span>
+
+    <span class="hljs-comment"># Fill in the code to flatten the nested list here, the function should return a single list</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<hr>
+<p><strong>Problem Statement 3: Counting Vowels and Consonants in a String</strong></p>
+<p>Write a function <code>count_vowels_consonants(text)</code> that takes a string <code>text</code> as input and returns a tuple containing the count of vowels and consonants in the text. The function should ignore case(treat uppercase and lowercase characters identically) and consider only alphabets as vowels/consonants. The tuple should contain the count of vowels followed by the count of consonants.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">count_vowels_consonants</span><span class="hljs-params">(text)</span>:</span>
+    <span class="hljs-string">"""
+    Count the number of vowels and consonants in a given text.
+    
+    Parameters:
+    text (str): A string containing alphabets.
+    
+    Returns:
+    tuple: A tuple (vowels, consonants) containing the count of vowels and consonants in the text.
+    """</span>
+
+    <span class="hljs-comment"># Change the code below to count the number of vowels and consonants in text</span>
+    vowels = <span class="hljs-number">0</span>, consonants = <span class="hljs-number">0</span>
+    <span class="hljs-keyword">return</span> (vowels, consonants)
+</div></code></pre>
+
+</body>
+</html>
