@@ -197,7 +197,7 @@ print(numbers[6:0:-2]) # Output: [1, 6, 8] (reverses the list from index 6 to 0 
 print(numbers[6:-1:-2]) # Output: [] (indices are out of bounds)
 print(numbers[6::-2]) # Output: [1, 6, 8, 4] (reverses the list from index 6 to 0 with step size 2) 
 ```
-
+---
 
 ## Tuples
 
@@ -235,6 +235,8 @@ Once a tuple is created, you cannot change its elements.
 ### Tuple Methods
 
 Most of the methods between lists and tuples are similar. However, tuples have fewer methods compared to lists. Tuples do not have methods like `append()`, `insert()`, `remove()`, `pop()`, `extend()`, `sort()`, which attempt to modify the tuple as tuples are immutable.
+
+---
 
 ## Strings
 
