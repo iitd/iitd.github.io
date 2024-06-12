@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>assignment8.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<p>Lab 8: Memoization and Dynamic Programming</p>
+<h2 id="introduction-to-dynamic-programming">Introduction to Dynamic Programming</h2>
+<p>Dynamic programming is a method for solving complex problems by breaking them down into simpler subproblems and solving each subproblem only once. It is typically used when the subproblems overlap, i.e., when the same subproblem is encountered multiple times in the computation.</p>
+<p>There are two main approaches to dynamic programming:</p>
+<ol>
+<li>
+<p><strong>Top-Down Approach (Memoization):</strong> In this approach, we solve the problem recursively, but store the results of subproblems in a cache (memo) to avoid redundant calculations.</p>
+</li>
+<li>
+<p><strong>Bottom-Up Approach (Tabulation):</strong> In this approach, we solve the problem iteratively, starting from the smallest subproblems and building up to the final solution.</p>
+</li>
+</ol>
+<h3 id="introduction-to-memoization-top-down-dynamic-programming">Introduction to Memoization (Top-Down Dynamic Programming)</h3>
+<p>Memoization is an optimization technique used to store the results of expensive function calls and return the cached result when the same inputs occur again. It is a form of caching that can greatly improve the performance of recursive algorithms.</p>
+<h4 id="example-calculating-fibonacci-numbers-with-memoization">Example: Calculating Fibonacci Numbers with Memoization</h4>
+<p>Recall the naive version of the <code>fibonacci</code> function which returns the <code>n</code>th Fibonacci number starting from 0, 1, 1, 2, 3, 5, 8, 13, ...:</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">fibonacci</span><span class="hljs-params">(n)</span>:</span>
+    <span class="hljs-keyword">if</span> n &lt;= <span class="hljs-number">1</span>:
+        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>
+    <span class="hljs-keyword">else</span>:
+    <span class="hljs-keyword">return</span> fibonacci(n - <span class="hljs-number">1</span>) + fibonacci(n - <span class="hljs-number">2</span>)
+</div></code></pre>
+<p>Let's revisit the Fibonacci sequence and implement a memoized version of the Fibonacci function.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">fibonacci</span><span class="hljs-params">(n, memo={})</span>:</span>
+    <span class="hljs-keyword">if</span> n <span class="hljs-keyword">in</span> memo:
+        <span class="hljs-keyword">return</span> memo[n]
+    <span class="hljs-keyword">if</span> n &lt;= <span class="hljs-number">1</span>:
+        <span class="hljs-keyword">return</span> n
+    memo[n] = fibonacci(n - <span class="hljs-number">1</span>, memo) + fibonacci(n - <span class="hljs-number">2</span>, memo)
+    <span class="hljs-keyword">return</span> memo[n]
+</div></code></pre>
+<p>In this memoized version, we store the results of the Fibonacci function in a dictionary <code>memo</code>. If the result for a particular <code>n</code> is already computed, we return the cached result from the <code>memo</code> dictionary. This avoids redundant calculations and improves the performance of the Fibonacci function significantly.</p>
+<h3 id="bottom-up-dynamic-programming-tabulation">Bottom-Up Dynamic Programming (Tabulation)</h3>
+<p>In the bottom-up approach, we solve the problem iteratively by starting from the smallest subproblems and building up to the final solution. This approach is often more efficient than the top-down approach as it avoids the overhead of recursive function calls.</p>
+<h4 id="example-calculating-fibonacci-numbers-with-tabulation">Example: Calculating Fibonacci Numbers with Tabulation</h4>
+<p>Let's implement the Fibonacci function using a tabulation approach:</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">fibonacci</span><span class="hljs-params">(n)</span>:</span>
+    <span class="hljs-keyword">if</span> n &lt;= <span class="hljs-number">1</span>:
+        <span class="hljs-keyword">return</span> n
+    fib = [<span class="hljs-number">0</span>, <span class="hljs-number">1</span>]
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(<span class="hljs-number">2</span>, n + <span class="hljs-number">1</span>):
+        fib.append(fib[i - <span class="hljs-number">1</span>] + fib[i - <span class="hljs-number">2</span>])
+    <span class="hljs-keyword">return</span> fib[n]
+</div></code></pre>
+<p>In this tabulation approach, we create a list <code>fib</code> to store the Fibonacci numbers iteratively. We start with the base cases <code>fib = [0, 1]</code> and calculate the Fibonacci numbers from <code>2</code> to <code>n</code> by summing the previous two numbers in the list.</p>
+<h2 id="exercise-problems">Exercise Problems</h2>
+<p><strong>Note:</strong> Feel free to use additional helper functions to pass arguments like <code>memo</code> or <code>dp</code> to your functions, don't change the original function signatures.</p>
+<p><strong>Example:</strong> Fibonacci Number using Memoization without changing the original function signature <code>fibonacci(n)</code></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">solve</span><span class="hljs-params">(n, memo={})</span>:</span>
+    <span class="hljs-keyword">if</span> n <span class="hljs-keyword">in</span> memo:
+        <span class="hljs-keyword">return</span> memo[n]
+    <span class="hljs-keyword">if</span> n &lt;= <span class="hljs-number">1</span>:
+        <span class="hljs-keyword">return</span> n
+    memo[n] = solve(n - <span class="hljs-number">1</span>, memo) + solve(n - <span class="hljs-number">2</span>, memo)
+    <span class="hljs-keyword">return</span> memo[n]
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">fibonacci</span><span class="hljs-params">(n)</span>:</span>
+    <span class="hljs-keyword">return</span> solve(n, {})
+</div></code></pre>
+<p><strong>Problem Statement 1: Calculate the <code>n</code>th Lucas number</strong></p>
+<p>The Lucas numbers are a series of numbers similar to the Fibonacci sequence, but with different initial values. The Lucas sequence starts as follows: 2, 1, 3, 4, 7, 11, 18, ...
+Your task is to implement the function <code>lucas(n)</code> using dynamic programming. The function should return the <code>n</code>th Lucas number.</p>
+<p><strong>Note: Your solution should run in O(n) time complexity and O(n) space complexity</strong>
+<strong>Bonus: Can you do it in O(1) space complexity using bottom-up DP?</strong></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">lucas</span><span class="hljs-params">(n)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to calculate the nth Lucas number using dynamic programming</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Test cases</span>
+print(lucas(<span class="hljs-number">5</span>))  <span class="hljs-comment"># Expected output: 11</span>
+
+</div></code></pre>
+<p><strong>Problem Statement 2: Calculate the number of ways to climb <code>n</code> stairs</strong></p>
+<p>You are climbing a staircase. It takes <code>n</code> steps to reach the top. Each time you can either climb 1 or 2 or 3 steps. In how many distinct ways can you climb to the top?
+Your task is to implement the function <code>climb_stairs(n)</code> using dynamic programming. The function should return the number of distinct ways to climb <code>n</code> stairs.</p>
+<p><strong>Note: Your solution should run in O(n) time complexity and O(n) space complexity</strong>
+<strong>Bonus: Can you do it in O(1) space complexity using bottom-up DP?</strong></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">climb_stairs</span><span class="hljs-params">(n)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to calculate the number of ways to climb n stairs using dynamic programming</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Test cases</span>
+print(climb_stairs(<span class="hljs-number">3</span>))  <span class="hljs-comment"># Expected output: 4</span>
+print(climb_stairs(<span class="hljs-number">5</span>))  <span class="hljs-comment"># Expected output: 13</span>
+</div></code></pre>
+<p><strong>Problem Statement 3: Calculate the minimum cost to reach the bottom-right cell in a grid</strong></p>
+<p>You are given a grid with cells from <code>(0, 0)</code> to <code>(m, n)</code>. <strong>You can only move either down or right at any point in time</strong>. Write a function <code>num_paths(m, n)</code> that calculates the number of unique paths to reach the bottom-right corner <code>(m, n)</code> of the grid from the top-left corner <code>(0, 0)</code> using dynamic programming.</p>
+<p><strong>Note: This question was part of the additional exercises for Lab 7(Recursion). You can use the hints from that question here as well. However your solution should not be recursive</strong></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">num_paths</span><span class="hljs-params">(m, n)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to calculate the number of unique paths using dynamic programming</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Test cases</span>
+print(num_paths(<span class="hljs-number">3</span>, <span class="hljs-number">3</span>))  <span class="hljs-comment"># Expected output: 6</span>
+print(num_paths(<span class="hljs-number">7</span>, <span class="hljs-number">3</span>))  <span class="hljs-comment"># Expected output: 28</span>
+
+
+</div></code></pre>
+<p><strong>Problem Statement 4: Robbing houses I</strong></p>
+<p>You are a professional robber planning to rob houses along a street. Each house has a certain amount of money stashed. All houses at this place are arranged <strong>in a single row</strong>. That means the first house is the neighbor of the last one. Meanwhile, adjacent houses have a security system connected, and it will automatically contact the police if two adjacent houses were broken into on the same night.</p>
+<p>Given a list of non-negative integers <code>nums</code> representing the amount of money of each house, return the maximum amount of money you can rob tonight without alerting the police.</p>
+<p>Your task is to implement the function <code>rob(nums)</code> using dynamic programming. The function should return the maximum amount of money you can rob without alerting the police.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">rob</span><span class="hljs-params">(nums)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to calculate the maximum amount of money you can rob without alerting the police using dynamic programming</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Test cases</span>
+print(rob([<span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">2</span>]))  <span class="hljs-comment"># Expected output: 4</span>
+print(rob([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">1</span>]))  <span class="hljs-comment"># Expected output: 4</span>
+</div></code></pre>
+<h1 id="additional-exercise-problems">Additional Exercise Problems</h1>
+<p><strong>Problem Statement 5: Robbing houses II</strong></p>
+<p>After robbing those houses on the same street, the thief has found himself a new place for his thievery so that he will not get too much attention. This time, all houses at this place are arranged <strong>in a circle</strong>. That means the first house is the neighbor of the last one. Meanwhile, adjacent houses have a security system connected, and it will automatically contact the police if two adjacent houses were broken into on the same night.</p>
+<p>Given a list of non-negative integers <code>nums</code> representing the amount of money of each house, return the maximum amount of money you can rob tonight without alerting the police.</p>
+<p>Your task is to implement the function <code>rob_circle(nums)</code> using dynamic programming. The function should return the maximum amount of money you can rob without alerting the police.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">rob_circle</span><span class="hljs-params">(nums)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to calculate the maximum amount of money you can rob without alerting the police using dynamic programming</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Test cases</span>
+print(rob_circle([<span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">2</span>]))  <span class="hljs-comment"># Expected output: 3</span>
+print(rob_circle([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">1</span>]))  <span class="hljs-comment"># Expected output: 4</span>
+</div></code></pre>
+<p><strong>Problem Statement 6: Number of ways to make <code>target</code> from coins of different denominations</strong></p>
+<p>You are given an integer array <code>coins</code> representing coins of different denominations and an integer <code>target</code> representing a total amount of money you need to make using these coins. Return the number of combinations that make up that amount. If that amount of money cannot be made up by any combination of the coins, return <code>0</code>. You may assume that you have an infinite number of each kind of coin.
+Your task is to implement the function <code>coin_change(coins, target)</code> using dynamic programming. The function should return the number of combinations that make up the target amount.</p>
+<p><strong>Note: Your solution should run in O(n * target) time complexity</strong></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">coin_change</span><span class="hljs-params">(coins, target)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to calculate the number of combinations that make up the target amount using dynamic programming</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Test cases</span>
+coins = [<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">5</span>]
+target = <span class="hljs-number">10</span>
+print(coin_change(coins, target))  <span class="hljs-comment"># Expected output: 10</span>
+</div></code></pre>
+<p><strong>Problem Statement 7: Game of stones</strong></p>
+<p>Alice and Bob are playing a game. They have <code>n</code> piles of stones in front of them arranged in a row from left to right. <strong>Assume that <code>n</code> is even</strong>. The game is played as follows with players alternating turns:
+In each turn, the player can remove the leftmost pile of stones or the rightmost pile of stones in the current row and capture all the stones in that pile for himself. The player with the most stones collected at the end wins. Both players play optimally. <strong>Assume Alice always has the first turn</strong></p>
+<p>Given an integer array <code>piles</code> representing the number of stones in each pile, return the maximum number of stones Alice can collect. Your task is to implement the function <code>stone_game(piles)</code> using dynamic programming. The function should return the maximum number of stones Alice can collect assuming Bob plays optimally as well.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">stone_game</span><span class="hljs-params">(piles)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to calculate the maximum number of stones Alice can collect using dynamic programming</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Test cases</span>
+print(stone_game([<span class="hljs-number">5</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>]))  <span class="hljs-comment"># Expected output: 9</span>
+<span class="hljs-comment">#Explanation: Alice can start by taking the 5 stones from the left. Then Bob will take the 5 stones from the right to minimise Alice's score. Alice can then take the 4 stones from the left and Bob will take the 3 stones from the right. Hence, Alice's best score will be 5 + 4 = 9</span>
+</div></code></pre>
+<p><strong>Problem Statement 8: Longest common subsequence</strong></p>
+<p>Given two strings <code>s1</code> and <code>s2</code>, return the length of their longest common subsequence. A subsequence of a string is a new string generated from the original string with some characters(can be none) deleted without changing the relative order of the remaining characters. (eg, &quot;ace&quot; is a subsequence of &quot;abcde&quot; while &quot;aec&quot; is not). A common subsequence of two strings is a subsequence that is common to both strings.</p>
+<p><strong>Hint:</strong> to find the longest common subsequence among s1[i:] and s2[j:], if s1[i] == s2[j], then the longest common subsequence among s1[i:] and s2[j:] is 1 + the longest common subsequence among s1[i+1:] and s2[j+1:], otherwise, it is the maximum of the longest common subsequence among s1[i+1:] and s2[j:] and the longest common subsequence among s1[i:] and s2[j+1:]</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">longest_common_subsequence</span><span class="hljs-params">(s1, s2)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to calculate the length of the longest common subsequence using dynamic programming</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>
+
+<span class="hljs-comment"># Test cases</span>
+print(longest_common_subsequence(<span class="hljs-string">"abcde"</span>, <span class="hljs-string">"ace"</span>))  <span class="hljs-comment"># Expected output: 3</span>
+print(longest_common_subsequence(<span class="hljs-string">"abc"</span>, <span class="hljs-string">"def"</span>))  <span class="hljs-comment"># Expected output: 0</span>
+print(longest_common_subsequence(<span class="hljs-string">"abcde"</span>,<span class="hljs-string">"afedce"</span>))  <span class="hljs-comment"># Expected output: 3</span>
+</div></code></pre>
+
+</body>
+</html>

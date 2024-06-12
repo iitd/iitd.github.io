@@ -329,6 +329,7 @@ print(constrained_sum(start_num, end_num, L))  # Output: (28, 983)
 ---
 
 **Problem Statement 6: Fibonacci Series**
+
 Write a function `fibonacci_series(n)` that prints the first `n` terms of the Fibonacci series. The Fibonacci series is a sequence of numbers in which each term is the sum of the two preceding terms, starting with 0 and 1. The first few terms of the Fibonacci series are 0, 1, 1, 2, 3, 5, 8, 13, 21, and so on.
 
 ```python
@@ -360,6 +361,7 @@ fibonacci_series(n)
 ---
 
 **Problem Statement 7: Alice and Bob play a game**
+
 Alice and Bob are playing a game. Alice has `a` coins and Bob has `b` coins in their respective wallets intially. 
 Each player performs the following moves in his/her turn(they alternate turns):
 1. The player can keep their own wallet, or exchange their wallet with the other player.
@@ -387,6 +389,7 @@ print(game(a, b))  # Output: Alice
 ---
 
 **Problem Statement 8: Collatz sequence**
+
 A very famous unsolved problem in mathematics is the Collatz conjecture. The Collatz conjecture states that for any positive integer `n`, the following sequence will always reach 1:
 1. If `n` is even, divide it by 2.
 2. If `n` is odd, multiply it by 3 and add 1.

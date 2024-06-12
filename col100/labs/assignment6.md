@@ -202,6 +202,7 @@ print(list(student.items()))  # Output: [('name', 'Alice'), ('age', 21), ('cours
 
 ---
 **Problem Statement 1: Check balanced parenthesis**
+
 Given a string containing only parentheses `()`, square brackets `[]`, and curly braces `{}`, write a function `is_balanced(s)` that checks if the string `s` has balanced parentheses. A string has balanced parentheses if each opening parenthesis has a corresponding closing parenthesis and they are properly nested. The function should return `True` if the string has balanced parentheses, `False` otherwise.
 
 **Note: your algorithm should run in O(n) time complexity where n is the length of the string.**
@@ -227,6 +228,7 @@ print(is_balanced(s))  # Output: False
 ---
 
 **Problem Statement 2: Remove duplicate characters**
+
 Given a string `s`, write a function `remove_duplicates(s)` that repeatedly performs the following operation until no adjacent duplicate characters are left in the string:
 
 - Remove the leftmost adjacent pair of duplicate characters.
@@ -253,6 +255,7 @@ print(remove_duplicates(s))  # Output: "ca"
 ---
 
 **Problem Statement 3: Merge 2 queues**
+
 Given two queues `queue1` and `queue2`, such that `queue1` is filled with integers in non-decreasing order and `queue2` is filled with integers in non-decreasing order. Write a function `merge_queues(queue1, queue2)` that merges the two queues into a single queue such that the resulting queue is filled with integers in non-decreasing order.
 A queue being filled in non-decreasing order means that elements were added to the queue in non-decreasing order and hence, the front element of the queue is the smallest element in the queue.
 
@@ -287,6 +290,7 @@ while not final_queue.is_empty():
 ---
 
 **Problem Statement 4: Pairs with difference k**
+
 Given a list of integers `nums` and an integer `k`, write a function `pairs_with_difference_k(nums, k)` that returns the number of pairs of numbers in the list `nums` that have an absolute difference of `k`. Assume the pairs are unordered i.e. `(nums[i], nums[j])` is the same as `(nums[j], nums[i])`.
 
 **Note: your algorithm should run in O(n) time complexity where n is the length of the list `nums`. Note that sorting algorithms in general are O(nlogn) in time complexity and hence, can't be used here**
@@ -316,6 +320,7 @@ print(pairs_with_difference_k(nums, k))  # Output: 34
 # Additional Exercise Problems
 
 **Problem Statement 5: Number of monsters**
+
 We have a battlefield where monsters are fighting. At each time step `i` where `0 <= i < n`, a monster of strength `strength[i]` appears on the battlefield and kills all the monsters with strength less than `strength[i]` currently on the battlefield. The monster with strength `strength[i]` survives and remains on the battlefield but becomes dormant and will not kill any other monsters as future monsters arrive.
 Write a function `number_of_monsters(strength)` that takes a list `strength` as input and returns a list `result` where `result[i]` is the number of monsters remaining on the battlefield after the `i-th` time step.
 
@@ -344,6 +349,7 @@ print(number_of_monsters(strength))  # Output: [1, 1, 2, 2, 1]
 ---
 
 **Problem Statement 6: TwoSum**
+
 Given a list of integers `nums` and an integer `target`, write a function `two_sum(nums, target)` that returns the number of pairs of numbers in the list `nums` that sum up to the target. Assume the pairs are unordered i.e. `(nums[i], nums[j])` is the same as `(nums[j], nums[i])`.
 
 **Note: your algorithm should run in O(n) time complexity where n is the length of the list `nums`. Note that sorting algorithms in general are O(nlogn) in time complexity and hence, can't be used here**
@@ -366,6 +372,7 @@ print(two_sum(nums, target))  # Output: 9
 ---
 
 **Problem Statement 7: Evaluate postfix expression**
+
 Given a string `s` representing a postfix expression, write a function `evaluate_postfix(s)` that evaluates the postfix expression and returns the result. The postfix expression consists of integers and the operators `+`, `-`, `*`, `/`. The operators `+`, `-`, `*`, `/` represent addition, subtraction, multiplication, and division respectively. 
 
 A postfix expression is an expression in which the operators come after the operands. For example, the postfix expression `2 3 +` is equivalent to the infix expression `2 + 3`. Similarly, the postfix expression `2 3 4 + *` is equivalent to the infix expression `2 * (3 + 4)`.
@@ -396,7 +403,8 @@ print(evaluate_postfix(s))  # Output: 6
 
 ---
 
-** Problem Statement 8: Implement a stack using two queues**
+**Problem Statement 8: Implement a stack using two queues**
+
 Given two queues `queue1` and `queue2`, write a function `Stack` that implements a stack using the two queues. The stack should support the following operations:
 - `push(item)`: Adds an element to the top of the stack.
 - `pop()`: Removes and returns the top element of the stack. Returns `None` if the stack is empty.

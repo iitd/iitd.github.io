@@ -553,8 +553,8 @@ print(list(student.items()))  <span class="hljs-comment"># Output: [('name', 'Al
 <p>**Note: **Assume that all stack and queue operations are <code>O(1)</code> time complexity operations and the dictionary operations are also <code>O(1)</code> time complexity operations.</p>
 <h1 id="exercise-problems">Exercise Problems</h1>
 <hr>
-<p><strong>Problem Statement 1: Check balanced parenthesis</strong>
-Given a string containing only parentheses <code>()</code>, square brackets <code>[]</code>, and curly braces <code>{}</code>, write a function <code>is_balanced(s)</code> that checks if the string <code>s</code> has balanced parentheses. A string has balanced parentheses if each opening parenthesis has a corresponding closing parenthesis and they are properly nested. The function should return <code>True</code> if the string has balanced parentheses, <code>False</code> otherwise.</p>
+<p><strong>Problem Statement 1: Check balanced parenthesis</strong></p>
+<p>Given a string containing only parentheses <code>()</code>, square brackets <code>[]</code>, and curly braces <code>{}</code>, write a function <code>is_balanced(s)</code> that checks if the string <code>s</code> has balanced parentheses. A string has balanced parentheses if each opening parenthesis has a corresponding closing parenthesis and they are properly nested. The function should return <code>True</code> if the string has balanced parentheses, <code>False</code> otherwise.</p>
 <p><strong>Note: your algorithm should run in O(n) time complexity where n is the length of the string.</strong></p>
 <p><strong>Hint: use stacks</strong></p>
 <pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">is_balanced</span><span class="hljs-params">(s)</span>:</span>
@@ -572,8 +572,8 @@ s = <span class="hljs-string">"([)]"</span>
 print(is_balanced(s))  <span class="hljs-comment"># Output: False</span>
 </div></code></pre>
 <hr>
-<p><strong>Problem Statement 2: Remove duplicate characters</strong>
-Given a string <code>s</code>, write a function <code>remove_duplicates(s)</code> that repeatedly performs the following operation until no adjacent duplicate characters are left in the string:</p>
+<p><strong>Problem Statement 2: Remove duplicate characters</strong></p>
+<p>Given a string <code>s</code>, write a function <code>remove_duplicates(s)</code> that repeatedly performs the following operation until no adjacent duplicate characters are left in the string:</p>
 <ul>
 <li>Remove the leftmost adjacent pair of duplicate characters.</li>
 </ul>
@@ -591,8 +591,8 @@ s = <span class="hljs-string">"abbaca"</span>
 print(remove_duplicates(s))  <span class="hljs-comment"># Output: "ca"</span>
 </div></code></pre>
 <hr>
-<p><strong>Problem Statement 3: Merge 2 queues</strong>
-Given two queues <code>queue1</code> and <code>queue2</code>, such that <code>queue1</code> is filled with integers in non-decreasing order and <code>queue2</code> is filled with integers in non-decreasing order. Write a function <code>merge_queues(queue1, queue2)</code> that merges the two queues into a single queue such that the resulting queue is filled with integers in non-decreasing order.
+<p><strong>Problem Statement 3: Merge 2 queues</strong></p>
+<p>Given two queues <code>queue1</code> and <code>queue2</code>, such that <code>queue1</code> is filled with integers in non-decreasing order and <code>queue2</code> is filled with integers in non-decreasing order. Write a function <code>merge_queues(queue1, queue2)</code> that merges the two queues into a single queue such that the resulting queue is filled with integers in non-decreasing order.
 A queue being filled in non-decreasing order means that elements were added to the queue in non-decreasing order and hence, the front element of the queue is the smallest element in the queue.</p>
 <p><strong>Note: your algorithm should run in O(n) time complexity where n is the total number of elements in both the queues.</strong></p>
 <pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">merge_queues</span><span class="hljs-params">(queue1, queue2)</span>:</span>
@@ -620,8 +620,8 @@ final_queue = merge_queues(queue1, queue2)
     print(final_queue.dequeue(), end=<span class="hljs-string">" "</span>)  <span class="hljs-comment"># Output: 1 2 3 4 4 5</span>
 </div></code></pre>
 <hr>
-<p><strong>Problem Statement 4: Pairs with difference k</strong>
-Given a list of integers <code>nums</code> and an integer <code>k</code>, write a function <code>pairs_with_difference_k(nums, k)</code> that returns the number of pairs of numbers in the list <code>nums</code> that have an absolute difference of <code>k</code>. Assume the pairs are unordered i.e. <code>(nums[i], nums[j])</code> is the same as <code>(nums[j], nums[i])</code>.</p>
+<p><strong>Problem Statement 4: Pairs with difference k</strong></p>
+<p>Given a list of integers <code>nums</code> and an integer <code>k</code>, write a function <code>pairs_with_difference_k(nums, k)</code> that returns the number of pairs of numbers in the list <code>nums</code> that have an absolute difference of <code>k</code>. Assume the pairs are unordered i.e. <code>(nums[i], nums[j])</code> is the same as <code>(nums[j], nums[i])</code>.</p>
 <p><strong>Note: your algorithm should run in O(n) time complexity where n is the length of the list <code>nums</code>. Note that sorting algorithms in general are O(nlogn) in time complexity and hence, can't be used here</strong></p>
 <p><strong>Hint: use dictionaries</strong></p>
 <pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">pairs_with_difference_k</span><span class="hljs-params">(nums, k)</span>:</span>
@@ -640,8 +640,8 @@ print(pairs_with_difference_k(nums, k))  <span class="hljs-comment"># Output: 34
 </div></code></pre>
 <hr>
 <h1 id="additional-exercise-problems">Additional Exercise Problems</h1>
-<p><strong>Problem Statement 5: Number of monsters</strong>
-We have a battlefield where monsters are fighting. At each time step <code>i</code> where <code>0 &lt;= i &lt; n</code>, a monster of strength <code>strength[i]</code> appears on the battlefield and kills all the monsters with strength less than <code>strength[i]</code> currently on the battlefield. The monster with strength <code>strength[i]</code> survives and remains on the battlefield but becomes dormant and will not kill any other monsters as future monsters arrive.
+<p><strong>Problem Statement 5: Number of monsters</strong></p>
+<p>We have a battlefield where monsters are fighting. At each time step <code>i</code> where <code>0 &lt;= i &lt; n</code>, a monster of strength <code>strength[i]</code> appears on the battlefield and kills all the monsters with strength less than <code>strength[i]</code> currently on the battlefield. The monster with strength <code>strength[i]</code> survives and remains on the battlefield but becomes dormant and will not kill any other monsters as future monsters arrive.
 Write a function <code>number_of_monsters(strength)</code> that takes a list <code>strength</code> as input and returns a list <code>result</code> where <code>result[i]</code> is the number of monsters remaining on the battlefield after the <code>i-th</code> time step.</p>
 <p><strong>Note: your algorithm should run in O(n) time complexity where n is the length of the list <code>strength</code>.</strong></p>
 <pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">number_of_monsters</span><span class="hljs-params">(strength)</span>:</span>
@@ -663,8 +663,8 @@ print(number_of_monsters(strength))  <span class="hljs-comment"># Output: [1, 1,
 <span class="hljs-comment"># At time step 4, monster with strength 5 appears, kills the monsters with strength 3 and 4, 1 monster remains.</span>
 </div></code></pre>
 <hr>
-<p><strong>Problem Statement 6: TwoSum</strong>
-Given a list of integers <code>nums</code> and an integer <code>target</code>, write a function <code>two_sum(nums, target)</code> that returns the number of pairs of numbers in the list <code>nums</code> that sum up to the target. Assume the pairs are unordered i.e. <code>(nums[i], nums[j])</code> is the same as <code>(nums[j], nums[i])</code>.</p>
+<p><strong>Problem Statement 6: TwoSum</strong></p>
+<p>Given a list of integers <code>nums</code> and an integer <code>target</code>, write a function <code>two_sum(nums, target)</code> that returns the number of pairs of numbers in the list <code>nums</code> that sum up to the target. Assume the pairs are unordered i.e. <code>(nums[i], nums[j])</code> is the same as <code>(nums[j], nums[i])</code>.</p>
 <p><strong>Note: your algorithm should run in O(n) time complexity where n is the length of the list <code>nums</code>. Note that sorting algorithms in general are O(nlogn) in time complexity and hence, can't be used here</strong></p>
 <pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">two_sum</span><span class="hljs-params">(nums, target)</span>:</span>
     count = <span class="hljs-number">0</span>
@@ -680,8 +680,8 @@ target = <span class="hljs-number">6</span>
 print(two_sum(nums, target))  <span class="hljs-comment"># Output: 9</span>
 </div></code></pre>
 <hr>
-<p><strong>Problem Statement 7: Evaluate postfix expression</strong>
-Given a string <code>s</code> representing a postfix expression, write a function <code>evaluate_postfix(s)</code> that evaluates the postfix expression and returns the result. The postfix expression consists of integers and the operators <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>. The operators <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code> represent addition, subtraction, multiplication, and division respectively.</p>
+<p><strong>Problem Statement 7: Evaluate postfix expression</strong></p>
+<p>Given a string <code>s</code> representing a postfix expression, write a function <code>evaluate_postfix(s)</code> that evaluates the postfix expression and returns the result. The postfix expression consists of integers and the operators <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>. The operators <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code> represent addition, subtraction, multiplication, and division respectively.</p>
 <p>A postfix expression is an expression in which the operators come after the operands. For example, the postfix expression <code>2 3 +</code> is equivalent to the infix expression <code>2 + 3</code>. Similarly, the postfix expression <code>2 3 4 + *</code> is equivalent to the infix expression <code>2 * (3 + 4)</code>.</p>
 <p><strong>Note: your algorithm should run in O(n) time complexity where n is the length of the string <code>s</code>.</strong></p>
 <pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">evaluate_postfix</span><span class="hljs-params">(s)</span>:</span>
@@ -704,8 +704,8 @@ print(evaluate_postfix(s))  <span class="hljs-comment"># Output: 6</span>
 <span class="hljs-comment"># s = "6"</span>
 </div></code></pre>
 <hr>
-<p>** Problem Statement 8: Implement a stack using two queues**
-Given two queues <code>queue1</code> and <code>queue2</code>, write a function <code>Stack</code> that implements a stack using the two queues. The stack should support the following operations:</p>
+<p><strong>Problem Statement 8: Implement a stack using two queues</strong></p>
+<p>Given two queues <code>queue1</code> and <code>queue2</code>, write a function <code>Stack</code> that implements a stack using the two queues. The stack should support the following operations:</p>
 <ul>
 <li><code>push(item)</code>: Adds an element to the top of the stack.</li>
 <li><code>pop()</code>: Removes and returns the top element of the stack. Returns <code>None</code> if the stack is empty.</li>

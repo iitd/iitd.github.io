@@ -402,6 +402,7 @@ print(count_vowels_consonants(text))  # Output: (3, 7)
 ```
 
 **Problem Statement 4: Minimum Operations to make strings similar**
+
 Two strings `s1` and `s2` are similar if you can make `s1` equal to `s2` by rearranging the letters of `s1`. You are given two strings `s1` and `s2`. Write a function `min_operations_to_make_similar(s1, s2)` that returns the minimum number of operations required to make `s1` and `s2` similar. The operations allowed are:
 1. Add a character to `s1`
 2. Remove a character from `s1`
@@ -505,6 +506,7 @@ print(check_balanced_parenthesis(text))  # Output: False
 ```
 
 **Problem Statement 7: Match String Pattern**
+
 Given a list of strings `L` and a pattern string `p`, write a function `match_string_pattern(L, s)` that returns a list of boolean values where the `i-th` element is `True` if the `i-th` string in the list `L` contains the pattern string `p`, and `False` otherwise.
 A string `s` is said to contain a pattern string `p` if `p` is a subsequence of `s`. A subsequence is a sequence that can be derived from another sequence by deleting some or no elements without changing the order of the remaining elements.
 
@@ -536,6 +538,7 @@ print(match_string_pattern(L, p))  # Output: [True, True, False, True, False]
 ```
 
 **Problem Statement 8: Similar word strings**
+
 A word string is a string that contains only alphabets and spaces and contains no leading or trailing spaces. The words in a word string are separated by one or more spaces. Two word strings `s1` and `s2` are said to be similar if I can find a word string `s3` and insert it into `s1` such that the result is identical to `s2` or vice versa. The entire string `s3` must be inserted without breaking it into separate parts. Write a function `similar_word_strings(s1, s2)` that returns True if the two word strings `s1` and `s2` are similar, and False otherwise. 
 
 Treat the strings as case-sensitive.

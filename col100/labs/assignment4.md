@@ -267,6 +267,7 @@ print(max_bottles_drunk(n, e))  # Output: 19
 ---
 
 **Problem Statement 8:**
+
 All natural numbers starting from 1 are written in order in a single infinite line as "123456789101112131415..." Write a function `find_digit(n)`to find the `n`th digit in this sequence of natural numbers.
 
 ```python
