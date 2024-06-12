@@ -34,6 +34,14 @@ print("Your age is", age)
 - `or` (Logical OR)
 - `not` (Logical NOT)
 
+#### Relational Operators:
+- `>` (greater than)
+- `>=` (greater than or equal to)
+- `<` (less than)
+- `<=` (less than or equal to)
+- `==` (equal to) [*Note*: `=` is used for assignment, `==` is used for comparison]
+- '!=' (not equal to)
+
 ### Examples:
 
 #### Arithmetic Operators:
@@ -122,7 +130,7 @@ logical_not = not (num1 > 0)  # Output: False
 
 3. **Problem 3: Calculate Area of a Circle**
 
-    Fill in the code to calculate the area of a circle. Use the given variable `radius` and print the area. Use `math.pi` for the value of \( \pi \).
+    Fill in the code to calculate the area of a circle. Use the given variable `radius` and print the area. Use `math.pi` for the value of pi.
 
     ```python
     import math
@@ -153,6 +161,8 @@ logical_not = not (num1 > 0)  # Output: False
     print("Compound interest:", compound_interest)
     ```
 
+### Additional Exercise Problems:
+
 5. **Problem 5: Check if a Number is Positive or Negative**
 
     Fill in the code to check if a number is positive, negative, or zero. Use the given variable `number` and print the result.
@@ -170,4 +180,82 @@ logical_not = not (num1 > 0)  # Output: False
         print(f"{number} is negative.")
     else:
         print(f"{number} is zero.")
+    ```
+
+6. **Problem 6: Coin change calculator**
+
+    Calculate the minimum number of coins of each denomination needed to have at least X cents (quarters: 25 cents, dimes: 10 cents, nickels: 5 cents, and pennies: 1 cent)
+
+    ```python
+    X = float(input("Enter change value in cents: "))
+
+    # Check how many minimum coins of each denomination is needed individually to make the change
+    quarters =  # Fill in the code here
+    dimes =  # Fill in the code here
+    nickels =  # Fill in the code here
+    pennies =  # Fill in the code here
+
+
+    print(f"Minimum quarters needed for {X} cents: {quarters}")
+    print(f"Minimum dimes needed for {X} cents: {dimes}")
+    print(f"Minimum nickels needed for {X} cents: {nickels}")
+    print(f"Minimum pennies needed for {X} cents: {pennies}")
+
+7. **Problem 7: Calculate the letter grade for given marks**
+
+    Calculate the letter grade for a given percentage of marks. The grading system is as follows:
+    - A: 80-100
+    - A-: 72-79
+    - B: 64-71
+    - B-: 56-63
+    - C: 48-55
+    - D: 40-47
+    - E: 30-39
+    - F: 0-29
+
+    ```python
+    marks = float(input("Enter the percentage of marks: "))
+    grade = ""
+
+    # Calculate the letter grade based on the marks, replace the ... with appropriate conditions
+    if ...:
+        grade = "A"
+    elif ...:
+        grade = "A-"
+    elif ...:
+        grade = "B"
+    elif ...:
+        grade = "B-"
+    elif ...:
+        grade = "C"
+    elif ...:
+        grade = "D"
+    elif ...:
+        grade = "E"
+    elif ...:
+        grade = "F"
+    else:
+        grade = "Invalid"
+
+    if grade != "Invalid":
+        print(f"Grade for {marks}%: {grade}")
+    else:
+        print("Invalid percentage entered.")
+    ```
+
+8. **Problem 8: Swap three numbers**
+
+    Swap the values of three variables `a`, `b`, and `c` to `b`, `c`, and `a` respectively. For example, if initially a = 11, b = 21, c = 31, after swapping, a = 21, b = 31, c = 11 must hold.
+
+    **Hint**: You can use temporary variables to store the values during swapping.
+
+
+    ```python
+    a = input("Enter the first number: ")
+    b = input("Enter the second number: ")
+    c = input("Enter the third number: ")
+
+    # Write the code to swap the values of a, b, and c
+
+    print(f"After swapping, a = {a}, b = {b}, c = {c}")
     ```

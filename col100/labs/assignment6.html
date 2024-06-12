@@ -365,271 +365,389 @@ code {
           : 'default'
     });
   </script>
-<h1 id="lab-6-introduction-to-lists-tuples-and-strings">Lab 6: Introduction to Lists, Tuples, and Strings</h1>
-<h2 id="lists">Lists</h2>
-<p>A list is a collection of items that are ordered, can be indexed, and are mutable. Lists are written with square brackets <code>[]</code>.</p>
-<h3 id="creating-lists">Creating Lists</h3>
-<p>You can create a list by placing all the items (elements) inside square brackets, separated by commas.</p>
-<pre class="hljs"><code><div><span class="hljs-comment"># Creating a list</span>
-fruits = [<span class="hljs-string">'apple'</span>, <span class="hljs-string">'banana'</span>, <span class="hljs-string">'cherry'</span>]
-print(fruits)  <span class="hljs-comment"># Output: ['apple', 'banana', 'cherry']</span>
+<h1 id="lab-6-abstract-data-types-stacks-queues-and-dictionaries">Lab 6: Abstract Data Types: Stacks, Queues and Dictionaries</h1>
+<h2 id="stack">Stack</h2>
+<p>A stack is a data abstraction that follows the Last In, First Out (LIFO) principle. In a stack, elements are added and removed from the same end, known as the top of the stack. You can imagine a stack to be a list which only has the functions <code>append(item)</code>, <code>pop()</code> and can only access the last index of the list.
+In a stack, the <code>push(item)</code> function adds an element to the top of the stack analogous to <code>append(item)</code> in list, while the <code>pop()</code> function removes and returns the top element of the stack (if the stack is not empty). To check if the stack is empty, you can use the <code>is_empty()</code> function similar to checking <code>len(lst) == 0</code> for a list <code>lst</code>. Here, the top element of the stack is analogous to the last element of a list.</p>
+<p>Python does not have a default stack implementation. We implement our own stack class using lists. You can use this to solve the problems below. Feel free to skip understanding the implementation of the stack class and directly use the stack class wherever required.</p>
+<pre class="hljs"><code><div><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Stack</span>:</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self)</span>:</span>
+        self.stack = []
 
-<span class="hljs-comment"># Creating an empty list</span>
-empty_list = []
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">push</span><span class="hljs-params">(self, item)</span>:</span>
+        self.stack.append(item)
 
-<span class="hljs-comment"># Creating a list with different data types</span>
-mixed_list = [<span class="hljs-number">10</span>, <span class="hljs-string">'hello'</span>, <span class="hljs-literal">True</span>, <span class="hljs-number">3.14</span>]
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">pop</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-keyword">if</span> len(self.stack) == <span class="hljs-number">0</span>:
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>
+        <span class="hljs-keyword">return</span> self.stack.pop()
 
-<span class="hljs-comment"># Nested lists</span>
-nested_list = [[<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>], [<span class="hljs-string">'a'</span>, <span class="hljs-string">'b'</span>, <span class="hljs-string">'c'</span>]]
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">is_empty</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-keyword">return</span> len(self.stack) == <span class="hljs-number">0</span>
 
-<span class="hljs-comment"># List with repeated elements</span>
-repeated_list = [<span class="hljs-number">1</span>] * <span class="hljs-number">5</span>     <span class="hljs-comment"># same as repeated_list = [1, 1, 1, 1, 1]</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">peek</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-keyword">if</span> len(self.stack) == <span class="hljs-number">0</span>:
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>
+        <span class="hljs-keyword">return</span> self.stack[<span class="hljs-number">-1</span>]
 
-<span class="hljs-comment">#Nested list with repeated elements</span>
-nested_repeated_list = [[<span class="hljs-number">0</span>] * <span class="hljs-number">3</span>] * <span class="hljs-number">4</span>    <span class="hljs-comment"># Same as nested_repeated_list = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]</span>
+<span class="hljs-comment"># Do not worry about the implementation of the Stack class above, you can copy the Stack class code as it is and use it to solve the problems below.</span>
+</div></code></pre>
+<p>The stack class above has the following methods:</p>
+<ol>
+<li><code>push(item)</code>: Adds an element to the top of the stack.</li>
+<li><code>peek()</code>: Returns the top element of the stack without removing it.</li>
+<li><code>pop()</code>: Removes and returns the top element of the stack. Returns <code>None</code> if the stack is empty.</li>
+<li><code>is_empty()</code>: Returns <code>True</code> if the stack is empty, <code>False</code> otherwise.</li>
+</ol>
+<p>Example usage of the stack class:</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Create a stack</span>
+stack = Stack() <span class="hljs-comment"># Current stack: []</span>
 
-<span class="hljs-comment"># List with range of numbers</span>
-numbers = list(range(<span class="hljs-number">1</span>, <span class="hljs-number">6</span>))  <span class="hljs-comment"># Output: [1, 2, 3, 4, 5]</span>
-</div></code></pre>
-<h3 id="length-of-list">Length of list</h3>
-<p>You can find the length of a list using the len() function.</p>
-<pre class="hljs"><code><div><span class="hljs-comment"># Length of list</span>
-print(len(fruits))  <span class="hljs-comment"># Output: 3</span>
-</div></code></pre>
-<h3 id="accessing-list-elements">Accessing List Elements</h3>
-<p>You can access the elements of a list by indexing. The index starts at 0. You can also access elements in nested lists as shown below. <br>
-You can also use negative indexing to access elements from the end of the list. The last element has an index of -1.</p>
-<pre class="hljs"><code><div><span class="hljs-comment"># Accessing elements</span>
-print(fruits[<span class="hljs-number">0</span>])  <span class="hljs-comment"># Output: apple</span>
-print(fruits[<span class="hljs-number">1</span>])  <span class="hljs-comment"># Output: banana</span>
+stack.push(<span class="hljs-number">1</span>) <span class="hljs-comment"># Current stack: [1]</span>
+stack.push(<span class="hljs-number">2</span>) <span class="hljs-comment"># Current stack: [1, 2]</span>
+stack.push(<span class="hljs-number">3</span>) <span class="hljs-comment"># Current stack: [1, 2, 3]</span>
 
-<span class="hljs-comment"># Accessing elements in nested list</span>
-print(nested_list[<span class="hljs-number">0</span>][<span class="hljs-number">1</span>])  <span class="hljs-comment"># Output: 2</span>
-print(nested_list[<span class="hljs-number">1</span>][<span class="hljs-number">2</span>])  <span class="hljs-comment"># Output: c</span>
+print(stack.peek())  <span class="hljs-comment"># Output: 3 (Current stack: [1, 2, 3])</span>
+print(stack.pop())  <span class="hljs-comment"># Output: 3 (Current stack: [1, 2])</span>
 
-<span class="hljs-comment"># Accessing elements using negative indexing</span>
-print(fruits[<span class="hljs-number">-1</span>])  <span class="hljs-comment"># Output: cherry (last element)</span>
-print(fruits[<span class="hljs-number">-2</span>])  <span class="hljs-comment"># Output: banana (second last element)</span>
+stack.push(<span class="hljs-number">4</span>)  <span class="hljs-comment"># Current stack: [1, 2, 4]</span>
+
+print(stack.pop())  <span class="hljs-comment"># Output: 4 (Current stack: [1, 2])</span>
+print(stack.peek())  <span class="hljs-comment"># Output: 2 (Current stack: [1, 2])</span>
+print(stack.pop()) <span class="hljs-comment"># Output: 2 (Current stack: [1])</span>
+print(stack.pop()) <span class="hljs-comment"># Output: 1 (Current stack: [])</span>
+
+print(stack.is_empty()) <span class="hljs-comment"># Output: True</span>
+</div></code></pre>
+<h2 id="queue">Queue</h2>
+<p>A queue is a data abstraction that follows the First In, First Out (FIFO) principle. In a queue, elements are added at the rear end and removed from the front end. You can imagine a queue to be a list which only has the functions <code>insert(0, item)</code> and <code>pop()</code> and can only access the last index of the list.</p>
+<p>In a queue, the <code>enqueue(item)</code> function adds an element to the rear end of the queue analogous to <code>insert(0, item)</code> in list, while the <code>dequeue()</code> function removes and returns the front element of the queue (if the queue is not empty) analogous to <code>pop()</code> in list. To check if the queue is empty, you can use the <code>is_empty()</code> function similar to checking <code>len(lst) == 0</code> for a list <code>lst</code>.</p>
+<p>Python does not have a default queue implementation. We implement our own queue class using lists. You can use this to solve the problems below. Feel free to skip understanding the implementation of the queue class and directly use the queue class wherever required.</p>
+<p><strong>Optional Note:</strong> The queue class we have described from lists uses the <code>insert(0, item)</code> function to add an element to the queue which is an inefficient operation. This is because inserting an element at the beginning of a list has a time complexity of O(n) as all the elements need to be shifted to the right. Hence, we use <code>collections.deque</code> from the <code>collections</code> module to implement a queue in Python. <code>collections.deque</code> is a double-ended queue which supports adding and removing elements from both ends in O(1) time complexity. You can use <code>collections.deque</code> to implement a queue in Python.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">from</span> collections <span class="hljs-keyword">import</span> deque
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Queue</span>:</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self)</span>:</span>
+        self.queue = deque()
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">enqueue</span><span class="hljs-params">(self, item)</span>:</span>
+        <span class="hljs-comment"># Add an item to the end of the deque</span>
+        self.queue.append(item)
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">dequeue</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-comment"># Remove and return an item from the front of the deque</span>
+        <span class="hljs-keyword">if</span> self.is_empty():
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>
+        <span class="hljs-keyword">return</span> self.queue.popleft()
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">is_empty</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-comment"># Check if the deque is empty</span>
+        <span class="hljs-keyword">return</span> len(self.queue) == <span class="hljs-number">0</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">peek</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-comment"># Return the front item of the deque without removing it</span>
+        <span class="hljs-keyword">if</span> self.is_empty():
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>
+        <span class="hljs-keyword">return</span> self.queue[<span class="hljs-number">0</span>]
+
+<span class="hljs-comment"># Do not worry about the implementation of the Queue class above, you can copy the Queue class code as it is and use it to solve the problems below.</span>
 
 </div></code></pre>
-<h3 id="modifying-list-elements">Modifying List Elements</h3>
-<p>Lists are mutable, meaning you can change their elements.</p>
-<pre class="hljs"><code><div><span class="hljs-comment"># Modifying elements</span>
-fruits = [<span class="hljs-string">'apple'</span>, <span class="hljs-string">'banana'</span>, <span class="hljs-string">'cherry'</span>]
-fruits[<span class="hljs-number">1</span>] = <span class="hljs-string">'blueberry'</span>
-print(fruits)  <span class="hljs-comment"># Output: ['apple', 'blueberry', 'cherry']</span>
-</div></code></pre>
-<h3 id="adding-elements-to-a-list">Adding Elements to a List</h3>
-<h4 id="append"><code>append()</code></h4>
-<p>Adds a single element to the end of the list.</p>
-<pre class="hljs"><code><div>fruits = [<span class="hljs-string">'apple'</span>, <span class="hljs-string">'banana'</span>, <span class="hljs-string">'cherry'</span>]
-fruits.append(<span class="hljs-string">'date'</span>)
-print(fruits)  <span class="hljs-comment"># Output: ['apple', 'banana', 'cherry', 'date']</span>
-</div></code></pre>
-<h4 id="insert"><code>insert()</code></h4>
-<p>Inserts an element at a specified position.</p>
-<pre class="hljs"><code><div>fruits = [<span class="hljs-string">'apple'</span>, <span class="hljs-string">'banana'</span>, <span class="hljs-string">'cherry'</span>]
-fruits.insert(<span class="hljs-number">1</span>, <span class="hljs-string">'blueberry'</span>)
-print(fruits)  <span class="hljs-comment"># Output: ['apple', 'blueberry', 'banana', 'cherry']</span>
-</div></code></pre>
-<h3 id="removing-elements-from-a-list">Removing Elements from a List</h3>
-<h4 id="remove"><code>remove()</code></h4>
-<p>Removes the first occurrence of a specified element.</p>
-<pre class="hljs"><code><div>fruits = [<span class="hljs-string">'apple'</span>, <span class="hljs-string">'banana'</span>, <span class="hljs-string">'cherry'</span>]
-fruits.remove(<span class="hljs-string">'banana'</span>)
-print(fruits)  <span class="hljs-comment"># Output: ['apple', 'cherry']</span>
-</div></code></pre>
-<h4 id="pop"><code>pop()</code></h4>
-<p>Removes and returns the element at a specified position. If no index is specified, it removes and returns the last element.</p>
-<pre class="hljs"><code><div>fruits = [<span class="hljs-string">'apple'</span>, <span class="hljs-string">'banana'</span>, <span class="hljs-string">'cherry'</span>]
-fruits.pop()
-print(fruits)  <span class="hljs-comment"># Output: ['apple', 'banana']</span>
+<p>The queue class above has the following methods:</p>
+<ol>
+<li><code>enqueue(item)</code>: Adds an element to the rear end of the queue.</li>
+<li><code>peek()</code>: Returns the front element of the queue without removing it.</li>
+<li><code>dequeue()</code>: Removes and returns the front element of the queue. Returns <code>None</code> if the queue is empty.</li>
+<li><code>is_empty()</code>: Returns <code>True</code> if the queue is empty, <code>False</code> otherwise.</li>
+</ol>
+<p>Example usage of the queue class:</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Create a queue</span>
+queue = Queue() <span class="hljs-comment"># Current queue: []</span>
+queue.enqueue(<span class="hljs-number">1</span>) <span class="hljs-comment"># Current queue: [1]</span>
+queue.enqueue(<span class="hljs-number">2</span>) <span class="hljs-comment"># Current queue: [2, 1]</span>
+queue.enqueue(<span class="hljs-number">3</span>) <span class="hljs-comment"># Current queue: [3, 2, 1]</span>
 
-fruits.pop(<span class="hljs-number">0</span>)
-print(fruits)  <span class="hljs-comment"># Output: ['banana']</span>
-</div></code></pre>
-<h3 id="combining-and-extending-lists">Combining and Extending Lists</h3>
-<h4 id="concatenation">Concatenation</h4>
-<p>You can concatenate lists using the <code>+</code> operator.</p>
-<pre class="hljs"><code><div>fruits = [<span class="hljs-string">'apple'</span>, <span class="hljs-string">'banana'</span>]
-more_fruits = [<span class="hljs-string">'cherry'</span>, <span class="hljs-string">'date'</span>]
-combined_fruits = fruits + more_fruits
-print(combined_fruits)  <span class="hljs-comment"># Output: ['apple', 'banana', 'cherry', 'date']</span>
-</div></code></pre>
-<h4 id="extend"><code>extend()</code></h4>
-<p>Adds all elements of an iterable to the end of the list.</p>
-<pre class="hljs"><code><div>fruits = [<span class="hljs-string">'apple'</span>, <span class="hljs-string">'banana'</span>]
-more_fruits = [<span class="hljs-string">'cherry'</span>, <span class="hljs-string">'date'</span>]
-fruits.extend(more_fruits) <span class="hljs-comment"># Equivalent to fruits = fruits + more_fruits</span>
-print(fruits)  <span class="hljs-comment"># Output: ['apple', 'banana', 'cherry', 'date']</span>
-</div></code></pre>
-<h3 id="sorting-lists">Sorting Lists</h3>
-<h4 id="sorted"><code>sorted()</code></h4>
-<p>Returns a new sorted list from the elements of any iterable.</p>
-<pre class="hljs"><code><div>fruits = [<span class="hljs-string">'banana'</span>, <span class="hljs-string">'apple'</span>, <span class="hljs-string">'cherry'</span>]
-sorted_fruits = sorted(fruits)
-print(sorted_fruits)  <span class="hljs-comment"># Output: ['apple', 'banana', 'cherry']</span>
-print(fruits)  <span class="hljs-comment"># Output: ['banana', 'apple', 'cherry']</span>
-</div></code></pre>
-<h4 id="sort"><code>sort()</code></h4>
-<p>Sorts the list in place.</p>
-<pre class="hljs"><code><div>fruits = [<span class="hljs-string">'banana'</span>, <span class="hljs-string">'apple'</span>, <span class="hljs-string">'cherry'</span>]
-fruits.sort()
-print(fruits)  <span class="hljs-comment"># Output: ['apple', 'banana', 'cherry']</span>
-</div></code></pre>
-<h3 id="copying-lists">Copying Lists</h3>
-<h4 id="copy"><code>copy()</code></h4>
-<p>Returns a shallow copy of the list.</p>
-<pre class="hljs"><code><div>fruits = [<span class="hljs-string">'apple'</span>, <span class="hljs-string">'banana'</span>, <span class="hljs-string">'cherry'</span>]
-fruits_copy = fruits.copy()
-print(fruits_copy)  <span class="hljs-comment"># Output: ['apple', 'banana', 'cherry']</span>
-</div></code></pre>
-<h3 id="slicing-lists">Slicing Lists</h3>
-<p>You can slice a list to get a subset of elements.</p>
-<pre class="hljs"><code><div>numbers = [<span class="hljs-number">4</span>, <span class="hljs-number">7</span>, <span class="hljs-number">8</span>, <span class="hljs-number">2</span>, <span class="hljs-number">6</span>, <span class="hljs-number">5</span>, <span class="hljs-number">1</span>]
-print(numbers[<span class="hljs-number">1</span>:<span class="hljs-number">3</span>])  <span class="hljs-comment"># Output: [7, 8]</span>
-print(numbers[:<span class="hljs-number">3</span>])  <span class="hljs-comment"># Output: [4, 7, 8]</span>
-print(numbers[<span class="hljs-number">3</span>:])  <span class="hljs-comment"># Output: [2, 6, 5, 1]</span>
-print(numbers[:])  <span class="hljs-comment"># Output: [4, 7, 8, 2, 6, 5, 1]</span>
+print(queue.peek())  <span class="hljs-comment"># Output: 1 (Current queue: [3, 2, 1])</span>
+print(queue.dequeue())  <span class="hljs-comment"># Output: 1 (Current queue: [3, 2])</span>
 
-<span class="hljs-comment">#We can also use the slicing syntax start:stop:step to get elements at a specific step size from start/end</span>
-print(numbers[<span class="hljs-number">1</span>:<span class="hljs-number">6</span>:<span class="hljs-number">2</span>])  <span class="hljs-comment"># Output: [7, 2, 5] </span>
-print(numbers[::<span class="hljs-number">2</span>])  <span class="hljs-comment"># Output: [4, 8, 6, 1] (prints the list starting at index 2 with step size 2)</span>
-print(numbers[::<span class="hljs-number">-1</span>])  <span class="hljs-comment"># Output: [1, 5, 6, 2, 8, 7, 4] (prints the reverse of the list)</span>
-print(numbers[<span class="hljs-number">5</span>:<span class="hljs-number">1</span>:<span class="hljs-number">-1</span>])  <span class="hljs-comment"># Output: [5, 6, 2, 8] (reverses the list from index 5 to 1)</span>
-print(numbers[<span class="hljs-number">6</span>:<span class="hljs-number">0</span>:<span class="hljs-number">-2</span>]) <span class="hljs-comment"># Output: [1, 6, 8] (reverses the list from index 6 to 0 with step size 2)</span>
-print(numbers[<span class="hljs-number">6</span>:<span class="hljs-number">-1</span>:<span class="hljs-number">-2</span>]) <span class="hljs-comment"># Output: [] (indices are out of bounds)</span>
-print(numbers[<span class="hljs-number">6</span>::<span class="hljs-number">-2</span>]) <span class="hljs-comment"># Output: [1, 6, 8, 4] (reverses the list from index 6 to 0 with step size 2) </span>
+queue.enqueue(<span class="hljs-number">4</span>)  <span class="hljs-comment"># Current queue: [4, 3, 2]</span>
+
+print(queue.dequeue())  <span class="hljs-comment"># Output: 2 (Current queue: [4, 3])</span>
+print(queue.peek())  <span class="hljs-comment"># Output: 3 (Current queue: [4, 3])</span>
+print(queue.dequeue()) <span class="hljs-comment"># Output: 3 (Current queue: [4])</span>
+print(queue.dequeue()) <span class="hljs-comment"># Output: 4 (Current queue: [])</span>
+
+print(queue.is_empty()) <span class="hljs-comment"># Output: True</span>
+</div></code></pre>
+<h2 id="dictionary">Dictionary</h2>
+<p>A dictionary is a data structure that stores key-value pairs. It is an unordered collection of items where each item is stored as a key-value pair. Dictionaries are used to store data values like a map, which unlike other Data Types that hold only a single value as an element, a dictionary holds a key:value pair.</p>
+<p>In Python, dictionaries are defined within braces <code>{}</code> with</p>
+<ul>
+<li>Each item being a pair in the form <code>key:value</code></li>
+<li>The keys in a dictionary must be unique (cannot be duplicate) and immutable (Example: strings, numbers, tuples)</li>
+<li>The values in a dictionary can be of any data type</li>
+</ul>
+<p>The dictionary data structure has the following methods:</p>
+<ol>
+<li>
+<p><code>dict[key]</code> or <code>dict.get(key)</code>: Returns the value corresponding to the key in the dictionary. If the key is not present, it raises a <code>KeyError</code>.</p>
+</li>
+<li>
+<p><code>dict[key] = value</code>: Adds a new key-value pair to the dictionary. If the key is already present, it updates the value.</p>
+</li>
+<li>
+<p><code>dict.pop(key)</code> or <code>del dict[key]</code>: Removes the key-value pair corresponding to the key from the dictionary. If the key is not present, it raises a <code>KeyError</code>.</p>
+</li>
+<li>
+<p><code>key in dict</code>: Returns <code>True</code> if the key is present in the dictionary, <code>False</code> otherwise.</p>
+</li>
+<li>
+<p><code>dict.keys()</code>: Returns a view object that displays a list of all the keys in the dictionary.</p>
+</li>
+<li>
+<p><code>dict.values()</code>: Returns a view object that displays a list of all the values in the dictionary.</p>
+</li>
+<li>
+<p><code>dict.items()</code>: Returns a view object that displays a list of key-value pairs in the dictionary.</p>
+</li>
+</ol>
+<p>Example usage of dictionaries:</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Create an empty dictionary</span>
+student = {}
+
+<span class="hljs-comment"># Create a dictionary</span>
+student = {
+    <span class="hljs-string">'name'</span>: <span class="hljs-string">'Alice'</span>,
+    <span class="hljs-string">'age'</span>: <span class="hljs-number">20</span>,
+    <span class="hljs-string">'courses'</span>: [<span class="hljs-string">'Math'</span>, <span class="hljs-string">'Physics'</span>]
+}
+
+<span class="hljs-comment"># Access the value corresponding to the key 'name'</span>
+print(student[<span class="hljs-string">'name'</span>])  <span class="hljs-comment"># Output: Alice</span>
+
+<span class="hljs-comment"># Add a new key-value pair to the dictionary</span>
+student[<span class="hljs-string">'gender'</span>] = <span class="hljs-string">'Female'</span>    
+<span class="hljs-comment"># student: {'name': 'Alice', 'age': 20, 'courses': ['Math', 'Physics'], 'gender': 'Female'}</span>
+
+<span class="hljs-comment"># Update the value corresponding to the key 'age'</span>
+student[<span class="hljs-string">'age'</span>] = student[<span class="hljs-string">'age'</span>] + <span class="hljs-number">1</span>    
+<span class="hljs-comment"># student: {'name': 'Alice', 'age': 21, 'courses': ['Math', 'Physics'], 'gender': 'Female'}</span>
+
+<span class="hljs-comment"># Check if the key 'courses' is present in the dictionary</span>
+print(<span class="hljs-string">'courses'</span> <span class="hljs-keyword">in</span> student)  <span class="hljs-comment"># Output: True</span>
+
+<span class="hljs-comment"># Remove the key-value pair corresponding to the key 'gender'</span>
+student.pop(<span class="hljs-string">'gender'</span>)   
+<span class="hljs-comment"># student: {'name': 'Alice', 'age': 21, 'courses': ['Math', 'Physics']}</span>
+
+<span class="hljs-comment"># Print all the keys in the dictionary</span>
+print(list(student.keys()))  <span class="hljs-comment"># Output: ['name', 'age', 'courses']</span>
+
+<span class="hljs-comment"># Print all the values in the dictionary</span>
+print(list(student.values()))  <span class="hljs-comment"># Output: ['Alice', 21, ['Math', 'Physics']]</span>
+
+<span class="hljs-comment"># Print all the key-value pairs in the dictionary</span>
+print(list(student.items()))  <span class="hljs-comment"># Output: [('name', 'Alice'), ('age', 21), ('courses', ['Math', 'Physics'])]</span>
 </div></code></pre>
 <hr>
-<h2 id="tuples">Tuples</h2>
-<p>A tuple is a collection of items that are ordered and unchangeable. Tuples are written with round brackets <code>()</code>.</p>
-<h3 id="creating-tuples">Creating Tuples</h3>
-<p>You can create a tuple by placing all the items (elements) inside round brackets, separated by commas.</p>
-<pre class="hljs"><code><div><span class="hljs-comment"># Creating a tuple</span>
-colors = (<span class="hljs-string">'red'</span>, <span class="hljs-string">'green'</span>, <span class="hljs-string">'blue'</span>)
-print(colors)  <span class="hljs-comment"># Output: ('red', 'green', 'blue')</span>
-</div></code></pre>
-<h3 id="accessing-tuple-elements">Accessing Tuple Elements</h3>
-<p>You can access the elements of a tuple by indexing. The index starts at 0.</p>
-<pre class="hljs"><code><div><span class="hljs-comment"># Accessing elements</span>
-print(colors[<span class="hljs-number">0</span>])  <span class="hljs-comment"># Output: red</span>
-print(colors[<span class="hljs-number">1</span>])  <span class="hljs-comment"># Output: green</span>
-</div></code></pre>
-<h3 id="tuples-are-immutable">Tuples are Immutable</h3>
-<p>Once a tuple is created, you cannot change its elements.</p>
-<pre class="hljs"><code><div><span class="hljs-comment"># Trying to modify elements will raise an error</span>
-<span class="hljs-comment"># colors[1] = 'yellow'  # TypeError: 'tuple' object does not support item assignment</span>
-</div></code></pre>
-<h3 id="tuple-methods">Tuple Methods</h3>
-<p>Most of the methods between lists and tuples are similar. However, tuples have fewer methods compared to lists. Tuples do not have methods like <code>append()</code>, <code>insert()</code>, <code>remove()</code>, <code>pop()</code>, <code>extend()</code>, <code>sort()</code>, which attempt to modify the tuple as tuples are immutable.</p>
+<p>**Note: **Assume that all stack and queue operations are <code>O(1)</code> time complexity operations and the dictionary operations are also <code>O(1)</code> time complexity operations.</p>
+<h1 id="exercise-problems">Exercise Problems</h1>
 <hr>
-<h2 id="strings">Strings</h2>
-<p>A string is a sequence of characters enclosed in single, or double quote</p>
-<h3 id="creating-strings">Creating Strings</h3>
-<p>You can create a string by enclosing characters in quotes.</p>
-<pre class="hljs"><code><div><span class="hljs-comment"># Creating a string</span>
-text = <span class="hljs-string">"Hello, world!"</span>
-print(text)  <span class="hljs-comment"># Output: Hello, world!</span>
+<p><strong>Problem Statement 1: Check balanced parenthesis</strong>
+Given a string containing only parentheses <code>()</code>, square brackets <code>[]</code>, and curly braces <code>{}</code>, write a function <code>is_balanced(s)</code> that checks if the string <code>s</code> has balanced parentheses. A string has balanced parentheses if each opening parenthesis has a corresponding closing parenthesis and they are properly nested. The function should return <code>True</code> if the string has balanced parentheses, <code>False</code> otherwise.</p>
+<p><strong>Note: your algorithm should run in O(n) time complexity where n is the length of the string.</strong></p>
+<p><strong>Hint: use stacks</strong></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">is_balanced</span><span class="hljs-params">(s)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to check if the string has balanced parentheses</span>
+    <span class="hljs-comment"># Return True if the string has balanced parentheses, False otherwise</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">False</span>
 
-text = <span class="hljs-string">'Hello, world!'</span>
-print(text)  <span class="hljs-comment"># Output: Hello, world!</span>
-</div></code></pre>
-<h3 id="accessing-string-characters">Accessing String Characters</h3>
-<p>You can access the characters of a string by indexing. The index starts at 0.</p>
-<pre class="hljs"><code><div><span class="hljs-comment"># Accessing characters</span>
-print(text[<span class="hljs-number">0</span>])  <span class="hljs-comment"># Output: H</span>
-print(text[<span class="hljs-number">1</span>])  <span class="hljs-comment"># Output: e</span>
-</div></code></pre>
-<h3 id="string-methods">String Methods</h3>
-<p>Strings come with a variety of built-in methods.</p>
-<pre class="hljs"><code><div><span class="hljs-comment"># String methods</span>
-print(text.upper())  <span class="hljs-comment"># Output: HELLO, WORLD!</span>
-print(text.lower())  <span class="hljs-comment"># Output: hello, world!</span>
-print(text.replace(<span class="hljs-string">'world'</span>, <span class="hljs-string">'Python'</span>))  <span class="hljs-comment"># Output: Hello, Python!</span>
-print(text.split(<span class="hljs-string">','</span>))  <span class="hljs-comment"># Output: ['Hello', ' world!']</span>
-print(text.startswith(<span class="hljs-string">'Hel'</span>))  <span class="hljs-comment"># Output: True</span>
-print(text.endswith(<span class="hljs-string">'world!'</span>))  <span class="hljs-comment"># Output: True</span>
-print(len(text))  <span class="hljs-comment"># Output: 13</span>
+<span class="hljs-comment"># Test cases</span>
+<span class="hljs-comment"># Example 1</span>
+s = <span class="hljs-string">"([])[]({})"</span>
+print(is_balanced(s))  <span class="hljs-comment"># Output: True</span>
 
-</div></code></pre>
-<h3 id="string-concatenation">String Concatenation</h3>
-<p>You can concatenate strings using the <code>+</code> operator.</p>
-<pre class="hljs"><code><div><span class="hljs-comment"># Concatenating strings</span>
-greeting = <span class="hljs-string">"Hello"</span>
-name = <span class="hljs-string">"Alice"</span>
-message = greeting + <span class="hljs-string">", "</span> + name + <span class="hljs-string">"!"</span>
-print(message)  <span class="hljs-comment"># Output: Hello, Alice!</span>
+<span class="hljs-comment"># Example 2</span>
+s = <span class="hljs-string">"([)]"</span>
+print(is_balanced(s))  <span class="hljs-comment"># Output: False</span>
 </div></code></pre>
 <hr>
-<h2 id="interconversion-between-lists-tuples-and-strings">Interconversion between Lists, Tuples, and Strings</h2>
-<p>The datatypes are easily interconvertible in Python. Given any iterable <code>x</code>, you can convert it to a list using <code>list(x)</code>, to a tuple using <code>tuple(x)</code>. The simplest way to make a string is to iterate over the elements of x and add it to a string</p>
-<pre class="hljs"><code><div>x = [<span class="hljs-string">'ab'</span>, <span class="hljs-string">'c'</span>, <span class="hljs-string">'def'</span>, <span class="hljs-number">4</span>, <span class="hljs-number">2</span>]
-string_x = <span class="hljs-string">""</span>
-<span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> x:
-    string_x += str(i)
-print(string_x)  <span class="hljs-comment"># Output: 'abcdef42'</span>
+<p><strong>Problem Statement 2: Remove duplicate characters</strong>
+Given a string <code>s</code>, write a function <code>remove_duplicates(s)</code> that repeatedly performs the following operation until no adjacent duplicate characters are left in the string:</p>
+<ul>
+<li>Remove the leftmost adjacent pair of duplicate characters.</li>
+</ul>
+<p>The function should return the final string after removing all the adjacent duplicate characters.</p>
+<p><strong>Note: your algorithm should run in O(n) time complexity where n is the length of the string.</strong></p>
+<p><strong>Hint: use stacks</strong></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">remove_duplicates</span><span class="hljs-params">(s)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to remove the adjacent duplicate characters</span>
+    <span class="hljs-comment"># Return the final string after removing all the adjacent duplicate characters</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-string">""</span>
+
+<span class="hljs-comment"># Test cases</span>
+<span class="hljs-comment"># Example 1</span>
+s = <span class="hljs-string">"abbaca"</span>
+print(remove_duplicates(s))  <span class="hljs-comment"># Output: "ca"</span>
 </div></code></pre>
 <hr>
-<h1 id="exercise-problems">Exercise Problems:</h1>
-<p><strong>Problem Statement 1: Matrix Multiplication</strong></p>
-<p>You are given two matrices <code>A</code> and <code>B</code> of dimensions <code>m x n</code> and <code>n x p</code> respectively. Write a function <code>matrix_multiplication(A, B)</code> that returns the product of the two matrices. The product matrix will have dimensions <code>m x p</code>. The matrices are represented as lists of lists. You can assume that the dimensions of the input matrices are such that the multiplication is possible.</p>
-<p><strong>Hint:</strong> you can get the size of a matrix <code>A</code> using <code>len(A)</code> and <code>len(A[0])</code> to get the number of rows and columns respectively.</p>
-<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">matrix_multiplication</span><span class="hljs-params">(A, B)</span>:</span>
-    <span class="hljs-string">"""
-    Multiply two matrices A and B and return the result.
-    
-    Parameters:
-    A (list of list of int/float): The first matrix with dimensions m x n.
-    B (list of list of int/float): The second matrix with dimensions n x p.
-    
-    Returns:
-    list of list of int/float: The product matrix with dimensions m x p.
+<p><strong>Problem Statement 3: Merge 2 queues</strong>
+Given two queues <code>queue1</code> and <code>queue2</code>, such that <code>queue1</code> is filled with integers in non-decreasing order and <code>queue2</code> is filled with integers in non-decreasing order. Write a function <code>merge_queues(queue1, queue2)</code> that merges the two queues into a single queue such that the resulting queue is filled with integers in non-decreasing order.
+A queue being filled in non-decreasing order means that elements were added to the queue in non-decreasing order and hence, the front element of the queue is the smallest element in the queue.</p>
+<p><strong>Note: your algorithm should run in O(n) time complexity where n is the total number of elements in both the queues.</strong></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">merge_queues</span><span class="hljs-params">(queue1, queue2)</span>:</span>
+    final_queue = Queue()
 
-    Example:
-    # Each inner list in the matrix represents a row.
-    A = [[1, 2, 3], [4, 5, 6]]
-    B = [[7, 8], [9, 10], [11, 12]]
-    print(matrix_multiplication(A, B))  # Output: [[58, 64], [139, 154], [220, 244]]
-    """</span>
+    <span class="hljs-comment"># Fill in the code to merge the two queues into a single queue</span>
+    <span class="hljs-comment"># Return the resulting queue filled with integers in non-decreasing order</span>
 
+    <span class="hljs-keyword">return</span> final_queue
 
+<span class="hljs-comment"># Test cases</span>
+<span class="hljs-comment"># Example 1</span>
+queue1 = Queue()
+queue1.enqueue(<span class="hljs-number">1</span>)
+queue1.enqueue(<span class="hljs-number">3</span>)
+queue1.enqueue(<span class="hljs-number">5</span>)
 
-    <span class="hljs-comment"># Fill in the code to multiply the matrices A and B here</span>
-    <span class="hljs-keyword">pass</span>
+queue2 = Queue()
+queue2.enqueue(<span class="hljs-number">2</span>)
+queue2.enqueue(<span class="hljs-number">4</span>)
+queue2.enqueue(<span class="hljs-number">4</span>)
+
+final_queue = merge_queues(queue1, queue2)
+<span class="hljs-keyword">while</span> <span class="hljs-keyword">not</span> final_queue.is_empty():
+    print(final_queue.dequeue(), end=<span class="hljs-string">" "</span>)  <span class="hljs-comment"># Output: 1 2 3 4 4 5</span>
 </div></code></pre>
 <hr>
-<p><strong>Problem Statement 2: Flattening a Nested List</strong></p>
-<p>You are given a nested list of integers. Write a function <code>flatten_list(nested_list)</code> that flattens the nested list into a single list by removing the nesting. Your task is to implement the function <code>flatten_list(nested_list)</code> that takes a nested list as input and returns a single flattened list.</p>
-<p><strong>Hint:</strong> think of recursion.</p>
-<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">flatten_list</span><span class="hljs-params">(nested_list)</span>:</span>
-    <span class="hljs-string">"""
-    Flatten a nested list into a single list.
-    Example Input: [1, [2, [3, 4], 5], 6, [7, 8, [9, 10]]]
-    Example Output: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    """</span>
+<p><strong>Problem Statement 4: Pairs with difference k</strong>
+Given a list of integers <code>nums</code> and an integer <code>k</code>, write a function <code>pairs_with_difference_k(nums, k)</code> that returns the number of pairs of numbers in the list <code>nums</code> that have an absolute difference of <code>k</code>. Assume the pairs are unordered i.e. <code>(nums[i], nums[j])</code> is the same as <code>(nums[j], nums[i])</code>.</p>
+<p><strong>Note: your algorithm should run in O(n) time complexity where n is the length of the list <code>nums</code>. Note that sorting algorithms in general are O(nlogn) in time complexity and hence, can't be used here</strong></p>
+<p><strong>Hint: use dictionaries</strong></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">pairs_with_difference_k</span><span class="hljs-params">(nums, k)</span>:</span>
+    count = <span class="hljs-number">0</span>
+    <span class="hljs-comment"># Fill in the code to find the number of pairs of numbers in the list nums that have an absolute difference of k</span>
+    <span class="hljs-comment"># Return the number of pairs</span>
 
-    <span class="hljs-comment"># Fill in the code to flatten the nested list here, the function should return a single list</span>
-    <span class="hljs-keyword">pass</span>
+    <span class="hljs-keyword">return</span> count
+
+<span class="hljs-comment"># Test cases</span>
+<span class="hljs-comment"># Example 1</span>
+nums = [ <span class="hljs-number">3</span>, <span class="hljs-number">3</span>, <span class="hljs-number">3</span>, <span class="hljs-number">3</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">2</span>, <span class="hljs-number">4</span>, <span class="hljs-number">4</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>, <span class="hljs-number">5</span>, <span class="hljs-number">5</span>, <span class="hljs-number">5</span>]
+k = <span class="hljs-number">2</span>
+print(pairs_with_difference_k(nums, k))  <span class="hljs-comment"># Output: 34</span>
+
 </div></code></pre>
 <hr>
-<p><strong>Problem Statement 3: Counting Vowels and Consonants in a String</strong></p>
-<p>Write a function <code>count_vowels_consonants(text)</code> that takes a string <code>text</code> as input and returns a tuple containing the count of vowels and consonants in the text. The function should ignore case(treat uppercase and lowercase characters identically) and consider only alphabets as vowels/consonants. The tuple should contain the count of vowels followed by the count of consonants.</p>
-<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">count_vowels_consonants</span><span class="hljs-params">(text)</span>:</span>
-    <span class="hljs-string">"""
-    Count the number of vowels and consonants in a given text.
-    
-    Parameters:
-    text (str): A string containing alphabets.
-    
-    Returns:
-    tuple: A tuple (vowels, consonants) containing the count of vowels and consonants in the text.
-    """</span>
+<h1 id="additional-exercise-problems">Additional Exercise Problems</h1>
+<p><strong>Problem Statement 5: Number of monsters</strong>
+We have a battlefield where monsters are fighting. At each time step <code>i</code> where <code>0 &lt;= i &lt; n</code>, a monster of strength <code>strength[i]</code> appears on the battlefield and kills all the monsters with strength less than <code>strength[i]</code> currently on the battlefield. The monster with strength <code>strength[i]</code> survives and remains on the battlefield but becomes dormant and will not kill any other monsters as future monsters arrive.
+Write a function <code>number_of_monsters(strength)</code> that takes a list <code>strength</code> as input and returns a list <code>result</code> where <code>result[i]</code> is the number of monsters remaining on the battlefield after the <code>i-th</code> time step.</p>
+<p><strong>Note: your algorithm should run in O(n) time complexity where n is the length of the list <code>strength</code>.</strong></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">number_of_monsters</span><span class="hljs-params">(strength)</span>:</span>
+    result = [<span class="hljs-number">0</span>]*len(strength)
+    <span class="hljs-comment"># Fill in the code to find the number of monsters remaining on the battlefield</span>
+    <span class="hljs-comment"># Return a list where result[i] is the number of monsters remaining after the i-th time step</span>
 
-    <span class="hljs-comment"># Change the code below to count the number of vowels and consonants in text</span>
-    vowels = <span class="hljs-number">0</span>, consonants = <span class="hljs-number">0</span>
-    <span class="hljs-keyword">return</span> (vowels, consonants)
+    <span class="hljs-keyword">return</span> result
+
+<span class="hljs-comment"># Test cases</span>
+<span class="hljs-comment"># Example 1</span>
+strength = [<span class="hljs-number">2</span>, <span class="hljs-number">4</span>, <span class="hljs-number">1</span>, <span class="hljs-number">3</span>, <span class="hljs-number">5</span>]
+print(number_of_monsters(strength))  <span class="hljs-comment"># Output: [1, 1, 2, 2, 1]</span>
+<span class="hljs-comment"># Explanation:</span>
+<span class="hljs-comment"># At time step 0, monster with strength 2 appears, 1 monster remains.</span>
+<span class="hljs-comment"># At time step 1, monster with strength 4 appears, kills the monster with strength 2, 1 monster remains.</span>
+<span class="hljs-comment"># At time step 2, monster with strength 1 appears, 2 monsters remain.</span>
+<span class="hljs-comment"># At time step 3, monster with strength 3 appears, kills the monster with strength 1, 2 monsters remain.</span>
+<span class="hljs-comment"># At time step 4, monster with strength 5 appears, kills the monsters with strength 3 and 4, 1 monster remains.</span>
+</div></code></pre>
+<hr>
+<p><strong>Problem Statement 6: TwoSum</strong>
+Given a list of integers <code>nums</code> and an integer <code>target</code>, write a function <code>two_sum(nums, target)</code> that returns the number of pairs of numbers in the list <code>nums</code> that sum up to the target. Assume the pairs are unordered i.e. <code>(nums[i], nums[j])</code> is the same as <code>(nums[j], nums[i])</code>.</p>
+<p><strong>Note: your algorithm should run in O(n) time complexity where n is the length of the list <code>nums</code>. Note that sorting algorithms in general are O(nlogn) in time complexity and hence, can't be used here</strong></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">two_sum</span><span class="hljs-params">(nums, target)</span>:</span>
+    count = <span class="hljs-number">0</span>
+    <span class="hljs-comment"># Fill in the code to find the number of pairs of numbers in the list nums that sum up to the target</span>
+    <span class="hljs-comment"># Return the number of pairs</span>
+
+    <span class="hljs-keyword">return</span> count
+
+<span class="hljs-comment"># Test cases</span>
+<span class="hljs-comment"># Example 1</span>
+nums = [<span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>, <span class="hljs-number">5</span>]
+target = <span class="hljs-number">6</span>
+print(two_sum(nums, target))  <span class="hljs-comment"># Output: 9</span>
+</div></code></pre>
+<hr>
+<p><strong>Problem Statement 7: Evaluate postfix expression</strong>
+Given a string <code>s</code> representing a postfix expression, write a function <code>evaluate_postfix(s)</code> that evaluates the postfix expression and returns the result. The postfix expression consists of integers and the operators <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>. The operators <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code> represent addition, subtraction, multiplication, and division respectively.</p>
+<p>A postfix expression is an expression in which the operators come after the operands. For example, the postfix expression <code>2 3 +</code> is equivalent to the infix expression <code>2 + 3</code>. Similarly, the postfix expression <code>2 3 4 + *</code> is equivalent to the infix expression <code>2 * (3 + 4)</code>.</p>
+<p><strong>Note: your algorithm should run in O(n) time complexity where n is the length of the string <code>s</code>.</strong></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">evaluate_postfix</span><span class="hljs-params">(s)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to evaluate the postfix expression</span>
+    <span class="hljs-comment"># Return the result</span>
+
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>
+
+<span class="hljs-comment"># Test cases</span>
+<span class="hljs-comment"># Example 1</span>
+s = <span class="hljs-string">"2 3 +"</span>
+print(evaluate_postfix(s))  <span class="hljs-comment"># Output: 5</span>
+
+s = <span class="hljs-string">"2 3 * 0 5 / +"</span>
+print(evaluate_postfix(s))  <span class="hljs-comment"># Output: 6</span>
+<span class="hljs-comment"># Explanation: </span>
+<span class="hljs-comment"># s = "2 3 * 0 5 / +" </span>
+<span class="hljs-comment"># s = "6 0 5 / +"</span>
+<span class="hljs-comment"># s = "6 0 +"</span>
+<span class="hljs-comment"># s = "6"</span>
+</div></code></pre>
+<hr>
+<p>** Problem Statement 8: Implement a stack using two queues**
+Given two queues <code>queue1</code> and <code>queue2</code>, write a function <code>Stack</code> that implements a stack using the two queues. The stack should support the following operations:</p>
+<ul>
+<li><code>push(item)</code>: Adds an element to the top of the stack.</li>
+<li><code>pop()</code>: Removes and returns the top element of the stack. Returns <code>None</code> if the stack is empty.</li>
+<li><code>is_empty()</code>: Returns <code>True</code> if the stack is empty, <code>False</code> otherwise.</li>
+</ul>
+<p>Complete the implementation of the class <code>QStack</code> below that implements a stack using two queues. You can use the <code>Queue</code> class described above to implement the stack.</p>
+<p><strong>Note: your algorithm should run in O(1) time complexity for the <code>push()</code> and <code>is_empty()</code> operations and O(n) time complexity for the <code>pop()</code> operation where n is the number of elements in the stack. Assume all operations for the queue are O(1). You cannot use any other data structures other than the 2 queues</strong></p>
+<pre class="hljs"><code><div><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">QStack</span>:</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self)</span>:</span>
+        self.queue1 = Queue()
+        self.queue2 = Queue()
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">push</span><span class="hljs-params">(self, item)</span>:</span>
+        <span class="hljs-comment"># Fill in the code to add an element to the top of the stack</span>
+        <span class="hljs-keyword">pass</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">pop</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-comment"># Fill in the code to remove and return the top element of the stack</span>
+        <span class="hljs-keyword">pass</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">is_empty</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-comment"># Fill in the code to check if the stack is empty</span>
+        <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Test cases</span>
+stack = QStack()
+stack.push(<span class="hljs-number">1</span>)
+stack.push(<span class="hljs-number">2</span>)
+stack.push(<span class="hljs-number">3</span>)
+
+print(stack.is_empty())  <span class="hljs-comment"># Output: False</span>
+
+print(stack.pop())  <span class="hljs-comment"># Output: 3</span>
+
+stack.push(<span class="hljs-number">4</span>)
+
+print(stack.pop())  <span class="hljs-comment"># Output: 4</span>
+print(stack.pop())  <span class="hljs-comment"># Output: 2</span>
+print(stack.pop())  <span class="hljs-comment"># Output: 1</span>
+print(stack.pop())  <span class="hljs-comment"># Output: None</span>
+
+print(stack.is_empty())  <span class="hljs-comment"># Output: True</span>
 </div></code></pre>
 
 </body>

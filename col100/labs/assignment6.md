@@ -1,388 +1,460 @@
-# Lab 6: Introduction to Lists, Tuples, and Strings
+# Lab 6: Abstract Data Types: Stacks, Queues and Dictionaries
 
-## Lists
+## Stack
 
-A list is a collection of items that are ordered, can be indexed, and are mutable. Lists are written with square brackets `[]`.
+A stack is a data abstraction that follows the Last In, First Out (LIFO) principle. In a stack, elements are added and removed from the same end, known as the top of the stack. You can imagine a stack to be a list which only has the functions `append(item)`, `pop()` and can only access the last index of the list. 
+In a stack, the `push(item)` function adds an element to the top of the stack analogous to `append(item)` in list, while the `pop()` function removes and returns the top element of the stack (if the stack is not empty). To check if the stack is empty, you can use the `is_empty()` function similar to checking `len(lst) == 0` for a list `lst`. Here, the top element of the stack is analogous to the last element of a list.
 
-### Creating Lists
-
-You can create a list by placing all the items (elements) inside square brackets, separated by commas.
-
-```python
-# Creating a list
-fruits = ['apple', 'banana', 'cherry']
-print(fruits)  # Output: ['apple', 'banana', 'cherry']
-
-# Creating an empty list
-empty_list = []
-
-# Creating a list with different data types
-mixed_list = [10, 'hello', True, 3.14]
-
-# Nested lists
-nested_list = [[1, 2, 3], ['a', 'b', 'c']]
-
-# List with repeated elements
-repeated_list = [1] * 5     # same as repeated_list = [1, 1, 1, 1, 1]
-
-#Nested list with repeated elements
-nested_repeated_list = [[0] * 3] * 4    # Same as nested_repeated_list = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
-
-# List with range of numbers
-numbers = list(range(1, 6))  # Output: [1, 2, 3, 4, 5]
-```
-### Length of list
-You can find the length of a list using the len() function.
+Python does not have a default stack implementation. We implement our own stack class using lists. You can use this to solve the problems below. Feel free to skip understanding the implementation of the stack class and directly use the stack class wherever required.
 
 ```python
-# Length of list
-print(len(fruits))  # Output: 3
+class Stack:
+    def __init__(self):
+        self.stack = []
+
+    def push(self, item):
+        self.stack.append(item)
+
+    def pop(self):
+        if len(self.stack) == 0:
+            return None
+        return self.stack.pop()
+
+    def is_empty(self):
+        return len(self.stack) == 0
+
+    def peek(self):
+        if len(self.stack) == 0:
+            return None
+        return self.stack[-1]
+
+# Do not worry about the implementation of the Stack class above, you can copy the Stack class code as it is and use it to solve the problems below.
 ```
 
-### Accessing List Elements
+The stack class above has the following methods:
+1. `push(item)`: Adds an element to the top of the stack.
+2. `peek()`: Returns the top element of the stack without removing it.
+3. `pop()`: Removes and returns the top element of the stack. Returns `None` if the stack is empty.
+4. `is_empty()`: Returns `True` if the stack is empty, `False` otherwise.
 
-You can access the elements of a list by indexing. The index starts at 0. You can also access elements in nested lists as shown below. <br>
-You can also use negative indexing to access elements from the end of the list. The last element has an index of -1.
-
+Example usage of the stack class:
 
 ```python
-# Accessing elements
-print(fruits[0])  # Output: apple
-print(fruits[1])  # Output: banana
+# Create a stack
+stack = Stack() # Current stack: []
 
-# Accessing elements in nested list
-print(nested_list[0][1])  # Output: 2
-print(nested_list[1][2])  # Output: c
+stack.push(1) # Current stack: [1]
+stack.push(2) # Current stack: [1, 2]
+stack.push(3) # Current stack: [1, 2, 3]
 
-# Accessing elements using negative indexing
-print(fruits[-1])  # Output: cherry (last element)
-print(fruits[-2])  # Output: banana (second last element)
+print(stack.peek())  # Output: 3 (Current stack: [1, 2, 3])
+print(stack.pop())  # Output: 3 (Current stack: [1, 2])
 
+stack.push(4)  # Current stack: [1, 2, 4]
+
+print(stack.pop())  # Output: 4 (Current stack: [1, 2])
+print(stack.peek())  # Output: 2 (Current stack: [1, 2])
+print(stack.pop()) # Output: 2 (Current stack: [1])
+print(stack.pop()) # Output: 1 (Current stack: [])
+
+print(stack.is_empty()) # Output: True
 ```
 
-### Modifying List Elements
+## Queue
 
-Lists are mutable, meaning you can change their elements.
+A queue is a data abstraction that follows the First In, First Out (FIFO) principle. In a queue, elements are added at the rear end and removed from the front end. You can imagine a queue to be a list which only has the functions `insert(0, item)` and `pop()` and can only access the last index of the list.
 
-```python
-# Modifying elements
-fruits = ['apple', 'banana', 'cherry']
-fruits[1] = 'blueberry'
-print(fruits)  # Output: ['apple', 'blueberry', 'cherry']
-```
+In a queue, the `enqueue(item)` function adds an element to the rear end of the queue analogous to `insert(0, item)` in list, while the `dequeue()` function removes and returns the front element of the queue (if the queue is not empty) analogous to `pop()` in list. To check if the queue is empty, you can use the `is_empty()` function similar to checking `len(lst) == 0` for a list `lst`.
 
-### Adding Elements to a List
+Python does not have a default queue implementation. We implement our own queue class using lists. You can use this to solve the problems below. Feel free to skip understanding the implementation of the queue class and directly use the queue class wherever required.
 
-#### `append()`
-
-Adds a single element to the end of the list.
+**Optional Note:** The queue class we have described from lists uses the `insert(0, item)` function to add an element to the queue which is an inefficient operation. This is because inserting an element at the beginning of a list has a time complexity of O(n) as all the elements need to be shifted to the right. Hence, we use `collections.deque` from the `collections` module to implement a queue in Python. `collections.deque` is a double-ended queue which supports adding and removing elements from both ends in O(1) time complexity. You can use `collections.deque` to implement a queue in Python.
 
 ```python
-fruits = ['apple', 'banana', 'cherry']
-fruits.append('date')
-print(fruits)  # Output: ['apple', 'banana', 'cherry', 'date']
-```
+from collections import deque
 
-#### `insert()`
+class Queue:
+    def __init__(self):
+        self.queue = deque()
 
-Inserts an element at a specified position.
+    def enqueue(self, item):
+        # Add an item to the end of the deque
+        self.queue.append(item)
 
-```python
-fruits = ['apple', 'banana', 'cherry']
-fruits.insert(1, 'blueberry')
-print(fruits)  # Output: ['apple', 'blueberry', 'banana', 'cherry']
-```
+    def dequeue(self):
+        # Remove and return an item from the front of the deque
+        if self.is_empty():
+            return None
+        return self.queue.popleft()
 
-### Removing Elements from a List
+    def is_empty(self):
+        # Check if the deque is empty
+        return len(self.queue) == 0
 
-#### `remove()`
+    def peek(self):
+        # Return the front item of the deque without removing it
+        if self.is_empty():
+            return None
+        return self.queue[0]
 
-Removes the first occurrence of a specified element.
-
-```python
-fruits = ['apple', 'banana', 'cherry']
-fruits.remove('banana')
-print(fruits)  # Output: ['apple', 'cherry']
-```
-
-#### `pop()`
-
-Removes and returns the element at a specified position. If no index is specified, it removes and returns the last element.
-
-```python
-fruits = ['apple', 'banana', 'cherry']
-fruits.pop()
-print(fruits)  # Output: ['apple', 'banana']
-
-fruits.pop(0)
-print(fruits)  # Output: ['banana']
-```
-
-### Combining and Extending Lists
-
-#### Concatenation
-
-You can concatenate lists using the `+` operator.
-
-```python
-fruits = ['apple', 'banana']
-more_fruits = ['cherry', 'date']
-combined_fruits = fruits + more_fruits
-print(combined_fruits)  # Output: ['apple', 'banana', 'cherry', 'date']
-```
-
-#### `extend()`
-
-Adds all elements of an iterable to the end of the list.
-
-```python
-fruits = ['apple', 'banana']
-more_fruits = ['cherry', 'date']
-fruits.extend(more_fruits) # Equivalent to fruits = fruits + more_fruits
-print(fruits)  # Output: ['apple', 'banana', 'cherry', 'date']
-```
-
-### Sorting Lists
-
-#### `sorted()`
-
-Returns a new sorted list from the elements of any iterable.
-
-```python
-fruits = ['banana', 'apple', 'cherry']
-sorted_fruits = sorted(fruits)
-print(sorted_fruits)  # Output: ['apple', 'banana', 'cherry']
-print(fruits)  # Output: ['banana', 'apple', 'cherry']
-```
-
-#### `sort()`
-
-Sorts the list in place.
-
-```python
-fruits = ['banana', 'apple', 'cherry']
-fruits.sort()
-print(fruits)  # Output: ['apple', 'banana', 'cherry']
-```
-
-### Copying Lists
-
-#### `copy()`
-
-Returns a shallow copy of the list.
-
-```python
-fruits = ['apple', 'banana', 'cherry']
-fruits_copy = fruits.copy()
-print(fruits_copy)  # Output: ['apple', 'banana', 'cherry']
-```
-
-### Slicing Lists
-
-You can slice a list to get a subset of elements.
-
-```python
-numbers = [4, 7, 8, 2, 6, 5, 1]
-print(numbers[1:3])  # Output: [7, 8]
-print(numbers[:3])  # Output: [4, 7, 8]
-print(numbers[3:])  # Output: [2, 6, 5, 1]
-print(numbers[:])  # Output: [4, 7, 8, 2, 6, 5, 1]
-
-#We can also use the slicing syntax start:stop:step to get elements at a specific step size from start/end
-print(numbers[1:6:2])  # Output: [7, 2, 5] 
-print(numbers[::2])  # Output: [4, 8, 6, 1] (prints the list starting at index 2 with step size 2)
-print(numbers[::-1])  # Output: [1, 5, 6, 2, 8, 7, 4] (prints the reverse of the list)
-print(numbers[5:1:-1])  # Output: [5, 6, 2, 8] (reverses the list from index 5 to 1)
-print(numbers[6:0:-2]) # Output: [1, 6, 8] (reverses the list from index 6 to 0 with step size 2)
-print(numbers[6:-1:-2]) # Output: [] (indices are out of bounds)
-print(numbers[6::-2]) # Output: [1, 6, 8, 4] (reverses the list from index 6 to 0 with step size 2) 
-```
----
-
-## Tuples
-
-A tuple is a collection of items that are ordered and unchangeable. Tuples are written with round brackets `()`.
-
-### Creating Tuples
-
-You can create a tuple by placing all the items (elements) inside round brackets, separated by commas.
-
-```python
-# Creating a tuple
-colors = ('red', 'green', 'blue')
-print(colors)  # Output: ('red', 'green', 'blue')
-```
-
-### Accessing Tuple Elements
-
-You can access the elements of a tuple by indexing. The index starts at 0.
-
-```python
-# Accessing elements
-print(colors[0])  # Output: red
-print(colors[1])  # Output: green
-```
-
-### Tuples are Immutable
-
-Once a tuple is created, you cannot change its elements.
-
-```python
-# Trying to modify elements will raise an error
-# colors[1] = 'yellow'  # TypeError: 'tuple' object does not support item assignment
-```
-
-### Tuple Methods
-
-Most of the methods between lists and tuples are similar. However, tuples have fewer methods compared to lists. Tuples do not have methods like `append()`, `insert()`, `remove()`, `pop()`, `extend()`, `sort()`, which attempt to modify the tuple as tuples are immutable.
-
----
-
-## Strings
-
-A string is a sequence of characters enclosed in single, or double quote
-
-### Creating Strings
-
-You can create a string by enclosing characters in quotes.
-
-```python
-# Creating a string
-text = "Hello, world!"
-print(text)  # Output: Hello, world!
-
-text = 'Hello, world!'
-print(text)  # Output: Hello, world!
-```
-
-### Accessing String Characters
-
-You can access the characters of a string by indexing. The index starts at 0.
-
-```python
-# Accessing characters
-print(text[0])  # Output: H
-print(text[1])  # Output: e
-```
-
-### String Methods
-
-Strings come with a variety of built-in methods.
-
-```python
-# String methods
-print(text.upper())  # Output: HELLO, WORLD!
-print(text.lower())  # Output: hello, world!
-print(text.replace('world', 'Python'))  # Output: Hello, Python!
-print(text.split(','))  # Output: ['Hello', ' world!']
-print(text.startswith('Hel'))  # Output: True
-print(text.endswith('world!'))  # Output: True
-print(len(text))  # Output: 13
+# Do not worry about the implementation of the Queue class above, you can copy the Queue class code as it is and use it to solve the problems below.
 
 ```
 
-### String Concatenation
+The queue class above has the following methods:
+1. `enqueue(item)`: Adds an element to the rear end of the queue.
+2. `peek()`: Returns the front element of the queue without removing it.
+3. `dequeue()`: Removes and returns the front element of the queue. Returns `None` if the queue is empty.
+4. `is_empty()`: Returns `True` if the queue is empty, `False` otherwise.
 
-You can concatenate strings using the `+` operator.
+Example usage of the queue class:
 
 ```python
-# Concatenating strings
-greeting = "Hello"
-name = "Alice"
-message = greeting + ", " + name + "!"
-print(message)  # Output: Hello, Alice!
+# Create a queue
+queue = Queue() # Current queue: []
+queue.enqueue(1) # Current queue: [1]
+queue.enqueue(2) # Current queue: [2, 1]
+queue.enqueue(3) # Current queue: [3, 2, 1]
+
+print(queue.peek())  # Output: 1 (Current queue: [3, 2, 1])
+print(queue.dequeue())  # Output: 1 (Current queue: [3, 2])
+
+queue.enqueue(4)  # Current queue: [4, 3, 2]
+
+print(queue.dequeue())  # Output: 2 (Current queue: [4, 3])
+print(queue.peek())  # Output: 3 (Current queue: [4, 3])
+print(queue.dequeue()) # Output: 3 (Current queue: [4])
+print(queue.dequeue()) # Output: 4 (Current queue: [])
+
+print(queue.is_empty()) # Output: True
+```
+
+## Dictionary
+
+A dictionary is a data structure that stores key-value pairs. It is an unordered collection of items where each item is stored as a key-value pair. Dictionaries are used to store data values like a map, which unlike other Data Types that hold only a single value as an element, a dictionary holds a key:value pair.
+
+In Python, dictionaries are defined within braces `{}` with
+- Each item being a pair in the form `key:value`
+- The keys in a dictionary must be unique (cannot be duplicate) and immutable (Example: strings, numbers, tuples)
+- The values in a dictionary can be of any data type
+
+The dictionary data structure has the following methods:
+1. `dict[key]` or `dict.get(key)`: Returns the value corresponding to the key in the dictionary. If the key is not present, it raises a `KeyError`.
+
+2. `dict[key] = value`: Adds a new key-value pair to the dictionary. If the key is already present, it updates the value.
+
+3. `dict.pop(key)` or `del dict[key]`: Removes the key-value pair corresponding to the key from the dictionary. If the key is not present, it raises a `KeyError`.
+
+4. `key in dict`: Returns `True` if the key is present in the dictionary, `False` otherwise.
+
+5. `dict.keys()`: Returns a view object that displays a list of all the keys in the dictionary.
+
+6. `dict.values()`: Returns a view object that displays a list of all the values in the dictionary.
+
+7. `dict.items()`: Returns a view object that displays a list of key-value pairs in the dictionary.
+
+Example usage of dictionaries:
+
+```python
+# Create an empty dictionary
+student = {}
+
+# Create a dictionary
+student = {
+    'name': 'Alice',
+    'age': 20,
+    'courses': ['Math', 'Physics']
+}
+
+# Access the value corresponding to the key 'name'
+print(student['name'])  # Output: Alice
+
+# Add a new key-value pair to the dictionary
+student['gender'] = 'Female'    
+# student: {'name': 'Alice', 'age': 20, 'courses': ['Math', 'Physics'], 'gender': 'Female'}
+
+# Update the value corresponding to the key 'age'
+student['age'] = student['age'] + 1    
+# student: {'name': 'Alice', 'age': 21, 'courses': ['Math', 'Physics'], 'gender': 'Female'}
+
+# Check if the key 'courses' is present in the dictionary
+print('courses' in student)  # Output: True
+
+# Remove the key-value pair corresponding to the key 'gender'
+student.pop('gender')   
+# student: {'name': 'Alice', 'age': 21, 'courses': ['Math', 'Physics']}
+
+# Print all the keys in the dictionary
+print(list(student.keys()))  # Output: ['name', 'age', 'courses']
+
+# Print all the values in the dictionary
+print(list(student.values()))  # Output: ['Alice', 21, ['Math', 'Physics']]
+
+# Print all the key-value pairs in the dictionary
+print(list(student.items()))  # Output: [('name', 'Alice'), ('age', 21), ('courses', ['Math', 'Physics'])]
 ```
 
 ---
 
-## Interconversion between Lists, Tuples, and Strings
+**Note: **Assume that all stack and queue operations are `O(1)` time complexity operations and the dictionary operations are also `O(1)` time complexity operations.
 
-The datatypes are easily interconvertible in Python. Given any iterable `x`, you can convert it to a list using `list(x)`, to a tuple using `tuple(x)`. The simplest way to make a string is to iterate over the elements of x and add it to a string
-    
+# Exercise Problems
+
+---
+**Problem Statement 1: Check balanced parenthesis**
+Given a string containing only parentheses `()`, square brackets `[]`, and curly braces `{}`, write a function `is_balanced(s)` that checks if the string `s` has balanced parentheses. A string has balanced parentheses if each opening parenthesis has a corresponding closing parenthesis and they are properly nested. The function should return `True` if the string has balanced parentheses, `False` otherwise.
+
+**Note: your algorithm should run in O(n) time complexity where n is the length of the string.**
+
+**Hint: use stacks**
+
 ```python
-x = ['ab', 'c', 'def', 4, 2]
-string_x = ""
-for i in x:
-    string_x += str(i)
-print(string_x)  # Output: 'abcdef42'
+def is_balanced(s):
+    # Fill in the code to check if the string has balanced parentheses
+    # Return True if the string has balanced parentheses, False otherwise
+    return False
+
+# Test cases
+# Example 1
+s = "([])[]({})"
+print(is_balanced(s))  # Output: True
+
+# Example 2
+s = "([)]"
+print(is_balanced(s))  # Output: False
 ```
 
 ---
 
-# Exercise Problems:
+**Problem Statement 2: Remove duplicate characters**
+Given a string `s`, write a function `remove_duplicates(s)` that repeatedly performs the following operation until no adjacent duplicate characters are left in the string:
 
-**Problem Statement 1: Matrix Multiplication**
+- Remove the leftmost adjacent pair of duplicate characters.
 
-You are given two matrices `A` and `B` of dimensions `m x n` and `n x p` respectively. Write a function `matrix_multiplication(A, B)` that returns the product of the two matrices. The product matrix will have dimensions `m x p`. The matrices are represented as lists of lists. You can assume that the dimensions of the input matrices are such that the multiplication is possible.
+The function should return the final string after removing all the adjacent duplicate characters.
 
-**Hint:** you can get the size of a matrix `A` using `len(A)` and `len(A[0])` to get the number of rows and columns respectively.
+**Note: your algorithm should run in O(n) time complexity where n is the length of the string.**
+
+**Hint: use stacks**
 
 ```python
-def matrix_multiplication(A, B):
-    """
-    Multiply two matrices A and B and return the result.
-    
-    Parameters:
-    A (list of list of int/float): The first matrix with dimensions m x n.
-    B (list of list of int/float): The second matrix with dimensions n x p.
-    
-    Returns:
-    list of list of int/float: The product matrix with dimensions m x p.
+def remove_duplicates(s):
+    # Fill in the code to remove the adjacent duplicate characters
+    # Return the final string after removing all the adjacent duplicate characters
+    return ""
 
-    Example:
-    # Each inner list in the matrix represents a row.
-    A = [[1, 2, 3], [4, 5, 6]]
-    B = [[7, 8], [9, 10], [11, 12]]
-    print(matrix_multiplication(A, B))  # Output: [[58, 64], [139, 154], [220, 244]]
-    """
+# Test cases
+# Example 1
+s = "abbaca"
+print(remove_duplicates(s))  # Output: "ca"
+```
 
 
+---
 
-    # Fill in the code to multiply the matrices A and B here
-    pass
+**Problem Statement 3: Merge 2 queues**
+Given two queues `queue1` and `queue2`, such that `queue1` is filled with integers in non-decreasing order and `queue2` is filled with integers in non-decreasing order. Write a function `merge_queues(queue1, queue2)` that merges the two queues into a single queue such that the resulting queue is filled with integers in non-decreasing order.
+A queue being filled in non-decreasing order means that elements were added to the queue in non-decreasing order and hence, the front element of the queue is the smallest element in the queue.
+
+**Note: your algorithm should run in O(n) time complexity where n is the total number of elements in both the queues.**
+
+```python
+def merge_queues(queue1, queue2):
+    final_queue = Queue()
+
+    # Fill in the code to merge the two queues into a single queue
+    # Return the resulting queue filled with integers in non-decreasing order
+
+    return final_queue
+
+# Test cases
+# Example 1
+queue1 = Queue()
+queue1.enqueue(1)
+queue1.enqueue(3)
+queue1.enqueue(5)
+
+queue2 = Queue()
+queue2.enqueue(2)
+queue2.enqueue(4)
+queue2.enqueue(4)
+
+final_queue = merge_queues(queue1, queue2)
+while not final_queue.is_empty():
+    print(final_queue.dequeue(), end=" ")  # Output: 1 2 3 4 4 5
 ```
 
 ---
 
-**Problem Statement 2: Flattening a Nested List**
+**Problem Statement 4: Pairs with difference k**
+Given a list of integers `nums` and an integer `k`, write a function `pairs_with_difference_k(nums, k)` that returns the number of pairs of numbers in the list `nums` that have an absolute difference of `k`. Assume the pairs are unordered i.e. `(nums[i], nums[j])` is the same as `(nums[j], nums[i])`.
 
-You are given a nested list of integers. Write a function `flatten_list(nested_list)` that flattens the nested list into a single list by removing the nesting. Your task is to implement the function `flatten_list(nested_list)` that takes a nested list as input and returns a single flattened list.
+**Note: your algorithm should run in O(n) time complexity where n is the length of the list `nums`. Note that sorting algorithms in general are O(nlogn) in time complexity and hence, can't be used here**
 
-**Hint:** think of recursion.
+**Hint: use dictionaries**
 
 ```python
-def flatten_list(nested_list):
-    """
-    Flatten a nested list into a single list.
-    Example Input: [1, [2, [3, 4], 5], 6, [7, 8, [9, 10]]]
-    Example Output: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    """
+def pairs_with_difference_k(nums, k):
+    count = 0
+    # Fill in the code to find the number of pairs of numbers in the list nums that have an absolute difference of k
+    # Return the number of pairs
 
-    # Fill in the code to flatten the nested list here, the function should return a single list
-    pass
+    return count
+
+# Test cases
+# Example 1
+nums = [ 3, 3, 3, 3, 1, 1, 1, 2, 2, 4, 4, 4, 5, 5, 5, 5]
+k = 2
+print(pairs_with_difference_k(nums, k))  # Output: 34
+
+```
+
+
+
+---
+
+# Additional Exercise Problems
+
+**Problem Statement 5: Number of monsters**
+We have a battlefield where monsters are fighting. At each time step `i` where `0 <= i < n`, a monster of strength `strength[i]` appears on the battlefield and kills all the monsters with strength less than `strength[i]` currently on the battlefield. The monster with strength `strength[i]` survives and remains on the battlefield but becomes dormant and will not kill any other monsters as future monsters arrive.
+Write a function `number_of_monsters(strength)` that takes a list `strength` as input and returns a list `result` where `result[i]` is the number of monsters remaining on the battlefield after the `i-th` time step.
+
+**Note: your algorithm should run in O(n) time complexity where n is the length of the list `strength`.**
+
+```python
+def number_of_monsters(strength):
+    result = [0]*len(strength)
+    # Fill in the code to find the number of monsters remaining on the battlefield
+    # Return a list where result[i] is the number of monsters remaining after the i-th time step
+
+    return result
+
+# Test cases
+# Example 1
+strength = [2, 4, 1, 3, 5]
+print(number_of_monsters(strength))  # Output: [1, 1, 2, 2, 1]
+# Explanation:
+# At time step 0, monster with strength 2 appears, 1 monster remains.
+# At time step 1, monster with strength 4 appears, kills the monster with strength 2, 1 monster remains.
+# At time step 2, monster with strength 1 appears, 2 monsters remain.
+# At time step 3, monster with strength 3 appears, kills the monster with strength 1, 2 monsters remain.
+# At time step 4, monster with strength 5 appears, kills the monsters with strength 3 and 4, 1 monster remains.
 ```
 
 ---
 
-**Problem Statement 3: Counting Vowels and Consonants in a String**
+**Problem Statement 6: TwoSum**
+Given a list of integers `nums` and an integer `target`, write a function `two_sum(nums, target)` that returns the number of pairs of numbers in the list `nums` that sum up to the target. Assume the pairs are unordered i.e. `(nums[i], nums[j])` is the same as `(nums[j], nums[i])`.
 
-Write a function `count_vowels_consonants(text)` that takes a string `text` as input and returns a tuple containing the count of vowels and consonants in the text. The function should ignore case(treat uppercase and lowercase characters identically) and consider only alphabets as vowels/consonants. The tuple should contain the count of vowels followed by the count of consonants.
+**Note: your algorithm should run in O(n) time complexity where n is the length of the list `nums`. Note that sorting algorithms in general are O(nlogn) in time complexity and hence, can't be used here**
 
 ```python
-def count_vowels_consonants(text):
-    """
-    Count the number of vowels and consonants in a given text.
-    
-    Parameters:
-    text (str): A string containing alphabets.
-    
-    Returns:
-    tuple: A tuple (vowels, consonants) containing the count of vowels and consonants in the text.
-    """
+def two_sum(nums, target):
+    count = 0
+    # Fill in the code to find the number of pairs of numbers in the list nums that sum up to the target
+    # Return the number of pairs
 
-    # Change the code below to count the number of vowels and consonants in text
-    vowels = 0, consonants = 0
-    return (vowels, consonants)
+    return count
+
+# Test cases
+# Example 1
+nums = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
+target = 6
+print(two_sum(nums, target))  # Output: 9
 ```
+
+---
+
+**Problem Statement 7: Evaluate postfix expression**
+Given a string `s` representing a postfix expression, write a function `evaluate_postfix(s)` that evaluates the postfix expression and returns the result. The postfix expression consists of integers and the operators `+`, `-`, `*`, `/`. The operators `+`, `-`, `*`, `/` represent addition, subtraction, multiplication, and division respectively. 
+
+A postfix expression is an expression in which the operators come after the operands. For example, the postfix expression `2 3 +` is equivalent to the infix expression `2 + 3`. Similarly, the postfix expression `2 3 4 + *` is equivalent to the infix expression `2 * (3 + 4)`.
+
+**Note: your algorithm should run in O(n) time complexity where n is the length of the string `s`.**
+
+
+```python
+def evaluate_postfix(s):
+    # Fill in the code to evaluate the postfix expression
+    # Return the result
+
+    return 0
+
+# Test cases
+# Example 1
+s = "2 3 +"
+print(evaluate_postfix(s))  # Output: 5
+
+s = "2 3 * 0 5 / +"
+print(evaluate_postfix(s))  # Output: 6
+# Explanation: 
+# s = "2 3 * 0 5 / +" 
+# s = "6 0 5 / +"
+# s = "6 0 +"
+# s = "6"
+```
+
+---
+
+** Problem Statement 8: Implement a stack using two queues**
+Given two queues `queue1` and `queue2`, write a function `Stack` that implements a stack using the two queues. The stack should support the following operations:
+- `push(item)`: Adds an element to the top of the stack.
+- `pop()`: Removes and returns the top element of the stack. Returns `None` if the stack is empty.
+- `is_empty()`: Returns `True` if the stack is empty, `False` otherwise.
+
+Complete the implementation of the class `QStack` below that implements a stack using two queues. You can use the `Queue` class described above to implement the stack.
+
+**Note: your algorithm should run in O(1) time complexity for the `push()` and `is_empty()` operations and O(n) time complexity for the `pop()` operation where n is the number of elements in the stack. Assume all operations for the queue are O(1). You cannot use any other data structures other than the 2 queues**
+
+```python
+class QStack:
+    def __init__(self):
+        self.queue1 = Queue()
+        self.queue2 = Queue()
+
+    def push(self, item):
+        # Fill in the code to add an element to the top of the stack
+        pass
+
+    def pop(self):
+        # Fill in the code to remove and return the top element of the stack
+        pass
+
+    def is_empty(self):
+        # Fill in the code to check if the stack is empty
+        pass
+
+# Test cases
+stack = QStack()
+stack.push(1)
+stack.push(2)
+stack.push(3)
+
+print(stack.is_empty())  # Output: False
+
+print(stack.pop())  # Output: 3
+
+stack.push(4)
+
+print(stack.pop())  # Output: 4
+print(stack.pop())  # Output: 2
+print(stack.pop())  # Output: 1
+print(stack.pop())  # Output: None
+
+print(stack.is_empty())  # Output: True
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
