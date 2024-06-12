@@ -1,4 +1,4 @@
-Lab 8: Memoization and Dynamic Programming
+# Lab 8: Memoization and Dynamic Programming
 
 ## Introduction to Dynamic Programming
 
