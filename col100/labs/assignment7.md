@@ -1,189 +1,177 @@
-# Lab 7: Introduction to Recursion
-
-Recursion is a programming technique where a function makes calls to itself to solve a problem. It's a powerful tool for breaking down complex problems into simpler sub-problems.
-
-### Example: Calculating Factorial Using Recursion
-
-One classic example of recursion is calculating the factorial of a number. The factorial of a non-negative integer `n`, denoted as `n!`, is the product of all positive integers less than or equal to `n`.
-
-The factorial function can be defined recursively as follows:
-- Base case: `0! = 1`
-- Recursive case: `n! = n * (n-1)!` for `n > 0`
-
-Here's how you can implement the factorial function using recursion in Python:
+# Lab 7: More on Abstract Data Types
 
 ```python
-def factorial(n):
-    if n == 0:
-        return 1
-    else:
-        return n * factorial(n - 1)
+class Stack:
+    def __init__(self):
+        self.stack = []
 
-# Test
-print(factorial(5))  # Output: 120
+    def push(self, item):
+        self.stack.append(item)
+
+    def pop(self):
+        if len(self.stack) == 0:
+            return None
+        return self.stack.pop()
+
+    def is_empty(self):
+        return len(self.stack) == 0
+
+    def peek(self):
+        if len(self.stack) == 0:
+            return None
+        return self.stack[-1]
+
+# Do not worry about the implementation of the Stack class above, you can copy the Stack class code as it is and use it to solve the problems below.
 ```
 
-In this example, the function `factorial` calls itself with a smaller value (`n - 1`) until it reaches the base case (`n == 0`). Then, it returns values back up the call stack, multiplying each returned value by `n` to compute the factorial of `n`.
-
----
-
-# Exercise Problems:
-
-**Problem Statement 1: Recursively Calculate the nth Fibonacci Number**
-
-The Fibonacci series is a sequence of numbers where each number is the sum of the two preceding ones, starting from 0 and 1. The sequence starts as follows: 1, 1, 2, 3, 5, 8, 13, 21, ...
-
-Write a recursive function `fibonacci(n)` that calculates the `n`th Fibonacci number.
-
-Your task is to implement the function `fibonacci(n)` using recursion. The function should return the `n`th Fibonacci number without using lists.
-
----
-
 ```python
-def fibonacci(n):
-    # Fill in the code to calculate the nth Fibonacci number recursively
-    pass
+from collections import deque
 
-# Test cases
-print(fibonacci(6))  # Expected output: 8
-print(fibonacci(8))  # Expected output: 21
+class Queue:
+    def __init__(self):
+        self.queue = deque()
+
+    def enqueue(self, item):
+        # Add an item to the end of the deque
+        self.queue.append(item)
+
+    def dequeue(self):
+        # Remove and return an item from the front of the deque
+        if self.is_empty():
+            return None
+        return self.queue.popleft()
+
+    def is_empty(self):
+        # Check if the deque is empty
+        return len(self.queue) == 0
+
+    def peek(self):
+        # Return the front item of the deque without removing it
+        if self.is_empty():
+            return None
+        return self.queue[0]
+
+# Do not worry about the implementation of the Queue class above, you can copy the Queue class code as it is and use it to solve the problems below.
+
 ```
 
----
+## Exercise Problems
 
-**Problem Statement 2: Minimum number of steps to reach the top**
-
-You are standing on the ground floor and in front of you is a staircase with `n` steps. You can take either 1 step, 2 steps, or 3 steps at a time. Write a recursive function `num_steps(n)` that calculates the minimum number of steps required to reach the top of the staircase.
-
-Your task is to implement the function `num_steps(n)` using recursion. The function should return the minimum number of steps required to reach the top of the staircase.
-
----
+**Problem Statement 1:** Given a list of positive integers `nums` of size `2n`, we call an integer `x` the majority elemeent if it appears at least n times in the list. Write a function `find_majority_element(nums)` that returns the majority element `x`. If there is no majority element, return -1.
 
 ```python
-def num_steps(n):
-    # Fill in the code to calculate the minimum number of steps recursively
-    pass
-
-# Test cases
-print(num_steps(3))  # Expected output: 4
-print(num_steps(5))  # Expected output: 13
-```
-
----
-
-**Problem Statement 3: Recursively Reverse a List**
-
-Reverse a list using recursion. Write a recursive function `reverse_list(lst)` that takes a list `lst` as input and returns the reversed list. **You cannot use loops. You cannot use any list methods other than list concatenation (`+`) and list slicing**.
-
-```python
-def reverse_list(lst):
-    # Fill in the code to reverse the list recursively
-    # The function should return the reversed list
-    pass
-
-# Test cases
-print(reverse_list([1, 2, 3, 4, 5]))  # Expected output: [5, 4, 3, 2, 1]
-```
-
----
-
-**Problem Statement 4: Recursively Check if a String is a Palindrome**
-
-Given a string, write a recursive function `is_palindrome(s)` that checks if the string `s` is a palindrome. A palindrome is a word, phrase, number, or other sequence of characters that reads the same forward and backward (ignoring spaces, punctuation, and capitalization). **You cannot use loops**, and should only use recursion. **You cannot use any string methods other than string slicing**.
-
-```python
-def is_palindrome(s):
-    # Fill in the code to check if the string is a palindrome recursively
-    # The function should return True if the string is a palindrome, False otherwise
-    pass
-
-# Test cases
-print(is_palindrome("racecar"))  # Expected output: True
-print(is_palindrome("hello"))  # Expected output: False
-```
-
-# Additional Exercise Problems
-
-**Problem Statement 5: Flattening a Nested List**
-
-You are given a nested list of integers. Write a function `flatten_list(nested_list)` that flattens the nested list into a single list by removing the nesting. Your task is to implement the function `flatten_list(nested_list)` that takes a nested list as input and returns a single flattened list. You can assume that the input list will only contain integers and other nested lists.
-
-```python
-def flatten_list(nested_list):
+def find_majority_element(nums):
     """
-    Flatten a nested list into a single list.
-    Example Input: [1, [2, [3, 4], 5], 6, [7, 8, [9, 10]]]
-    Example Output: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    Given a list of positive integers nums of size 2n, return the majority element x.
+    If there is no majority element, return -1.
     """
-
-    # Fill in the code to flatten the nested list here, the function should return a single list
+    # Fill in the code to find the majority element
     pass
 ```
 
----
-
-**Problem Statement 6: Calculate the number of paths**
-
-You are given a grid with cells from `(0, 0)` to `(m, n)`. **You can only move either down or right at any point in time**. Write a recursive function `num_paths(m, n)` that calculates the number of unique paths to reach the bottom-right corner `(m, n)` of the grid from the top-left corner `(0, 0)`. Try to solve this question without using hints first. If you get stuck, you can refer to the hints below.
-
-**Hint 1:** Be very careful with the base cases, you should not make calls to num_paths with negative values or values that are out of the grid.<br><br>
-**Hint 2:** You should think about `num_paths(i, j)` as the number of total_paths from `(0, 0)` to `(i, j)`. Can you use this to calculate `num_paths(m, n)`?<br><br>
-**Hint 3:** There is only 1 path to reach `(0, j)` from `(0, 0)`. Similarly, there is only 1 path to reach `(i, 0)` from `(0, 0)` <br><br>
-**Hint 4:** For any cell `(i, j)` where `i>0` and `j>0`, the number of paths to reach it is the sum of the number of paths to reach the cell above it and the cell to the left of it. <br><br>
-
-
-
-
----
+**Problem Statement 2:** You are given a 2D list `groceries` where each list is a pair `[item, quantity]` representing the name of an item and its quantity. There may be multiple entries with the same item name. Write a function `combine_items(groceries)` that combines all the quantities of the same item into a single entry. The function should return a new 2D list with unique items and their combined quantities.
 
 ```python
-def num_paths(m, n):
-    # Fill in the code to calculate the number of paths recursively
+def combine_items(groceries):
+    """
+    Given a 2D list groceries where each list is a pair [item, quantity], combine all the quantities of the same item into a single entry.
+    Return a new 2D list with unique items and their combined quantities.
+    """
+    # Fill in the code to combine the items
     pass
-
-# Test cases
-print(num_paths(3, 4))  # Expected output: 35
-print(num_paths(5, 2))  # Expected output: 21
 ```
 
----
+**Problem Statement 3:**Given a list of `n` integers `nums`, and an integer `k`, write a function to return the maximum sum of `k` consecutive elements in the list.
 
-**Problem Statement 7: Find the minimum number of tiles**
-
-You have an unlimited supply of square tiles of size `2^i x 2^i` such as `1x1`, `2x2`, and `4x4`, `8x8` and so on. You want to tile a floor of size `n x m`. Write a function `min_tiles(n, m)` that calculates the minimum number of tiles required to tile the floor of size `n x m`.
+**Note: Your code should run in O(n) time complexity**
 
 ```python
-def min_tiles(n, m):
-    # Fill in the code to calculate the minimum number of tiles required
+def max_sum(nums, k):
+    """
+    Given a list of n integers nums, and an integer k, return the maximum sum of k consecutive elements in the list.
+    """
+    # Fill in the code to find the maximum sum of k consecutive elements
     pass
 
-#Test cases
-print(min_tiles(3, 3))  # Expected output: 6 (5 1x1 tiles and 1 2x2 tile)
-print(min_tiles(2, 4))  # Expected output: 2 (2 2x2 tiles)
-print(min_tiles(5, 2))  # Expected output: 4 (2 1x1 tiles, 2 2x2 tiles)
 ```
 
----
+**Problem Statement 4:** Given a list of integers `nums`, write a function `next_greater_element(nums)` that returns a list of the next greater element for each element in the list. If there is no greater element, return -1. A next greater element is the first element to its right that is greater than the current element.
 
-**Problem Statement 8: Recursively Find the Greatest Common Divisor (GCD)**
+**Note: Your code should run in O(n) time complexity**
 
-Write a recursive function `gcd(a, b)` that calculates the greatest common divisor (GCD) of two positive integers `a` and `b`.
-
-Your task is to implement the function `gcd(a, b)` using recursion. The function should return the GCD of `a` and `b`. Try to solve this question without using hints first. If you get stuck, you can refer to the hints below.
-
-**Hint 1:** The Euclidean algorithm for finding the GCD of two numbers states that the GCD of `a` and `b` is the same as the GCD of `b` and `a % b`.<br><br>
-**Hint 2:** You should ensure that recursion makes subproblems that are smaller than the original problem. One way to help with this is to always keep the smaller number as the first argument of the recursive calls. <br><br>
-**Hint 3:** We already know that the gcd of 0 and a number is the number itself. This can be used as the base case. <br><br>
-
----
+**Hint: Use stacks**
 
 ```python
-def gcd(a, b):
-    # Fill in the code to calculate the GCD recursively
+def next_greater_element(nums):
+    """
+    Given a list of integers nums, return a list of size len(nums) which gives the next greater element for each element in the list.
+    If there is no greater element, return -1.
+    """
+    # Fill in the code to find the next greater element for each element
+    pass
+```
+
+**Problem Statement 5:** Given a string `s`, find the length of the longest substring that contains at most k distinct characters.
+
+**Note: Your code should run in O(n) time complexity**
+
+**Hint: Use sets**
+
+```python
+def longest_substring_with_k_distinct(s, k):
+    """
+    Given a string s, find the length of the longest substring that contains at most k distinct characters.
+    """
+    # Fill in the code to find the length of the longest substring
+    pass
+```
+
+**Problem Statement 6:** Given a string which is a valid arithmetic expression, write a function `evaluate_expression(s)` that evaluates the expression and returns the result. The expression contains the operators `+`, `-`, `*`, `/` and the operands are positive integers. Follow the precedence rule of operators(`/` > `*` > `+` > `-`). The string is a list of integers and operators separated by spaces.
+
+```python
+def evaluate_expression(s):
+    """
+    Given a string which is a valid arithmetic expression, evaluate the expression and return the result.
+    The expression contains the operators +, -, *, / and the operands are positive integers.
+    """
+    # Fill in the code to evaluate the expression
     pass
 
-# Test cases
-print(gcd(24, 36))  # Expected output: 12
-print(gcd(81, 153))  # Expected output: 9
+# Example: 4 * 22 - 3 + 5 / 2
+# Output: 87.5
+```
+
+**Problem Statement 7:** We define 2 strings as isomorphic if there is a one-to-one mapping of characters between the two strings. For example: "babca" and "ebeab" are isomorphic with a mapping from 'b' to 'e', 'a' to 'b', 'c' to 'a'.
+
+Given a list of n strings, combine all the strings isomorphic to each other into a single list. Return a list of lists where each list contains all the isomorphic strings with the same pattern.
+
+```python
+def isomorphic_strings(strings):
+    """
+    Given a list of n strings, combine all the strings isomorphic to each other into a single list.
+    Return a list of lists where each list contains all the isomorphic strings with the same pattern.
+    """
+    # Fill in the code to combine the isomorphic strings
+    pass
+
+# Example: ["babca", "ebeab", "abc", "def", "xyz", "ghi", "ccd", "tts]
+# Output: [['babca', 'ebeab'], ['abc', 'def', 'xyz', 'ghi'], ["ccd", "tts"]]
+```
+
+**Problem Statement 8:** Given a string `pattern` and a string `s`, write a function `is_subsequence` that returns `True` if the string `pattern` is a subsequence of the string `s`, `False` otherwise. A string `s1` is a subsequence of `s2` if some number of characters (may be zero) can be deleted from `s2` to form `s1`.
+
+```python
+def is_subsequence(pattern, s):
+    """
+    Given a string pattern and a string s, return True if the string pattern is a subsequence of the string s, False otherwise.
+    """
+    # Fill in the code to check if pattern is a subsequence of s
+    pass
+
+# Example: pattern = "abc", s = "ahbgdc"
+# Output: True
+
+# Example: pattern = "agb", s = "ahbgdc"
+# Output: False
 ```
 

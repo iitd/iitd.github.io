@@ -422,7 +422,18 @@ print(result)  <span class="hljs-comment"># Output: (7, 12)</span>
 <hr>
 <h1 id="exercise-problems">Exercise Problems:</h1>
 <hr>
-<p><strong>Problem Statement 1: Calculate the value of sin(x)</strong></p>
+<p><strong>Problem Statement 1: Sum of first N even numbers</strong></p>
+<p>Calculate the sum of the first <code>n</code> even numbers(starting from 2). Write a function <code>sum_of_even_numbers(n)</code> that takes an integer <code>n</code> as input and returns the sum of the first <code>n</code> even numbers.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">sum_of_even_numbers</span><span class="hljs-params">(n)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to calculate the sum of the first n even numbers</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>
+
+<span class="hljs-comment"># Test cases</span>
+print(sum_of_even_numbers(<span class="hljs-number">5</span>))  <span class="hljs-comment"># Output: 30 (2 + 4 + 6 + 8 + 10 = 30)</span>
+print(sum_of_even_numbers(<span class="hljs-number">10</span>))  <span class="hljs-comment"># Output: 110 (2 + 4 + 6 + 8 + 10 + 12 + 14 + 16 + 18 + 20 = 110)</span>
+</div></code></pre>
+<hr>
+<p><strong>Problem Statement 2: Calculate the value of sin(x)</strong></p>
 <p>Calculate the value of sin(x) using the Taylor series expansion upto the first n terms. The Taylor series expansion of sin(x) is given by: <br>
 sin(x) = x - x^3/3! + x^5/5! - x^7/7! + ...</p>
 <p><strong>Note:</strong> for larger values of n, trying to calculate the terms individually may result in an overflow error or be inefficient in computation. To avoid this, you can use the result of the previous term to calculate the next term. For example, to calculate the 5th term, x^9/9!, you can use the result of the 4th term, x^7/7!, and multiply it by x^2/(9*8).</p>
@@ -439,7 +450,28 @@ n = <span class="hljs-number">5</span>
 print(calculate_sin(x, n))  <span class="hljs-comment"># Output: 0.008479830572943103</span>
 </div></code></pre>
 <hr>
-<p><strong>Problem Statement 2: Count the Number of Leap Years</strong></p>
+<p><strong>Problem Statement 3: Find the hidden character</strong>
+A <code>magic_square</code> is a 3x3 square with the following properties:</p>
+<ol>
+<li>Each cell contains one of the letters 'A', 'B', 'C'</li>
+<li>Each letter must appear exactly once in each row</li>
+<li>Each letter must appear exactly once in each column</li>
+</ol>
+<p>Now, exactly one of the characters of the magic square is hidden, the cell of the hidden character is represented by a question mark '?'. Write a function to find the hidden character.</p>
+<p><strong>Note:</strong> <code>magic_square</code> is a list of lists where each inner list represents a row of the magic square. To access the element at row <code>i</code> and column <code>j</code>, you can use <code>magic_square[i][j]</code> where <code>0&lt;=i&lt;=2</code> and <code>0&lt;=j&lt;=2</code>.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">find_hidden_character</span><span class="hljs-params">(magic_square)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to find the hidden character</span>
+    <span class="hljs-comment"># Return the hidden charactee: 'A', 'B' or 'C'</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-string">'?'</span>
+
+<span class="hljs-comment"># Test cases</span>
+<span class="hljs-comment"># Example 1</span>
+magic_square = [[<span class="hljs-string">'A'</span>, <span class="hljs-string">'B'</span>, <span class="hljs-string">'C'</span>], [<span class="hljs-string">'B'</span>, <span class="hljs-string">'C'</span>, <span class="hljs-string">'A'</span>], [<span class="hljs-string">'C'</span>, <span class="hljs-string">'A'</span>, <span class="hljs-string">'?'</span>]]
+print(find_hidden_character(magic_square))  <span class="hljs-comment"># Output: 'B'</span>
+
+</div></code></pre>
+<hr>
+<p><strong>Problem Statement 4: Count the Number of Leap Years</strong></p>
 <p>A leap year is a year that is divisible by 4, but if it is divisible by 100, it must also be divisible by 400 to be considered a leap year. <br>
 So, all multiples of 4 which are not divisible by 100 are leap years(For Example: 1972, 2024 are leap years).<br>
 But among the multiples of 100, only those which are multiples of 400 are leap years(For Example: 2000, 2400 are leap years while 1700, 1800, 1900 are not).</p>
@@ -475,28 +507,7 @@ end_year = <span class="hljs-number">1900</span>
 print(total_leap_years_in_range(start_year, end_year))  <span class="hljs-comment"># Expected output: 24</span>
 </div></code></pre>
 <hr>
-<p><strong>Problem Statement 3: Find the hidden character</strong>
-A <code>magic_square</code> is a 3x3 square with the following properties:</p>
-<ol>
-<li>Each cell contains one of the letters 'A', 'B', 'C'</li>
-<li>Each letter must appear exactly once in each row</li>
-<li>Each letter must appear exactly once in each column</li>
-</ol>
-<p>Now, exactly one of the characters of the magic square is hidden, the cell of the hidden character is represented by a question mark '?'. Write a function to find the hidden character.</p>
-<p><strong>Note:</strong> <code>magic_square</code> is a list of lists where each inner list represents a row of the magic square. To access the element at row <code>i</code> and column <code>j</code>, you can use <code>magic_square[i][j]</code> where <code>0&lt;=i&lt;=2</code> and <code>0&lt;=j&lt;=2</code>.</p>
-<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">find_hidden_character</span><span class="hljs-params">(magic_square)</span>:</span>
-    <span class="hljs-comment"># Fill in the code to find the hidden character</span>
-    <span class="hljs-comment"># Return the hidden charactee: 'A', 'B' or 'C'</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-string">'?'</span>
-
-<span class="hljs-comment"># Test cases</span>
-<span class="hljs-comment"># Example 1</span>
-magic_square = [[<span class="hljs-string">'A'</span>, <span class="hljs-string">'B'</span>, <span class="hljs-string">'C'</span>], [<span class="hljs-string">'B'</span>, <span class="hljs-string">'C'</span>, <span class="hljs-string">'A'</span>], [<span class="hljs-string">'C'</span>, <span class="hljs-string">'A'</span>, <span class="hljs-string">'?'</span>]]
-print(find_hidden_character(magic_square))  <span class="hljs-comment"># Output: 'B'</span>
-
-</div></code></pre>
-<hr>
-<p><strong>Problem Statement 4: Check if a number is prime</strong>
+<p><strong>Problem Statement 5: Check if a number is prime</strong>
 Given a number n, check if it is prime or not. A prime number is a number that is greater than 1 and has no divisors other than 1 and itself. Complete the function <code>is_prime(n)</code> that returns <code>True</code> if the number is prime and <code>False</code> otherwise.</p>
 <pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">is_prime</span><span class="hljs-params">(n)</span>:</span>
     <span class="hljs-comment"># Fill in the code to check if a number is prime</span>
@@ -512,7 +523,7 @@ print(is_prime(<span class="hljs-number">10</span>))  <span class="hljs-comment"
 </div></code></pre>
 <h1 id="additional-exercise-problems">Additional Exercise Problems</h1>
 <hr>
-<p><strong>Problem 5: Divide gold nuggets</strong></p>
+<p><strong>Problem 6: Divide gold nuggets</strong></p>
 <p>You are a treasure hunter who has found a treasure chest containing lump weighing <code>n</code> units of gold . However, to bring your treasure home, you need to give a lump of exactly <code>m</code> units of gold to the guards at the gate. You have a magical device that can divide any lump of gold into two smaller lumps such that one lump is exactly twice the weight of the other, however the device cannot divide gold in fractional units of weight(For example, a lump of 6 units can be divided into 2 units + 4 units, but a lump of 7 units cannot be split by the machine). You can use this device as many times as you want.</p>
 <p>Your task is to determine if it is possible for you to bring the treasure home by obtaining a lump of <code>m</code> units of gold from the original lump of <code>n</code> units of gold.</p>
 <p>**Note:**this question has a simple recursive solution, but since we haven't covered recursion yet, you should solve it using loops and conditionals.</p>
@@ -524,17 +535,31 @@ print(is_prime(<span class="hljs-number">10</span>))  <span class="hljs-comment"
 <span class="hljs-comment"># Example 1</span>
 n = <span class="hljs-number">12</span>
 m = <span class="hljs-number">8</span>
-print(divide_gold(n, m))  <span class="hljs-comment"># Output: True</span>
+print(divide_gold(n, m))  
+<span class="hljs-comment"># Output: True</span>
+<span class="hljs-comment"># Explanation: 12 = 8 + 4</span>
+
 <span class="hljs-comment"># Example 2</span>
 n = <span class="hljs-number">9</span>
 m = <span class="hljs-number">2</span>
-print(divide_gold(n, m))  <span class="hljs-comment"># Output: True</span>
+print(divide_gold(n, m))  
+<span class="hljs-comment"># Output: True</span>
+<span class="hljs-comment"># Explanation: </span>
+<span class="hljs-comment"># 9 = 3 + 6</span>
+<span class="hljs-comment"># 6 = 2 + 4</span>
+
+
+
 <span class="hljs-comment"># Example 1</span>
 n = <span class="hljs-number">12</span>
 m = <span class="hljs-number">2</span>
-print(divide_gold(n, m))  <span class="hljs-comment"># Output: False</span>
+print(divide_gold(n, m))  
+<span class="hljs-comment"># Output: False</span>
+<span class="hljs-comment"># Explanation: It is not possible to obtain a lump of 2 units of gold from the original lump of 12 units of gold as after dividing 12 into 4 and 8 units, we cannot further divide.</span>
+
+
 </div></code></pre>
-<p><strong>Problem 6: Make equal numbers</strong></p>
+<p><strong>Problem 7: Make equal numbers</strong></p>
 <p>You are given a list three positive integers <code>A</code>, <code>B</code> and <code>C</code>. You can perform the following 2-step operation <strong>at most 3 times</strong>:</p>
 <ol>
 <li>Choose any number and split it into two numbers such that the sum of the two numbers is equal to the original number.</li>
@@ -556,7 +581,7 @@ print(make_equal_numbers(<span class="hljs-number">99999999</span>, <span class=
 print(make_equal_numbers(<span class="hljs-number">5</span>, <span class="hljs-number">5</span>, <span class="hljs-number">15</span>))  <span class="hljs-comment"># Output: True</span>
 </div></code></pre>
 <hr>
-<p><strong>Problem Statement 7: Maximize Your Soda Enjoyment</strong></p>
+<p><strong>Problem Statement 8: Maximize Your Soda Enjoyment</strong></p>
 <p>Imagine you are a fan of a special energy drink called &quot;Zippy Juice&quot;. You buy <code>n</code> full bottles of Zippy Juice. There's a special offer: for every <code>e</code> empty bottles you return, you get one full bottle for free. You can take advantage of this offer as many times as possible. Write a function to calculate the maximum number of bottles of Zippy Juice you can drink.</p>
 <p>Your task is to implement the function <code>max_bottles_drunk(n, e)</code> that takes the number of full bottles <code>n</code> and the number of empty bottles required for a new full bottle <code>e</code> as inputs. The function should return the maximum number of bottles you can drink.</p>
 <p><strong>Hint: use a while loop when you don't know the exact number of iterations to be performed</strong></p>
@@ -579,7 +604,7 @@ e = <span class="hljs-number">4</span>
 print(max_bottles_drunk(n, e))  <span class="hljs-comment"># Output: 19</span>
 </div></code></pre>
 <hr>
-<p><strong>Problem Statement 8:</strong></p>
+<p><strong>Problem Statement 9:</strong></p>
 <p>All natural numbers starting from 1 are written in order in a single infinite line as &quot;123456789101112131415...&quot; Write a function <code>find_digit(n)</code>to find the <code>n</code>th digit in this sequence of natural numbers.</p>
 <pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">find_digit</span><span class="hljs-params">(n)</span>:</span>
     <span class="hljs-comment"># Fill in the code to find the nth digit in the sequence of natural numbers</span>

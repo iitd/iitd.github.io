@@ -1,4 +1,4 @@
-# Lab 6: Abstract Data Types: Stacks, Queues and Dictionaries
+# Lab 6: Abstract Data Types: Stacks, Queues, Dictionaries and Sets
 
 ## Stack
 
@@ -194,6 +194,77 @@ print(list(student.values()))  # Output: ['Alice', 21, ['Math', 'Physics']]
 print(list(student.items()))  # Output: [('name', 'Alice'), ('age', 21), ('courses', ['Math', 'Physics'])]
 ```
 
+## Set
+
+A set is an abstract data type that stores a collection of unique elements. In a set, each element appears only once, and the order of elements is not guaranteed. Sets are useful when you need to store and perform operations on a collection of distinct items.
+
+Python provides a built-in set implementation. Sets in Python are defined using curly braces `{}` or the `set()` function.
+
+The set data structure has the following methods:
+1. `add(item)`: Adds an element to the set. If the element is already present, it does nothing.
+2. `remove(item)`: Removes the specified element from the set. If the element is not present, it raises a `KeyError`.
+3. `discard(item)`: Removes the specified element from the set. If the element is not present, it does nothing.
+4. `pop()`: Removes and returns an arbitrary element from the set. Raises `KeyError` if the set is empty.
+5. `clear()`: Removes all elements from the set.
+6. `union(other_set)`: Returns a new set with elements from the set and `other_set`.
+7. `intersection(other_set)`: Returns a new set with elements common to the set and `other_set`.
+8. `difference(other_set)`: Returns a new set with elements in the set but not in `other_set`.
+9. `in`: Use the in operator to check if an element is in a set
+
+Example usage of sets:
+
+```python
+# Create an empty set
+my_set = set()
+
+# Add elements to the set
+my_set.add(1)  # my_set: {1}
+my_set.add(2)  # my_set: {1, 2}
+my_set.add(3)  # my_set: {1, 2, 3}
+my_set.add(2)  # my_set: {1, 2, 3} (no effect as 2 is already in the set)
+
+# Remove an element from the set
+my_set.remove(2)  # my_set: {1, 3}
+
+# Discard an element from the set
+my_set.discard(2)  # my_set: {1, 3} (no effect as 2 is not in the set)
+
+# Pop an element from the set
+popped_element = my_set.pop()  # my_set: {3} (popped_element will be 1)
+
+# Check if the set is empty
+is_empty = len(my_set) == 0  # Output: False
+
+# Clear the set
+my_set.clear()  # my_set: {}
+
+# Create sets with elements
+set1 = {1, 2, 3}
+set2 = {3, 4, 5}
+
+# Check if an element is in a set
+print(2 in set1) # True
+print(6 in set2) # False
+
+#Iterating over a set
+for element in set1:
+    print(element, end = " ") # Output: 1 2 3
+
+# Union of two sets
+union_set = set1.union(set2)  # union_set: {1, 2, 3, 4, 5}
+
+# Intersection of two sets
+intersection_set = set1.intersection(set2)  # intersection_set: {3}
+
+# Difference of two sets
+difference_set = set1.difference(set2)  # difference_set: {1, 2}
+
+# Check if a set is a subset of another set
+is_subset = set1.issubset({1, 2, 3, 4, 5})  # Output: True
+
+# Check if a set is a superset of another set
+is_superset = set1.issuperset({1, 2})  # Output: True
+```
 ---
 
 **Note: **Assume that all stack and queue operations are `O(1)` time complexity operations and the dictionary operations are also `O(1)` time complexity operations.
@@ -201,7 +272,33 @@ print(list(student.items()))  # Output: [('name', 'Alice'), ('age', 21), ('cours
 # Exercise Problems
 
 ---
-**Problem Statement 1: Check balanced parenthesis**
+
+**Problem Statement 1: Remove duplicates from a list**
+
+Given a list L, write a function `remove_duplicates(L)` that removes all the duplicate elements from the list L and returns the list with only unique elements. The order of the elements in the list need not be maintained.
+
+**Note: your algorithm should run in O(nlogn) time complexity where n is the length of the list L.**
+
+**Hint: use sets**
+
+```python
+def is_balanced(s):
+    # Fill in the code to check if the string has balanced parentheses
+    # Return True if the string has balanced parentheses, False otherwise
+    return False
+
+# Test cases
+# Example 1
+s = "([])[]({})"
+print(is_balanced(s))  # Output: True
+
+# Example 2
+s = "([)]"
+print(is_balanced(s))  # Output: False
+```
+
+---
+**Problem Statement 2: Check balanced parenthesis**
 
 Given a string containing only parentheses `()`, square brackets `[]`, and curly braces `{}`, write a function `is_balanced(s)` that checks if the string `s` has balanced parentheses. A string has balanced parentheses if each opening parenthesis has a corresponding closing parenthesis and they are properly nested. The function should return `True` if the string has balanced parentheses, `False` otherwise.
 
@@ -227,7 +324,7 @@ print(is_balanced(s))  # Output: False
 
 ---
 
-**Problem Statement 2: Remove duplicate characters**
+**Problem Statement 3: Remove duplicate characters**
 
 Given a string `s`, write a function `remove_duplicates(s)` that repeatedly performs the following operation until no adjacent duplicate characters are left in the string:
 
@@ -254,7 +351,7 @@ print(remove_duplicates(s))  # Output: "ca"
 
 ---
 
-**Problem Statement 3: Merge 2 queues**
+**Problem Statement 4: Merge 2 queues**
 
 Given two queues `queue1` and `queue2`, such that `queue1` is filled with integers in non-decreasing order and `queue2` is filled with integers in non-decreasing order. Write a function `merge_queues(queue1, queue2)` that merges the two queues into a single queue such that the resulting queue is filled with integers in non-decreasing order.
 A queue being filled in non-decreasing order means that elements were added to the queue in non-decreasing order and hence, the front element of the queue is the smallest element in the queue.
@@ -289,7 +386,9 @@ while not final_queue.is_empty():
 
 ---
 
-**Problem Statement 4: Pairs with difference k**
+# Additional Exercise Problems
+
+**Problem Statement 5: Pairs with difference k**
 
 Given a list of integers `nums` and an integer `k`, write a function `pairs_with_difference_k(nums, k)` that returns the number of pairs of numbers in the list `nums` that have an absolute difference of `k`. Assume the pairs are unordered i.e. `(nums[i], nums[j])` is the same as `(nums[j], nums[i])`.
 
@@ -317,9 +416,7 @@ print(pairs_with_difference_k(nums, k))  # Output: 34
 
 ---
 
-# Additional Exercise Problems
-
-**Problem Statement 5: Number of monsters**
+**Problem Statement 6: Number of monsters**
 
 We have a battlefield where monsters are fighting. At each time step `i` where `0 <= i < n`, a monster of strength `strength[i]` appears on the battlefield and kills all the monsters with strength less than `strength[i]` currently on the battlefield. The monster with strength `strength[i]` survives and remains on the battlefield but becomes dormant and will not kill any other monsters as future monsters arrive.
 Write a function `number_of_monsters(strength)` that takes a list `strength` as input and returns a list `result` where `result[i]` is the number of monsters remaining on the battlefield after the `i-th` time step.
@@ -348,11 +445,11 @@ print(number_of_monsters(strength))  # Output: [1, 1, 2, 2, 1]
 
 ---
 
-**Problem Statement 6: TwoSum**
+**Problem Statement 7: TwoSum**
 
 Given a list of integers `nums` and an integer `target`, write a function `two_sum(nums, target)` that returns the number of pairs of numbers in the list `nums` that sum up to the target. Assume the pairs are unordered i.e. `(nums[i], nums[j])` is the same as `(nums[j], nums[i])`.
 
-**Note: your algorithm should run in O(n) time complexity where n is the length of the list `nums`. Note that sorting algorithms in general are O(nlogn) in time complexity and hence, can't be used here**
+**Note: your algorithm should run in O(n) time complexity where n is the length of the list `nums`. Note that sorting algorithms in general are O(nlogn) in time complexity and hence, can't be used here but operations on sets/dicts are on average O(1)**
 
 ```python
 def two_sum(nums, target):
@@ -371,7 +468,7 @@ print(two_sum(nums, target))  # Output: 9
 
 ---
 
-**Problem Statement 7: Evaluate postfix expression**
+**Problem Statement 8: Evaluate postfix expression**
 
 Given a string `s` representing a postfix expression, write a function `evaluate_postfix(s)` that evaluates the postfix expression and returns the result. The postfix expression consists of integers and the operators `+`, `-`, `*`, `/`. The operators `+`, `-`, `*`, `/` represent addition, subtraction, multiplication, and division respectively. 
 
@@ -403,7 +500,7 @@ print(evaluate_postfix(s))  # Output: 6
 
 ---
 
-**Problem Statement 8: Implement a stack using two queues**
+**Problem Statement 9: Implement a stack using two queues**
 
 Given two queues `queue1` and `queue2`, write a function `Stack` that implements a stack using the two queues. The stack should support the following operations:
 - `push(item)`: Adds an element to the top of the stack.

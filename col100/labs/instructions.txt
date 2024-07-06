@@ -1,0 +1,7 @@
+To make changes to the assignments, do the following:
+
+1. Download Visual Studio Code
+2. Add the following VS code extension: https://marketplace.visualstudio.com/items?itemName=yzane.markdown-pdf
+3. Make changes the markdown file
+4. From the commands palette (Shortcut: Ctrl + Shift + P / Cmd + Shift + P), select "Markdown PDF: Export (html)"
+5. HTML file with the same name as markdown will be created / modified

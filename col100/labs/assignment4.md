@@ -71,7 +71,23 @@ print(result)  # Output: (7, 12)
 
 ---
 
-**Problem Statement 1: Calculate the value of sin(x)**
+**Problem Statement 1: Sum of first N even numbers**
+
+Calculate the sum of the first `n` even numbers(starting from 2). Write a function `sum_of_even_numbers(n)` that takes an integer `n` as input and returns the sum of the first `n` even numbers.
+
+```python
+def sum_of_even_numbers(n):
+    # Fill in the code to calculate the sum of the first n even numbers
+    return 0
+
+# Test cases
+print(sum_of_even_numbers(5))  # Output: 30 (2 + 4 + 6 + 8 + 10 = 30)
+print(sum_of_even_numbers(10))  # Output: 110 (2 + 4 + 6 + 8 + 10 + 12 + 14 + 16 + 18 + 20 = 110)
+```
+
+---
+
+**Problem Statement 2: Calculate the value of sin(x)**
 
 Calculate the value of sin(x) using the Taylor series expansion upto the first n terms. The Taylor series expansion of sin(x) is given by: <br>
 sin(x) = x - x^3/3! + x^5/5! - x^7/7! + ...
@@ -94,7 +110,32 @@ print(calculate_sin(x, n))  # Output: 0.008479830572943103
 
 ---
 
-**Problem Statement 2: Count the Number of Leap Years**
+**Problem Statement 3: Find the hidden character**
+A `magic_square` is a 3x3 square with the following properties:
+1. Each cell contains one of the letters 'A', 'B', 'C'
+2. Each letter must appear exactly once in each row
+3. Each letter must appear exactly once in each column
+
+Now, exactly one of the characters of the magic square is hidden, the cell of the hidden character is represented by a question mark '?'. Write a function to find the hidden character.
+
+**Note:** `magic_square` is a list of lists where each inner list represents a row of the magic square. To access the element at row `i` and column `j`, you can use `magic_square[i][j]` where `0<=i<=2` and `0<=j<=2`.
+
+```python
+def find_hidden_character(magic_square):
+    # Fill in the code to find the hidden character
+    # Return the hidden charactee: 'A', 'B' or 'C'
+    return '?'
+
+# Test cases
+# Example 1
+magic_square = [['A', 'B', 'C'], ['B', 'C', 'A'], ['C', 'A', '?']]
+print(find_hidden_character(magic_square))  # Output: 'B'
+
+```
+
+---
+
+**Problem Statement 4: Count the Number of Leap Years**
 
 A leap year is a year that is divisible by 4, but if it is divisible by 100, it must also be divisible by 400 to be considered a leap year. <br>
 So, all multiples of 4 which are not divisible by 100 are leap years(For Example: 1972, 2024 are leap years).<br>
@@ -136,32 +177,7 @@ print(total_leap_years_in_range(start_year, end_year))  # Expected output: 24
 
 ---
 
-**Problem Statement 3: Find the hidden character**
-A `magic_square` is a 3x3 square with the following properties:
-1. Each cell contains one of the letters 'A', 'B', 'C'
-2. Each letter must appear exactly once in each row
-3. Each letter must appear exactly once in each column
-
-Now, exactly one of the characters of the magic square is hidden, the cell of the hidden character is represented by a question mark '?'. Write a function to find the hidden character.
-
-**Note:** `magic_square` is a list of lists where each inner list represents a row of the magic square. To access the element at row `i` and column `j`, you can use `magic_square[i][j]` where `0<=i<=2` and `0<=j<=2`.
-
-```python
-def find_hidden_character(magic_square):
-    # Fill in the code to find the hidden character
-    # Return the hidden charactee: 'A', 'B' or 'C'
-    return '?'
-
-# Test cases
-# Example 1
-magic_square = [['A', 'B', 'C'], ['B', 'C', 'A'], ['C', 'A', '?']]
-print(find_hidden_character(magic_square))  # Output: 'B'
-
-```
-
----
-
-**Problem Statement 4: Check if a number is prime**
+**Problem Statement 5: Check if a number is prime**
 Given a number n, check if it is prime or not. A prime number is a number that is greater than 1 and has no divisors other than 1 and itself. Complete the function `is_prime(n)` that returns `True` if the number is prime and `False` otherwise.
 
 ```python
@@ -182,7 +198,7 @@ print(is_prime(10))  # Output: False
 
 ---
 
-**Problem 5: Divide gold nuggets**
+**Problem 6: Divide gold nuggets**
 
 You are a treasure hunter who has found a treasure chest containing lump weighing `n` units of gold . However, to bring your treasure home, you need to give a lump of exactly `m` units of gold to the guards at the gate. You have a magical device that can divide any lump of gold into two smaller lumps such that one lump is exactly twice the weight of the other, however the device cannot divide gold in fractional units of weight(For example, a lump of 6 units can be divided into 2 units + 4 units, but a lump of 7 units cannot be split by the machine). You can use this device as many times as you want.
 
@@ -199,18 +215,32 @@ def divide_gold(n, m):
 # Example 1
 n = 12
 m = 8
-print(divide_gold(n, m))  # Output: True
+print(divide_gold(n, m))  
+# Output: True
+# Explanation: 12 = 8 + 4
+
 # Example 2
 n = 9
 m = 2
-print(divide_gold(n, m))  # Output: True
+print(divide_gold(n, m))  
+# Output: True
+# Explanation: 
+# 9 = 3 + 6
+# 6 = 2 + 4
+
+
+
 # Example 1
 n = 12
 m = 2
-print(divide_gold(n, m))  # Output: False
+print(divide_gold(n, m))  
+# Output: False
+# Explanation: It is not possible to obtain a lump of 2 units of gold from the original lump of 12 units of gold as after dividing 12 into 4 and 8 units, we cannot further divide.
+
+
 ```
 
-**Problem 6: Make equal numbers**
+**Problem 7: Make equal numbers**
 
 You are given a list three positive integers `A`, `B` and `C`. You can perform the following 2-step operation **at most 3 times**:
 1. Choose any number and split it into two numbers such that the sum of the two numbers is equal to the original number.
@@ -235,7 +265,7 @@ print(make_equal_numbers(5, 5, 15))  # Output: True
 ```
 ---
 
-**Problem Statement 7: Maximize Your Soda Enjoyment**
+**Problem Statement 8: Maximize Your Soda Enjoyment**
 
 Imagine you are a fan of a special energy drink called "Zippy Juice". You buy `n` full bottles of Zippy Juice. There's a special offer: for every `e` empty bottles you return, you get one full bottle for free. You can take advantage of this offer as many times as possible. Write a function to calculate the maximum number of bottles of Zippy Juice you can drink.
 
@@ -266,7 +296,7 @@ print(max_bottles_drunk(n, e))  # Output: 19
 
 ---
 
-**Problem Statement 8:**
+**Problem Statement 9:**
 
 All natural numbers starting from 1 are written in order in a single infinite line as "123456789101112131415..." Write a function `find_digit(n)`to find the `n`th digit in this sequence of natural numbers.
 

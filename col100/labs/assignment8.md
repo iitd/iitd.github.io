@@ -1,223 +1,306 @@
-# Lab 8: Memoization and Dynamic Programming
+# Lab 7: File and Directory Operations, File I/O, and Reading Input
 
-## Introduction to Dynamic Programming
+## File and Directory Operations
 
-Dynamic programming is a method for solving complex problems by breaking them down into simpler subproblems and solving each subproblem only once. It is typically used when the subproblems overlap, i.e., when the same subproblem is encountered multiple times in the computation.
+### Creating a Directory
 
-There are two main approaches to dynamic programming:
-
-1. **Top-Down Approach (Memoization):** In this approach, we solve the problem recursively, but store the results of subproblems in a cache (memo) to avoid redundant calculations.
-
-2. **Bottom-Up Approach (Tabulation):** In this approach, we solve the problem iteratively, starting from the smallest subproblems and building up to the final solution.
-
-### Introduction to Memoization (Top-Down Dynamic Programming)
-
-Memoization is an optimization technique used to store the results of expensive function calls and return the cached result when the same inputs occur again. It is a form of caching that can greatly improve the performance of recursive algorithms.
-
-#### Example: Calculating Fibonacci Numbers with Memoization
-
-Recall the naive version of the `fibonacci` function which returns the `n`th Fibonacci number starting from 0, 1, 1, 2, 3, 5, 8, 13, ...:
+To create a directory, use the `os.mkdir()` function. This function creates a new directory at the specified path.
 
 ```python
-def fibonacci(n):
-    if n <= 1:
-        return 1
-    else:
-    return fibonacci(n - 1) + fibonacci(n - 2)
+import os
+
+# Create a directory named "example_dir"
+os.mkdir("example_dir")
 ```
 
-Let's revisit the Fibonacci sequence and implement a memoized version of the Fibonacci function.
+If you need to create multiple nested directories, use `os.makedirs()`.
 
 ```python
-def fibonacci(n, memo={}):
-    if n in memo:
-        return memo[n]
-    if n <= 1:
-        return n
-    memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo)
-    return memo[n]
+import os
+
+# Create nested directories
+os.makedirs("parent_dir/child_dir")
 ```
 
-In this memoized version, we store the results of the Fibonacci function in a dictionary `memo`. If the result for a particular `n` is already computed, we return the cached result from the `memo` dictionary. This avoids redundant calculations and improves the performance of the Fibonacci function significantly.
+### Renaming a Directory
 
-### Bottom-Up Dynamic Programming (Tabulation)
-
-In the bottom-up approach, we solve the problem iteratively by starting from the smallest subproblems and building up to the final solution. This approach is often more efficient than the top-down approach as it avoids the overhead of recursive function calls.
-
-#### Example: Calculating Fibonacci Numbers with Tabulation
-
-Let's implement the Fibonacci function using a tabulation approach:
+To rename a directory, use the `os.rename()` function. This function renames the directory from the old name to the new name.
 
 ```python
-def fibonacci(n):
-    if n <= 1:
-        return n
-    fib = [0, 1]
-    for i in range(2, n + 1):
-        fib.append(fib[i - 1] + fib[i - 2])
-    return fib[n]
+import os
+
+# Rename the directory from "example_dir" to "new_example_dir"
+os.rename("example_dir", "new_example_dir")
 ```
 
-In this tabulation approach, we create a list `fib` to store the Fibonacci numbers iteratively. We start with the base cases `fib = [0, 1]` and calculate the Fibonacci numbers from `2` to `n` by summing the previous two numbers in the list.
+### Moving a Directory
 
-## Exercise Problems
-
-**Note:** Feel free to use additional helper functions to pass arguments like `memo` or `dp` to your functions, don't change the original function signatures.
-
-**Example:** Fibonacci Number using Memoization without changing the original function signature `fibonacci(n)`
+To move a directory, use the `shutil.move()` function from the `shutil` module. This function moves the directory to the specified destination.
 
 ```python
-def solve(n, memo={}):
-    if n in memo:
-        return memo[n]
-    if n <= 1:
-        return n
-    memo[n] = solve(n - 1, memo) + solve(n - 2, memo)
-    return memo[n]
+import shutil
 
-def fibonacci(n):
-    return solve(n, {})
+# Move the directory to a new location
+shutil.move("new_example_dir", "moved_example_dir")
 ```
 
-**Problem Statement 1: Calculate the `n`th Lucas number**
+### Checking if a Directory Exists
 
-The Lucas numbers are a series of numbers similar to the Fibonacci sequence, but with different initial values. The Lucas sequence starts as follows: 2, 1, 3, 4, 7, 11, 18, ...
-Your task is to implement the function `lucas(n)` using dynamic programming. The function should return the `n`th Lucas number.
-
-**Note: Your solution should run in O(n) time complexity and O(n) space complexity**
-**Bonus: Can you do it in O(1) space complexity using bottom-up DP?**
+To check if a directory exists, use the `os.path.exists()` function. This function returns `True` if the directory exists, and `False` otherwise.
 
 ```python
-def lucas(n):
-    # Fill in the code to calculate the nth Lucas number using dynamic programming
+import os
+
+# Check if the directory exists
+if os.path.exists("moved_example_dir"):
+    print("Directory exists")
+else:
+    print("Directory does not exist")
+```
+
+### Listing Directories
+
+To list all directories in a given path, use the `os.listdir()` function. This function returns a list of all files and directories in the specified path.
+
+```python
+import os
+
+# List all directories in the current directory
+directories = [d for d in os.listdir(".") if os.path.isdir(d)]
+print(directories)
+```
+
+### Deleting a Directory
+
+To delete a directory, use the `os.rmdir()` function for an empty directory, or `shutil.rmtree()` for a directory that may contain files and subdirectories.
+
+```python
+import os
+import shutil
+
+# Remove an empty directory
+os.rmdir("empty_dir")
+
+# Remove a directory with contents
+shutil.rmtree("dir_with_contents")
+```
+
+## File I/O
+
+### Reading from Files
+
+To read from a file, use the `open()` function with the `r` mode and then use the `read()`, `readline()`, or `readlines()` methods.
+
+#### Example: Reading Entire File
+
+```python
+with open("example.txt", "r") as file:
+    content = file.read()
+    print(content)
+```
+
+#### Example: Reading File Line by Line
+
+```python
+with open("example.txt", "r") as file:
+    for line in file:
+        print(line.strip())
+```
+
+### Writing to Files
+
+To write to a file, use the `open()` function with the `w` mode and then use the `write()` or `writelines()` methods.
+
+#### Example: Writing to a File
+
+```python
+with open("example.txt", "w") as file:
+    file.write("Hello, world!")
+```
+
+### Appending to Files
+
+To append to a file, use the `open()` function with the `a` mode.
+
+#### Example: Appending to a File
+
+```python
+with open("example.txt", "a") as file:
+    file.write("\nThis is an appended line.")
+```
+
+### Copying File Contents
+
+To copy the contents of one file to another, use the `shutil.copyfile()` function.
+
+#### Example: Copying File Contents
+
+```python
+import shutil
+
+shutil.copyfile("source.txt", "destination.txt")
+```
+
+### Merging Files
+
+To merge the contents of two files, read both files and write their contents to a new file.
+
+#### Example: Merging Files
+
+```python
+with open("file1.txt", "r") as file1, open("file2.txt", "r") as file2, open("merged.txt", "w") as merged_file:
+    merged_file.write(file1.read() + "\n" + file2.read())
+```
+
+## Reading Input
+
+### Reading a List of Space-Separated Integers
+
+To read a list of space-separated integers, use the `input()` function and then split and convert the input.
+
+#### Example: Reading Space-Separated Integers
+
+```python
+input_string = input("Enter space-separated integers: ")
+numbers = list(map(int, input_string.split()))
+print(numbers)
+```
+
+### Reading Multiple Lines of Input
+
+To read multiple lines of input, use a loop that reads each line until a termination condition is met.
+
+#### Example: Reading Multiple Lines
+
+```python
+print("Enter lines of text (type 'STOP' to end):")
+lines = []
+while True:
+    line = input()
+    if line == "STOP":
+        break
+    lines.append(line)
+print(lines)
+```
+
+### Reading Multiple lines of input
+
+In programming, input is often given as multiple lines, where the first line contains an integer `n`, followed by `n` lines of data.
+
+#### Example: Reading multiple lines of input
+
+```python
+n = int(input())
+data = []
+for _ in range(n):
+    data.append(input().strip())
+print(data)
+```
+
+# Exercise Problems
+
+**Problem 1:** Given a file with path `filename` containing a list of integers separated by spaces, write a Python program to read the file and print the sum of the integers.
+
+```python
+# Read the file and calculate the sum of integers
+def sum_integers(filename):
     pass
 
-# Test cases
-print(lucas(5))  # Expected output: 11
-
 ```
 
-**Problem Statement 2: Calculate the number of ways to climb `n` stairs**
+**Problem 2:** Write a Python program that reads a file `input_file` containing a list of words separated by spaces and writes the unique words to a new file `output_file`, each on a new line in alphabetical order.
+    
+```python
+# Read the file and write unique words to a new file
+def unique_words(input_file, output_file):
+    pass
+```
 
-You are climbing a staircase. It takes `n` steps to reach the top. Each time you can either climb 1 or 2 or 3 steps. In how many distinct ways can you climb to the top?
-Your task is to implement the function `climb_stairs(n)` using dynamic programming. The function should return the number of distinct ways to climb `n` stairs.
-
-**Note: Your solution should run in O(n) time complexity and O(n) space complexity**
-**Bonus: Can you do it in O(1) space complexity using bottom-up DP?**
+**Problem 3:** Read a file `input_file` containing a variable number of space-separated strings in each line, in a word-by-word manner. When the word "STOP" is encountered, among these strings, stop reading the file and write each word read in `input_file` before "STOP" along with its frequency. Write the output to a new file `output_file` in the format `word: frequency`.
 
 ```python
-def climb_stairs(n):
-    # Fill in the code to calculate the number of ways to climb n stairs using dynamic programming
+# Read the file and write word frequencies to a new file
+def word_frequencies(input_file, output_file):
     pass
 
-# Test cases
-print(climb_stairs(3))  # Expected output: 4
-print(climb_stairs(5))  # Expected output: 13
+# Example Test case
+
+# input.txt: 
+# apple banana apple cherry 
+# mango apple banana STOP panda goose
+# pumpkin apple cherry 
+
+# output.txt:
+# apple: 3
+# banana: 2
+# cherry: 1
+# mango: 1
+
 ```
 
-**Problem Statement 3: Calculate the minimum cost to reach the bottom-right cell in a grid**
-
-You are given a grid with cells from `(0, 0)` to `(m, n)`. **You can only move either down or right at any point in time**. Write a function `num_paths(m, n)` that calculates the number of unique paths to reach the bottom-right corner `(m, n)` of the grid from the top-left corner `(0, 0)` using dynamic programming.
-
-**Note: This question was part of the additional exercises for Lab 7(Recursion). You can use the hints from that question here as well. However your solution should not be recursive**
+**Problem 4:** Given a list of directories `dirs`, write a Python program to create these directories if they do not exist. If the directories already exist, print a message indicating that the directory already exists. In each directory, create a file named `README.md` with the content "This is a README file for directory `dir_name`", where `dir_name` is the name of the directory.
 
 ```python
-def num_paths(m, n):
-    # Fill in the code to calculate the number of unique paths using dynamic programming
+# Create directories and README files
+def create_directories(dirs):
+    pass
+```
+
+**Problem 5:** Modify line within file `filename` by replacing the line at index `line_number`(startin line is at index 1) with the new line `new_line`. Check if the line number is valid and return `True` if the line was modified successfully, `False` otherwise.
+
+
+```python
+def modify_line(filename, line_number, new_line):
+    pass
+```
+
+**Problem 6:** Read CSV file. Given a file `filename` in the CSV format, write a Python program to read the file and return a dictionary where each dictionary represents a column with dictionary key as the column header and the value as a list of values in that column. The first row of the CSV file contains the column headers, separated by a comma. The subsequent rows contain the data, also separated by commas. The data in each row corresponds to the column header in the same position.
+
+```python
+# Read the CSV file and return a list of dictionaries
+def read_csv(filename):
     pass
 
-# Test cases
-print(num_paths(3, 3))  # Expected output: 6
-print(num_paths(7, 3))  # Expected output: 28
+# Example Test case
 
+# filename: data.csv
+# Name,Age,Gender
+# Alice,25,F
+# Bob,30,M
+# Charlie,35,M
+# David,40,M
+
+# Output:
+# {'Name': ['Alice', 'Bob', 'Charlie', 'David'], 'Age': ['25', '30', '35', '40'], 'Gender': ['F', 'M', 'M', 'M']}
 
 ```
 
-**Problem Statement 4: Robbing houses I**
+**Problem 7:** Write a Python program that reads all files within the current directory and does the following: 
+1. It checks the file's extension and categorizes the files into different lists based on the extension. Files having no extensions are also a separate category. An extension is the part of the filename after the last dot.
 
-You are a professional robber planning to rob houses along a street. Each house has a certain amount of money stashed. All houses at this place are arranged **in a single row**. That means the first house is the neighbor of the last one. Meanwhile, adjacent houses have a security system connected, and it will automatically contact the police if two adjacent houses were broken into on the same night.
-
-Given a list of non-negative integers `nums` representing the amount of money of each house, return the maximum amount of money you can rob tonight without alerting the police.
-
-Your task is to implement the function `rob(nums)` using dynamic programming. The function should return the maximum amount of money you can rob without alerting the police.
+2. For each category, it creates a new directory(if such a directory already does not exist) with the name of the directories being the extension name. It then moves the files to the corresponding directories.
 
 ```python
-def rob(nums):
-    # Fill in the code to calculate the maximum amount of money you can rob without alerting the police using dynamic programming
+# Categorize files based on extension and move them to directories
+def categorize_files():
     pass
-
-# Test cases
-print(rob([2, 3, 2]))  # Expected output: 4
-print(rob([1, 2, 3, 1]))  # Expected output: 4
 ```
 
-# Additional Exercise Problems
+**Problem 8:** Directory synchronization: Given two directories `dir1` and `dir2`, write a Python program to synchronize the contents of the two directories. The program should do the following:
 
-**Problem Statement 5: Robbing houses II**
+1. If a file/folder exists in `dir1` but not in `dir2`, copy the file/folder from `dir1` to `dir2`.
+2. If a file/folder exists in `dir2` but not in `dir1`, copy the file/folder from `dir2` to `dir1`.
+3. If a file/folder exists in both directories but has different contents, overwrite the file/folder in `dir2` with the file from `dir1`.
 
-After robbing those houses on the same street, the thief has found himself a new place for his thievery so that he will not get too much attention. This time, all houses at this place are arranged **in a circle**. That means the first house is the neighbor of the last one. Meanwhile, adjacent houses have a security system connected, and it will automatically contact the police if two adjacent houses were broken into on the same night.
-
-Given a list of non-negative integers `nums` representing the amount of money of each house, return the maximum amount of money you can rob tonight without alerting the police.
-
-Your task is to implement the function `rob_circle(nums)` using dynamic programming. The function should return the maximum amount of money you can rob without alerting the police.
 
 ```python
-def rob_circle(nums):
-    # Fill in the code to calculate the maximum amount of money you can rob without alerting the police using dynamic programming
+# Synchronize directories
+def synchronize_directories(dir1, dir2):
     pass
-
-# Test cases
-print(rob_circle([2, 3, 2]))  # Expected output: 3
-print(rob_circle([1, 2, 3, 1]))  # Expected output: 4
 ```
 
-**Problem Statement 6: Number of ways to make `target` from coins of different denominations**
 
-You are given an integer array `coins` representing coins of different denominations and an integer `target` representing a total amount of money you need to make using these coins. Return the number of combinations that make up that amount. If that amount of money cannot be made up by any combination of the coins, return `0`. You may assume that you have an infinite number of each kind of coin.
-Your task is to implement the function `coin_change(coins, target)` using dynamic programming. The function should return the number of combinations that make up the target amount.
 
-**Note: Your solution should run in O(n * target) time complexity**
-```python
-def coin_change(coins, target):
-    # Fill in the code to calculate the number of combinations that make up the target amount using dynamic programming
-    pass
 
-# Test cases
-coins = [1,2,5]
-target = 10
-print(coin_change(coins, target))  # Expected output: 10
-```
 
-**Problem Statement 7: Game of stones**
 
-Alice and Bob are playing a game. They have `n` piles of stones in front of them arranged in a row from left to right. **Assume that `n` is even**. The game is played as follows with players alternating turns:
-In each turn, the player can remove the leftmost pile of stones or the rightmost pile of stones in the current row and capture all the stones in that pile for himself. The player with the most stones collected at the end wins. Both players play optimally. **Assume Alice always has the first turn**
-
-Given an integer array `piles` representing the number of stones in each pile, return the maximum number of stones Alice can collect. Your task is to implement the function `stone_game(piles)` using dynamic programming. The function should return the maximum number of stones Alice can collect assuming Bob plays optimally as well.
-
-```python
-def stone_game(piles):
-    # Fill in the code to calculate the maximum number of stones Alice can collect using dynamic programming
-    pass
-
-# Test cases
-print(stone_game([5, 3, 4, 5]))  # Expected output: 9
-#Explanation: Alice can start by taking the 5 stones from the left. Then Bob will take the 5 stones from the right to minimise Alice's score. Alice can then take the 4 stones from the left and Bob will take the 3 stones from the right. Hence, Alice's best score will be 5 + 4 = 9
-```
-
-**Problem Statement 8: Longest common subsequence**
-
-Given two strings `s1` and `s2`, return the length of their longest common subsequence. A subsequence of a string is a new string generated from the original string with some characters(can be none) deleted without changing the relative order of the remaining characters. (eg, "ace" is a subsequence of "abcde" while "aec" is not). A common subsequence of two strings is a subsequence that is common to both strings.
-
-**Hint:** to find the longest common subsequence among s1[i:] and s2[j:], if s1[i] == s2[j], then the longest common subsequence among s1[i:] and s2[j:] is 1 + the longest common subsequence among s1[i+1:] and s2[j+1:], otherwise, it is the maximum of the longest common subsequence among s1[i+1:] and s2[j:] and the longest common subsequence among s1[i:] and s2[j+1:]
-
-```python
-def longest_common_subsequence(s1, s2):
-    # Fill in the code to calculate the length of the longest common subsequence using dynamic programming
-    return -1
-
-# Test cases
-print(longest_common_subsequence("abcde", "ace"))  # Expected output: 3
-print(longest_common_subsequence("abc", "def"))  # Expected output: 0
-print(longest_common_subsequence("abcde","afedce"))  # Expected output: 3
-```

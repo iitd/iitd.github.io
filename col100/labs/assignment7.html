@@ -365,133 +365,146 @@ code {
           : 'default'
     });
   </script>
-<h1 id="lab-7-introduction-to-recursion">Lab 7: Introduction to Recursion</h1>
-<p>Recursion is a programming technique where a function makes calls to itself to solve a problem. It's a powerful tool for breaking down complex problems into simpler sub-problems.</p>
-<h3 id="example-calculating-factorial-using-recursion">Example: Calculating Factorial Using Recursion</h3>
-<p>One classic example of recursion is calculating the factorial of a number. The factorial of a non-negative integer <code>n</code>, denoted as <code>n!</code>, is the product of all positive integers less than or equal to <code>n</code>.</p>
-<p>The factorial function can be defined recursively as follows:</p>
-<ul>
-<li>Base case: <code>0! = 1</code></li>
-<li>Recursive case: <code>n! = n * (n-1)!</code> for <code>n &gt; 0</code></li>
-</ul>
-<p>Here's how you can implement the factorial function using recursion in Python:</p>
-<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">factorial</span><span class="hljs-params">(n)</span>:</span>
-    <span class="hljs-keyword">if</span> n == <span class="hljs-number">0</span>:
-        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>
-    <span class="hljs-keyword">else</span>:
-        <span class="hljs-keyword">return</span> n * factorial(n - <span class="hljs-number">1</span>)
+<h1 id="lab-7-more-on-abstract-data-types">Lab 7: More on Abstract Data Types</h1>
+<pre class="hljs"><code><div><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Stack</span>:</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self)</span>:</span>
+        self.stack = []
 
-<span class="hljs-comment"># Test</span>
-print(factorial(<span class="hljs-number">5</span>))  <span class="hljs-comment"># Output: 120</span>
-</div></code></pre>
-<p>In this example, the function <code>factorial</code> calls itself with a smaller value (<code>n - 1</code>) until it reaches the base case (<code>n == 0</code>). Then, it returns values back up the call stack, multiplying each returned value by <code>n</code> to compute the factorial of <code>n</code>.</p>
-<hr>
-<h1 id="exercise-problems">Exercise Problems:</h1>
-<p><strong>Problem Statement 1: Recursively Calculate the nth Fibonacci Number</strong></p>
-<p>The Fibonacci series is a sequence of numbers where each number is the sum of the two preceding ones, starting from 0 and 1. The sequence starts as follows: 1, 1, 2, 3, 5, 8, 13, 21, ...</p>
-<p>Write a recursive function <code>fibonacci(n)</code> that calculates the <code>n</code>th Fibonacci number.</p>
-<p>Your task is to implement the function <code>fibonacci(n)</code> using recursion. The function should return the <code>n</code>th Fibonacci number without using lists.</p>
-<hr>
-<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">fibonacci</span><span class="hljs-params">(n)</span>:</span>
-    <span class="hljs-comment"># Fill in the code to calculate the nth Fibonacci number recursively</span>
-    <span class="hljs-keyword">pass</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">push</span><span class="hljs-params">(self, item)</span>:</span>
+        self.stack.append(item)
 
-<span class="hljs-comment"># Test cases</span>
-print(fibonacci(<span class="hljs-number">6</span>))  <span class="hljs-comment"># Expected output: 8</span>
-print(fibonacci(<span class="hljs-number">8</span>))  <span class="hljs-comment"># Expected output: 21</span>
-</div></code></pre>
-<hr>
-<p><strong>Problem Statement 2: Minimum number of steps to reach the top</strong></p>
-<p>You are standing on the ground floor and in front of you is a staircase with <code>n</code> steps. You can take either 1 step, 2 steps, or 3 steps at a time. Write a recursive function <code>num_steps(n)</code> that calculates the minimum number of steps required to reach the top of the staircase.</p>
-<p>Your task is to implement the function <code>num_steps(n)</code> using recursion. The function should return the minimum number of steps required to reach the top of the staircase.</p>
-<hr>
-<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">num_steps</span><span class="hljs-params">(n)</span>:</span>
-    <span class="hljs-comment"># Fill in the code to calculate the minimum number of steps recursively</span>
-    <span class="hljs-keyword">pass</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">pop</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-keyword">if</span> len(self.stack) == <span class="hljs-number">0</span>:
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>
+        <span class="hljs-keyword">return</span> self.stack.pop()
 
-<span class="hljs-comment"># Test cases</span>
-print(num_steps(<span class="hljs-number">3</span>))  <span class="hljs-comment"># Expected output: 4</span>
-print(num_steps(<span class="hljs-number">5</span>))  <span class="hljs-comment"># Expected output: 13</span>
-</div></code></pre>
-<hr>
-<p><strong>Problem Statement 3: Recursively Reverse a List</strong></p>
-<p>Reverse a list using recursion. Write a recursive function <code>reverse_list(lst)</code> that takes a list <code>lst</code> as input and returns the reversed list. <strong>You cannot use loops. You cannot use any list methods other than list concatenation (<code>+</code>) and list slicing</strong>.</p>
-<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">reverse_list</span><span class="hljs-params">(lst)</span>:</span>
-    <span class="hljs-comment"># Fill in the code to reverse the list recursively</span>
-    <span class="hljs-comment"># The function should return the reversed list</span>
-    <span class="hljs-keyword">pass</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">is_empty</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-keyword">return</span> len(self.stack) == <span class="hljs-number">0</span>
 
-<span class="hljs-comment"># Test cases</span>
-print(reverse_list([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>]))  <span class="hljs-comment"># Expected output: [5, 4, 3, 2, 1]</span>
-</div></code></pre>
-<hr>
-<p><strong>Problem Statement 4: Recursively Check if a String is a Palindrome</strong></p>
-<p>Given a string, write a recursive function <code>is_palindrome(s)</code> that checks if the string <code>s</code> is a palindrome. A palindrome is a word, phrase, number, or other sequence of characters that reads the same forward and backward (ignoring spaces, punctuation, and capitalization). <strong>You cannot use loops</strong>, and should only use recursion. <strong>You cannot use any string methods other than string slicing</strong>.</p>
-<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">is_palindrome</span><span class="hljs-params">(s)</span>:</span>
-    <span class="hljs-comment"># Fill in the code to check if the string is a palindrome recursively</span>
-    <span class="hljs-comment"># The function should return True if the string is a palindrome, False otherwise</span>
-    <span class="hljs-keyword">pass</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">peek</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-keyword">if</span> len(self.stack) == <span class="hljs-number">0</span>:
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>
+        <span class="hljs-keyword">return</span> self.stack[<span class="hljs-number">-1</span>]
 
-<span class="hljs-comment"># Test cases</span>
-print(is_palindrome(<span class="hljs-string">"racecar"</span>))  <span class="hljs-comment"># Expected output: True</span>
-print(is_palindrome(<span class="hljs-string">"hello"</span>))  <span class="hljs-comment"># Expected output: False</span>
+<span class="hljs-comment"># Do not worry about the implementation of the Stack class above, you can copy the Stack class code as it is and use it to solve the problems below.</span>
 </div></code></pre>
-<h1 id="additional-exercise-problems">Additional Exercise Problems</h1>
-<p><strong>Problem Statement 5: Flattening a Nested List</strong></p>
-<p>You are given a nested list of integers. Write a function <code>flatten_list(nested_list)</code> that flattens the nested list into a single list by removing the nesting. Your task is to implement the function <code>flatten_list(nested_list)</code> that takes a nested list as input and returns a single flattened list. You can assume that the input list will only contain integers and other nested lists.</p>
-<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">flatten_list</span><span class="hljs-params">(nested_list)</span>:</span>
+<pre class="hljs"><code><div><span class="hljs-keyword">from</span> collections <span class="hljs-keyword">import</span> deque
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Queue</span>:</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self)</span>:</span>
+        self.queue = deque()
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">enqueue</span><span class="hljs-params">(self, item)</span>:</span>
+        <span class="hljs-comment"># Add an item to the end of the deque</span>
+        self.queue.append(item)
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">dequeue</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-comment"># Remove and return an item from the front of the deque</span>
+        <span class="hljs-keyword">if</span> self.is_empty():
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>
+        <span class="hljs-keyword">return</span> self.queue.popleft()
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">is_empty</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-comment"># Check if the deque is empty</span>
+        <span class="hljs-keyword">return</span> len(self.queue) == <span class="hljs-number">0</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">peek</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-comment"># Return the front item of the deque without removing it</span>
+        <span class="hljs-keyword">if</span> self.is_empty():
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>
+        <span class="hljs-keyword">return</span> self.queue[<span class="hljs-number">0</span>]
+
+<span class="hljs-comment"># Do not worry about the implementation of the Queue class above, you can copy the Queue class code as it is and use it to solve the problems below.</span>
+
+</div></code></pre>
+<h2 id="exercise-problems">Exercise Problems</h2>
+<p><strong>Problem Statement 1:</strong> Given a list of positive integers <code>nums</code> of size <code>2n</code>, we call an integer <code>x</code> the majority elemeent if it appears at least n times in the list. Write a function <code>find_majority_element(nums)</code> that returns the majority element <code>x</code>. If there is no majority element, return -1.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">find_majority_element</span><span class="hljs-params">(nums)</span>:</span>
     <span class="hljs-string">"""
-    Flatten a nested list into a single list.
-    Example Input: [1, [2, [3, 4], 5], 6, [7, 8, [9, 10]]]
-    Example Output: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    Given a list of positive integers nums of size 2n, return the majority element x.
+    If there is no majority element, return -1.
     """</span>
-
-    <span class="hljs-comment"># Fill in the code to flatten the nested list here, the function should return a single list</span>
+    <span class="hljs-comment"># Fill in the code to find the majority element</span>
     <span class="hljs-keyword">pass</span>
 </div></code></pre>
-<hr>
-<p><strong>Problem Statement 6: Calculate the number of paths</strong></p>
-<p>You are given a grid with cells from <code>(0, 0)</code> to <code>(m, n)</code>. <strong>You can only move either down or right at any point in time</strong>. Write a recursive function <code>num_paths(m, n)</code> that calculates the number of unique paths to reach the bottom-right corner <code>(m, n)</code> of the grid from the top-left corner <code>(0, 0)</code>. Try to solve this question without using hints first. If you get stuck, you can refer to the hints below.</p>
-<p><strong>Hint 1:</strong> Be very careful with the base cases, you should not make calls to num_paths with negative values or values that are out of the grid.<br><br>
-<strong>Hint 2:</strong> You should think about <code>num_paths(i, j)</code> as the number of total_paths from <code>(0, 0)</code> to <code>(i, j)</code>. Can you use this to calculate <code>num_paths(m, n)</code>?<br><br>
-<strong>Hint 3:</strong> There is only 1 path to reach <code>(0, j)</code> from <code>(0, 0)</code>. Similarly, there is only 1 path to reach <code>(i, 0)</code> from <code>(0, 0)</code> <br><br>
-<strong>Hint 4:</strong> For any cell <code>(i, j)</code> where <code>i&gt;0</code> and <code>j&gt;0</code>, the number of paths to reach it is the sum of the number of paths to reach the cell above it and the cell to the left of it. <br><br></p>
-<hr>
-<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">num_paths</span><span class="hljs-params">(m, n)</span>:</span>
-    <span class="hljs-comment"># Fill in the code to calculate the number of paths recursively</span>
+<p><strong>Problem Statement 2:</strong> You are given a 2D list <code>groceries</code> where each list is a pair <code>[item, quantity]</code> representing the name of an item and its quantity. There may be multiple entries with the same item name. Write a function <code>combine_items(groceries)</code> that combines all the quantities of the same item into a single entry. The function should return a new 2D list with unique items and their combined quantities.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">combine_items</span><span class="hljs-params">(groceries)</span>:</span>
+    <span class="hljs-string">"""
+    Given a 2D list groceries where each list is a pair [item, quantity], combine all the quantities of the same item into a single entry.
+    Return a new 2D list with unique items and their combined quantities.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to combine the items</span>
     <span class="hljs-keyword">pass</span>
-
-<span class="hljs-comment"># Test cases</span>
-print(num_paths(<span class="hljs-number">3</span>, <span class="hljs-number">4</span>))  <span class="hljs-comment"># Expected output: 35</span>
-print(num_paths(<span class="hljs-number">5</span>, <span class="hljs-number">2</span>))  <span class="hljs-comment"># Expected output: 21</span>
 </div></code></pre>
-<hr>
-<p><strong>Problem Statement 7: Find the minimum number of tiles</strong></p>
-<p>You have an unlimited supply of square tiles of size <code>2^i x 2^i</code> such as <code>1x1</code>, <code>2x2</code>, and <code>4x4</code>, <code>8x8</code> and so on. You want to tile a floor of size <code>n x m</code>. Write a function <code>min_tiles(n, m)</code> that calculates the minimum number of tiles required to tile the floor of size <code>n x m</code>.</p>
-<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">min_tiles</span><span class="hljs-params">(n, m)</span>:</span>
-    <span class="hljs-comment"># Fill in the code to calculate the minimum number of tiles required</span>
+<p>**Problem Statement 3:**Given a list of <code>n</code> integers <code>nums</code>, and an integer <code>k</code>, write a function to return the maximum sum of <code>k</code> consecutive elements in the list.</p>
+<p><strong>Note: Your code should run in O(n) time complexity</strong></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">max_sum</span><span class="hljs-params">(nums, k)</span>:</span>
+    <span class="hljs-string">"""
+    Given a list of n integers nums, and an integer k, return the maximum sum of k consecutive elements in the list.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to find the maximum sum of k consecutive elements</span>
     <span class="hljs-keyword">pass</span>
 
-<span class="hljs-comment">#Test cases</span>
-print(min_tiles(<span class="hljs-number">3</span>, <span class="hljs-number">3</span>))  <span class="hljs-comment"># Expected output: 6 (5 1x1 tiles and 1 2x2 tile)</span>
-print(min_tiles(<span class="hljs-number">2</span>, <span class="hljs-number">4</span>))  <span class="hljs-comment"># Expected output: 2 (2 2x2 tiles)</span>
-print(min_tiles(<span class="hljs-number">5</span>, <span class="hljs-number">2</span>))  <span class="hljs-comment"># Expected output: 4 (2 1x1 tiles, 2 2x2 tiles)</span>
 </div></code></pre>
-<hr>
-<p><strong>Problem Statement 8: Recursively Find the Greatest Common Divisor (GCD)</strong></p>
-<p>Write a recursive function <code>gcd(a, b)</code> that calculates the greatest common divisor (GCD) of two positive integers <code>a</code> and <code>b</code>.</p>
-<p>Your task is to implement the function <code>gcd(a, b)</code> using recursion. The function should return the GCD of <code>a</code> and <code>b</code>. Try to solve this question without using hints first. If you get stuck, you can refer to the hints below.</p>
-<p><strong>Hint 1:</strong> The Euclidean algorithm for finding the GCD of two numbers states that the GCD of <code>a</code> and <code>b</code> is the same as the GCD of <code>b</code> and <code>a % b</code>.<br><br>
-<strong>Hint 2:</strong> You should ensure that recursion makes subproblems that are smaller than the original problem. One way to help with this is to always keep the smaller number as the first argument of the recursive calls. <br><br>
-<strong>Hint 3:</strong> We already know that the gcd of 0 and a number is the number itself. This can be used as the base case. <br><br></p>
-<hr>
-<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">gcd</span><span class="hljs-params">(a, b)</span>:</span>
-    <span class="hljs-comment"># Fill in the code to calculate the GCD recursively</span>
+<p><strong>Problem Statement 4:</strong> Given a list of integers <code>nums</code>, write a function <code>next_greater_element(nums)</code> that returns a list of the next greater element for each element in the list. If there is no greater element, return -1. A next greater element is the first element to its right that is greater than the current element.</p>
+<p><strong>Note: Your code should run in O(n) time complexity</strong></p>
+<p><strong>Hint: Use stacks</strong></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">next_greater_element</span><span class="hljs-params">(nums)</span>:</span>
+    <span class="hljs-string">"""
+    Given a list of integers nums, return a list of size len(nums) which gives the next greater element for each element in the list.
+    If there is no greater element, return -1.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to find the next greater element for each element</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<p><strong>Problem Statement 5:</strong> Given a string <code>s</code>, find the length of the longest substring that contains at most k distinct characters.</p>
+<p><strong>Note: Your code should run in O(n) time complexity</strong></p>
+<p><strong>Hint: Use sets</strong></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">longest_substring_with_k_distinct</span><span class="hljs-params">(s, k)</span>:</span>
+    <span class="hljs-string">"""
+    Given a string s, find the length of the longest substring that contains at most k distinct characters.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to find the length of the longest substring</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<p><strong>Problem Statement 6:</strong> Given a string which is a valid arithmetic expression, write a function <code>evaluate_expression(s)</code> that evaluates the expression and returns the result. The expression contains the operators <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code> and the operands are positive integers. Follow the precedence rule of operators(<code>/</code> &gt; <code>*</code> &gt; <code>+</code> &gt; <code>-</code>). The string is a list of integers and operators separated by spaces.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">evaluate_expression</span><span class="hljs-params">(s)</span>:</span>
+    <span class="hljs-string">"""
+    Given a string which is a valid arithmetic expression, evaluate the expression and return the result.
+    The expression contains the operators +, -, *, / and the operands are positive integers.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to evaluate the expression</span>
     <span class="hljs-keyword">pass</span>
 
-<span class="hljs-comment"># Test cases</span>
-print(gcd(<span class="hljs-number">24</span>, <span class="hljs-number">36</span>))  <span class="hljs-comment"># Expected output: 12</span>
-print(gcd(<span class="hljs-number">81</span>, <span class="hljs-number">153</span>))  <span class="hljs-comment"># Expected output: 9</span>
+<span class="hljs-comment"># Example: 4 * 22 - 3 + 5 / 2</span>
+<span class="hljs-comment"># Output: 87.5</span>
+</div></code></pre>
+<p><strong>Problem Statement 7:</strong> We define 2 strings as isomorphic if there is a one-to-one mapping of characters between the two strings. For example: &quot;babca&quot; and &quot;ebeab&quot; are isomorphic with a mapping from 'b' to 'e', 'a' to 'b', 'c' to 'a'.</p>
+<p>Given a list of n strings, combine all the strings isomorphic to each other into a single list. Return a list of lists where each list contains all the isomorphic strings with the same pattern.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">isomorphic_strings</span><span class="hljs-params">(strings)</span>:</span>
+    <span class="hljs-string">"""
+    Given a list of n strings, combine all the strings isomorphic to each other into a single list.
+    Return a list of lists where each list contains all the isomorphic strings with the same pattern.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to combine the isomorphic strings</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Example: ["babca", "ebeab", "abc", "def", "xyz", "ghi", "ccd", "tts]</span>
+<span class="hljs-comment"># Output: [['babca', 'ebeab'], ['abc', 'def', 'xyz', 'ghi'], ["ccd", "tts"]]</span>
+</div></code></pre>
+<p><strong>Problem Statement 8:</strong> Given a string <code>pattern</code> and a string <code>s</code>, write a function <code>is_subsequence</code> that returns <code>True</code> if the string <code>pattern</code> is a subsequence of the string <code>s</code>, <code>False</code> otherwise. A string <code>s1</code> is a subsequence of <code>s2</code> if some number of characters (may be zero) can be deleted from <code>s2</code> to form <code>s1</code>.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">is_subsequence</span><span class="hljs-params">(pattern, s)</span>:</span>
+    <span class="hljs-string">"""
+    Given a string pattern and a string s, return True if the string pattern is a subsequence of the string s, False otherwise.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to check if pattern is a subsequence of s</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Example: pattern = "abc", s = "ahbgdc"</span>
+<span class="hljs-comment"># Output: True</span>
+
+<span class="hljs-comment"># Example: pattern = "agb", s = "ahbgdc"</span>
+<span class="hljs-comment"># Output: False</span>
 </div></code></pre>
 
 </body>

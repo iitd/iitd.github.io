@@ -314,7 +314,31 @@ print(string_x)  # Output: 'abcdef42'
 
 # Exercise Problems:
 
-**Problem Statement 1: Matrix Transpose**
+**Problem Statement 1: Squares till n** Given a positive integer `n`, write a function `squares_till_n(n)` that returns a list of squares of all positive integers such that the square is less than or equal to `n`. The list should contain the squares in increasing order.
+
+```python
+def squares_till_n(n):
+    """
+    Find the squares of all integers from 1 to n.
+    
+    Parameters:
+    n (int): A positive integer.
+    
+    Returns:
+    list of int: A list of squares of all integers from 1 to n.
+    """
+
+    # Fill in the code to find the squares of all integers from 1 to n
+    pass
+
+# Test cases
+print(squares_till_n(10))  # Output: [1, 4, 9]
+print(squares_till_n(20))  # Output: [1, 4, 9, 16]
+print(squares_till_n(25))  # Output: [1, 4, 9, 16, 25]
+
+```
+
+**Problem Statement 2: Matrix Transpose**
 
 Given a matrix `A` of dimensions `m x n`, the transpose of the matrix `A` is a matrix `B` of dimensions `n x m` such that `B[i][j] = A[j][i]` for all `0 <= i < n` and `0 <= j < m`. Write a function `matrix_transpose(A)` that returns the transpose of the matrix `A`.
 
@@ -342,7 +366,7 @@ print(matrix_transpose(A))  # Output: [[1, 4], [2, 5], [3, 6]]
 
 ---
 
-**Problem Statement 2: Remaining Stone Weight**
+**Problem Statement 3: Remaining Stone Weight**
 
 You are given a list of integers `stones` representing the weights of stones. Each turn, you choose the two heaviest stones and smash them together. Suppose the stones have weights `x` and `y` with `x <= y`. The result of this smash is:
 1. If `x == y`, both stones are destroyed, and removed from the list
@@ -368,14 +392,21 @@ def remaining_stone_weight(stones):
 
 # Test cases
 stones = [2, 7, 4, 1, 8, 1]
-print(remaining_stone_weight(stones))  # Output: 1
+print(remaining_stone_weight(stones))  # Output: 0
+# Explanation:
+# Turn 1: [2, 7, 4, 1, 8, 1] -> [2, 4, 1, 1, 1] (8 - 7 = 1)
+# Turn 2: [2, 4, 1, 1, 1] -> [2, 1, 1] (4 - 2 = 2)
+# Turn 3: [2, 1, 1] -> [1, 1] (2 - 1 = 1)
+# Turn 4: [1, 1] -> [] (1 - 1 = 0)
 
 ```
 
 
 ---
 
-**Problem Statement 3: Counting Vowels and Consonants in a String**
+
+
+**Problem Statement 4: Counting Vowels and Consonants in a String**
 
 Write a function `count_vowels_consonants(text)` that takes a string `text` as input and returns a tuple containing the count of vowels and consonants in the text. The function should ignore case(treat uppercase and lowercase characters identically) and consider only alphabets as vowels/consonants. The tuple should contain the count of vowels followed by the count of consonants.
 
@@ -401,7 +432,11 @@ print(count_vowels_consonants(text))  # Output: (3, 7)
 
 ```
 
-**Problem Statement 4: Minimum Operations to make strings similar**
+---
+
+# Additional Exercise Problems
+
+**Problem Statement 5: Minimum Operations to make strings similar**
 
 Two strings `s1` and `s2` are similar if you can make `s1` equal to `s2` by rearranging the letters of `s1`. You are given two strings `s1` and `s2`. Write a function `min_operations_to_make_similar(s1, s2)` that returns the minimum number of operations required to make `s1` and `s2` similar. The operations allowed are:
 1. Add a character to `s1`
@@ -440,11 +475,7 @@ print(min_operations_to_make_similar(s1, s2))  # Output: 6
 
 ---
 
-# Additional Exercise Problems
-
----
-
-**Problem Statement 5: Matrix Multiplication**
+**Problem Statement 6: Matrix Multiplication**
 
 You are given two matrices `A` and `B` of dimensions `m x n` and `n x p` respectively. Write a function `matrix_multiplication(A, B)` that returns the product of the two matrices. The product matrix will have dimensions `m x p`. The matrices are represented as lists of lists. You can assume that the dimensions of the input matrices are such that the multiplication is possible.
 
@@ -477,7 +508,7 @@ print(matrix_multiplication(A, B))  # Output: [[58, 64], [139, 154], [220, 244]]
 
 ---
 
-**Problem Statement 6: Checking Balanced Parenthesis**
+**Problem Statement 7: Checking Balanced Parenthesis**
 
 Write a function `check_balanced_parenthesis(text)` that takes a string `text` as input and returns True if the string is a balanced parenthesis expression, and False otherwise. A balanced parenthesis expression is one where each opening parenthesis has a corresponding closing parenthesis and the pairs are properly nested with no isolated parentheses. The function should ignore all characters other than parentheses. Ignore all characters apart from parentheses `(` and `)`.
 
@@ -505,7 +536,7 @@ print(check_balanced_parenthesis(text))  # Output: False
 
 ```
 
-**Problem Statement 7: Match String Pattern**
+**Problem Statement 8: Match String Pattern**
 
 Given a list of strings `L` and a pattern string `p`, write a function `match_string_pattern(L, s)` that returns a list of boolean values where the `i-th` element is `True` if the `i-th` string in the list `L` contains the pattern string `p`, and `False` otherwise.
 A string `s` is said to contain a pattern string `p` if `p` is a subsequence of `s`. A subsequence is a sequence that can be derived from another sequence by deleting some or no elements without changing the order of the remaining elements.
@@ -537,7 +568,7 @@ p = "tel"
 print(match_string_pattern(L, p))  # Output: [True, True, False, True, False]
 ```
 
-**Problem Statement 8: Similar word strings**
+**Problem Statement 9: Similar word strings**
 
 A word string is a string that contains only alphabets and spaces and contains no leading or trailing spaces. The words in a word string are separated by one or more spaces. Two word strings `s1` and `s2` are said to be similar if I can find a word string `s3` and insert it into `s1` such that the result is identical to `s2` or vice versa. The entire string `s3` must be inserted without breaking it into separate parts. Write a function `similar_word_strings(s1, s2)` that returns True if the two word strings `s1` and `s2` are similar, and False otherwise. 
 
