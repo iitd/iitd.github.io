@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>assignment10.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="lab-10-more-on-recursion">Lab 10: More on Recursion</h1>
+<p>Recursion and backtracking can often be used to solve complex problems by breaking them down into simpler subproblems. In this lab, you will practice writing recursive functions to solve various problems.</p>
+<h2 id="example-problem">Example problem</h2>
+<p>Given a list of <code>n</code> integers, write a function which calculates all possible distinct sums that can be obtained by adding some <code>k</code> integers in the list. The function should return a list of all distinct sums in ascending order.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">distinct_sums</span><span class="hljs-params">(numbers, k)</span>:</span>
+    <span class="hljs-string">"""
+    Calculate all possible distinct sums by adding k integers from the list.
+    """</span>
+    <span class="hljs-comment"># We observe the following while creating our subproblem:</span>
+    <span class="hljs-comment"># 1. In the collection of all possible sums, we have the sums which do not include the 1st element of the list, and the sums which include the 1st element of the list.</span>
+    <span class="hljs-comment"># 2. The sums which do not include the 1st element of the list are the same as the sums obtained by adding k integers from the remaining list.</span>
+    <span class="hljs-comment"># 3. The sums which include the 1st element of the list are the sums obtained by adding (k-1) integers from the remaining list, plus the 1st element of the list.</span>
+    <span class="hljs-comment"># 4. We can use the above observations to create our recursive function.</span>
+
+    <span class="hljs-comment">#Note the base case is when the list is empty, the answer is [0]</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">distinct_sums_helper</span><span class="hljs-params">(numbers, start_index, k)</span>:</span>
+        <span class="hljs-keyword">if</span> k == <span class="hljs-number">0</span>: <span class="hljs-comment"># when we add k = 0 integers, there is one value for sum of k integers which is 0</span>
+            <span class="hljs-keyword">return</span> [<span class="hljs-number">0</span>]
+        <span class="hljs-keyword">if</span>(len(numbers) - start_index == k): <span class="hljs-comment"># when the number of integers in the list is equal to k, the sum of k integers is the sum of all integers in the list</span>
+            <span class="hljs-keyword">return</span> [sum(numbers)]
+
+        <span class="hljs-comment"># Sums without the first element, we recursively calculate the sums of k integers from the remaining list and add it to our final list of sums</span>
+        sums = distinct_sums_helper(numbers, start_index+<span class="hljs-number">1</span>, k)
+        
+        <span class="hljs-comment"># Sums with the first element, we recursively calculate the sums of (k-1) integers from the remaining list and add the first element to it, adding this new list to our final list of sums</span>
+        sums += [numbers[<span class="hljs-number">0</span>] + x <span class="hljs-keyword">for</span> x <span class="hljs-keyword">in</span> distinct_sums_helper(numbers, start_index+<span class="hljs-number">1</span>, k - <span class="hljs-number">1</span>)]
+        <span class="hljs-keyword">return</span> list(set(sums)) <span class="hljs-comment"># remove duplicate sums and sort the list</span>
+
+    <span class="hljs-keyword">return</span> sorted(distinct_sums_helper(numbers, <span class="hljs-number">0</span>, k))
+</div></code></pre>
+<hr>
+<h1 id="exercise-problems">Exercise Problems:</h1>
+<p><strong>Problem Statement 1: Calculate the power of a to the exponent x</strong></p>
+<p>Write a recursive function <code>power(a, x)</code> that calculates the value of <code>a</code> raised to the power of <code>x</code>. Your task is to implement the function <code>power(a, x)</code> using recursion. The function should return the value of <code>a</code> raised to the power of <code>x</code>.</p>
+<hr>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">power</span><span class="hljs-params">(a, x)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to calculate the power recursively(you cannot use loops or the ** operator)</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<hr>
+<p><strong>Problem Statement 2: A more efficient way to calculate the power of a to the exponent x</strong></p>
+<p>Write a recursive function <code>power(a, x)</code> that calculates the value of <code>a</code> raised to the power of <code>x</code>. Your task is to implement the function <code>power(a, x)</code> using recursion. The function should return the value of <code>a</code> raised to the power of <code>x</code>. Since here we are expecting efficiency, the values of x can be very large (upto 10^18). Return the remainder of the answer with 1000000007.</p>
+<p>This time you can use the following property to calculate the power more efficiently:</p>
+<ul>
+<li>If <code>x</code> is even, then <code>a^x = (a^(k))^2</code> where <code>k = x/2</code></li>
+<li>If <code>x</code> is odd, then <code>a^x = a * (a^(k))^2</code> where <code>k = (x-1)/2</code></li>
+</ul>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">power</span><span class="hljs-params">(a, x)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to calculate the power recursively(you cannot use loops or the ** operator)</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<hr>
+<p><strong>Problem Statement 3:</strong> Letter Combinations of a Phone Number: Given a string containing digits from 2-9, return all possible letter combinations that the number could represent. We note that on a phone, the digits 2-9 each have a set of characters associated with them, as in the following mapping:</p>
+<pre class="hljs"><code><div>mapping = {
+    <span class="hljs-string">'2'</span>: <span class="hljs-string">'abc'</span>,
+    <span class="hljs-string">'3'</span>: <span class="hljs-string">'def'</span>,
+    <span class="hljs-string">'4'</span>: <span class="hljs-string">'ghi'</span>,
+    <span class="hljs-string">'5'</span>: <span class="hljs-string">'jkl'</span>,
+    <span class="hljs-string">'6'</span>: <span class="hljs-string">'mno'</span>,
+    <span class="hljs-string">'7'</span>: <span class="hljs-string">'pqrs'</span>,
+    <span class="hljs-string">'8'</span>: <span class="hljs-string">'tuv'</span>,
+    <span class="hljs-string">'9'</span>: <span class="hljs-string">'wxyz'</span>
+}
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">letter_combinations</span><span class="hljs-params">(digits)</span>:</span>
+    <span class="hljs-string">"""
+    Given a string containing digits from 2-9, return all possible letter combinations that the number could represent.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to calculate the letter combinations recursively</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<hr>
+<p><strong>Problem Statement 4:</strong> Combination Sum: Given an array of distinct integers and a target number, return all unique combinations that sum to the target. The same number may be chosen from the array any number of times. The solution set must not contain duplicate combinations.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">combination_sum</span><span class="hljs-params">(candidates, target)</span>:</span>
+    <span class="hljs-string">"""
+    Given an array of distinct integers and a target number, return all unique combinations that sum to the target.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to calculate the combinations recursively</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<hr>
+<p><strong>Problem Statement 5:</strong> Generate Parentheses: Given <code>n</code> pairs of parentheses, write a function to generate all combinations of well-formed parentheses.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">generate_parentheses</span><span class="hljs-params">(n)</span>:</span>
+    <span class="hljs-string">"""
+    Given n pairs of parentheses, write a function to generate all combinations of well-formed parentheses.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to generate the parentheses recursively</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<hr>
+<p><strong>Problem Statement 6: Letter Tile Possibilities:</strong> You have a set of tiles, where each tile has one letter <code>tiles[i]</code> printed on it. Return the number of possible non-empty sequences of letters you can make. For example for tiles = ['A', 'A', 'B'], the output is 8 as the possible sequences are ['A', 'A', 'B'], ['A', 'B', 'A'], ['B', 'A', 'A'], ['A', 'A'], ['A', 'B'], ['B', 'A'], ['A'], ['B'].</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">num_tile_possibilities</span><span class="hljs-params">(tiles)</span>:</span>
+    <span class="hljs-string">"""
+    Given a set of tiles, where each tile has one letter tiles[i] printed on it, return the number of possible non-empty sequences of letters you can make.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to calculate the number of tile possibilities recursively</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<hr>
+<p>**Problem Statement 6: Print All Subsets: Write a recursive function to print all subsets of a set of a set of integers. Return your output as a list of list.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">num_tile_possibilities</span><span class="hljs-params">(tiles)</span>:</span>
+    <span class="hljs-string">"""
+    Given a set of tiles, where each tile has one letter tiles[i] printed on it, return the number of possible non-empty sequences of letters you can make.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to calculate the number of tile possibilities recursively</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<hr>
+<p><strong>Problem Statement 7:</strong> You are given a 0-indexed integer array <code>nums</code> and an integer <code>k</code>. You are initially standing at index 0. In one move, you can jump at most <code>k</code> steps forward without going outside the boundaries of the array. That is, you can jump from index <code>i</code> to any index in the range <code>[i+1, min(n-1, i+k)]</code> inclusive. You want to reach the last index of the array. Find the minimum number of jumps required to reach the last index.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">jump_game</span><span class="hljs-params">(nums, k)</span>:</span>
+    <span class="hljs-string">"""
+    Given a 0-indexed integer array nums and an integer k, find the minimum number of jumps required to reach the last index.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to calculate the minimum number of jumps recursively</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<hr>
+<p><strong>Problem Statement 8:</strong> Given a string <code>s</code>, with characters <code>(</code>, <code>)</code>, and <code>*</code>, return the number of ways to form a valid parenthesis string by replacing <code>*</code> with <code>(</code> or <code>)</code></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">valid_parenthesis</span><span class="hljs-params">(s)</span>:</span>
+    <span class="hljs-string">"""
+    Given a string s, with characters (, ), and *, return the number of ways to form a valid parenthesis string by replacing * with ( or )
+    """</span>
+    <span class="hljs-comment"># Fill in the code to calculate the number of valid parenthesis recursively</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+
+</body>
+</html>

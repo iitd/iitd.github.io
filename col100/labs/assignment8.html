@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>assignment8.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="lab-8-file-and-directory-operations-file-io-and-reading-input">Lab 8: File and Directory Operations, File I/O, and Reading Input</h1>
+<h2 id="file-and-directory-operations">File and Directory Operations</h2>
+<h3 id="creating-a-directory">Creating a Directory</h3>
+<p>To create a directory, use the <code>os.mkdir()</code> function. This function creates a new directory at the specified path.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> os
+
+<span class="hljs-comment"># Create a directory named "example_dir"</span>
+os.mkdir(<span class="hljs-string">"example_dir"</span>)
+</div></code></pre>
+<p>If you need to create multiple nested directories, use <code>os.makedirs()</code>.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> os
+
+<span class="hljs-comment"># Create nested directories</span>
+os.makedirs(<span class="hljs-string">"parent_dir/child_dir"</span>)
+</div></code></pre>
+<h3 id="renaming-a-directory">Renaming a Directory</h3>
+<p>To rename a directory, use the <code>os.rename()</code> function. This function renames the directory from the old name to the new name.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> os
+
+<span class="hljs-comment"># Rename the directory from "example_dir" to "new_example_dir"</span>
+os.rename(<span class="hljs-string">"example_dir"</span>, <span class="hljs-string">"new_example_dir"</span>)
+</div></code></pre>
+<h3 id="moving-a-directory">Moving a Directory</h3>
+<p>To move a directory, use the <code>shutil.move()</code> function from the <code>shutil</code> module. This function moves the directory to the specified destination.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> shutil
+
+<span class="hljs-comment"># Move the directory to a new location</span>
+shutil.move(<span class="hljs-string">"new_example_dir"</span>, <span class="hljs-string">"moved_example_dir"</span>)
+</div></code></pre>
+<h3 id="checking-if-a-directory-exists">Checking if a Directory Exists</h3>
+<p>To check if a directory exists, use the <code>os.path.exists()</code> function. This function returns <code>True</code> if the directory exists, and <code>False</code> otherwise.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> os
+
+<span class="hljs-comment"># Check if the directory exists</span>
+<span class="hljs-keyword">if</span> os.path.exists(<span class="hljs-string">"moved_example_dir"</span>):
+    print(<span class="hljs-string">"Directory exists"</span>)
+<span class="hljs-keyword">else</span>:
+    print(<span class="hljs-string">"Directory does not exist"</span>)
+</div></code></pre>
+<h3 id="listing-directories">Listing Directories</h3>
+<p>To list all directories in a given path, use the <code>os.listdir()</code> function. This function returns a list of all files and directories in the specified path.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> os
+
+<span class="hljs-comment"># List all directories in the current directory</span>
+directories = [d <span class="hljs-keyword">for</span> d <span class="hljs-keyword">in</span> os.listdir(<span class="hljs-string">"."</span>) <span class="hljs-keyword">if</span> os.path.isdir(d)]
+print(directories)
+</div></code></pre>
+<h3 id="deleting-a-directory">Deleting a Directory</h3>
+<p>To delete a directory, use the <code>os.rmdir()</code> function for an empty directory, or <code>shutil.rmtree()</code> for a directory that may contain files and subdirectories.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> os
+<span class="hljs-keyword">import</span> shutil
+
+<span class="hljs-comment"># Remove an empty directory</span>
+os.rmdir(<span class="hljs-string">"empty_dir"</span>)
+
+<span class="hljs-comment"># Remove a directory with contents</span>
+shutil.rmtree(<span class="hljs-string">"dir_with_contents"</span>)
+</div></code></pre>
+<h2 id="file-io">File I/O</h2>
+<h3 id="reading-from-files">Reading from Files</h3>
+<p>To read from a file, use the <code>open()</code> function with the <code>r</code> mode and then use the <code>read()</code>, <code>readline()</code>, or <code>readlines()</code> methods.</p>
+<h4 id="example-reading-entire-file">Example: Reading Entire File</h4>
+<pre class="hljs"><code><div><span class="hljs-keyword">with</span> open(<span class="hljs-string">"example.txt"</span>, <span class="hljs-string">"r"</span>) <span class="hljs-keyword">as</span> file:
+    content = file.read()
+    print(content)
+</div></code></pre>
+<h4 id="example-reading-file-line-by-line">Example: Reading File Line by Line</h4>
+<pre class="hljs"><code><div><span class="hljs-keyword">with</span> open(<span class="hljs-string">"example.txt"</span>, <span class="hljs-string">"r"</span>) <span class="hljs-keyword">as</span> file:
+    <span class="hljs-keyword">for</span> line <span class="hljs-keyword">in</span> file:
+        print(line.strip())
+</div></code></pre>
+<h3 id="writing-to-files">Writing to Files</h3>
+<p>To write to a file, use the <code>open()</code> function with the <code>w</code> mode and then use the <code>write()</code> or <code>writelines()</code> methods.</p>
+<h4 id="example-writing-to-a-file">Example: Writing to a File</h4>
+<pre class="hljs"><code><div><span class="hljs-keyword">with</span> open(<span class="hljs-string">"example.txt"</span>, <span class="hljs-string">"w"</span>) <span class="hljs-keyword">as</span> file:
+    file.write(<span class="hljs-string">"Hello, world!"</span>)
+</div></code></pre>
+<h3 id="appending-to-files">Appending to Files</h3>
+<p>To append to a file, use the <code>open()</code> function with the <code>a</code> mode.</p>
+<h4 id="example-appending-to-a-file">Example: Appending to a File</h4>
+<pre class="hljs"><code><div><span class="hljs-keyword">with</span> open(<span class="hljs-string">"example.txt"</span>, <span class="hljs-string">"a"</span>) <span class="hljs-keyword">as</span> file:
+    file.write(<span class="hljs-string">"\nThis is an appended line."</span>)
+</div></code></pre>
+<h3 id="copying-file-contents">Copying File Contents</h3>
+<p>To copy the contents of one file to another, use the <code>shutil.copyfile()</code> function.</p>
+<h4 id="example-copying-file-contents">Example: Copying File Contents</h4>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> shutil
+
+shutil.copyfile(<span class="hljs-string">"source.txt"</span>, <span class="hljs-string">"destination.txt"</span>)
+</div></code></pre>
+<h3 id="merging-files">Merging Files</h3>
+<p>To merge the contents of two files, read both files and write their contents to a new file.</p>
+<h4 id="example-merging-files">Example: Merging Files</h4>
+<pre class="hljs"><code><div><span class="hljs-keyword">with</span> open(<span class="hljs-string">"file1.txt"</span>, <span class="hljs-string">"r"</span>) <span class="hljs-keyword">as</span> file1, open(<span class="hljs-string">"file2.txt"</span>, <span class="hljs-string">"r"</span>) <span class="hljs-keyword">as</span> file2, open(<span class="hljs-string">"merged.txt"</span>, <span class="hljs-string">"w"</span>) <span class="hljs-keyword">as</span> merged_file:
+    merged_file.write(file1.read() + <span class="hljs-string">"\n"</span> + file2.read())
+</div></code></pre>
+<h2 id="reading-input">Reading Input</h2>
+<h3 id="reading-a-list-of-space-separated-integers">Reading a List of Space-Separated Integers</h3>
+<p>To read a list of space-separated integers, use the <code>input()</code> function and then split and convert the input.</p>
+<h4 id="example-reading-space-separated-integers">Example: Reading Space-Separated Integers</h4>
+<pre class="hljs"><code><div>input_string = input(<span class="hljs-string">"Enter space-separated integers: "</span>)
+numbers = list(map(int, input_string.split()))
+print(numbers)
+</div></code></pre>
+<h3 id="reading-multiple-lines-of-input">Reading Multiple Lines of Input</h3>
+<p>To read multiple lines of input, use a loop that reads each line until a termination condition is met.</p>
+<h4 id="example-reading-multiple-lines">Example: Reading Multiple Lines</h4>
+<pre class="hljs"><code><div>print(<span class="hljs-string">"Enter lines of text (type 'STOP' to end):"</span>)
+lines = []
+<span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:
+    line = input()
+    <span class="hljs-keyword">if</span> line == <span class="hljs-string">"STOP"</span>:
+        <span class="hljs-keyword">break</span>
+    lines.append(line)
+print(lines)
+</div></code></pre>
+<h3 id="reading-multiple-lines-of-input">Reading Multiple lines of input</h3>
+<p>In programming, input is often given as multiple lines, where the first line contains an integer <code>n</code>, followed by <code>n</code> lines of data.</p>
+<h4 id="example-reading-multiple-lines-of-input">Example: Reading multiple lines of input</h4>
+<pre class="hljs"><code><div>n = int(input())
+data = []
+<span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> range(n):
+    data.append(input().strip())
+print(data)
+</div></code></pre>
+<h1 id="exercise-problems">Exercise Problems</h1>
+<p><strong>Problem 1:</strong> Given a file with path <code>filename</code> containing a list of integers separated by spaces, write a Python program to read the file and print the sum of the integers.</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Read the file and calculate the sum of integers</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">sum_integers</span><span class="hljs-params">(filename)</span>:</span>
+    <span class="hljs-keyword">pass</span>
+
+</div></code></pre>
+<p><strong>Problem 2:</strong> Write a Python program that reads a file <code>input_file</code> containing a list of words separated by spaces and writes the unique words to a new file <code>output_file</code>, each on a new line in alphabetical order.</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Read the file and write unique words to a new file</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">unique_words</span><span class="hljs-params">(input_file, output_file)</span>:</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<p><strong>Problem 3:</strong> Read a file <code>input_file</code> containing a variable number of space-separated strings in each line, in a word-by-word manner. When the word &quot;STOP&quot; is encountered, among these strings, stop reading the file and write each word read in <code>input_file</code> before &quot;STOP&quot; along with its frequency. Write the output to a new file <code>output_file</code> in the format <code>word: frequency</code>.</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Read the file and write word frequencies to a new file</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">word_frequencies</span><span class="hljs-params">(input_file, output_file)</span>:</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Example Test case</span>
+
+<span class="hljs-comment"># input.txt: </span>
+<span class="hljs-comment"># apple banana apple cherry </span>
+<span class="hljs-comment"># mango apple banana STOP panda goose</span>
+<span class="hljs-comment"># pumpkin apple cherry </span>
+
+<span class="hljs-comment"># output.txt:</span>
+<span class="hljs-comment"># apple: 3</span>
+<span class="hljs-comment"># banana: 2</span>
+<span class="hljs-comment"># cherry: 1</span>
+<span class="hljs-comment"># mango: 1</span>
+
+</div></code></pre>
+<p><strong>Problem 4:</strong> Given a list of directories <code>dirs</code>, write a Python program to create these directories if they do not exist. If the directories already exist, print a message indicating that the directory already exists. In each directory, create a file named <code>README.md</code> with the content &quot;This is a README file for directory <code>dir_name</code>&quot;, where <code>dir_name</code> is the name of the directory.</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Create directories and README files</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">create_directories</span><span class="hljs-params">(dirs)</span>:</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<p><strong>Problem 5:</strong> Modify line within file <code>filename</code> by replacing the line at index <code>line_number</code>(startin line is at index 1) with the new line <code>new_line</code>. Check if the line number is valid and return <code>True</code> if the line was modified successfully, <code>False</code> otherwise.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">modify_line</span><span class="hljs-params">(filename, line_number, new_line)</span>:</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<p><strong>Problem 6:</strong> Read CSV file. Given a file <code>filename</code> in the CSV format, write a Python program to read the file and return a dictionary where each dictionary represents a column with dictionary key as the column header and the value as a list of values in that column. The first row of the CSV file contains the column headers, separated by a comma. The subsequent rows contain the data, also separated by commas. The data in each row corresponds to the column header in the same position.</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Read the CSV file and return a list of dictionaries</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">read_csv</span><span class="hljs-params">(filename)</span>:</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Example Test case</span>
+
+<span class="hljs-comment"># filename: data.csv</span>
+<span class="hljs-comment"># Name,Age,Gender</span>
+<span class="hljs-comment"># Alice,25,F</span>
+<span class="hljs-comment"># Bob,30,M</span>
+<span class="hljs-comment"># Charlie,35,M</span>
+<span class="hljs-comment"># David,40,M</span>
+
+<span class="hljs-comment"># Output:</span>
+<span class="hljs-comment"># {'Name': ['Alice', 'Bob', 'Charlie', 'David'], 'Age': ['25', '30', '35', '40'], 'Gender': ['F', 'M', 'M', 'M']}</span>
+
+</div></code></pre>
+<p><strong>Problem 7:</strong> Write a Python program that reads all files within the current directory and does the following:</p>
+<ol>
+<li>
+<p>It checks the file's extension and categorizes the files into different lists based on the extension. Files having no extensions are also a separate category. An extension is the part of the filename after the last dot.</p>
+</li>
+<li>
+<p>For each category, it creates a new directory(if such a directory already does not exist) with the name of the directories being the extension name. It then moves the files to the corresponding directories.</p>
+</li>
+</ol>
+<pre class="hljs"><code><div><span class="hljs-comment"># Categorize files based on extension and move them to directories</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">categorize_files</span><span class="hljs-params">()</span>:</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<p><strong>Problem 8:</strong> Directory synchronization: Given two directories <code>dir1</code> and <code>dir2</code>, write a Python program to synchronize the contents of the two directories. The program should do the following:</p>
+<ol>
+<li>If a file/folder exists in <code>dir1</code> but not in <code>dir2</code>, copy the file/folder from <code>dir1</code> to <code>dir2</code>.</li>
+<li>If a file/folder exists in <code>dir2</code> but not in <code>dir1</code>, copy the file/folder from <code>dir2</code> to <code>dir1</code>.</li>
+<li>If a file/folder exists in both directories but has different contents, overwrite the file/folder in <code>dir2</code> with the file from <code>dir1</code>.</li>
+</ol>
+<pre class="hljs"><code><div><span class="hljs-comment"># Synchronize directories</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">synchronize_directories</span><span class="hljs-params">(dir1, dir2)</span>:</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+
+</body>
+</html>

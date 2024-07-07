@@ -398,6 +398,15 @@ print(<span class="hljs-string">"Your age is"</span>, age)
 <li><code>or</code> (Logical OR)</li>
 <li><code>not</code> (Logical NOT)</li>
 </ul>
+<h4 id="relational-operators">Relational Operators:</h4>
+<ul>
+<li><code>&gt;</code> (greater than)</li>
+<li><code>&gt;=</code> (greater than or equal to)</li>
+<li><code>&lt;</code> (less than)</li>
+<li><code>&lt;=</code> (less than or equal to)</li>
+<li><code>==</code> (equal to) [<em>Note</em>: <code>=</code> is used for assignment, <code>==</code> is used for comparison]</li>
+<li>'!=' (not equal to)</li>
+</ul>
 <h3 id="examples">Examples:</h3>
 <h4 id="arithmetic-operators">Arithmetic Operators:</h4>
 <pre class="hljs"><code><div><span class="hljs-comment"># Arithmetic Operators</span>
@@ -475,7 +484,7 @@ print(<span class="hljs-string">"Area of the rectangle:"</span>, area)
 </li>
 <li>
 <p><strong>Problem 3: Calculate Area of a Circle</strong></p>
-<p>Fill in the code to calculate the area of a circle. Use the given variable <code>radius</code> and print the area. Use <code>math.pi</code> for the value of ( \pi ).</p>
+<p>Fill in the code to calculate the area of a circle. Use the given variable <code>radius</code> and print the area. Use <code>math.pi</code> for the value of pi.</p>
 <pre class="hljs"><code><div><span class="hljs-keyword">import</span> math
 
 radius = float(input(<span class="hljs-string">"Enter the radius of the circle: "</span>))
@@ -502,6 +511,9 @@ print(<span class="hljs-string">"Amount:"</span>, amount)
 print(<span class="hljs-string">"Compound interest:"</span>, compound_interest)
 </div></code></pre>
 </li>
+</ol>
+<h3 id="additional-exercise-problems">Additional Exercise Problems:</h3>
+<ol start="5">
 <li>
 <p><strong>Problem 5: Check if a Number is Positive or Negative</strong></p>
 <p>Fill in the code to check if a number is positive, negative, or zero. Use the given variable <code>number</code> and print the result.</p>
@@ -517,6 +529,80 @@ is_negative = <span class="hljs-comment"># Fill in the code here</span>
     print(<span class="hljs-string">f"<span class="hljs-subst">{number}</span> is negative."</span>)
 <span class="hljs-keyword">else</span>:
     print(<span class="hljs-string">f"<span class="hljs-subst">{number}</span> is zero."</span>)
+</div></code></pre>
+</li>
+<li>
+<p><strong>Problem 6: Coin change calculator</strong></p>
+<p>Calculate the minimum number of coins of each denomination needed to have at least X cents (quarters: 25 cents, dimes: 10 cents, nickels: 5 cents, and pennies: 1 cent)</p>
+<pre class="hljs"><code><div>X = float(input(<span class="hljs-string">"Enter change value in cents: "</span>))
+
+<span class="hljs-comment"># Check how many minimum coins of each denomination is needed individually to make the change</span>
+quarters =  <span class="hljs-comment"># Fill in the code here</span>
+dimes =  <span class="hljs-comment"># Fill in the code here</span>
+nickels =  <span class="hljs-comment"># Fill in the code here</span>
+pennies =  <span class="hljs-comment"># Fill in the code here</span>
+
+
+print(<span class="hljs-string">f"Minimum quarters needed for <span class="hljs-subst">{X}</span> cents: <span class="hljs-subst">{quarters}</span>"</span>)
+print(<span class="hljs-string">f"Minimum dimes needed for <span class="hljs-subst">{X}</span> cents: <span class="hljs-subst">{dimes}</span>"</span>)
+print(<span class="hljs-string">f"Minimum nickels needed for <span class="hljs-subst">{X}</span> cents: <span class="hljs-subst">{nickels}</span>"</span>)
+print(<span class="hljs-string">f"Minimum pennies needed for <span class="hljs-subst">{X}</span> cents: <span class="hljs-subst">{pennies}</span>"</span>)
+
+</div></code></pre>
+</li>
+<li>
+<p><strong>Problem 7: Calculate the letter grade for given marks</strong></p>
+<p>Calculate the letter grade for a given percentage of marks. The grading system is as follows:</p>
+<ul>
+<li>A: 80-100</li>
+<li>A-: 72-79</li>
+<li>B: 64-71</li>
+<li>B-: 56-63</li>
+<li>C: 48-55</li>
+<li>D: 40-47</li>
+<li>E: 30-39</li>
+<li>F: 0-29</li>
+</ul>
+<pre class="hljs"><code><div>marks = float(input(<span class="hljs-string">"Enter the percentage of marks: "</span>))
+grade = <span class="hljs-string">""</span>
+
+<span class="hljs-comment"># Calculate the letter grade based on the marks, replace the ... with appropriate conditions</span>
+<span class="hljs-keyword">if</span> ...:
+    grade = <span class="hljs-string">"A"</span>
+<span class="hljs-keyword">elif</span> ...:
+    grade = <span class="hljs-string">"A-"</span>
+<span class="hljs-keyword">elif</span> ...:
+    grade = <span class="hljs-string">"B"</span>
+<span class="hljs-keyword">elif</span> ...:
+    grade = <span class="hljs-string">"B-"</span>
+<span class="hljs-keyword">elif</span> ...:
+    grade = <span class="hljs-string">"C"</span>
+<span class="hljs-keyword">elif</span> ...:
+    grade = <span class="hljs-string">"D"</span>
+<span class="hljs-keyword">elif</span> ...:
+    grade = <span class="hljs-string">"E"</span>
+<span class="hljs-keyword">elif</span> ...:
+    grade = <span class="hljs-string">"F"</span>
+<span class="hljs-keyword">else</span>:
+    grade = <span class="hljs-string">"Invalid"</span>
+
+<span class="hljs-keyword">if</span> grade != <span class="hljs-string">"Invalid"</span>:
+    print(<span class="hljs-string">f"Grade for <span class="hljs-subst">{marks}</span>%: <span class="hljs-subst">{grade}</span>"</span>)
+<span class="hljs-keyword">else</span>:
+    print(<span class="hljs-string">"Invalid percentage entered."</span>)
+</div></code></pre>
+</li>
+<li>
+<p><strong>Problem 8: Swap three numbers</strong></p>
+<p>Swap the values of three variables <code>a</code>, <code>b</code>, and <code>c</code> to <code>b</code>, <code>c</code>, and <code>a</code> respectively. For example, if initially a = 11, b = 21, c = 31, after swapping, a = 21, b = 31, c = 11 must hold.</p>
+<p><strong>Hint</strong>: You can use temporary variables to store the values during swapping.</p>
+<pre class="hljs"><code><div>a = input(<span class="hljs-string">"Enter the first number: "</span>)
+b = input(<span class="hljs-string">"Enter the second number: "</span>)
+c = input(<span class="hljs-string">"Enter the third number: "</span>)
+
+<span class="hljs-comment"># Write the code to swap the values of a, b, and c</span>
+
+print(<span class="hljs-string">f"After swapping, a = <span class="hljs-subst">{a}</span>, b = <span class="hljs-subst">{b}</span>, c = <span class="hljs-subst">{c}</span>"</span>)
 </div></code></pre>
 </li>
 </ol>

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>assignment7.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="lab-7-more-on-abstract-data-types">Lab 7: More on Abstract Data Types</h1>
+<pre class="hljs"><code><div><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Stack</span>:</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self)</span>:</span>
+        self.stack = []
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">push</span><span class="hljs-params">(self, item)</span>:</span>
+        self.stack.append(item)
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">pop</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-keyword">if</span> len(self.stack) == <span class="hljs-number">0</span>:
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>
+        <span class="hljs-keyword">return</span> self.stack.pop()
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">is_empty</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-keyword">return</span> len(self.stack) == <span class="hljs-number">0</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">peek</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-keyword">if</span> len(self.stack) == <span class="hljs-number">0</span>:
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>
+        <span class="hljs-keyword">return</span> self.stack[<span class="hljs-number">-1</span>]
+
+<span class="hljs-comment"># Do not worry about the implementation of the Stack class above, you can copy the Stack class code as it is and use it to solve the problems below.</span>
+</div></code></pre>
+<pre class="hljs"><code><div><span class="hljs-keyword">from</span> collections <span class="hljs-keyword">import</span> deque
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Queue</span>:</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self)</span>:</span>
+        self.queue = deque()
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">enqueue</span><span class="hljs-params">(self, item)</span>:</span>
+        <span class="hljs-comment"># Add an item to the end of the deque</span>
+        self.queue.append(item)
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">dequeue</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-comment"># Remove and return an item from the front of the deque</span>
+        <span class="hljs-keyword">if</span> self.is_empty():
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>
+        <span class="hljs-keyword">return</span> self.queue.popleft()
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">is_empty</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-comment"># Check if the deque is empty</span>
+        <span class="hljs-keyword">return</span> len(self.queue) == <span class="hljs-number">0</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">peek</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-comment"># Return the front item of the deque without removing it</span>
+        <span class="hljs-keyword">if</span> self.is_empty():
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>
+        <span class="hljs-keyword">return</span> self.queue[<span class="hljs-number">0</span>]
+
+<span class="hljs-comment"># Do not worry about the implementation of the Queue class above, you can copy the Queue class code as it is and use it to solve the problems below.</span>
+
+</div></code></pre>
+<h2 id="exercise-problems">Exercise Problems</h2>
+<p><strong>Problem Statement 1:</strong> Given a list of positive integers <code>nums</code> of size <code>2n</code>, we call an integer <code>x</code> the majority elemeent if it appears at least n times in the list. Write a function <code>find_majority_element(nums)</code> that returns the majority element <code>x</code>. If there is no majority element, return -1.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">find_majority_element</span><span class="hljs-params">(nums)</span>:</span>
+    <span class="hljs-string">"""
+    Given a list of positive integers nums of size 2n, return the majority element x.
+    If there is no majority element, return -1.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to find the majority element</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<p><strong>Problem Statement 2:</strong> You are given a 2D list <code>groceries</code> where each list is a pair <code>[item, quantity]</code> representing the name of an item and its quantity. There may be multiple entries with the same item name. Write a function <code>combine_items(groceries)</code> that combines all the quantities of the same item into a single entry. The function should return a new 2D list with unique items and their combined quantities.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">combine_items</span><span class="hljs-params">(groceries)</span>:</span>
+    <span class="hljs-string">"""
+    Given a 2D list groceries where each list is a pair [item, quantity], combine all the quantities of the same item into a single entry.
+    Return a new 2D list with unique items and their combined quantities.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to combine the items</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<p>**Problem Statement 3:**Given a list of <code>n</code> integers <code>nums</code>, and an integer <code>k</code>, write a function to return the maximum sum of <code>k</code> consecutive elements in the list.</p>
+<p><strong>Note: Your code should run in O(n) time complexity</strong></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">max_sum</span><span class="hljs-params">(nums, k)</span>:</span>
+    <span class="hljs-string">"""
+    Given a list of n integers nums, and an integer k, return the maximum sum of k consecutive elements in the list.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to find the maximum sum of k consecutive elements</span>
+    <span class="hljs-keyword">pass</span>
+
+</div></code></pre>
+<p><strong>Problem Statement 4:</strong> Given a list of integers <code>nums</code>, write a function <code>next_greater_element(nums)</code> that returns a list of the next greater element for each element in the list. If there is no greater element, return -1. A next greater element is the first element to its right that is greater than the current element.</p>
+<p><strong>Note: Your code should run in O(n) time complexity</strong></p>
+<p><strong>Hint: Use stacks</strong></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">next_greater_element</span><span class="hljs-params">(nums)</span>:</span>
+    <span class="hljs-string">"""
+    Given a list of integers nums, return a list of size len(nums) which gives the next greater element for each element in the list.
+    If there is no greater element, return -1.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to find the next greater element for each element</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<p><strong>Problem Statement 5:</strong> Given a string <code>s</code>, find the length of the longest substring that contains at most k distinct characters.</p>
+<p><strong>Note: Your code should run in O(n) time complexity</strong></p>
+<p><strong>Hint: Use sets</strong></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">longest_substring_with_k_distinct</span><span class="hljs-params">(s, k)</span>:</span>
+    <span class="hljs-string">"""
+    Given a string s, find the length of the longest substring that contains at most k distinct characters.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to find the length of the longest substring</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<p><strong>Problem Statement 6:</strong> Given a string which is a valid arithmetic expression, write a function <code>evaluate_expression(s)</code> that evaluates the expression and returns the result. The expression contains the operators <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code> and the operands are positive integers. Follow the precedence rule of operators(<code>/</code> &gt; <code>*</code> &gt; <code>+</code> &gt; <code>-</code>). The string is a list of integers and operators separated by spaces.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">evaluate_expression</span><span class="hljs-params">(s)</span>:</span>
+    <span class="hljs-string">"""
+    Given a string which is a valid arithmetic expression, evaluate the expression and return the result.
+    The expression contains the operators +, -, *, / and the operands are positive integers.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to evaluate the expression</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Example: 4 * 22 - 3 + 5 / 2</span>
+<span class="hljs-comment"># Output: 87.5</span>
+</div></code></pre>
+<p><strong>Problem Statement 7:</strong> We define 2 strings as isomorphic if there is a one-to-one mapping of characters between the two strings. For example: &quot;babca&quot; and &quot;ebeab&quot; are isomorphic with a mapping from 'b' to 'e', 'a' to 'b', 'c' to 'a'.</p>
+<p>Given a list of n strings, combine all the strings isomorphic to each other into a single list. Return a list of lists where each list contains all the isomorphic strings with the same pattern.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">isomorphic_strings</span><span class="hljs-params">(strings)</span>:</span>
+    <span class="hljs-string">"""
+    Given a list of n strings, combine all the strings isomorphic to each other into a single list.
+    Return a list of lists where each list contains all the isomorphic strings with the same pattern.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to combine the isomorphic strings</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Example: ["babca", "ebeab", "abc", "def", "xyz", "ghi", "ccd", "tts]</span>
+<span class="hljs-comment"># Output: [['babca', 'ebeab'], ['abc', 'def', 'xyz', 'ghi'], ["ccd", "tts"]]</span>
+</div></code></pre>
+<p><strong>Problem Statement 8:</strong> Given a string <code>pattern</code> and a string <code>s</code>, write a function <code>is_subsequence</code> that returns <code>True</code> if the string <code>pattern</code> is a subsequence of the string <code>s</code>, <code>False</code> otherwise. A string <code>s1</code> is a subsequence of <code>s2</code> if some number of characters (may be zero) can be deleted from <code>s2</code> to form <code>s1</code>.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">is_subsequence</span><span class="hljs-params">(pattern, s)</span>:</span>
+    <span class="hljs-string">"""
+    Given a string pattern and a string s, return True if the string pattern is a subsequence of the string s, False otherwise.
+    """</span>
+    <span class="hljs-comment"># Fill in the code to check if pattern is a subsequence of s</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Example: pattern = "abc", s = "ahbgdc"</span>
+<span class="hljs-comment"># Output: True</span>
+
+<span class="hljs-comment"># Example: pattern = "agb", s = "ahbgdc"</span>
+<span class="hljs-comment"># Output: False</span>
+</div></code></pre>
+
+</body>
+</html>

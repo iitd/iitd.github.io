@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>assignment9.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="lab-9-introduction-to-recursion">Lab 9: Introduction to Recursion</h1>
+<p>Recursion is a programming technique where a function makes calls to itself to solve a problem. It's a powerful tool for breaking down complex problems into simpler sub-problems.</p>
+<h3 id="example-calculating-factorial-using-recursion">Example: Calculating Factorial Using Recursion</h3>
+<p>One classic example of recursion is calculating the factorial of a number. The factorial of a non-negative integer <code>n</code>, denoted as <code>n!</code>, is the product of all positive integers less than or equal to <code>n</code>.</p>
+<p>The factorial function can be defined recursively as follows:</p>
+<ul>
+<li>Base case: <code>0! = 1</code></li>
+<li>Recursive case: <code>n! = n * (n-1)!</code> for <code>n &gt; 0</code></li>
+</ul>
+<p>Here's how you can implement the factorial function using recursion in Python:</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">factorial</span><span class="hljs-params">(n)</span>:</span>
+    <span class="hljs-keyword">if</span> n == <span class="hljs-number">0</span>:
+        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>
+    <span class="hljs-keyword">else</span>:
+        <span class="hljs-keyword">return</span> n * factorial(n - <span class="hljs-number">1</span>)
+
+<span class="hljs-comment"># Test</span>
+print(factorial(<span class="hljs-number">5</span>))  <span class="hljs-comment"># Output: 120</span>
+</div></code></pre>
+<p>In this example, the function <code>factorial</code> calls itself with a smaller value (<code>n - 1</code>) until it reaches the base case (<code>n == 0</code>). Then, it returns values back up the call stack, multiplying each returned value by <code>n</code> to compute the factorial of <code>n</code>.</p>
+<hr>
+<h1 id="exercise-problems">Exercise Problems:</h1>
+<p><strong>Problem Statement 1: Recursively Calculate the nth Fibonacci Number</strong></p>
+<p>The Fibonacci series is a sequence of numbers where each number is the sum of the two preceding ones, starting from 0 and 1. The sequence starts as follows: 1, 1, 2, 3, 5, 8, 13, 21, ...</p>
+<p>Write a recursive function <code>fibonacci(n)</code> that calculates the <code>n</code>th Fibonacci number.</p>
+<p>Your task is to implement the function <code>fibonacci(n)</code> using recursion. The function should return the <code>n</code>th Fibonacci number without using lists.</p>
+<hr>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">fibonacci</span><span class="hljs-params">(n)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to calculate the nth Fibonacci number recursively</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Test cases</span>
+print(fibonacci(<span class="hljs-number">6</span>))  <span class="hljs-comment"># Expected output: 8</span>
+print(fibonacci(<span class="hljs-number">8</span>))  <span class="hljs-comment"># Expected output: 21</span>
+</div></code></pre>
+<hr>
+<p><strong>Problem Statement 2: Recursively Check if a String is a Palindrome</strong></p>
+<p>Given a string, write a recursive function <code>is_palindrome(s)</code> that checks if the string <code>s</code> is a palindrome. A palindrome is a word, phrase, number, or other sequence of characters that reads the same forward and backward (ignoring spaces, punctuation, and capitalization). <strong>You cannot use loops</strong>, and should only use recursion. <strong>You cannot use any string methods other than string slicing</strong>.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">is_palindrome</span><span class="hljs-params">(s)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to check if the string is a palindrome recursively</span>
+    <span class="hljs-comment"># The function should return True if the string is a palindrome, False otherwise</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Test cases</span>
+print(is_palindrome(<span class="hljs-string">"racecar"</span>))  <span class="hljs-comment"># Expected output: True</span>
+print(is_palindrome(<span class="hljs-string">"hello"</span>))  <span class="hljs-comment"># Expected output: False</span>
+</div></code></pre>
+<hr>
+<p><strong>Problem Statement 3: Recursively Reverse a List</strong></p>
+<p>Reverse a list using recursion. Write a recursive function <code>reverse_list(lst)</code> that takes a list <code>lst</code> as input and returns the reversed list. <strong>You cannot use loops. You cannot use any list methods other than list concatenation (<code>+</code>) and list slicing</strong>.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">reverse_list</span><span class="hljs-params">(lst)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to reverse the list recursively</span>
+    <span class="hljs-comment"># The function should return the reversed list</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Test cases</span>
+print(reverse_list([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>]))  <span class="hljs-comment"># Expected output: [5, 4, 3, 2, 1]</span>
+</div></code></pre>
+<hr>
+<p><strong>Problem Statement 4: Minimum number of steps to reach the top</strong></p>
+<p>You are standing on the ground floor and in front of you is a staircase with <code>n</code> steps. You can take either 1 step, 2 steps, or 3 steps at a time. Write a recursive function <code>num_steps(n)</code> that calculates the minimum number of steps required to reach the top of the staircase.</p>
+<p>Your task is to implement the function <code>num_steps(n)</code> using recursion. The function should return the minimum number of steps required to reach the top of the staircase.</p>
+<hr>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">num_steps</span><span class="hljs-params">(n)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to calculate the minimum number of steps recursively</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Test cases</span>
+print(num_steps(<span class="hljs-number">3</span>))  <span class="hljs-comment"># Expected output: 4</span>
+print(num_steps(<span class="hljs-number">5</span>))  <span class="hljs-comment"># Expected output: 13</span>
+</div></code></pre>
+<hr>
+<h1 id="additional-exercise-problems">Additional Exercise Problems</h1>
+<p><strong>Problem Statement 5: Flattening a Nested List</strong></p>
+<p>You are given a nested list of integers. Write a function <code>flatten_list(nested_list)</code> that flattens the nested list into a single list by removing the nesting. Your task is to implement the function <code>flatten_list(nested_list)</code> that takes a nested list as input and returns a single flattened list. You can assume that the input list will only contain integers and other nested lists.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">flatten_list</span><span class="hljs-params">(nested_list)</span>:</span>
+    <span class="hljs-string">"""
+    Flatten a nested list into a single list.
+    Example Input: [1, [2, [3, 4], 5], 6, [7, 8, [9, 10]]]
+    Example Output: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    """</span>
+
+    <span class="hljs-comment"># Fill in the code to flatten the nested list here, the function should return a single list</span>
+    <span class="hljs-keyword">pass</span>
+</div></code></pre>
+<hr>
+<p><strong>Problem Statement 6: Calculate the number of paths</strong></p>
+<p>You are given a grid with cells from <code>(0, 0)</code> to <code>(m, n)</code>. <strong>You can only move either down or right at any point in time</strong>. Write a recursive function <code>num_paths(m, n)</code> that calculates the number of unique paths to reach the bottom-right corner <code>(m, n)</code> of the grid from the top-left corner <code>(0, 0)</code>. Try to solve this question without using hints first. If you get stuck, you can refer to the hints below.</p>
+<p><strong>Hint 1:</strong> Be very careful with the base cases, you should not make calls to num_paths with negative values or values that are out of the grid.<br><br>
+<strong>Hint 2:</strong> You should think about <code>num_paths(i, j)</code> as the number of total_paths from <code>(0, 0)</code> to <code>(i, j)</code>. Can you use this to calculate <code>num_paths(m, n)</code>?<br><br>
+<strong>Hint 3:</strong> There is only 1 path to reach <code>(0, j)</code> from <code>(0, 0)</code>. Similarly, there is only 1 path to reach <code>(i, 0)</code> from <code>(0, 0)</code> <br><br>
+<strong>Hint 4:</strong> For any cell <code>(i, j)</code> where <code>i&gt;0</code> and <code>j&gt;0</code>, the number of paths to reach it is the sum of the number of paths to reach the cell above it and the cell to the left of it. <br><br></p>
+<hr>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">num_paths</span><span class="hljs-params">(m, n)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to calculate the number of paths recursively</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Test cases</span>
+print(num_paths(<span class="hljs-number">3</span>, <span class="hljs-number">4</span>))  <span class="hljs-comment"># Expected output: 35</span>
+print(num_paths(<span class="hljs-number">5</span>, <span class="hljs-number">2</span>))  <span class="hljs-comment"># Expected output: 21</span>
+</div></code></pre>
+<hr>
+<p><strong>Problem Statement 7: Find the minimum number of tiles</strong></p>
+<p>You have an unlimited supply of square tiles of size <code>2^i x 2^i</code> such as <code>1x1</code>, <code>2x2</code>, and <code>4x4</code>, <code>8x8</code> and so on. You want to tile a floor of size <code>n x m</code>. Write a function <code>min_tiles(n, m)</code> that calculates the minimum number of tiles required to tile the floor of size <code>n x m</code>.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">min_tiles</span><span class="hljs-params">(n, m)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to calculate the minimum number of tiles required</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment">#Test cases</span>
+print(min_tiles(<span class="hljs-number">3</span>, <span class="hljs-number">3</span>))  <span class="hljs-comment"># Expected output: 6 (5 1x1 tiles and 1 2x2 tile)</span>
+print(min_tiles(<span class="hljs-number">2</span>, <span class="hljs-number">4</span>))  <span class="hljs-comment"># Expected output: 2 (2 2x2 tiles)</span>
+print(min_tiles(<span class="hljs-number">5</span>, <span class="hljs-number">2</span>))  <span class="hljs-comment"># Expected output: 4 (2 1x1 tiles, 2 2x2 tiles)</span>
+</div></code></pre>
+<hr>
+<p><strong>Problem Statement 8: Recursively Find the Greatest Common Divisor (GCD)</strong></p>
+<p>Write a recursive function <code>gcd(a, b)</code> that calculates the greatest common divisor (GCD) of two positive integers <code>a</code> and <code>b</code>.</p>
+<p>Your task is to implement the function <code>gcd(a, b)</code> using recursion. The function should return the GCD of <code>a</code> and <code>b</code>. Try to solve this question without using hints first. If you get stuck, you can refer to the hints below.</p>
+<p><strong>Hint 1:</strong> The Euclidean algorithm for finding the GCD of two numbers states that the GCD of <code>a</code> and <code>b</code> is the same as the GCD of <code>b</code> and <code>a % b</code>.<br><br>
+<strong>Hint 2:</strong> You should ensure that recursion makes subproblems that are smaller than the original problem. One way to help with this is to always keep the smaller number as the first argument of the recursive calls. <br><br>
+<strong>Hint 3:</strong> We already know that the gcd of 0 and a number is the number itself. This can be used as the base case. <br><br></p>
+<hr>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">gcd</span><span class="hljs-params">(a, b)</span>:</span>
+    <span class="hljs-comment"># Fill in the code to calculate the GCD recursively</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Test cases</span>
+print(gcd(<span class="hljs-number">24</span>, <span class="hljs-number">36</span>))  <span class="hljs-comment"># Expected output: 12</span>
+print(gcd(<span class="hljs-number">81</span>, <span class="hljs-number">153</span>))  <span class="hljs-comment"># Expected output: 9</span>
+</div></code></pre>
+
+</body>
+</html>
