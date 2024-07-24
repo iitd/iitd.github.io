@@ -1,20 +1,11 @@
 TITLE: COL100 : Introduction to Computer Science : Schedule
-SEMESTER: Sem I, 2018-19
-Start: Jul 23, 2018
-Stop: Nov 15, 2018
+SEMESTER: Sem I, 2024-25
+Start: Jul 25, 2024
+Stop: Nov 14, 2024
 Schedule: Monday, Thursday
-HEADER: Links to notes etc. on future days are <i>tentative only</i>. They are here only to give you an idea what the future will bring.<br>Acknowledgements: Much of the course material has been adapted from Stanford's CS106A and Stanford's CS106B courses.
+HEADER: Links to notes etc. on future days are <i>tentative only</i>. They are here only to give you an idea what the future will bring.<br>
 
-HOLIDAY: Sep 03. Janmashtami
-HOLIDAY: Oct 15. Mid-semester break
-HOLIDAY: Oct 18. Mid-semester break
-
-SKIP: Aug 23. No Lecture. Minor1 Tests scheduled.
-SKIP: Oct 01. No Lecture. Minor2 Tests scheduled.
-SKIP: Oct 04. No Lecture. Minor2 Tests scheduled.
-SKIP: Nov 08. No Class day.
-EVENT: Sep 10. Return of Minor-1 scripts
-EVENT: Oct 22. Return of Minor-2 scripts
+EVENT: Sep 30. Return of Midterm scripts
 
 ==
 LEC: <a href=lec/intro.html>Introduction to Computers</a>
