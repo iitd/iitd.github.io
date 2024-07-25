@@ -1,0 +1,83 @@
+<h3>Strings</h3>
+<ul>
+<li> Letters, special characters, spaces, digits</li>
+<li> enclose in <em>quotation marks or single quotes</em>
+<pre>
+hi = "hello there"
+</pre>
+</li>
+<li> <em>concatenate</em> strings
+<pre>
+name = "ajay"
+greeting = hi + " " + name  #"hello there ajay"
+silly = name * 3  #"ajayajayajay"
+</pre>
+</li>
+
+<h3>Input/Output: print</code>
+<ul>
+<li> used to <em>output</em> stuff to console</li>
+<li>keyword is <code>print</code>
+<pre>
+x = 1
+print(x)  # 1
+x_str = str(x)
+print("my fav num is", x, ".", "x =", x) #my fav num is 1 . x = 1
+print("my fav num is" + x_str + "." + "x =" + x_str)  #my fav num is 1 . x = 1
+</pre>
+</li>
+</ul>
+
+<h3>Input/Output: input</code>
+<ul>
+<li> prints whatever is in the quotes</li>
+<li> user types in something and hits enter</li>
+<li> binds that value to a variable</li>
+<pre>
+text = input("Type anything... ") # say we type "hello"
+print(2*text)  # hellohello
+</pre>
+</li>
+<li><code>input</code> <em>gives you a string</em> so must cast if working with numbers
+<pre>
+num = int(input("Type a number... "))
+print(5*num)
+</pre>
+</li>
+</ul>
+
+<h3>Comparison operators on <code>int</code>, <code>float</code>, <code>string</code></h3>
+<ul>
+<li> <code>i</code> and <code>j</code> are variable names.</li>
+<li>Comparisons below evaluate to a boolean:
+<pre>
+i &gt; j
+i &gt;= j
+i &lt; j
+i &lt;= j
+i == j
+i != j
+</pre>
+</li>
+</ul>
+
+<h3>Logic operators on <code>bools</code>
+<code>a</code> and <code>b</code> are variable names (with Bolean values)
+<ul>
+<li> <code>not a</code> </li>
+<li> <code>a and b</code></li>
+<li> <code>a or b</code></li>
+</ul>
+Write truth tables for these
+
+<p>Example:
+<pre>
+study_time = 15
+sleep_time = 8
+good_marks = (study_time &gt; sleep_time)
+good_sleep = not (sleep_time &lt; 8)
+both = good_marks and good_sleep
+print(both)
+</pre>
+
+<h3>Control flow - Branching</h3>
