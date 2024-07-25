@@ -1,0 +1,214 @@
+<h1>Functions and Strings</h1>
+<h3>Const parameters</h3>
+What if you want to avoid copying a large variable but don't want to change it?
+
+<p>Use the <code>const</code> keyword to indicate that the parameter won't be changed.
+<ul>
+<li>Usually used with strings and "collections".</li>
+<li>Passing in a non-variable (e.g., <code>printString("hello")</code>) <b>does</b> work.</li>
+</ul>
+<pre>
+void printString(const string &str)
+{
+  cout << str << endl;
+}
+int main()
+{
+  printString("This could be a really really long string");
+}
+</pre>
+
+<p><b>Exercise</b>: what will be printed?
+<pre>
+string t = "I am really really long string";
+
+void foo(const string &s)
+{
+  t = "hello";
+  cout << s; //hello
+}
+
+int main()
+{
+  foo(t);
+  return 0;
+}
+</pre>
+
+<p><b>Exercise</b>: Is this program correct?
+<pre>
+string t = "I am really really long string";
+
+void foo(const string &s)
+{
+  s = "hello"; //error
+  cout << s; //hello
+}
+
+int main()
+{
+  foo(t);
+  return 0;
+}
+</pre>
+
+<p><b>Exercise</b>: What will be printed?
+<pre>
+string t = "I am really really long string";
+
+void foo(string s)
+{
+  t = "hello";
+  cout << s; //"I am a really really long string"
+}
+
+int main()
+{
+  foo(t);
+  return 0;
+}
+</pre>
+
+<h3>Output parameters</h3>
+Can also pass by reference to return multiple items.
+
+<p>What is the minimum and maximum time to cook for a dish:
+<pre>
+void cookingTime(string const &dishName, double &minTime, double &maxTime)
+{
+  if (dishName == "rice") {
+    minTime = 10*60;
+    maxTime = 15*60;
+  } else if (dishName == "roti") {
+    minTime = 1*60;
+    maxTime = 1.2*60;
+  } else if (dishName == "moong dal") {
+    minTime = 20*60;
+    maxTime = 40*60;
+  } else ..
+  ..
+  }
+}
+int main()
+{
+  double riceMinTime, riceMaxTime, moongdalMinTime, moongdalMaxTime;
+  cookingTime("rice", riceMinTime, riceMaxTime)
+  cookingTime("moongdal", moongdalMinTime, moongdalMaxTime)
+  double totalMinTime = riceMinTime + moongdalMinTime;
+  double totalMaxTime = riceMaxTime + moongdalMaxTime;
+  cout << "min: " << totalMinTime << endl;
+  cout << "max: " << totalMaxTime << endl;
+  return 0;
+}
+</pre>
+
+<p>Another example: write a function <code>quadratic</code> to find roots of quadratic equations:
+<pre>
+ax^2 + bx + c = 0
+</pre>
+for some numbers <code>a</code>, <code>b</code>, and <code>c</code>.
+
+<p>Find roots using the quadratic formula: 
+<ul>
+<li>Example: <code>x^2 - 3*x - 4 = 0</code>
+<li>roots: x=4, x=-1</li>
+<li>Use: (-b +- sqrt(b^2-4*a*c))/2*a</li>
+</ul>
+What parameters should our function accept? What should it return?
+<ul>
+<li>Which parameters should be passed by value, and which by reference?</li>
+</ul>
+Solution
+<pre>
+/*  
+ * Solves a quadratic equation ax^2 + bx + c = 0, 
+ * storing the results in output parameters root1 and root2. 
+ * Assumes that the given equation has two real roots. 
+ */ 
+void quadratic(double a, double b, double c, 
+               double& root1, double& root2) { 
+    double d = sqrt(b * b - 4 * a * c); 
+    root1 = (-b + d) / (2 * a); 
+    root2 = (-b - d) / (2 * a); 
+} 
+</pre>
+
+<h3>Good Decomposition</h3>
+<ul>
+<li>Properties of a good function
+<ul>
+<li>Fully performs a single coherent task.</li>
+<li>Does not do too large a share of work.</li>
+<li>Is not unnecessarily connected to other functions
+<ul>
+<li>No "chaining" of functions</li>
+<li>The following is okay
+<pre>
+main
+|
+---method1
+|
+---method2
+| |
+| ---method3
+|
+---method4
+  |
+  ---method5
+</pre>
+</li>
+<li>The following is NOT okay
+<pre>
+main
+|
+---method1
+  |
+  ---method2
+    |
+    |---method3
+       |
+       ---method4
+       |
+       ---method5
+</pre>
+</li>
+</ul>
+</ul>
+</li>
+
+<li>The <code>main</code> function should be a concise summary of the overall program
+<ul>
+<li>Basically an overview of the steps needed to solve the problem.</li>
+</ul>
+</li>
+</ul>
+
+<h3>Strings</h3>
+<pre>
+#include <string>
+...
+string s = "hello";
+...
+</pre>
+<ul>
+<li>A string is a (possibly empty) sequence of characters</li>
+<li>There are <em>two</em> types of strings in C++. :-/</li>
+</ul>
+
+<p><b>Characters</b>: Characters are values of type <code>char</code> with 0-based indexes:
+<pre>
+string s = "Hi COL100!";
+
+index       0   1   2   3   4   5   6   7   8   9
+character  'H' 'i' ' ' 'C' 'O' 'L' '1' '0' '0' '!'
+</pre>
+Individual characters can be accessed using <code>[index]</code> or <code>at</code>:
+<pre>
+char c1 = s[3];    //'C'
+char c2 = s.at(1); //'i'
+</pre>
+Characters have ASCII encoding (integer mappings):
+<pre>
+cout << (int)s[0] << endl; // 72
+</pre>
+

@@ -1,0 +1,76 @@
+<h4>Review</h4>
+Why do we have <code>char</code> type and values when we also have <code>string</code> type and values?  Efficiency (out of scope for this course).
+
+<h4>While loops in Karel and C++</h4>
+<pre>
+while (condition)
+{
+  statement;
+  statement;
+  ..
+}
+statement;
+statement;
+  ..
+</pre>
+Draw flowchart on what happens in what order for the while statement. Show that if and while are very similar, except that while has a back-edge in the flow chart. Highlight that if the condition is false, then the loop body does not execute even once.
+
+<h4>Exercise: Sentinel loops</h4>
+<ul>
+<li><b>sentinel</b>: a value that signals the end of user input.</li>
+<li>sentinel loop: repeats until a sentinel value is seen.</li>
+</ul>
+<p>Example: prompt the user for numbers until the user types -1, then output the sum of numbers:
+<code>
+Enter a number: 10
+Enter a number: 20
+Enter a number: 30
+Enter a number: -1
+Sum is: 60
+</code>
+
+<p>Program:
+<pre>
+#include &lt;iostream&gt;
+#include "simpio.h"
+using namespace std;
+int main() {
+  int sum = 0;
+  int num = getInteger("Enter a number: ");
+  while (num != -1)
+  {
+    sum += num;
+    num = getInteger("Enter a number: ");
+  }
+  cout << "Sum is " << sum << endl;
+  return 0;
+}
+</pre>
+
+<p>How is the condition formed? It can be any boolean value which can be formed by a constant (show a while(false) and a while(true) loop) or a variable or an expression. Expressions must be bool-valued and can involve arithmetic, relational and logical operators.
+
+<p>Exercise: write a program that allows you to sum at most 10 numbers at a time.
+
+<h3>For loops in Karel and C++</h3>
+<pre>
+for (int i = 0; i &lt; count; i++)
+{
+  statement;
+  statement;
+  ...
+}
+</pre>
+Repeats the statements in the body <code>count</code> times.
+
+<p><code>i = 0</code> is the initializer and is run once before the loop starts</p>
+
+<p><code>i &gt; count</code> is the condition that is checked before entering the loop at every repitition/iteration (including the first entry).</p>
+
+<p><code>i++</code> is run each time the code gets to the end of the 'body'</p>
+
+<pre>
+for (int i = 0; i < 3; i++)
+{
+  cout << "I love COL100" << endl;
+}
+</pre>

@@ -1,0 +1,127 @@
+<h2>Exhaustive search and backtracking</h2>
+<b>Exhaustive search</b>: exploring every possible combination from a set of choices or values
+<ul>
+<li>Often implemented recursively</li>
+<li>Sometimes called <em>recursive enumeration</em></li>
+</ul>
+Applications:
+<ul>
+<li>producing all permutations of a set of values</li>
+<li>enumerating all possible names, passwords, etc.</li>
+<li>solving puzzles/games, e.g., Sudoku, Chess.</li>
+</ul>
+Often the search space consists of many <b>decisions</b>, each of which has several available <b>choices</b>.
+<ul>
+<li>Example: when enumerating all 5-letter strings, each of the 5 letters is a <em>decision</em>, and each of those decisios has 26 possible <em>choices</em>.</li>
+</ul>
+
+
+<p>General pseudo-code algorithm for exhaustive search:
+<pre>
+Choosing
+1. We generally iterate over "decisions". What are we iterating over here? The iteration will be done by recursion.
+2. What are the "choices" for each decision? Do we need a for loop?
+
+Exploring
+3. How can we "represent" that choice? How should we "modify the parameters"?
+   a) Do we need to use a "wrapper" due to extra parameters?
+
+Un-choosing
+4. How do we "un-modify" the parameters from step 3? Do we need to explicitly un-modify or are they copied? Are the un-modified at the same level as they were modified?
+
+Base case
+5. What should we do in the "base case" when we are out of decisions?
+</pre>
+
+<p>Example? printAllBinary
+<pre>
+printAllBinary(2):
+00
+01
+10
+11
+
+printAllBinary(3):
+000
+001
+010
+011
+100
+101
+110
+111
+</pre>
+<ol>
+<li>We are iterating over characters in the binary string</li>
+<li>Choices: 0 or 1</li>
+<li>Representation? Build up a string that we will eventually print. Add the 0 or 1 to it. String tracks our previous choices.</li>
+<li>Unchoosing? If new strings for ever call, do not need to un-choose (they are getting copied)</li>
+<li>Base case? print the accumulated string</li>
+</ol>
+
+<pre>
+void
+printAllBinaryHelper(int digits, string soFar)
+{
+  if (digits == 0) {
+    cout << soFar << endl;
+  } else {
+    printAllBinaryHelper(digits - 1, soFar + "0");
+    printAllBinaryHelper(digits - 1, soFar + "1");
+  }
+}
+
+void printAllBinary(int numDigits)
+{
+  printAllBinaryHelper(numDigits, "");
+}
+</pre>
+Show the tree of calls (also called the call tree or decision tree). Each node in the tree is a tuple of (digits, soFar). Discuss the meaning of the base case.
+
+<p>Another example: printAllDecimal(int numDigits): need a loop here.
+<pre>
+void
+printAllDecimalHelper(int digits, string soFar)
+{
+  if (digits == 0) {
+    cout << soFar << endl;
+  } else {
+    for (int i = 0; i < 10; i++) {
+      printAllDecimalHelper(digits - 1, soFar + integerToString(i));
+    }
+  }
+}
+
+void printAllDecimal(int numDigits)
+{
+  printAllDecimalHelper(numDigits, "");
+}
+</pre>
+Observation: when the set of digit choices available is large, using a loop to enumerate them results in shorter code (this is okay!)
+<br>Note: loop over <b>choices</b>, not decisions.
+<br>If the number of choices is variable, will need to use a loop, e.g., chess game.
+
+<h3>Backtracking</h3>
+Find solution(s) by trying all possible paths and then abandoning them if they are not suitable
+<ul>
+<li> a "brute force" algorithmic technique (tries all paths)</li>
+<li> often implemented recursively. trying all possible paths akin to exhaustive search</li>
+<li>Could involve looking for <b>one</b> solution: if any of the paths found a solution, a solution exists! If none find a solution, no solution exists.</li>
+<li>Could involving finding <b>all</b> solutions</li>
+<li>Idea: it's exhaustive search with conditions</li>
+</ul>
+Examples: anagrams, crosswords, word jumbles, 8 queens, sudoku, escaping from a maze, etc.
+
+<p>A general Pseudo code algorithm for backtracking problems searching for one solution:
+<pre>
+backtrack(decisions):
+ - If there are no more decisions to make
+   - if our current solution is valid, return true
+   - else return false
+ - else let's handle one decision ourselves and the rest by recursion.
+   For each _valid_ choice C for this decision
+   - _Choose_ C by modifying parameters
+   - Explore the remaining decisions that could follow C. If any of them find a solution return true.
+   - Unchoose C by returning parameters to original state (if necessary)
+ - If no solutions were found, return false
+</pre>

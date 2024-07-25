@@ -1,0 +1,122 @@
+<h2>Sets</h2>
+Motivating example: count the number of <b>unique</b> words in some text.
+<ul>
+<li>Common operation in real world: e.g., identify the vocabulary in a document, or count the unique types of objects</li>
+<li>Common operation in computer science: e.g., unique number of visitors to a website, plagiarism detection in code</li>
+</ul>
+
+<p>Sets only answer the question of membership (no duplicates).
+
+<p>Operations:
+<ul>
+<li>find(elem)</li>
+<li>insert(elem)</li>
+<li>erase(elem)</li>
+</ul>
+
+<p>Comparison to Vector</p>
+<ul>
+<li>Does not maintain order</li>
+<li>No duplicates</li>
+<li>Really fast at finding membership</li>
+</ul>
+
+<p>Looping over Sets
+<ul>
+<li>Sets don't have indices, so we use a for-each loop</li>
+<li>Iterates in sorted order (alphabetical order for strings)</li>
+<li>Can't edit while we iterate (general property of for-each loops)</li>
+</ul>
+
+<pre>
+#include "set.h"
+
+Set&lt;string&gt; friends; 
+friends.insert("xyz"); 
+friends.add("abc"); 
+//prints in alphabetical order 
+for (string myFriend : friends) {
+  cout << "Hi " << myFriend << endl; 
+}
+</pre>
+
+<p>Recall the common set operations (show Venn diagrams)
+<ul>
+<li>Union: set1 + set2</li>
+<li>Diff: set1 - set2</li>
+<li>Intersection: set1 n set2</li>
+</ul>
+
+<h3>Member functions</h3>
+<table style="width:100%" border="1">
+<tr>
+<td><code>s.add(value)</code></td>
+<td><code>s.insert(value)</code></td>
+<td>O(log N)</td>
+<td>adds an element to the set if it was not already there.</td>
+</tr>
+<tr>
+<td><code>s.clear()</code></td>
+<td><code>s.clear()</code></td>
+<td>O(N)</td>
+<td>removes all elements from this set.</td>
+</tr>
+<tr>
+<td><code>s.contains(value)</code></td>
+<td><code>s.find(value) != s.end()</code></td>
+<td>O(log N)</td>
+<td>returns true if value is in set.</td>
+</tr>
+<tr>
+<td><code>s.equals(set)</code></td>
+<td><code>s == set</code></td>
+<td>O(N)</td>
+<td>returns true if the two sets contain exactly the same elements (number and value).</td>
+</tr>
+<tr>
+<td><code>s.first()</code></td>
+<td><code>*s.begin()</code></td>
+<td>O(log N)</td>
+<td>returns the first value in the set in order.</td>
+</tr>
+<tr>
+<td><code>s.isEmpty()</code></td>
+<td><code>s.empty()</code></td>
+<td>O(1)</td>
+<td>returns true if the set contains no elements.</td>
+</tr>
+<tr>
+<td><code>s.isSubsetOf(s2)</code></td>
+<td><code>no counterpart (can write your own subroutine)</code></td>
+<td>O(N)</td>
+<td>returns true if all the elements in s are also present in s2.</td>
+</tr>
+<tr>
+<td><code>s.remove(value)</code></td>
+<td><code>s.erase(value)</code></td>
+<td>O(log N)</td>
+<td>removes an element from this set.</td>
+</tr>
+<tr>
+<td><code>s.size()</code></td>
+<td><code>s.size()</code></td>
+<td>O(1)</td>
+<td>returns the number of elements in the set.</td>
+</tr>
+<tr>
+<td><code>s.toString()</code></td>
+<td><code>no counterpart (can write your own subroutine)</code></td>
+<td>O(N)</td>
+<td>converts the set to a printable string representation.</td>
+</tr>
+</table>
+
+<h3>ADT soup: When to use what?</h3>
+<ul>
+<li>1-D or 2-D? If 2-D, use Grid.</li>
+<li>If 1-D, do I care only about membership? If yes, use Set</li>
+<li>If 1-D and I need duplicates and care about order of elements (different from the lexicographic order):
+<ul>
+<li>Which elements do I need to access? If frequent looping over middle elements, use Vector. If only use last element, use Stack. If only use first element, use Queue</li>
+</ul>
+</ul>
