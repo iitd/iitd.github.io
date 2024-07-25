@@ -3,65 +3,89 @@
  <li>Introduce Karel's world as on Page 2 of the document.</li>
  <li>Discuss the example on page 8 of the document.</li>
  <li>Discuss how the code can become large and hard-to-read. How abstractions through function definitions can help --- turnRight and turnAround.  Why these abstractions? Why not moveAndTurnLeft? Intuitiveness, generality.</li>
+<pre>
+def turnRight():
+  turnLeft()
+  turnLeft()
+  turnLeft()
+
+def turnAround():
+  turnLeft()
+  turnLeft()
+</pre>
  <li>Discuss pothole example on page 14 where a beeper needs to be placed to fill the pothole.</li>
- <li>Discuss the case where we do not know if a beeper is already present or not. Introduce conditions like beeperPresent(), frontisClear().</li>
- <li>Discuss how other conditions can be implemented using these conditions. e.g., leftIsClear() involves turnLeft(); ret = frontIsClear(); turnRight(); return ret;.</li>
+ <li>Discuss the case where we do not know if a beeper is already present or not. Introduce in-built conditions like beeperPresent(), frontisClear().</li>
+ <li>Discuss how other conditions can be implemented using these conditions. e.g., leftIsClear() involves
+<pre>
+def leftIsClear():
+  turnLeft();
+  ret = frontIsClear();
+  turnRight();
+  return ret;.</li>
+</pre>
  <li>Introduce the notion of a variable. <code>ret</code> is a variable in the example above.
 <ul>
-<li><b>Code Variables</b>: A "variable" is like a box that holds a value
+<li><b>Code Variables</b>: A "variable" is associated with a value
 <pre>
 x = 7;
 </pre>
-This stores the value <code>7</code> into the variable (i.e. box) <code>x</code>.
+This associates the <em>object</em> <code>7</code> into the variable <code>x</code>, i.e., <code>x -&gt; 7</code>.
 </li>
-<li>Later <code>x</code> in the code retrieve the value from the box</li>
-<li><code>x</code> becomes a shorthand for <code>7</code> (whatever is in the box)</li>
+<li>Later <code>x</code> in the code will evaluate to the associated object</li>
+<li><code>x</code> becomes a shorthand for <code>7</code></li>
 <li>Using <code>=</code> in this way is called "variable assignment"</li>
 <li>Example usage
 <ul>
-<li>Assign a value into a variable once</li>
+<li>Assign an object into a variable once</li>
 <li>Then use that variable many times below</li>
+<li>Can potentially delete a variable using <code>del x</code>.  Deleting does not necessarily remove the object.</li>
+<li>A special object called <code>None</code> represents a <em>null value</em>. None is not the same as 0, False, or an empty string. None is a data type of its own (NoneType) and only None can be None.</li>
 <li>A convenient shorthand in the code</li>
 </ul>
 </li>
 <li>Programming with variables:
 <pre>
-name = "ABCDEFGH"
-print "happy birthday to " + name
-print "happy birthday to " + name
+&gt;&gt;&gt; name = "ABCDEFGH"
+&gt;&gt;&gt; print("happy birthday to " + name)
+happy birthday to ABCDEFGH
+&gt;&gt;&gt; print("happy birthday to " + name)
+happy birthday to ABCDEFGH
+&gt;&gt;&gt; print("happy birthday to " + x)
+NameError: name 'x' is not defined
+&gt;&gt;&gt; print("happy birthday to " + x)
+NameError: name 'x' is not defined
+&gt;&gt;&gt; y = None
+&gt;&gt;&gt; print("happy birthday to " + y)
+TypeError: can only concatenate str (not "NoneType") to str
 </pre>
 </li>
 </ul>
 </li>
-<li>Similarly introduce constants TRUE and FALSE. Implement <code>noBeeperPresent()</code> using <code>beeperPresent()</code>.</li>
-<li>Introduce <code>if-then-else</code> construct and show its example usage to implement the case where you fill the pothole only if a beeper is not already present.</li>
+<li>Similarly introduce constants <code>True</code> and <code>False</code>.</li>
+<li>Introduce <code>if-then-else</code>.   Implement <code>noBeeperPresent()</code> using <code>beeperPresent()</code>.  Construct and show its example usage to implement the case where you fill the pothole only if a beeper is not already present.</li>
 <li>Formalize the meaning of <code>if-then-else</code> a bit more using arbitrary statements as follows:
-<pre>
-if (cond) {
-  S1;
-  S2;
-} else {
-  S3;
-  S4;
-}
-S5;
-S6;
+  S1
+  S2
+else:
+  S3
+  S4
+S5
+S6
 </pre>
-If <code>cond</code> is TRUE, then <code>S1;S2;S5;S6;</code> get executed.
+If <code>cond</code> is <code>True</code>, then <code>S1;S2;S5;S6;</code> get executed.
 
 <p>
-If <code>cond</code> is FALSE, then <code>S3;S4;S5;S6;</code> get executed.
+If <code>cond</code> is <code>False</code>, then <code>S3;S4;S5;S6;</code> get executed.
 </li>
 <li><code>if</code> can appear without <code>else</code>:
 <pre>
-if (cond) {
-  S1;
-  S2;
-}
-S5;
-S6;
+if (cond):
+  S1
+  S2
+S5
+S6
 </pre>
-What happens if <code>cond</code> is TRUE?  What happens if <code>cond</code> is FALSE?
+What happens if <code>cond</code> is <code>True</code>?  What happens if <code>cond</code> is <code>False</code>?
 </li>
 <li>Now consider the case where we need to repeatedly fill potholes in the road; All potholes are equidistant at distance 1 from each other.
 <ul>
@@ -71,33 +95,51 @@ What happens if <code>cond</code> is TRUE?  What happens if <code>cond</code> is
 </li>
 <li><b>For loop</b>: allows repeating up to "<code>count</code>" number of times, i.e., <code>count</code> iterations:
 <pre>
-for (i = 0; i < _count_; i++)
-{
-  S1;
-  S2; 
-}
+S0
+count = 1000
+for i in range(count):   #0..999
+  S1
+  S2
+S3
 </pre>
 </li>
-<li>Only the <code>count</code> can be changed by the user in this loop. This loop says that make <code>i</code> count from 0 to <code>count-1</code>.</li>
 <li>Can write the code as:
 <pre>
 numPotholes = 5
-for (i = 0; i < numPotholes; i++) {
-  fillNextPothole();
-}
+for i in range(numPotholes):
+  fillNextPothole()
 </pre>
 </li>
 <li>Graphically show the state after every loop iteration for this example.</li>
-<li>Show the semantics of this loop for general instructions S1 and S2 in the body.</li>
-<li>Discuss another program where Karel wants to keep walking till it hits the wall. Can this be done with the for loop? One option is: if we know the maximum length of a street or an avenue, we can use that count, and use an if condition in the body. But this is unsatisfactory because how will we know the maximum length? Overestimation = bad because inefficient. Underestimation = very bad because incorrect.</li>
-<li>Discuss while loop:
+</ul>
+
+<p>
 <pre>
-define moveTillClear()
-{
-  while (frontIsClear())
-  {
+S0
+count = 1000
+for i in range(count):   #0..999
+  S1
+  S2
+S3
+</pre>
+<ul>
+<li>Show the semantics of this loop for general instructions S1 and S2 in the body.</li>
+<li>What if <code>S1</code> is <code>count = 0</code>?  Answer: The loop still executes 1000 times; the <code>range</code> construct has already constructed a range.</li>
+<li>What if <code>S1</code> is <code>i = i + 3</code>?  Answer: The loop still executes 1000 times; <code>i</code> gets re-assigned each time control transfers to the for loop. At the end of the program (after <code>S3</code>), the value of <code>i</code> will be the <code>999+3=1002</code>.</li>
+</ul>
+
+<p>
+<ul>
+<li>Can generalize the <code>range</code> construct to start from a particular index (instead of the default index of 0) using <code>range(begin, end)</code>. This leads to <code>begin, begin+1, ..., end-1</code>.</li>
+<li>Can further generalize the <code>range</code> construct to skip by a particular step (instead of the default step of 1) using <code>range(begin, end, step)</code>. This leads to <code>begin, begin+step, ..., endi</code> (where <code>endi</code> is the largest number of the form <code>begin+step*n</code> that is smaller than <code>end</code>.</li>
+</ul>
+
+<ul>
+<li>Discuss another program where Karel wants to keep walking till it hits the wall. Can this be done with the for loop? One option is: if we know the maximum length of a street or an avenue, we can use that count, and use an if condition in the body. But this is unsatisfactory because how will we know the maximum length? Overestimation = bad because inefficient. Underestimation = very bad because incorrect.</li>
+<li>Discuss <code>while loop</code>:
+<pre>
+def moveTillClear():
+  while (frontIsClear()):
     move()
-  }
-}
 </pre>
 </ul>
