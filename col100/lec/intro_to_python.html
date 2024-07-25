@@ -1,0 +1,92 @@
+<h3>Syntax</h3>
+<p>
+English example: "good morning hello you" is not syntactically valid.  "good morning to you" is syntactically valid".
+
+<p>Programming language example: <code>"hello"3</code> is not syntactically valid.  <code>2*3</code> is syntactically valid.
+
+<h3>Semantics</h3>
+The meaning of the program.  What is supposed to happen when the program executes.
+
+<h3>Objects</h3>
+<ul>
+<li>Programs manipulate <em>data objects</em></li>
+<li>Objects have a <em>type</em> that defines the kinds of things programs can do to them:
+<ul>
+<li>Example: Can add two numbers, but not a string and a number.</>
+</ul>
+</li>
+<li>Objects are:
+<ul>
+<li>Scalar (cannot be subdivided)</li>
+<li>Non-scalar (have internal structure that can be accessed)</li>
+</ul>
+<li>Scalar Objects
+<ul>
+<li> <code>int</code> : represent <code>integers</code>, e.g., 3</li>
+<li> <code>float</code> : represent <code>real numbers</code>, e.g., 1.23</li>
+<li> <code>bool</code> : represent <code>boolean</code> values, e.g., <code>True</code> and <code>False</code></li>
+<li> <code>NoneType</code> : <code>special</code> and has one value, <code>None</code></li>
+<li> can use <code>type()</code> to see the type of an object
+<pre>
+&gt;&gt;&gt; type(5)
+int
+&gt;&gt;&gt; type(3.0)
+float
+</pre>
+</ul>
+</li>
+<li>Type conversions can <em>convert object of one type to another</em>
+<ul>
+<li> <code>float(1)</code> converts integer <code>3</code> to float <code>3.0</code></li>
+<li> <code>int(3.9)</code> truncates float <code>3.9</code> to integer <code>3</code></li>
+</ul>
+</ul>
+
+<h3>Expressions</h3>
+Combine <em>objects</em> and <em>operators</em> to form expressions:
+<ul>
+<li> an expression has a <em>value</em> which has a <em>type</em>.</li>
+<li> syntax for simple expression: <code> &lt;object&gt; &lt;operator&gt; &lt;object&gt;</code>. </li>
+</ul>
+
+<p>Operators on ints and floats
+<ul>
+<li> <code>i+j</code> sum</li>
+<li> <code>i-j</code> difference</li>
+<li> <code>i*j</code> product</li>
+<li> <code>i/j</code> division</li>
+<li> <code>i%j</code> remainder when <code>i</code> is divided by <code>j</code></li>
+<li> <code>i**j</code> <code>i</code> to the <em>power</em> of <code>j</code>.
+</ul>
+Parentheses are used to tell Python to do these operations first. <code>operator precedence</code> without parentheses:
+<ol>
+<li> **</li>
+<li> *</li>
+<li> /</li>
+<li> <code>+</code> and <code>-</code> executed left to write, as appear in expression.</li>
+</ol>
+
+<p>Equal sign is an assignment of a value to a variable
+<pre>
+pi = 3.14159
+</pre>
+Value is stored in computer memory.  An assignment binds name to value. Retrive value associated with name or variable by invoking the name, by typing <code>pi</code>.
+
+<p>Abstracting expressions: give names to values of expressions, to reuse names instead of values. Example:
+<pre>
+pi = 3.14159
+radius = 2.2
+area = pi * (radius ** 2)
+</pre>
+
+<p>Programming vs. Math: In programming, you do not &quot;solve for x&quot;
+<pre>
+pi = 3.14159
+radius = 2.2
+# area of circle
+area = pi*(radius**2)
+radius = radius + 1
+</pre>
+Notice that in an assignment, the expression on the right is evaluated to a value, and a variable name is on the left.  <code>radius += 1</code> is equivalent to <code>radius = radius + 1</code>.
+
+<p>Changing bindings: can <em>re-bind</em> variable names using new assignment statements.  Previous value may still be stored in memory but lost the handle for it. e.g., <code>radius -&gt; 2.2</code> now becomes <code>radius -&gt; 3.2</code>.

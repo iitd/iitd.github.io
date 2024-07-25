@@ -12,9 +12,9 @@ LEC: <a href=lec/intro.html>Introduction to Computers</a>
 ==
 LEC: <a href=lec/intro_to_karel.html>Introduction to Karel</a>. Refers to <a href=references/karel-the-robot-learns-java.pdf>this document</a>.
 ==
-LEC: <a href=lec/intro_to_cpp.html>Introduction to C++</a>
+LEC: <a href=lec/intro_to_python.html>Introduction to Python</a>
 ==
-LEC: <a href=lec/intro_to_cpp2.html>Introduction to C++ continued</a>
+LEC: <a href=lec/intro_to_python2.html>Introduction to Python continued</a>
 ==
 LEC: <a href=lec/io_ite.html>I/O, if-then-else, logical ops, precedence rules</a>
 ==
