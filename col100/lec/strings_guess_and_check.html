@@ -1,0 +1,30 @@
+<h3>Strings</h3>
+<ul>
+<li>Sequence of case-sensitive characters</li>
+<li>Can compare strings with <code>==</code>, <code>&gt;</code>, <code>&lt;</code>, ...</li>
+<li> <code>len()</code> is a function used to retrieve the <em>length</em> of the string in the parentheses.
+</ul>
+<pre>
+s = "abc"
+len(s)  #evaluates to 3
+</pre>
+
+<p>Square brackets are used to perform <em>indexing</em> into a string to get the value at a certain index or position.
+<pre>
+s = "abc"
+#index: 0 1 2 ... : indexing always starts at zero
+#index: -1 -2 ... : last element always at -1
+#s[0] evaluates to "a"
+#s[1] evaluates to "b"
+#s[2] evaluates to "c"
+#s[3] trying to index out of bounds, error
+#s[-1] evaluates to "c"
+#s[-2] evaluates to "b"
+#s[-3] evaluates to "a"
+</pre>
+
+<p>Can slice strings using <code>[start:stop:step]</code>.  If give two numbers, <code>[start:stop]</code>, <code>step=1</code> by default. You can also omit numbers and leave just colons.
+<pre>
+s = "abcdefgh"
+
+</pre>

@@ -16,7 +16,7 @@ LEC: <a href=lec/intro_to_python.html>Introduction to Python</a>
 ==
 LEC: <a href=lec/intro_to_python2.html>Introduction to Python continued</a>
 ==
-LEC: <a href=lec/io_ite.html>I/O, if-then-else, logical ops, precedence rules</a>
+LEC: <a href=lec/strings_guess_and_check.html>Strings, Guess-and-Check, Approximations, Bisection</a>
 ==
 LEC: <a href=lec/loops.html>Loops</a>
 ==
