@@ -1,6 +1,9 @@
 <h3>Karel</h3>
 <ul>
  <li>Introduce Karel's world as on Page 2 of the document.</li>
+<ul>
+<li></li>
+</ul>
  <li>Discuss the example on page 8 of the document.</li>
  <li>Discuss how the code can become large and hard-to-read. How abstractions through function definitions can help --- turnRight and turnAround.  Why these abstractions? Why not moveAndTurnLeft? Intuitiveness, generality.</li>
 <pre>
@@ -13,6 +16,7 @@ def turnAround():
   turnLeft()
   turnLeft()
 </pre>
+ <li>Notice the indentation: indicates that we are still within the body of the procedure.  If we indent unnecessarily, that is an error.</li>
  <li>Discuss pothole example on page 14 where a beeper needs to be placed to fill the pothole.</li>
  <li>Discuss the case where we do not know if a beeper is already present or not. Introduce in-built conditions like beeperPresent(), frontisClear().</li>
  <li>Discuss how other conditions can be implemented using these conditions. e.g., leftIsClear() involves
@@ -23,7 +27,7 @@ def leftIsClear():
   turnRight()
   return ret</li>
 </pre>
- <li>Introduce the notion of a variable. <code>ret</code> is a variable in the example above.
+ <li>We need to remember the result of <code>frontIsClear()</code>. Introduce the notion of a variable. <code>ret</code> is a variable in the example above.
 <ul>
 <li><b>Code Variables</b>: A "variable" is associated with a value
 <pre>
