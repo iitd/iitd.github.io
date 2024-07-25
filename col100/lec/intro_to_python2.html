@@ -13,8 +13,9 @@ greeting = hi + " " + name  #"hello there ajay"
 silly = name * 3  #"ajayajayajay"
 </pre>
 </li>
+</ul>
 
-<h3>Input/Output: print</code>
+<h3>Input/Output: <code>print</code></h3>
 <ul>
 <li> used to <em>output</em> stuff to console</li>
 <li>keyword is <code>print</code>
@@ -23,12 +24,13 @@ x = 1
 print(x)  # 1
 x_str = str(x)
 print("my fav num is", x, ".", "x =", x) #my fav num is 1 . x = 1
-print("my fav num is" + x_str + "." + "x =" + x_str)  #my fav num is 1 . x = 1
+print("my fav num is " + x_str + ". " + "x = " + x_str)  #my fav num is 1. x = 1
 </pre>
+(notice the difference in spaces).
 </li>
 </ul>
 
-<h3>Input/Output: input</code>
+<h3>Input/Output: <code>input</code></h3>
 <ul>
 <li> prints whatever is in the quotes</li>
 <li> user types in something and hits enter</li>
@@ -61,7 +63,7 @@ i != j
 </li>
 </ul>
 
-<h3>Logic operators on <code>bools</code>
+<h3>Logic operators on <code>bools</code></h3>
 <code>a</code> and <code>b</code> are variable names (with Bolean values)
 <ul>
 <li> <code>not a</code> </li>
@@ -81,3 +83,215 @@ print(both)
 </pre>
 
 <h3>Control flow - Branching</h3>
+Form 1:
+<pre>
+if &lt;condition&gt;:
+  &lt;expression&gt;
+  &lt;expression&gt;
+</pre>
+
+<p>Form 2:
+<pre>
+if &lt;condition&gt;:
+  &lt;expression&gt;
+  &lt;expression&gt;
+else:
+  &lt;expression&gt;
+  &lt;expression&gt;
+</pre>
+
+<p>Form 3:
+<pre>
+if &lt;condition&gt;:
+  &lt;expression&gt;
+  &lt;expression&gt;
+elif &lt;condition&gt;:
+  &lt;expression&gt;
+  &lt;expression&gt;
+else:
+  &lt;expression&gt;
+  &lt;expression&gt;
+</pre>
+
+<p>&lt;condition&gt; has a value of <code>True</code> or <code>False</code>.
+Evaluate expressions in that block if <code>&lt;condition&gt;</code> is
+<code>True</code>.
+
+<h3>Indentation</h3>
+<ul>
+<li>Matters in Python</li>
+<li>How you denote blocks of code
+<pre>
+x = float(input("Enter a number for x: "))
+y = float(input("Enter a number for y: "))
+if x == y:    #syntax error is use x=y here!
+  print("x and y are equal")
+  if y != 0:
+    print("therefore, x/y is", x/y)
+elif x &lt; y:
+  print("x is smaller")
+else:
+  print("y is smaller")
+print("thanks!")
+</pre>
+</ul>
+
+<h3>Control flow: While Loops</h3>
+<p>Example:
+<pre>
+You are in the Lost Forest.
+************
+************
+    Karel
+************
+************
+Go left or right?
+</pre>
+Each time Karel goes right, it gets lost in a forest.  As soon as it goes left, it gets out of the forest.
+
+<p>Try this with <code>if-else</code>:
+<pre>
+if input("You're in the Lost Forest. Go left or right? ") == right:
+  if input("You're in the Lost Forest. Go left or right? ") == right:
+    if input("You're in the Lost Forest. Go left or right? ") == right:
+      if input("You're in the Lost Forest. Go left or right? ") == right:
+        if input("You're in the Lost Forest. Go left or right? ") == right:
+          .... #goes on forever
+        else:
+          print("You got out of the Lost Forest!")
+      else:
+        print("You got out of the Lost Forest!")
+    else:
+      print("You got out of the Lost Forest!")
+  else:
+    print("You got out of the Lost Forest!")
+else:
+  print("You got out of the Lost Forest!")
+</pre>
+
+<p>
+To do this, we need a new construct:
+<pre>
+while &lt;condition&gt;:
+  &lt;expression&gt;
+  &lt;expression&gt;
+  ...
+</pre>
+<ul>
+<li> &lt;condition&gt; evaluates to a boolean.</li>
+<li> If &lt;condition&gt; is <code>True</code>, do all the steps inside the while code block.</li>
+<li>check &lt;condition&gt; again.</li>
+<li>repeat until <code>&lt;condition&gt;</code> is <code>False</code>.
+</ul>
+
+<pre>
+n = input("You're in the Lost Forest. Go left or right? ")
+while n == "right":
+  n = input("You're in the Lost Forest. Go left or right? ")
+print("You got out of the Lost Forest!")
+</pre>
+
+<h3>Control flow: <code>while</code> and <code>for</code> loops</h3>
+Iterate through numbers in sequence
+<pre>
+# more complicated with while loop
+n = 0
+while n &lt; 5:
+  print(n)
+  n = n + 1
+</pre>
+
+<p>Shortcut with <code>for</code> loop:
+<pre>
+for n in range(5):
+  print(n)
+</pre>
+
+<p><code>for</code> Loops
+<pre>
+for &lt;variable&gt; in range(&lt;some_num&gt;):
+  &lt;expression&gt;
+  &lt;expression&gt;
+  ...
+</pre>
+Each time through the loop, <code>variable</code> takes a value.  First time, <code>variable</code> starts at the smallest value. Next time, <code>variable</code> gets the prev value + 1.
+
+<p><code>range(start, stop, step)</code>. The default values are <code>start=0</code> and <code>step=1</code>.  Loop until value is <code>stop-1</code>.
+
+<pre>
+mysum = 0
+for i in range(7, 10):
+  mysum += i
+print(mysum)
+mysum = 0
+for i in range(5, 11, 2):
+  mysum += i
+print(mysum)
+</pre>
+
+<h3><code>break</code> statement</h3>
+<ul>
+<li>Immediately exits whatever loop it is in</li>
+<li>skips remaining expressions in code block</li>
+<li>exits only innermost loop!</li>
+</ul>
+<pre>
+while &lt;condition_1&gt;:
+  while &lt;condition_2&gt;:
+    &lt;expression_a&gt;
+    break
+    &lt;expression_b&gt;
+  &lt;expression_c&gt;
+</pre>
+
+<p>Example:
+<pre>
+mysum = 0
+for i in range(5, 11, 2):
+  mysum += i
+  if mysum == 5:
+    break
+    mysum += 1
+print(mysum)
+</pre>
+Output?
+
+<h3><code>for</code> vs. <code>while</code> loops</h3>
+<table>
+<tr>
+<th><code>for</code> loops</th>
+<th><code>while</code> loops</th>
+</tr>
+<tr>
+<td>
+know number of iterations
+</td>
+<td>
+unbounded number of iterations
+</td>
+</tr>
+<tr>
+<td>
+can end early via <code>break</code>
+</td>
+<td>
+can end early via <code>break</code>
+</td>
+</tr>
+<tr>
+<td>
+uses a counter
+</td>
+<td>
+can use a counter but must initialize before loop and increment it inside loop
+</td>
+</tr>
+<tr>
+<td>
+can rewrite a <code>for</code> loop using a <code>while</code> loop
+</td>
+<td>
+may not be able to rewrite a <code>while</code> loop using a <code>for</code> loop
+</td>
+</tr>
+</table>
