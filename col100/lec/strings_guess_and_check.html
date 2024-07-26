@@ -23,8 +23,208 @@ s = "abc"
 #s[-3] evaluates to "a"
 </pre>
 
-<p>Can slice strings using <code>[start:stop:step]</code>.  If give two numbers, <code>[start:stop]</code>, <code>step=1</code> by default. You can also omit numbers and leave just colons.
+<p>Can slice strings using <code>[start:stop:step]</code>.  If give two numbers, <code>[start:stop]</code>, <code>step=1</code> by default. You can also omit numbers and leave just colons (to use default values).
 <pre>
 s = "abcdefgh"
-
+s[3:6] evaluates to &quot;def&quot;, same as s[3:6:1]
+s[3:6:2] evaluates to &quot;df&quot;
+s[::] evaluates to &quot;abcdefgh&quot;, same as s[0:len(s):1]
+s[::-1] evaluates to &quot;hgfedcba&quot;, same as s[-1:-(len(s)+1):-1]
+s[4:1:-2] evaluates to &quot;ec&quot;
 </pre>
+
+<p>strings are ``immutable'' --- cannot be modified
+<pre>
+s = &quot;hello&quot;
+s[0] = 'y'   # gives an error
+s = 'y' + s[1:len(s)]   #ok, s is bound to a new object
+</pre>
+Earlier, we had <code>s -&gt; &quot;hello&quot;</code>, now we have <code>s -&gt; &quot;yello&quot;</code>.
+
+<p><code>for</code> loops have a <code>loop variable</code> that iterates over a set of values
+<pre>
+for var in range(4):  # var iterates over values 0,1,2,3
+  &lt;expressions&gt;   # expressions inside loop execute with each value for var
+for var in range(4,6):  # var iterates over values 4,5
+  &lt;expressions&gt;
+</pre>
+<code>range</code> is a way to iterate over numbes, but a for loop variable can iterate over any set of values, not just numbers!
+
+<p>The following two code snippets do the same thing:
+<pre>
+s = "abcdefgh"
+for index in range(len(s)):
+  if s[index] == 'i' or s[index] == 'u':
+    print("There is an i or u")
+
+for char in s:
+  if char == 'i' or char == 'u':
+    print("There is an i or u")
+</pre>
+The latter is more succinct and easier to read.
+
+<p>Example:
+<pre>
+an_letters = "aefhilmnorsxAEFHILMNORSX"
+
+word = input("Enter a word: ")
+times = int(input("Enthusiasm level (1-10): "))
+
+i = 0
+while i &lt; len(word):
+  char = word[i]
+  if char in an_letters:
+    print("Give me an " + char + "! " + char)
+  else:
+    print("Give me a " + char + "! " + char)
+  i += 1
+print("What does that spell?")
+for i in range(times):
+  print(word, "!")
+</pre>
+
+<p>A slightly better version (due to its succinctness and readability):
+<pre>
+an_letters = "aefhilmnorsxAEFHILMNORSX"
+
+word = input("Enter a word: ")
+times = int(input("Enthusiasm level (1-10): "))
+
+i = 0
+for char in word:
+  char = word[i]
+  if char in an_letters:
+    print("Give me an " + char + "! " + char)
+  else:
+    print("Give me a " + char + "! " + char)
+print("What does that spell?")
+for i in range(times):
+  print(word, "!")
+</pre>
+
+<p>Exercise: given two strings, check if they have equal lengths <em>and</em> they have a common letter.
+<pre>
+s1 = input("Enter first word: ")
+s2 = input("Enter second word: ")
+if len(s1) == len(s2):
+  for char1 in s1:
+    for char2 in s2:
+      if char1 == char2:
+        print("common letter")
+        break
+</pre>
+
+<h3>Guess and Check</h3>
+One of the most basic algorithms is called <em>exhaustive enumeration</em>.
+Given a problem:
+<ul>
+<li> you are able to <em>guess a value</em> for the solution</li>
+<li> you are able to <em>check if a solution is correct</em></li>
+<li> keep guessing until find solution or guessed all values</li>
+</ul>
+
+<p>Cube root using <em>guess and check</em>
+<pre>
+cube = int(input("Enter a number: ")
+for guess in range(cube+1):
+  if guess**3 == cube:
+    print("Cube root of", cube, "is", guess)
+</pre>
+Do we really need to iterate all the way till <code>cube+1</code>?
+
+<p>A more robust version
+<pre>
+cube = int(input("Enter a number: ")
+for guess in range(abs(cube)+1):
+  if guess**3 &gt;= abs(cube):
+    break
+if guess**3 != abs(cube):
+  print(cube, 'is not a perfect cube')
+else:
+  if cube &lt; 0:
+    guess = -guess
+  print('Cube root of ' + str(cube) + ' is ' + str(guess))
+</pre>
+
+<h3>Approximate solutions</h3>
+What if we are interested in approximate solutions for numbers that are not
+perfect cubes?
+<ul>
+<li> <em>good enough</em> solution </li>
+<li> start with a guess and increment by some <em>small value</em> </li>
+<li> keep guessing until <code>|guess<sup>3</sup>-cube| &gt;= epsilon</code>
+for some <em>small epsilon</em> </li>
+</ul>
+
+<p>
+<pre>
+cube = int(input("Enter a number: ")
+epsilon = 0.01
+guess = 0.0
+increment = 0.0001
+num_guesses = 0
+while abs(guess**3 - cube) &gt;= epsilon and guess &lt;= cube:
+  guess += increment
+  num_guesses += 1
+if abs(guess**3 - cube) &gt;= epsilon:
+  print('Failed on cube root of', cube)
+else:
+  print(guess, 'is close to the cube root of', cube)
+</pre>
+Problem:
+<ul>
+<li> decreasing increment size -&gt; slower program
+<li> increasing epsilon -&gt; less accurate answer
+</ul>
+
+<h3>Bisection Search</h3>
+<ul>
+<li> half interval each iteration</li>
+<li> new guess is halfway in between</li>
+<li> Play a game to illustrate this</li>
+</ul>
+
+<p>Finding the cube root through a bisection search
+<pre>
+cube = int(input("Enter a number: ")
+epsilon = 0.01
+low = 0
+high = cube
+guess = (low+high)/2.0
+num_guesses = 0
+while abs(guess**3 - cube) &gt;= epsilon:
+  if guess**3 &lt; cube:
+    low = guess
+  else:
+    high = guess
+  guess = (high + low)/2.0
+  num_guesses += 1
+print 'num_guesses =', num_guesses
+print(guess, 'is close to the cube root of', cube)
+</pre>
+
+<p>Convergence of Bisection Search
+<ul>
+<li>Search space (using <code>N=(cube+1)*epsilon</code>)
+<ul>
+<li>first guess:  <code>N/2</code></li>
+<li>second guess:  <code>N/4</code></li>
+<li>k<sup>th</sup> guess:  <code>N/2<sup>k</sup></code></li>
+</ul>
+<li>guess converges on the order of <code>log<sub>2</sub>N</code> steps</li>
+<li>bisection search works when value of function varies monotonically with input</li>
+<li>code as shown only works for positive cubes &gt; 1 -- why?</li>
+<li>challenges:
+<ul>
+<li>modify to work with negative cubes!
+<ul>
+<li>Use the <code>abs()</code> function.</li>
+</ul>
+</li>
+<li>modify to work with cube&lt;1!</li>
+<ul>
+<li>For <code>cube&lt;1</code>, search space is <code>0</code> to <code>x</code>, but cube root is greater than <code>cube</code> and less than <code>1</code>.</li>
+<li>Modify the code to choose the search space depending on value of <code>cube</code>.</li>
+</ul>
+</ul>
+</ul>
