@@ -1,0 +1,162 @@
+<h3>Functions</h3>
+<ul>
+<li>More code is not necessarily a good thing</li>
+<li>Measure good programmers by the amount of functionality
+<ul>
+<li> Introduce <em>functions</em></li>
+<li> Mechanism to achieve <em>decomposition</em> and <em>abstraction</em></li>
+</ul>
+</li>
+</ul>
+
+<p>Example: Pen
+<ul>
+<li> A pen is a black-box</li>
+<li> We don't need to know how it works</li>
+<li> Know the interface: click before use, press against paper to release ink</li>
+<li> <b>Abstraction</b>: do not need to know how pen works to use it.</li>
+<li> Different components in the pen are manufactured by different entities.  The assembler simply assembles the components to produce something useful.</li>
+<li> <b>Decomposition</b>: different components work together to achieve an end goal.</li>
+</ul>
+
+<p>In programming, create structure with <em>decomposition</em>
+<ul>
+<li> Divide code into <em>modules</em>:
+<ul>
+<li> Modules are self contained </li>
+<li> used to break-up code </li>
+<li> intended to be reusable </li>
+<li> keep code organized </li>
+<li> keep code coherent </li>
+</ul>
+In this lecture, we achieve decomposition with <em>functions</em>. Later, we achieve
+decomposition with <em>classes</em>.
+</ul>
+
+<p><b>Functions</b> are reusable pieces/chunks of code.  Functions are not run in a program until they are <em>called</em> or <em>invoked</em> in a program. Function characteristics:
+<ul>
+<li> has a name</li>
+<li> has parameters (0 or more)</li>
+<li> has a <em>docstring</em> (optional but recommended)</li>
+<li> has a body</li>
+<li> returns something</li>
+</ul>
+
+<p>Writing a function
+<pre>
+def is_odd(i):  #keyword name parameeters
+  """  #docstring begin
+  Input: i, a positive int
+  Returns true if i is odd, otherwise False
+  """  #docstring end
+  #body
+  print("inside is_odd")
+  return i%2 == 1   #return is a keyword
+
+
+is_odd(4)  #later in the code, you call the function using its name and values for parameters
+</pre>
+
+<h3>Variable scope</h3>
+<ul>
+<li> <em>formal parameter</em> gets bound to the value of <em>actual parameter</em> when a function is called.
+<li> new <em>scope</em>/<em>frame</em>/<em>environment</em> is created when enter a function</li>
+<li><em>scope</em> is mapping of names to objects</li>
+</ul>
+<pre>
+#function definition
+def f(x):  #x is a formal parameter
+  x = x + 1
+  print('in f(x), x =', x)
+  return x
+
+x = 3
+z = f(x) #x is the actual parameter of this function call. return value is assigned to z
+</pre>
+At the instant when execution is at the start of <code>f</code>, there are two scopes: global scope and f scope. The global scope maps <code>f -&gt; some code</code>, <code>x -&gt; 3</code> and <code>z</code> is currently undefined.  In <code>f scope</code>, <code>x -&gt; 3</code>
+
+<p>At the instant when execution is at the end of <code>f</code>:
+The global scope maps <code>f -&gt; some code</code>, <code>x -&gt; 3</code> and <code>z</code> is currently undefined.  In <code>f scope</code>, <code>x -&gt; 4</code>
+
+<p>At the instant when execution has returned from <code>f</code> and <code>z</code> has been assigned: there is only one scope, which is the global scope.
+The global scope maps <code>f -&gt; some code</code>, <code>x -&gt; 3</code> and <code>z -&gt; 4</code>.  Notice that <code>z</code> is assigned the value <em>returned</em> (using the <code>return</code> keyword) by <code>f</code>.
+
+<p>Consider the following (buggy) function that does not contain a <code>return</code> statement:
+<pre>
+#function definition
+def f(x):  #x is a formal parameter
+  x = x + 1
+
+x = 3
+z = f(x) #x is the actual parameter of this function call. return value is assigned to z
+</pre>
+<ul>
+<li> Python returns the value <code>None</code> if no <code>return</code> given</li>
+<li> represents the absence of a value</li>
+</ul>
+
+<p><code>return</code> vs. <code>print</code>
+<table>
+<tr>
+<th><code>return</code></th>
+<th><code>print</code></th>
+</tr>
+<tr>
+<td>
+<code>return</code> only has meaning inside a function
+</td>
+<td>
+<code>print</code> can be used outside functions
+</td>
+</tr>
+<tr>
+<td>
+only one <code>return</code> executed inside a function
+</td>
+<td>
+can execute many print statements inside a function
+</td>
+</tr>
+<tr>
+<td>
+code inside function but after return statement not executed
+</td>
+<td>
+code inside function can be executed after a print statement
+</td>
+</tr>
+<tr>
+<td>
+has a value associated with it, <em>given to function caller</em>
+</td>
+<td>
+has a value associated with it, <em>outputted</em> to the console
+</td>
+</tr>
+</table>
+
+<p><b>Functions as arguments</b>:
+<ul>
+<li> arguments can take on any type, even functions!</li>
+</ul>
+Example:
+<pre>
+def func_a(a):
+  print 'inside func_a'
+
+def func_b(y):
+  print 'inside func_b'
+  return y
+
+def func_c(z):
+  print 'inside func_c'
+  return z()
+
+print func_a()  # func_a takes no parameters
+print 5 + func_b(2)  # func_b takes one parameter
+print func_c(func_a)  # func_c takes one parameter, another function
+</pre>
+
+<p>Show global scope and func_a scope while <code>func_a</code> is executing.  Notice that it returns <code>None</code>, which gets printed.  Similarly, <code>func_b</code> returns <code>2</code> and so <code>7</code> is printed.
+
+<p>Show three scopes: global, <code>func_c</code>, and <code>func_a</code>.

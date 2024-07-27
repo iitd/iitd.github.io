@@ -1,33 +1,24 @@
 TITLE: COL100 : Introduction to Computer Science : Schedule
-SEMESTER: Sem I, 2018-19
-Start: Jul 23, 2018
-Stop: Nov 15, 2018
+SEMESTER: Sem I, 2024-25
+Start: Jul 25, 2024
+Stop: Nov 14, 2024
 Schedule: Monday, Thursday
-HEADER: Links to notes etc. on future days are <i>tentative only</i>. They are here only to give you an idea what the future will bring.<br>Acknowledgements: Much of the course material has been adapted from Stanford's CS106A and Stanford's CS106B courses.
+HEADER: Links to notes etc. on future days are <i>tentative only</i>. They are here only to give you an idea what the future will bring.<br>Acknowledgements: Much of this course material has been adapted from MIT's 6.0001 course.<br>
 
-HOLIDAY: Sep 03. Janmashtami
-HOLIDAY: Oct 15. Mid-semester break
-HOLIDAY: Oct 18. Mid-semester break
-
-SKIP: Aug 23. No Lecture. Minor1 Tests scheduled.
-SKIP: Oct 01. No Lecture. Minor2 Tests scheduled.
-SKIP: Oct 04. No Lecture. Minor2 Tests scheduled.
-SKIP: Nov 08. No Class day.
-EVENT: Sep 10. Return of Minor-1 scripts
-EVENT: Oct 22. Return of Minor-2 scripts
+EVENT: Sep 30. Return of Midterm scripts
 
 ==
 LEC: <a href=lec/intro.html>Introduction to Computers</a>
 ==
 LEC: <a href=lec/intro_to_karel.html>Introduction to Karel</a>. Refers to <a href=references/karel-the-robot-learns-java.pdf>this document</a>.
 ==
-LEC: <a href=lec/intro_to_cpp.html>Introduction to C++</a>
+LEC: <a href=lec/intro_to_python.html>Introduction to Python</a>
 ==
-LEC: <a href=lec/intro_to_cpp2.html>Introduction to C++ continued</a>
+LEC: <a href=lec/intro_to_python2.html>Introduction to Python continued</a>
 ==
-LEC: <a href=lec/io_ite.html>I/O, if-then-else, logical ops, precedence rules</a>
+LEC: <a href=lec/strings_guess_and_check.html>Strings, Guess-and-Check, Approximations, Bisection</a>
 ==
-LEC: <a href=lec/loops.html>Loops</a>
+LEC: <a href=lec/functions.html>Functions</a>
 ==
 LEC: <a href=lec/loops2.html>Loops continued</a>
 ==

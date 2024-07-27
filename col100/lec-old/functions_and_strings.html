@@ -1,0 +1,545 @@
+<h1>Functions and Strings</h1>
+
+<h2>Functions</h2>
+<h3>Syntax</h3>
+<pre>
+//the first type is the type of the return value (or return type)
+TYPE functionName(TYPE name, TYPE name, ..., TYPE name) { //the values in brackets are the parameters (arguments)
+    statement;
+    statement;
+    statement;
+    statement;
+    ...
+    statement;
+    return expression; //if return type is not void
+}
+</pre>
+
+<p>Calling a function:
+<pre>
+functionName(value, value, ..., value);  //the values in brackets are the parameters (arguments)
+</pre>
+
+<h3>Defining a function</h3>
+<pre>
+#include "console.h"
+using namespace std;
+const string CLASS_NAME = "COL100";
+
+//Function definition and code
+void lectures(int count)
+{
+  cout << count << " lectures of " << CLASS_NAME << " are remaining." << endl;
+  cout << "One lecture just got finished. " << (count - 1) << " lectures of " << CLASS_NAME << " remaining." << endl << endl;
+}
+
+int main() {
+  for (int i = 28; i > 0; i--) {
+    lectures(i);
+  }
+  return 0;
+}
+</pre>
+
+<h3>Declaration order</h3>
+If we reverse the declaration order (i.e., first <code>main</code>, then <code>lectures</code>):
+<pre>
+#include "console.h"
+using namespace std;
+const string CLASS_NAME = "COL100";
+
+int main() {
+  for (int i = 28; i > 0; i--) {
+    lectures(i);
+  }
+  return 0;
+}
+
+
+//Function definition and code
+void lectures(int count)
+{
+  cout << count << " lectures of " << CLASS_NAME << " are remaining." << endl;
+  cout << "One lecture just got finished. " << (count - 1) << " lectures of " << CLASS_NAME << " remaining." << endl << endl;
+}
+
+</pre>
+
+<ul>
+<li>Compiler error: unable to find <code>lectures</code> function (!)
+<ul>
+<li>C++ reads the file from top to bottom.</li>
+</ul>
+</li>
+</ul>
+
+<h3>Function prototypes</h3>
+<pre>
+TYPE functionName(TYPE name, TYPE name, ..., TYPE name) { //the values in brackets are the parameters (arguments);
+</pre>
+<ul>
+<li>Declare the function (without writing its body) at top of program.</li>
+<li>Including everything up to the first curly brace in the declaration.</li>
+</ul>
+<pre>
+#include "console.h"
+using namespace std;
+const string CLASS_NAME = "COL100";
+
+void lectures(int count);
+
+int main() {
+  for (int i = 28; i > 0; i--) {
+    lectures(i);
+  }
+  return 0;
+}
+
+
+//Function definition and code
+void lectures(int count)
+{
+  cout << count << " lectures of " << CLASS_NAME << " are remaining." << endl;
+  cout << "One lecture just got finished. " << (count - 1) << " lectures of " << CLASS_NAME << " remaining." << endl << endl;
+}
+</pre>
+
+<h3>Pass by value</h3>
+<ul>
+<li><b>value semantics</b>: In C++, when variables (<code>int</code>, <code>double</code>) are passed as parameters, their values are <u>copied</u>.
+<ul>
+<li>Modifying a parameter will not affect the variable passed in.</li>
+</ul>
+</li>
+</ul>
+<pre>
+void swap(int a, int b) {
+  int temp = a;
+  a = b;
+  b = temp;
+}
+
+int main() {
+  int x = 17;
+  int y = 35;
+  swap(x, y);
+  cout << x << ", " << y << endl;  //17, 35
+  return 0;
+}
+</pre>
+
+<h3>Pass by Reference</h3>
+If you declare a parameter with an <code>&amp;</code> after its type, it will link the caller and callee functions to the same place in memory:
+<ul>
+<li>Modifying a parameter <em>will</em> affect the variable passed in.</li>
+<li>The ampersand is used only in the declaration not in the function call.</li>
+<li><b>Can't</b> pass in non-variables (e.g., <code>swap(1, 3)</code> won't work.</li>
+<li>Slightly slower for primitive types (e.g., <code>int</code>)</li>
+<li>Faster for larger types with many elements (e.g., <code>string</code>)</li>
+</ul>
+<pre>
+void swap(int &a, int &b)
+{
+  int tmp = a;
+  a = b;
+  b = tmp;
+}
+
+int main() {
+  int x = 17;
+  int y = 35;
+  swap(x, y);
+  cout << x << ", " << y << endl;  //35, 17
+  return 0;
+}
+</pre>
+
+<h3>Const parameters</h3>
+What if you want to avoid copying a large variable but don't want to change it?
+
+<p>Use the <code>const</code> keyword to indicate that the parameter won't be changed.
+<ul>
+<li>Usually used with strings and "collections".</li>
+<li>Passing in a non-variable (e.g., <code>printString("hello")</code>) <b>does</b> work.</li>
+</ul>
+<pre>
+void printString(const string &str)
+{
+  cout << str << endl;
+}
+int main()
+{
+  printString("This could be a really really long string");
+}
+</pre>
+
+<h3>Output parameters</h3>
+Can also pass by reference to return multiple items.
+
+<p>What is the minimum and maximum time to cook for a dish:
+<pre>
+void cookingTime(string const &dishName, double &minTime, double &maxTime)
+{
+  if (dishName == "rice") {
+    minTime = 10*60;
+    maxTime = 15*60;
+  } else if (dishName == "roti") {
+    minTime = 1*60;
+    maxTime = 1.2*60;
+  } else if (dishName == "moong dal") {
+    minTime = 20*60;
+    maxTime = 40*60;
+  } else ..
+  ..
+  }
+}
+int main()
+{
+  double riceMinTime, riceMaxTime, moongdalMinTime, moongdalMaxTime;
+  cookingTime("rice", riceMinTime, riceMaxTime)
+  cookingTime("moongdal", moongdalMinTime, moongdalMaxTime)
+  double totalMinTime = riceMinTime + moongdalMinTime;
+  double totalMaxTime = riceMaxTime + moongdalMaxTime;
+  cout << "min: " << totalMinTime << endl;
+  cout << "max: " << totalMaxTime << endl;
+  return 0;
+}
+</pre>
+
+<p>Another example: write a function <code>quadratic</code> to find roots of quadratic equations:
+<pre>
+ax^2 + bx + c = 0
+</pre>
+for some numbers <code>a</code>, <code>b</code>, and <code>c</code>.
+
+<p>Find roots using the quadratic formula: 
+<ul>
+<li>Example: <code>x^2 - 3*x - 4 = 0</code>
+<li>roots: x=4, x=-1</li>
+<li>Use: (-b +- sqrt(b^2-4*a*c))/2*a</li>
+</ul>
+What parameters should our function accept? What should it return?
+<ul>
+<li>Which parameters should be passed by value, and which by reference?</li>
+</ul>
+Solution
+<pre>
+/*  
+ * Solves a quadratic equation ax^2 + bx + c = 0, 
+ * storing the results in output parameters root1 and root2. 
+ * Assumes that the given equation has two real roots. 
+ */ 
+void quadratic(double a, double b, double c, 
+               double& root1, double& root2) { 
+    double d = sqrt(b * b - 4 * a * c); 
+    root1 = (-b + d) / (2 * a); 
+    root2 = (-b - d) / (2 * a); 
+} 
+</pre>
+
+<h3>Good Decomposition</h3>
+<ul>
+<li>Properties of a good function
+<ul>
+<li>Fully performs a single coherent task.</li>
+<li>Does not do too large a share of work.</li>
+<li>Is not unnecessarily connected to other functions
+<ul>
+<li>No "chaining" of functions</li>
+<li>The following is okay
+<pre>
+main
+|
+---method1
+|
+---method2
+| |
+| ---method3
+|
+---method4
+  |
+  ---method5
+</pre>
+</li>
+<li>The following is NOT okay
+<pre>
+main
+|
+---method1
+  |
+  ---method2
+    |
+    |---method3
+       |
+       ---method4
+       |
+       ---method5
+</pre>
+</li>
+</ul>
+</ul>
+</li>
+
+<li>The <code>main</code> function should be a concise summary of the overall program
+<ul>
+<li>Basically an overview of the steps needed to solve the problem.</li>
+</ul>
+</li>
+</ul>
+
+<h3>Strings</h3>
+<pre>
+#include <string>
+...
+string s = "hello";
+...
+</pre>
+<ul>
+<li>A string is a (possibly empty) sequence of characters</li>
+<li>There are <em>two</em> types of strings in C++. :-/</li>
+</ul>
+
+<p><b>Characters</b>: Characters are values of type <code>char</code> with 0-based indexes:
+<pre>
+string s = "Hi COL100!";
+
+index       0   1   2   3   4   5   6   7   8   9
+character  'H' 'i' ' ' 'C' 'O' 'L' '1' '0' '0' '!'
+</pre>
+Individual characters can be accessed using <code>[index]</code> or <code>at</code>:
+<pre>
+char c1 = s[3];    //'C'
+char c2 = s.at(1); //'i'
+</pre>
+Characters have ASCII encoding (integer mappings):
+<pre>
+cout << (int)s[0] << endl; // 72
+</pre>
+
+<h4>Member functions</h4>
+<table style="width:100%" border="1">
+ <tr>
+  <th>Member function name</th>
+  <th>Description</th>
+ </tr>
+ <tr>
+  <td><code>s.append(str)</code></td>
+  <td>add text to the end of a string</td>
+ </tr>
+ <tr>
+  <td><code>s.compare(str)</code></td>
+  <td>return &lt;0, 0, or &gt;0 depending on relative ordering</td>
+ </tr>
+ <tr>
+  <td><code>s.erase(index, length)</code></td>
+  <td>delete text from a string starting at given <code>index</code></td>
+ </tr>
+ <tr>
+  <td><code>s.find(str), s.rfind(str)</code></td>
+  <td>first or last index where the start of <em>str</em> appears in this string (returns str::npos if not found).</td>
+ </tr>
+ <tr>
+  <td><code>s.insert(index, str)</code></td>
+  <td>add text into a string at a given index.</td>
+ </tr>
+ <tr>
+  <td><code>s.length() or s.size()</code></td>
+  <td>number of characters in this string.</td>
+ </tr>
+ <tr>
+  <td><code>s.replace(index, len, str)</code></td>
+  <td>replaces <em>len</em> chars at given index with new text.</td>
+ </tr>
+ <tr>
+  <td><code>s.substr(start, length) or s.substr(start)</code></td>
+  <td>the next <code>length</code> characters beginning at <em>start</em> (inclusive); if <em>length</em> omitted, graps till end of string.</td>
+ </tr>
+</table>
+Example:
+<pre>
+string name = "Thomas Edison";
+if (name.find("Edi") != string::npos) {
+  name.erase(7, 6); //"Thomas" remains
+}
+</pre>
+
+<h4>Operators</h4>
+<ul>
+<li><b>Concatenate</b> using <code>+</code> or <code>+=</code>:
+<pre>
+string s1 = "Nik";
+s1 += "ola"; //Nikola
+</pre>
+</li>
+<li><b>Compare</b> using relational operators (ASCII ordering):
+<pre>
+string s2 = "Tesla";  // ==, !=, <, <=, >, >=
+if (s1 < s2 && s2 != "abc") { //true
+  ...
+}
+</pre>
+</li>
+<li>Strings are "<b>mutable</b>", i.e., they can be changed!
+<pre>
+s1.append(" Tesla"); //"Nikola Tesla"
+s1.erase(3, 3);  //"Nik Tesla"
+s1[8] = '@';  //"Nik Tesl@"
+</pre>
+</ul>
+
+<h4>Stanford library for strings</h4>
+<table style="width:100%" border="1">
+ <tr>
+  <th>function name</th>
+  <th>Description</th>
+ </tr>
+ <tr>
+  <td><code>endsWith(str, suffix), startsWith(str, suffix)</code></td>
+  <td>true if <em>str</em> ends or begins with the given text <em>suffix</em></td>
+ </tr>
+ <tr>
+  <td><code>integerToString(int), realToString(double), stringToInteger(str), stringToReal(str)</code></td>
+  <td>convert between numbers and strings</td>
+ </tr>
+ <tr>
+  <td><code>equalsIgnoreCase(s1, s2)</code></td>
+  <td>true if s1 and s2 have same chars, ignoring casing</td>
+ </tr>
+ <tr>
+  <td><code>toLowerCase(str), toUpperCase(str)</code></td>
+  <td>returns an upper/lowercase version of a string.</td>
+ </tr>
+ <tr>
+  <td><code>trim(str)</code></td>
+  <td>return string with surrounding whitespace removed.</td>
+ </tr>
+</table>
+Example:
+<pre>
+if (startsWith(name, "Mr. ")) {
+  name += integerToString(age) + " years old";
+}
+</pre>
+
+<p>Exercise: what's the output?
+<pre>
+void mystery(string a, string &b)
+{
+  a.erase(0, 1);   // erase 1 from index 0
+  b += a[0];
+  b.insert(3, "FOO");  //insert at index 3
+}
+
+int main()
+{
+  string a = "nikola";
+  string b = "tesla";
+  mystery(a, b);
+  cout << a << " " << b << endl;
+  return 0;
+}
+</pre>
+What is printed?
+<pre>
+nikola tesFOOlan
+</pre>
+
+<p>String exercise: write a function <code>nameDiamond</code> that accepts a string parameter and prints its letters in a "diamond" format as shown below. For example, <code>nameDiamond("TESLA")</code> should print:
+<pre>
+T
+TE
+TES
+TESL
+TESLA
+ ESLA
+  SLA
+   LA
+    A
+</pre>
+
+<p>Solution
+<pre>
+void nameDiamond(string s)
+{
+  int len = s.length();
+  //print top half of diamond
+  for (int i = 1; i <= len; i++) {
+    cout << s.substr(0, i) << endl;
+  }
+  //print bottom half of diamond
+  for (int i = 1; i < len; i++) {
+    for (int j = 0; j < i; j++) { //indent
+      cout << " "; // with spaces
+    }
+    cout << s.substr(i, len - i) << endl;
+  }
+}
+</pre>
+
+<h4>C vs. C++ strings</h4>
+<ul>
+<li>C++ has two kinds of strings: <b>C strings</b> (char arrays) and <b>C++ strings</b> (String objects).</li>
+<li>A string literal such as <code>"hi there"</code> is a C string!
+<ul>
+<li>C strings don't include any methods/behaviour shown previously. e.g., no member functions like <code>length</code>, <code>find</code>, or operators.</li>
+</ul>
+</li>
+<li>Converting between the two types:
+<ul>
+<li>string("text") : C string to C++ string</li>
+<li>string.c_str() : C++ string to C string</li>
+</ul>
+</li>
+</ul>
+
+<h4>C string bugs</h4>
+<ul>
+<li> string s = "hi" + "there";  //C-string + C-string</li>
+<li> string s = "hi" + '?';  //C-string + char</li>
+<li> string s = "hi" + 41;  //C-string + int</li>
+</ul>
+C strings can't be concatenated with <code>+</code>. C-string + char/int produces garbage, not "hi?" or "hi41". The bug usually manifests in print statements and you will see partial strings.
+
+<ul>
+<li>string s = "hi"; s += 41;
+<ul>
+<li>Adds character with ASCII value 41 ')', doesn't produce "hit41"</li>
+</ul>
+<li> int n = (int) "42";   //n = 0x7ffdcb08
+<ul>
+<li>Bug; sets <code>n</code> to the memory address of the C string "42"!!</li>
+</ul>
+</li>
+</li>
+</ul>
+
+<h4>C string bugs fixed</h4>
+<ul>
+<li> string s = string("hi") + "there";  //C-string + C-string</li>
+<li> or:
+<pre>
+string s = "hi";  //convert to C++ string
+s += "there";
+</pre>
+</li>
+</ul>
+These both compile and work properly.
+
+<p>Similarly:
+<pre>
+string s = "hi";  //convert to C++ string
+s += '?';
+</pre>
+Works because of auto-conversion from C string to C++ string in <code>string a = ...</code>.
+
+<p>For appending integers to strings:
+<pre>
+s += integerToString(41); //"hi?41"
+</pre>
+
+<p>Another example:
+<pre>
+int n = stringToInteger("42"); //42
+</pre>
+
+<p>Explicit string-int conversion using Stanford library.

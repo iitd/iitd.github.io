@@ -1,0 +1,158 @@
+<h2>Big O</h2>
+<ul>
+<li>Lots of different ways to solve a problem: which is best?</li>
+<li>Measure algorithmic <b>efficiency</b>
+<ul>
+<li>how many resources (time? memory? battery power? etc.) does the program use</li>
+<li>We will focus on time. Many other resources, such as battery power are often directly related to time</li>
+</ul>
+</li>
+<li>Idea: algorithms are better if they take less time</li>
+<li>Problem: amount of time a program takes is variable
+<ul>
+<li>Depends on what computer you are using, what other programs are running, whether your phone/laptop is connected to a power source, etc...</li>
+</ul>
+</ul>
+
+<p>Big O
+<ul>
+<li>Idea: assume each statement of code takes some unit of time. For the purposes of this class, that unit does not matter</li>
+<li>We can count the number of units of time and get the runtime</li>
+<li>Sometimes, the number of statements depends on the input -- we'll say the input size is N. e.g., N elements in the vector</li>
+</ul>
+
+<p>Example
+<pre>
+statement1;                         // runtime = 1 
+for (int i = 1; i <= N; i++) {      // runtime = N^2 
+    for (int j = 1; j <= N; j++) {  // runtime = N 
+        statement2; 
+    } 
+} 
+for (int i = 1; i <= N; i++) {      // runtime = 3N 
+    statement3; 
+    statement4; 
+    statement5; 
+}                                   // total = N^2 + 3N + 1 
+</pre>
+
+<p>The actual constant does not matter --- remember that we haven't even specified how much a unit of time is --- so we get rid of constants:
+<pre>
+N^2 + 3N + 1 --> N^2 + N + 1
+</pre>
+
+<p>Only the biggest power of N matters:
+<pre>
+N^2 + N + 1 --> N^2
+</pre>
+<ul>
+<li>The biggest term grows so much faster than the other terms that the runtime of that term "dominates"</li>
+<li>Another way to think about it:
+<pre>
+N^2 + N + 1 < 2N^2
+</pre>
+when N is big, and we already said we don't care about constants
+</li>
+<li>We would then say the code snippet has <code>O(N^2)</code> runtime.</li>
+</ul>
+
+<p>Finding Big O
+<ul>
+<li>Work from the inner-most indented code out</li>
+<li>Realize that some code statements are more costly than others
+<ul>
+<li>It takes O(N^2) time to call a function with runtime O(N^2), even though calling that one function is only one line of code</li>
+</ul>
+<li>Nested code multiplies</li>
+<li>Code at the same indentation level adds</li>
+</ul>
+By indentation level: we intend to capture the nesting level.
+
+<p>What is the Big O?
+<pre>
+int sum = 0; 
+for (int i = 1; i < 100000; i++) { 
+    for (int j = 1; j <= i; j++;) { 
+        for (int k = 1; k <= N; k++) { 
+            sum++; 
+        } 
+     } 
+} 
+Vector<int> v; 
+for (int x = 1; x <= N; x += 2) { 
+    v.insert(0, x); 
+} 
+cout << v << endl; 
+</pre>
+
+<p>Complexity class: a category of algorithmic efficiency based on the algorithm's relationship to the input size "N".
+
+<p>Example complexity classes
+<table style="width:100%" border="1">
+ <tr>
+  <th>Class</th>
+  <th>Big-Oh</th>
+  <th>If you double N, ...</th>
+  <th>Example</th>
+ </tr>
+ <tr>
+  <td>constant</td>
+  <td>O(1)</td>
+  <td>unchanged</td>
+  <td>10ms</td>
+ </tr>
+ <tr>
+  <td>logarithmic</td>
+  <td>O(log_2 N)</td>
+  <td>increases slightly</td>
+  <td>175ms</td>
+ </tr>
+ <tr>
+  <td>linear</td>
+  <td>O(N)</td>
+  <td>doubles</td>
+  <td>2.1 sec</td>
+ </tr>
+ <tr>
+  <td>log-linear</td>
+  <td>O(N log_2 N)</td>
+  <td>slightly more than doubles</td>
+  <td>9 secs</td>
+ </tr>
+ <tr>
+  <td>quadratic</td>
+  <td>O(N^2)</td>
+  <td>quadruples</td>
+  <td>1 min 42 secs</td>
+ </tr>
+ <tr>
+  <td>quad-linear</td>
+  <td>O(N^2 log_2 N)</td>
+  <td>slightly more than quadruple</td>
+  <td>8 mins</td>
+ </tr>
+ <tr>
+  <td>cubic</td>
+  <td>O(N^3)</td>
+  <td>multiplies by 8</td>
+  <td>55 mins</td>
+ </tr>
+ <tr>
+  <td>...</td>
+  <td>...</td>
+  <td>...</td>
+  <td>...</td>
+ </tr>
+ <tr>
+  <td>exponential</td>
+  <td>O(2^N)</td>
+  <td>multiplies drastically</td>
+  <td>5*10^61 years</td>
+ </tr>
+ <tr>
+  <td>factorial</td>
+  <td>O(N!)</td>
+  <td>multiplies drastically</td>
+  <td>10^200 years</td>
+ </tr>
+</table>

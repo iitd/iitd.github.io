@@ -1,0 +1,190 @@
+<h4>Helper library (aka Stanford library)</h4>
+<ul>
+ <li>Use a helper library for this course to ease presentation and focus on concepts.</li>
+ <li>Documentation of the library available at: <a href=http://stanford.edu/~stepp/cppdoc/>http://stanford.edu/~stepp/cppdoc/</a></li>
+</ul>
+
+<h4>Getting Console Input</h4>
+Use the helper library <code>simpio</code>: <pre>#include "simpio.h"</pre>
+<table style="width:100%" border="1">
+ <tr>
+  <th>Function name</th>
+  <th>Description</th>
+ </tr>
+ <tr>
+  <td><code>getInteger("prompt")</code></td>
+  <td><em>repeatedly</em> prompts until an integer is typed; returns it</td>
+ </tr>
+ <tr>
+  <td><code>getReal("prompt")</code></td>
+  <td><em>repeatedly</em> prompts until a double is typed; returns it</td>
+ </tr>
+ <tr>
+  <td><code>getLine("prompt")</code></td>
+  <td><em>repeatedly</em> prompts and reads/returns an entire line of text</td>
+ </tr>
+ <tr>
+  <td><code>getYesOrNo("prompt")</code></td>
+  <td><em>repeatedly</em> prompts for a Yes/No answer; return it as a bool</td>
+ </tr>
+</table>
+
+<p>Note: <code>cin</code> is the standard C++ method to get input and
+these helper library functions use it inside them. <code>cin</code> has
+some issues for easy use in our course:
+<ul>
+ <li>Does not handle errors well.</li>
+ <li>Difficult to get full lines of input.</li>
+</ul>
+
+
+
+<h4>If/Else in Karel and C++</h4>
+<pre>
+if (condition)
+{
+  statement;
+  statement;
+  ..
+}
+else
+{
+  statement;
+  statement;
+  ..
+}
+statement;
+statement;
+  ..
+</pre>
+Condition must be of type <code>bool</code>.
+
+<p>Example:
+<pre>
+string fullName = getLine("Student name? ");
+int age = getInteger("How old are you? ");
+double gpa = getReal("What's your GPA so far? ");
+if (getYesOrNo("Destroy the universe?"))
+{
+  ...
+}
+</pre>
+
+Condition must be of type <code>bool</code>. Repeats the statments in the body until <code>condition</code> is no longer true. Each time, all statements in the body are executed, and <b>then</b> the condition is checked.
+
+<h4>Exercise: Opposition vs. Government</h4>
+<p>Write a program to compute who won the no-confidence motion in the Lok Sabha
+<ul>
+ <li>Assume that the user enters valid integers</li>
+ <li>Example output:
+  <pre>
+Government (votes against the motion)? 325
+Opposition (votes for the motion)? 199
+Government won!
+  </pre>
+</ul>
+
+<p>Code:
+<pre>
+/* This program prints the outcome of a no-confidence motion in the parliament. */
+#include &lt;iostream&gt;
+#include "simpio.h"
+using namespace std;
+int main() {
+  int government = getInteger("Government (votes against the motion)? ");
+  int opposition = getInteger("Opposition (votes for the motion)? ");
+  if (government &gt; opposition) {
+    cout &lt;&lt; "Government won!" &lt;&lt; endl;
+  } else {
+    if (opposition &gt; government) {
+      cout &lt;&lt; "Opposition won!" &lt;&lt; endl;
+    } else {
+      cout &lt;&lt; "A tie." &lt;&lt; endl;
+    }
+  }
+  return 0;
+}
+</pre>
+
+<h4>If/Else can be nested</h4>
+<pre>
+if (condition1)
+{
+  if (condition2)
+  {
+  }
+} else
+{
+  if (condition3)
+  {
+  }
+}
+</code>
+
+
+
+<h4>For a single statement in the body, do not necessarily need braces</h4>
+<pre>
+if (condition)
+  statement;
+else
+{
+  statement;
+  statement;
+  ...
+}
+</pre>
+or
+<pre>
+if (condition)
+{
+  statement;
+  statement;
+  ...
+}
+else
+  statement;
+</pre>
+
+<h4>If/Else can be stringed together</h4>
+<pre>
+if (condition1)
+{
+  ...
+} else if (condition2)
+{
+  ...
+} else if (condition3)
+{
+  ...
+} else
+{
+  ...
+}
+</pre>
+
+<p>Precedence rules for arithmetic operators: division (/), multiplication (*), add and subtract.</p>
+
+<h4>Logical operators</h4>
+<ul>
+<li>not (!): e.g., !(2==3), !(x != 2), etc.</li>
+<li>and (&amp;&amp;): e.g., (2==3) &amp;&amp; (x != 2), etc.</li>
+<li>or (||): e.g., (2==3) || (x != 2), etc.</li>
+</ul>
+
+<p>Precedence rules for logical operators: not (!), and (&amp;&amp;), or (||)</p>
+
+<p>Precedence overall: arithmetic &gt; relational &gt; logical
+
+<p>Example
+<pre>
+5 * 7 &gt;= 3 + 5 * (7 - 1) &amp;&amp; 7 &lt;= 11
+</pre>
+<ol>
+<li>(7-1)=6</li>
+<li>5*7=35, 5*6 = 30</li>
+<li>3+30=33</li>
+<li>35&gt;=33 is true</li>
+<li>7&lt;=11 is true</li>
+<li></code>true &amp;&amp; true</code> is <code>true</code></li>
+</ol>

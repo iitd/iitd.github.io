@@ -1,0 +1,230 @@
+<h2>Queues</h2>
+<ul>
+<li>There is behavior that stacks fail to model well
+<ul>
+<li>What if we want to remove from front instead of from back?</li>
+<li>Can we model first-in, first-out behavior using other ADTs?</li>
+<li>Vector:  removing from the beginning of a list is an O(n)
+operation</li>
+<li>Stack:  need two stacks to get the first element (food for
+thought:  how to do this?)</li>
+<li>Grid:  nah</li>
+</ul>
+<li>So, we need a new ADT...</li>
+</ul>
+
+<h3>Queues</h3>
+<ul>
+<li><code>queue</code>: ADT that retrieves elements in the order they were added
+<ul>
+<li>First-in, First-out ("FIFO")</li>
+<li>Elements are stored in order of insertion, no indexes</li>
+<li>Can add only to the end of a queue and can only examine or remove the front</li>
+</ul>
+</li>
+<li>Basic Queue operations
+<ul>
+<li><code>enqueue</code>: add an element to the back</li>
+<li><code>dequeue</code>: remove the front element</li>
+<li><code>peek</code>: examine the front element</li>
+</ul>
+</ul>
+Draw a diagram showing a queue, front, back, enqueue, dequeue, and peek operations.
+
+<h3>Member functions</h3>
+<table style="width:100%" border="1">
+<tr>
+<td><code>q.dequeue()</code></td>
+<td>O(1)</td>
+<td>removes <b>front</b> value and returns it; throws error if queue is empty</td>
+</tr>
+<tr>
+<td><code>q.enqueue(value)</code></td>
+<td>O(1)</td>
+<td>places given value at <b>back</b> of queue</td>
+</tr>
+<tr>
+<td><code>q.isEmpty()</code></td>
+<td>O(1)</td>
+<td>returns true if queue has no elements</td>
+</tr>
+<tr>
+<td><code>q.peek()</code></td>
+<td>O(1)</td>
+<td>returns front value without removing; throws error if queue is empty</td>
+</tr>
+<tr>
+<td><code>q.size()</code></td>
+<td>O(1)</td>
+<td>returns number of elements in queue</td>
+</tr>
+</table>
+The Queue class in Stanford's C++ libraries.
+
+<p>Food for thought: what is not an O(1) operation?
+
+<h3>Example</h3>
+<pre>
+Queue&lt;int&gt; q;                // {} front -> back
+q.enqueue(42);               // {42}
+q.enqueue(-3);               // {42, -3}
+q.enqueue(17);               // {42, -3, 17}
+cout << q.dequeue() << endl; // 42 (q is {-3, 17})
+cout << q.peek() << endl;    // -3 (q is {-3, 17})
+cout << q.dequeue() << endl; // -3 (q is {17}
+</pre>
+
+<h3>Applications</h3>
+<ul>
+<li>Real-world examples
+<ul>
+<li>Bank lines (or token system)</li>
+<li>Call services -- being on hold</li>
+<li>Anything first-come-first-serve</li>
+</ul>
+<li>Computers
+<ul>
+<li>Sending jobs to a printer</li>
+<li>Uploading photos on social media</li>
+</ul>
+</li>
+</ul>
+
+<h3>Exercise</h3>
+What is the output of the following code?
+<pre>
+Queue&lt;int&gt; queue;
+for (int i = 1; i <= 6; i++) {
+  queue.enqueue(i);
+} // {1, 2, 3, 4, 5, 6}
+for (int i = 0; i < queue.size(); i++) {
+  cout << queue.dequeue() << " ";
+}
+cout << queue << " size " << queue.size() << endl;
+</pre>
+Options
+<pre>
+A. 1 2 3 4 5 6 {} size 0
+B. 1 2 3 {4, 5, 6} size 3
+C. 1 2 3 4 5 6 {1, 2, 3, 4, 5, 6} size 6
+D. none of the above
+</pre>
+
+<p>Exercise: Write a function <code>duplicate</code> that accepts a queue of integers and replaces every element with two copies of itself. For example, <code>{1, 2, 3}</code> becomes <code>{1, 1, 2, 2, 3, 3}</code>.
+
+<pre>
+void duplicate(Queue&lt;int&gt;& q) {
+  int size = q.size();
+  for (int i = 0; i < size; i++) {
+    int n = q.dequeue();
+    q.enqueue(n);
+    q.enqueue(n);
+  }
+}
+</pre>
+
+<p>Tips or using queues:
+<ul>
+<li>Don't use <code>size()</code> directly
+<pre>
+int size = q.size();
+for (int i = 0; i < size; i++) {
+  // do something with q.dequeue();
+  // (including possibly re-adding it to the queue)
+}
+</pre>
+</li>
+<li>As with stacks, must pull contents out of queue to view them
+<pre>
+//process (and destroy) an entire queue
+while (!q.isEmpty()) {
+   //do something with q.dequeue();
+}
+</pre>
+</li>
+</ul>
+
+<h3>Mixing stacks and queues</h3>
+How can we reverse the order of elements in a queue?
+<pre>
+Queue&lt;int&gt; q {1, 2, 3};  // q={1, 2, 3}
+Stack&lt;int&gt; s;
+
+while (!q.isEmpty()) { //transfer queue to stack
+  s.push(q.dequeue()); //q = {}, s = {1, 2, 3}
+}
+
+while (!s.isEmpty()) { //transfer stack to queue
+  q.enqueue(s.pop());  //q = {3, 2, 1}, s = {}
+}
+
+cout << q << endl;   // {3, 2, 1}
+</pre>
+What is the time complexity?
+
+<p>Exercise: Write a function <code>mirror</code> that accepts a queue of strings and appends the queue's contents to itself in reverse order. For example, {"a", "b", "c"} becomes {"a", "b", "c", "c", "b", "a"}.
+
+<pre>
+void mirror(Queue&lt;string&gt;& q) {
+  Stack&lt;string&gt; s;
+  int size = q.size();
+  for (int i = 0; i < size; i++) {
+    string str = q.dequeue();
+    s.push(str);
+    q.enqueue(str);
+  }
+  while (!s.isEmpty()) {
+    q.enqueue(s.pop());
+  }
+}
+</pre>
+
+<h3>Brief introduction to Dequeues: doubly-ended queues (pronounced "deck")</h3>
+<ul>
+<li><code>deque</code>: double-ended queue, pronounced "deck"
+<ul>
+<li>Can add/remove from either end</li>
+<li>Combines many of the benefits of stack and queue</li>
+</ul>
+</li>
+<li>Basic deque operations:
+<ul>
+<li>enqueueFront, enqueueBack</li>
+<li>dequeueFront, dequeueBack</li>
+<li>peekFront, peekBack</li>
+</ul>
+<li>Get queue and stack functionality in one data structure!
+</ul>
+Show figure with dequeue.
+
+<h3>Mapping to C++ STL functions</h3>
+<p>Member functions (first Stanford function, then STL function, then description): reference <a href=http://www.cplusplus.com/reference/queue/queue/>http://www.cplusplus.com/reference/queue/queue/</a>:
+<table style="width:100%" border="1">
+<tr>
+<td><code>q.isEmpty()</code></td>
+<td>q.empty()</td>
+<td>returns true if queue has no elements</td>
+</tr>
+<tr>
+<td><code>q.peek()</code></td>
+<td>q.front()</td>
+<td>returns front value without removing it; throws an error if queue is empty</td>
+</tr>
+<tr>
+<td><code>q.dequeue()</code></td>
+<td>q.pop()</td>
+<td>C++ STL version only removes front value (but does not return it); throws an error if queue is empty</td>
+</tr>
+<tr>
+<td><code>q.enqueue(value)</code></td>
+<td>q.push(value)</td>
+<td>places given value on top of queue, increasing its size by one</td>
+</tr>
+<tr>
+<td><code>q.size()</code></td>
+<td>q.size()</td>
+<td>returns number of elements in queue.</td>
+</tr>
+</table>
+
+

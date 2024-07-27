@@ -1,0 +1,80 @@
+<h2>Debugging</h2>
+Interesting anecdote: most programmers spend more time debugging than writing code!
+
+<p>Steps to debugging
+<ul>
+<li>Determine that you have a bug</li>
+<li>Isolate the bug's location</li>
+<li>Find the culprit code</li>
+</ul>
+
+<p>Identifying a bug
+<ul>
+<li>In order to find a bug, lots and lots of testing</li>
+<li>Answer the question: what is the behaviour that you think is buggy (in words).</li>
+<li>Why do you think that the behaviour is buggy?
+<ul>
+<li>Differs from given expected output?</li>
+<li>Not what you were expecting, e.g., too slow, too much memory consumption, crashes, runs out of resources, never finishes, ...</li>
+</ul>
+</li>
+<li>Try to pinpoint: under what circumstances does the bug appear
+<ul>
+<li>Try different inputs or outputs</li>
+<li>Goal: find the smallest input possible that reproduces the bug!</li>
+</ul>
+</li>
+<li>Be specific, and keep getting more specific until you find the issue!</li>
+</ul>
+
+<p>There are many different strategies possible (the one detailed above is just one of them)
+<ul>
+<li>Goal: Where in the code could the bug be? e.g., everything was working fine yesterday but something went wrong today, so perhaps the code written today is the first suspect</li>
+<li>Be creative: better to think of too many places than too few
+<ul>
+<li>Like a detective game. Can be quite fun when you find the issue</li>
+</ul>
+</li>
+<li>Example: Identify different functions that could be the culprit
+<ul>
+<li>Then run each function separately (need to construct inputs to the function)</li>
+<li>Print out parameters and return values</li>
+<li>Use the debugger! e.g., <code>gdb</code>. See next week's lab assignment.</li>
+</ul>
+</li>
+</ul>
+
+<p>Finding the bug
+<ul>
+<li>Once you have found the function, need to find the bug</li>
+<li>What does each line of code do?
+<ul>
+<li>Use print statements or the debugger to verify your assumptions</li>
+<li>Explain each line of code to your partner or to an imaginary person</li>
+</ul>
+</li>
+<li>Draw pictures - keep track of values in data structures and variable values</li>
+</ul>
+
+<h3>Using the debugger</h3>
+Some common functionalities in a debugger
+<ul>
+<li>Add a <b>breakpoint</b>: program will pause at that line of code
+<pre>
+0  #include <iostream>
+1  int foo(int a)
+2  {
+3     a = a + 2;
+4     return a;
+5  }
+6
+7  int main()
+8  {
+9    cout << "hello\n";
+10   cout << foo(10) << endl;
+11   return 0;
+12 }
+</pre>
+We can ask the debugger to add a "breakpoint" at line number 3, for example. Show what will happen.
+</li>
+</ul>

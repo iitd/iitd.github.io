@@ -1,0 +1,139 @@
+<h3>Karel review and a more complex example</h3>
+Abstractions in Karel's world:
+<ul>
+<li>Instructions: <code>move()</code>, <code>pickBeeper()</code>, <code>putBeeper()</code>, <code>turnLeft()</code></li>
+<li>Conditions: <code>frontIsClear()</code>, <code>beeperPresent</code></li>
+<li>Variables, variable assignment and use</li>
+<li>if-then-else, if-then</li>
+<li>for-loop for counting</li>
+<li>while-loop for looping until a condition becomes false</li>
+</ul>
+<h4>Example: moveTillClear()</h4>
+<h4>Example: clearAllTowers()</h4>
+use another abstraction, <code>clearOneTower</code> to implement this function. Can use either top-down or bottom-up design approach.
+
+<h3>We will use C++ examples, why C++?</h3>
+<ul>
+ <li>C++ is quite a popular language. Provides a lot of choice to the programmer to choose between safe-programming and fast-programming. This is a tradeoff you may appreciate as you go through more CS courses: you can either be very safe (e.g., riding in a slow train, or walking) or you can be very fast (e.g., riding on a figher jet), but it is often hard to achieve both. But I digress.</li>
+ <li>We will restrict ourselves to the safe features of C++. Do not care about speed for now.</li>
+ <li>But getting introduced to C++ syntax should help you in future CS courses which also discuss speed.</li>
+ <li>Keep in mind: the language is not important, concepts are. The same concepts can be applied to any other programming language!</li>
+</ul>
+
+<h3>Introduction to C++</h3>
+<ul>
+ <li> C++: A programming language developed in 1983 by Bjarne Stroustroup
+  <ul>
+   <li>one of the world's most widely used languages today</li>
+   <li>continues to be improved over time. latest version: C++17.</li>
+  </ul>
+ </li>
+ <li>C++ syntax has many similarities with Java and C
+  <ul>
+   <li>similar data types: <code>int, double, char, void</code>.</li>
+   <li>similar operators: <code>+, -, *, /, %, keywords</code>.</li>
+   <li>use of <code>{ }</code> braces for scope.</li>
+   <li>comes equipped with a large standard library for you to use.</li>
+  </ul>
+ </li>
+</ul>
+<h4>C++ programs/files</h4>
+<ul>
+ <li>C++ source code lives in <code>.cpp</code> files
+  <ul>
+   <li>Additional declarations can be put in "header" <code>.h</code> files.</li>
+  </ul>
+ </li>
+ <li>Source code is compiled into binary <em>object</em> files (<code>.o</code>)</li>
+ <li>Example:
+  <ul>
+   <li>file1.cpp--compile-&gt;file1.o</li>
+   <li>file2.cpp--compile-&gt;file2.o</li>
+   <li>file1.o file2.o library1 library2 --link-&gt; a.out executable</li>
+  </ul>
+ </li>
+</ul>
+
+<h4>First C++ program</h4>
+<pre>
+/*
+ * hello.cpp
+ * This program prints a welcome message
+ * to the user.
+ */
+#include &lt;iostream&gt;
+using namespace std;
+int main() {
+  cout &lt;&lt; "Hello, world!" &gt;&gt; endl;
+  return 0;
+}
+</pre>
+<ul>
+ <li>Program comments. Inline comments can be written using
+  <pre>
+// comment
+  </pre>
+ </li>
+ <li>Include statements. C++ libraries are written with angle brackets. Local libraries have quotes. e.g.,
+  <pre>
+#include "lib.h"
+  </pre>
+ </li>
+ <li>Namespaces. Functions and variables are divided (scoped) by namespace.
+  Normally would refer to them as <b>namespace::symbol</b>. The "using"
+  keyword removes the need for the namespace (brings those symbols into
+  the global program scope).</li>
+ <li>Main function -- this is the entry point of the program. Should always return an integer (0 = success). Functions do not need to be part of a class in C++.</li>
+</ul>
+
+<h4>Code variables</h4>
+<ul>
+<li>A "variable" is like a box that holds a value.</li>
+<li>x = 7</li>
+<li>This stores the value <code>7</code> into the variable (i.e., box) <code>x</code>.</li>
+<li>Later <code>x</code> in the code retrieves the value from the box.</li>
+<li><code>x</code> becomes a shorthand for <code>7</code> (or whatever is in the box).</li>
+<li>Using <code>=</code> in this way is called "variable assignment".</li>
+</ul>
+
+<h4>Example usage</h4>
+<ul>
+<li>Assign a value into a variable once.</li>
+<li>Then use that variable many times below.</li>
+<li>A convenient shorthand in the code.</li>
+<li>Many languages allow assigning a value to a variable multiple times (mutable variables).</li>
+<li>Some languages allow assigning a value to a variable a single time (immutable variables).</li>
+<li>C++ supports both mutable and immutable variables. Use the <code>const</code> keyword in the "type" of the variable to indicate that it is immutable. For our discussion in the class, we will ignore immutable variables and restrict ourselves to mutable variables.</li>
+</ul>
+<p>Programming with variables
+<pre>
+string name = "Virat";
+cout &lt;&lt; "happy birthday to " &lt;&lt; name &lt;&lt; endl;
+cout &lt;&lt; "wish you a long life " &lt;&lt; name &lt;&lt; endl;
+</pre>
+<p>A modern computer has gigabytes of memory, i.e., it has space for billions of these boxes (or variables).</p>
+
+<h4>Variable declarations</h4>
+<pre>
+type name;
+</pre>
+Some example types:
+<ul>
+<li><code>int</code>: integral values, e.g., how many students in the class.</li>
+<li><code>double</code>: decimal values, e.g., what is the average age of the students in the class.</li>
+<li><code>char</code>: characters, e.g., 'a', .., 'z', '0', .., '9', '\n', ...</li>
+<li><code>bool</code>: boolean values <code>true</code> and <code>false</code>.</li>
+</ul>
+
+<h4>Variable assignments</h4>
+<pre>
+name = value;
+</pre>
+Would be a compiler error if the variable <code>name</code> has not been declared already. Would also be an error if the variable <code>name</code> is declared twice (in the same "scope").
+
+<h4>Variable declaration and assignment</h4>
+Can do both declaration and assignment together.
+<pre>
+type name = value;
+</pre>
+
