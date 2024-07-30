@@ -160,3 +160,73 @@ print func_c(func_a)  # func_c takes one parameter, another function
 <p>Show global scope and func_a scope while <code>func_a</code> is executing.  Notice that it returns <code>None</code>, which gets printed.  Similarly, <code>func_b</code> returns <code>2</code> and so <code>7</code> is printed.
 
 <p>Show three scopes: global, <code>func_c</code>, and <code>func_a</code>.
+
+<p><b>Scope example</b>
+<ul>
+<li> inside a function, <em>can access</em> a variable defined outside.</li>
+<li> inside a function, <em>cannot modify</em> a variable defined outside.
+<ul>
+<li>This can be done using global variables, but is frowned upon.</li>
+</ul>
+</li>
+</ul>
+
+<p>Examples:
+<ul>
+<li>Outside variable re-defined in scope and then modified: OK because these are two different <code>x</code> objects
+<pre>
+def f(y):
+  x = 1  #x is re-defined in scope of f (different object)
+  x += 1
+  print(x)
+
+x = 5  #x is defined outside the scope of f
+f(x)
+print(x) #prints the outer x object
+</pre>
+</li>
+<li><code>x</code> inside <code>g</code> is picked up from scope that called function <code>g</code>.
+<pre>
+def g(y):
+  print(x)  #x from outside g
+  print(x+1) #x from outside g
+
+x = 5
+g(x)
+print(x) #prints the outer (and only) x object
+</pre>
+<code>x</code> inside <code>g</code> is picked up from scope that called function <code>g</code>.
+</li>
+<li>Error if <code>x</code> is used with a read/write operator (where the read happens first) in a scope, even if it was defined in an outer scope.
+<pre>
+def h(y):
+  x += 1
+
+x = 5
+h(x)
+print(x)  #does not reach here
+</pre>
+This yields <code>UnboundLocalError: local variable 'x' referenced before assignment</code>.  Would have been ok if we had done <code>x = x + 1</code> instead of <code>x += 1</code> --- the former reads the outer x and defines an inner x; the latter tries to read the inner x before it has been defined!
+</li>
+</ul>
+
+<p>More complex example:
+<pre>
+def g(x):
+  def h():
+    x = 'abc'
+  x = x + 1
+  print('g: x = ', x)
+  h()
+  return x
+
+x = 3
+z = g(x)
+</pre>
+Global scope has <code>g -&gt; some code</code> and <code>x -&gt; 3</code>. The
+<code>g</code> scope has <code>x -&gt; 4</code> (reads from the outer object and defines an inner object) and <code>h -&gt; some code</code>.  The <code>h</code> scope has <code>x -&gt; 'abc'</code> and returns <code>None</code>. On the return path, <code>g</code> returns <code>4</code> (for <code>x</code>) and in the global scope, this value is assigned to <code>z</code>.
+
+<p>Decomposition and abstraction are powerful together:
+<ul>
+<li>Code can be used many times but only has to be debugged once!</li>
+</ul>
