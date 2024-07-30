@@ -1,0 +1,26 @@
+Have seen variable types like <code>int</code>, <code>float</code>, <code>bool</code>, <code>string</code>.  Today, we will introduce <em>compound data types</em>:
+<ul>
+<li>Tuples</li>
+<li>Lists</li>
+<li>Idea of aliasing</li>
+<li>Idea of mutability</li>
+<li>Idea of cloning</li>
+</ul>
+
+<h3>Tuples</h3>
+<ul>
+<li>an ordered sequence of elements, can mix element types</li>
+<li>cannot change element values, <em>immutable</em> (just like strings)</li>
+<li>represented with parentheses
+<pre>
+te = ()  #empty tuple
+t = (2, "hello", 3)
+t[0] #evaluates to 2
+(2, "hello", 3) + (4, 5) # evaluates to (2, "hello", 3, 4, 5)
+t[1:2] #slice tuple, evaluates to ("hello",); notice the extra comma which indicates a tuple with one element
+t[1:3] #slice tuple, evaluates to ("hello", 3)
+len(t) #evaluates to 3
+t[1] = 4 #gives error, cannot modify object
+</pre>
+</li>
+</ul>

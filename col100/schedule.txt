@@ -20,7 +20,7 @@ LEC: <a href=lec/strings_guess_and_check.html>Strings, Guess-and-Check, Approxim
 ==
 LEC: <a href=lec/functions.html>Functions</a>
 ==
-LEC: <a href=lec/loops2.html>Loops continued</a>
+LEC: <a href=lec/lists.html>Tuples, Lists, Aliasing, Mutability, Cloning</a>
 ==
 LEC: <a href=lec/scope_and_parameters.html>Scope and Parameters</a>
 ==
