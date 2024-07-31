@@ -22,7 +22,7 @@ LEC: <a href=lec/functions.html>Functions</a>
 ==
 LEC: <a href=lec/lists.html>Tuples, Lists, Aliasing, Mutability, Cloning</a>
 ==
-LEC: <a href=lec/scope_and_parameters.html>Scope and Parameters</a>
+LEC: <a href=lec/recursion.html>Recursion, Dictionaries</a>
 ==
 LEC: <a href=lec/parameters2.html>Parameters (continued)</a>
 ==

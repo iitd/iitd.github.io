@@ -24,3 +24,363 @@ t[1] = 4 #gives error, cannot modify object
 </pre>
 </li>
 </ul>
+
+<p>When a tuple is used on the left-hand side (LHS) of an assignment, then it
+can be used to assign to multiple variables simultaneously.  For example, this
+can be conveniently used to <em>swap</em> variable values.
+<br>First try:
+<pre>
+x = y
+y = x
+#This is an incorrect way to swap two variables
+</pre>
+<br>Second try:
+<pre>
+temp = x
+x = y
+y = temp
+#Correct way to swap two variables, but this can be written in a shorter way
+</pre>
+<br>Best way to swap two variables (this way uses tuples both on the LHS and RHS of an assignment):
+<pre>
+(x, y) = (y, x)
+</pre>
+
+<p>A tuple can be used to <em>return more than one value</em> from a function
+<pre>
+def quotient_and_remainder(x, y):
+  q = x // y   #integer division
+  r = x % y
+  return (q, r)
+
+(quot, rem) = quotient_and_remainder(43, 5)
+</pre>
+
+<p><b>Manipulating tuples</b>
+Let <code>aTuple</code> be a tuple of tuples, such that the inner tuples are all
+of type <code>(int,string)</code>.
+<pre>
+def get_data(aTuple):
+  nums = ()    # empty tuple
+  words = ()
+  for t in aTuple:
+    nums = nums + (t[0],) #singleton tuple
+    if t[1] not in words:
+      words = words + (t[1],)  #singleton tuple
+  min_n = min(nums)
+  max_n = max(nums)
+  unique_words = len(words)
+  return (min_n, max_n, unique_words)
+</pre>
+The <code>get_data</code> function identifies the minimum and the maximum
+numbers in the constituent tuples, and also the number of unique words (strings)
+in the constituent tuples.
+
+<h3>Lists</h3>
+<ul>
+<li> <em>ordered sequence</em> of information, accessible by index</li>
+<li> a list is denoted by <em>square brackets</em>, <code>[]</code></li>
+<li>a list contains <em>elements</em>
+<ul>
+<li> usually homogeneous (e.g., all integers)</li>
+<li> can contain mixed types (not common)</li>
+</ul>
+</li>
+<li>list elements can be changed so a list is <em>mutable</em>!
+</ul>
+
+<p><b>Indices and ordering</b>
+<pre>
+a_list = []
+L = [2, 'a', 4, [1,2]]
+len(L) evaluates to 4
+L[0] evaluates to 2
+L[2]+1 evaluates to 5
+L[3] evaluates to [1,2], another list!
+L[4] gives an error
+i = 2
+L[i-1] evaluates to 'a' because L[1]='a'
+</pre>
+
+<p><b>Lists are mutable</b>
+<ul>
+<li>lists are <em>mutable</em>, i.e., you can change individual elements of the same object over time!</li>
+<li>assigning to an element at an index changes the value
+<pre>
+L = [2, 1, 3]
+L[1] = 5
+</pre>
+After this, the list <code>L</code> is <code>[2, 5, 3]</code>.  Note that this is the <em>same object</em>!  Thus, if before the assignment we had <code>L -&gt; [2,1,3]</code>, then after the assignment we have <code>L -&gt; [2,5,3]</code> (the object remains the same, i.e., it does not get copied, rather it is updated in its place).
+</li>
+</ul>
+
+<p><b>Iterating over a list</b>
+<ul>
+<li> compute the <em>sum of elements</em> of a list</li>
+<li> common pattern, iterate over list elements
+<br> One way:
+<pre>
+total = 0
+for i in range(len(L)):
+  total += L[i]
+print total
+</pre>
+<br> More succinct way:
+<pre>
+total = 0
+for i in L:
+  total += i
+print total
+</pre>
+Like strings, can iterate over list elements directly.
+</li>
+<li>Notice: list elements are indexed <code>0</code> to <code>len(L)-1</code>.
+</ul>
+
+<p><b>Operations on Lists - Add</b>
+<ul>
+<li> <em>add</em> elements to end of list with <code>L.append(element)</code></li>
+<li> <em>mutates</em> the list!
+<pre>
+L = [2,1,3]
+L.append(5)  #L is now [2,1,3,5]
+</pre>
+What is the "." (dot) in <code>L.append(5)</code>?
+<ul>
+<li>lists are Python objects, evertying in Python is an object</li>
+<li>objects have data</li>
+<li>objects have methods and functions</li>
+<li>access this information by <code>object_name.do_something()</code></li>
+<li>will learn more about these later</li>
+</ul>
+</li>
+<li>to combine lists together, use <em>concatenation</em>, + operator (or <code>extend</code> method) to give you a new list
+<pre>
+L1 = [2,1,3]
+L2 = [4,5,6]
+L3 = L1 + L2   #L3 is [1,2,3,4,5,6]; L1,L2 unchanged
+</pre>
+<li> <em>mutate</em> list with <code>L.extend(some_list)</code>. This is different from the + operator.
+<pre>
+L1 = [2,1,3]
+L2 = [4,5,6]
+L1.extend([0,6])   #mutated L1 to [2,1,3,0,6]
+</pre>
+</li>
+</ul>
+
+<p><b>Operations on Lists - Remove</b>
+<ul>
+<li> delete element at a <em>specific index</em> with <code>del(L[index])</code>.</li>
+<li> remove element at <em>end of list</em> with <code>L.pop()</code>, returns the removed element.</li>
+<li>remove a <em>specific element</em> with <code>L.remove(element)</code>
+<ul>
+<li>looks for the element and removes it</li>
+<li>if element occurs multiple times, removes first occurrence</li>
+<li>if element not in list, gives an error
+<pre>
+L = [2,1,3,6,3,7,0] # do below in order
+L.remove(2)  #mutates L to [1,3,6,3,7,0]
+L.remove(3)  #mutates L to [1,6,3,7,0]
+del(L[1])    #mutates L to [1,3,7,0]
+L.pop()      #returns 0 and mutates L to [1,3,7]
+</li>
+</ul>
+</ul>
+
+<p><b>Convert lists to strings and back</b>
+<ul>
+<li> convert <em>string to list</em> with <code>list(s)</code>, returns a list
+with every character from <code>s</code> an element in <code>L</code>.</li>
+<li> can use <code>s.split()</code> to a <em>split a string on a character</em> parameter, splits on spaces if called without a parameter.</li>
+<li> use <code>''.join(L)</code> to turn a <em>list of characters into a
+string</em>, can give a character in quotes to add char between every element.</li>
+</ul>
+<pre>
+s = "I&lt;3 cs"  #s is a string
+list(s)   #returns ['I','&lt;','3',' ','c','s']
+s.split('&lt;')  #returns ['I', '3 cs']
+L = ['a','b','c']  # <code>L</code> is a list
+''.join(L)    #returns "abc"
+'_'.join(L)   #returns "a_b_c"
+</pre>
+
+<p><b>Other list operations</b>
+<ul>
+<li> <code>sort()</code> and <code>sorted()</code></li>
+<li> <code>reverse()</code></li>
+<li> and many more, see <a href=https://docs.python.org/3/tutorial/datastructures.html>https://docs.python.org/3/tutorial/datastructures.html</a>.
+</ul>
+<pre>
+L = [9,6,0,3]
+sorted(L)   # returns sorted list, does not mutate L
+L.sort()    # mutates L to [0,3,6,9]
+L.reverse() # mutates L to [9,6,3,0]
+</pre>
+
+<h3>Mutation, Aliasing, Cloning</h3>
+<em>Aliasing</em> is tricky, and <a href=http://www.pythontutor.com>Python tutor</a> is your friend.
+
+<p>Lists in memory:
+<ul>
+<li> lists are <em>mutable</em></li>
+<li> behave differently than immutable types</li>
+<li> is an object in memory</li>
+<li> variable name points to object</li>
+<li> any variable pointing to that object is affected (upon a mutation of the object)</li>
+<li> <em>Side effects</em> are the effects of an operation on variables that are not necessarily named in the operation. </li>
+</ul>
+
+<p>An analogy
+<ul>
+<li> Attributes of a person: cricketer, fit</li>
+<li> He is known by many names </li>
+<li> all nicknames point to the <em>same person</em>
+<ul>
+<li> add new attribute to <em>one nickname</em>
+<pre>
+VIRAT: cricketer, fit, famous
+</pre>
+</li>
+<li>... all his nicknames refer to old attributes <em>and</em> all new ones
+<pre>
+Cheeku: cricketer, fit, famous
+King Kohli: cricketer, fit, famous
+</pre>
+<code>Virat</code>, <code>Cheeku</code>, and <code>King Kohli</code> are aliases for the same person.
+</li>
+</ul>
+</li>
+</ul>
+
+<p><b>Aliases</b>
+<pre>
+a = 1
+b = a  #b and a are associated with separate objects
+a = 2
+print(a)
+print(b)
+
+warm = ['red', 'yellow', 'orange']
+hot = warm #hot and warm are associated with the same list object
+hot.append('pink')
+print(hot)
+print(warm)
+</pre>
+The program prints:
+<pre>
+2
+1
+['red', 'yellow', 'orange', 'pink']
+['red', 'yellow', 'orange', 'pink']
+</pre>
+Show the global scope and how the variables <code>warm</code> and <code>hot</code>
+are associated with the same list object, i.e., <code>warm</code> and
+<code>hot</code> alias, i.e., changing one changes the other!
+
+<p><b>Cloning a list</b>
+<ul>
+<li>create a new list and <em>copy every element</em> using
+<pre>
+chill = cool[:]
+</pre>
+</li>
+</ul>
+<pre>
+cool = ['blue', 'green', 'grey']
+chill = cool[:]
+chill.append('black')
+print(chill)
+print(cool)
+</pre>
+The program prints:
+<pre>
+['blue', 'green', 'grey', 'black']
+['blue', 'green', 'grey']
+</pre>
+Show the global scope and how the variables <code>cool</code> and <code>chill</code>
+are associated with different list objects.
+
+<p><b>Sorting Lists</b>
+<ul>
+<li> calling <code>sort()</code> <em>mutates</em> the list, returns nothing.</li>
+<li> calling <code>sorted()</code> <em>does not mutate</em> the list, must assign result to a variable.</li>
+</ul>
+<pre>
+warm = ['red', 'yellow', 'orange']
+sortedwarm = warm.sort()
+print(warm)
+print(sortedwarm)
+
+cool = ['grey', 'green', 'blue']
+sortedcool = sorted(cool)
+print(cool)
+print(sortedcool)
+</pre>
+The program prints:
+<pre>
+['orange', 'red', 'yellow']
+None
+['grey', 'green', 'blue']
+['blue', 'green', 'grey']
+</pre>
+Show the global scope with variables and their associations.
+
+<p><b>Lists of lists of lists of ...</b>
+<ul>
+<li> can have <em>nested</em> lists</li>
+<li> side effects still possible after mutation</li>
+</ul>
+<pre>
+warm = ['yellow', 'orange']
+hot = ['red']
+brightcolors = [warm]
+brightcolors.append(hot)
+print(brightcolors)
+hot.append('pink')
+print(hot)
+print(brightcolors)
+</pre>
+The program prints:
+<pre>
+[['yellow', 'orange'], ['red']]
+['red', 'pink']
+[['yellow', 'orange'], ['red', 'pink']]
+</pre>
+Show the global scope with variables and their associations.  The <code>brightcolors</code> has pointers to the objects that are also pointed-to by
+<code>warm</code> and <code>hot</code>.
+
+<p><b>Mutation and Iteration</b>.  Try this in <a href=http://www.pythontutor.com>Python tutor</a>.
+<ul>
+<li> <em>avoid</em> mutating a list as you are iterating over it
+<pre>
+def remove_dups(L1, L2):
+  for e in L1:
+    if e in L2:
+      L1.remove(e)
+
+L1 = [1, 2, 3, 4]
+L2 = [1, 2, 5, 6]
+remove_dups(L1, L2)
+</pre>
+<ul>
+<li> <code>L1</code> is <code>[2,3,4]</code>, not <code>[3,4]</code>.  Why?
+<ul>
+<li>Python uses an internal counter to keep track of the current index in the list at which it is in the loop.</li>
+<li>Mutating changes the list length but Python does not update the counter.</li>
+<li>And so: loop never sees element <code>2</code>.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li> Instead, clone the list first, and then iterate on the cloned copy while mutating the original copy:
+<pre>
+def remove_dups(L1, L2):
+  L1_copy = L1[:]
+  for e in L1_copy:
+    if e in L2:
+      L1.remove(e)
+</pre>
+Notice that <code>L1_copy = L1</code> does not clone, need <code>L1_copy = L1[:]</code>.
+</li>
+</ul>
