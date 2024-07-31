@@ -1,1 +1,121 @@
 <h3>Recursion</h3>
+What is recursion?
+<ul>
+<li> Algorithmically: a way to design solutions to problems by <em>divide-and-conquer</em> or <em>decrease-and-conquer</em>.
+<ul>
+<li> Reduce a problem to simpler versions of the same problem. </li>
+</ul>
+</li>
+<li> Semantically: a programming technique where a <em>function calls itself</em>.
+<ul>
+<li> in programming, goal is to NOT have infinite recursion
+<ul>
+<li> must have one or more <em>base cases</em> that are easy to solve.</li>
+<li> must solve the same problem on <em>some other input</em> with the goal of simplifying the larger problem input.</li>
+</ul>
+</ul>
+</ul>
+
+<p><b>Iterative algorithms so far</b>
+<ul>
+<li> <em>looping constructs</em> lead to iterative algorithms.</li>
+<li> can capture computation in a state of <em>state variables</em> that update on each iteration through loop.</li>
+</ul>
+
+<p>Multiplication: Iterative Solution
+<ul>
+<li> "multiply a*b" is equivalent to "add a to itself b times"</li>
+<li> capture <em>state</em> by
+<ul>
+<li> an iteration number <code>i</code> starts at <code>b</code>
+<pre>
+i &lt;- i-1 and stop when 0
+</pre>
+</li>
+<li> a current <em>value of computation</em> (<code>result</code>)
+<pre>
+result &lt;- result + a
+</pre>
+</li>
+</ul>
+</li>
+</ul>
+<pre>
+def mult_iter(a, b):
+  result = 0
+  while b &gt; 0:   #iteration
+    result += a     #current value of computation: a running sum
+    b -= 1          #current value of iteration variable
+  return result
+</pre>
+
+<p>Multiplication: Recursive Solution
+<ul>
+<li> <em>recursive step</em>: think how to reduce problem to a <em>simpler or smaller version</em> of the same problem.
+<pre>
+a*b = a + a + ... + a     (b times)
+    = a + (a + ... + a)   (b-1 times for the value in the parentheses)
+    = a + a*(b-1)         (the latter term has the same structure as the original problem)
+</pre>
+</li>
+<li> <em>base case</em>: keep reducing problem until reach a simple case that can be <em>solved directly</em> when <code>b=1, a*b=a</code>.
+<pre>
+def mult(a, b):
+  if b == 1:         # base case
+    return a
+  else:
+    return a + mult(a, b-1)  # recursive step
+</pre>
+</li>
+</ul>
+
+<p>Factorial
+<pre>
+n! = n*(n-1)*(n-2)*...*1
+</pre>
+<ul>
+<li> for what <code>n</code> do we know the factorial?
+<pre>
+if n == 1:
+  return 1  #base case
+</pre>
+</li>
+<li>
+how to reproduce the problem?  Rewrite in terms of something simpler to reach the base case
+<pre>
+else:
+  return n*factorial(n-1)    #recursive step
+</pre>
+</li>
+</ul>
+
+<p>Recursive function scope example
+<pre>
+def fact(n):
+  if n == 1:
+    return 1
+  else:
+    return n*fact(n-1)
+
+print(fact(4))
+</pre>
+<ul>
+<li> Global scope has <code>fact -&gt; some code</code></li>
+<li> fact scope (call with n=4) has <code>n -&gt; 4</code></li>
+<li> fact scope (call with n=3) has <code>n -&gt; 3</code></li>
+<li> fact scope (call with n=2) has <code>n -&gt; 2</code></li>
+<li> fact scope (call with n=1) has <code>n -&gt; 1</code></li>
+</ul>
+Order of computation:
+<ul>
+<li> fact scope (call with n=1) returns <code>1</code></li>
+<li> fact scope (call with n=2) returns <code>2*fact(1)=2*1=2</code></li>
+<li> fact scope (call with n=3) returns <code>3*fact(2)=3*2=6</code></li>
+<li> fact scope (call with n=4) returns <code>4*fact(3)=4*6=24</code></li>
+<li> global scope prints <code>fact(4)=24</code></li>
+</ul>
+
+<p>Some observations:
+<ul>
+<li>
+</ul>
