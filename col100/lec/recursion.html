@@ -117,5 +117,132 @@ Order of computation:
 
 <p>Some observations:
 <ul>
-<li>
+<li>each recursive call to a function creates its <em>own scope/environment</em>.</li>
+<li><em>bindings of variables</em> in a scope are not changed by recursive call.
+<ul>
+<li>using the same variable names but they are different objects in separate scopes.</li>
 </ul>
+</li>
+<li>flow of control passes back to <em>previous scope</em> once function call returns value.</li>
+</ul>
+
+<p>Iteration vs. Recursion.
+<br>Iteration:
+<pre>
+def factorial_iter(n):
+  prod = 1
+  for i in range(1,n+1):
+    prod *= i
+  return prod
+</pre>
+<br>Recursion:
+<pre>
+def factorial(n):
+  if n == 1:
+    return 1
+  else:
+    return n*factorial(n-1)
+</pre>
+<ul>
+<li> recursion may be simpler, more intuitive</li>
+<li> recursion may be efficient from programmer's point of view</li>
+<li> recursion may not be efficient from computer's point of view</li>
+</ul>
+
+<p>Inductive reasoning
+<pre>
+def mult_iter(a, b):
+  result = 0
+  while b &gt; 0:
+    result += a
+    b -= 1
+  return result
+
+def mult(a, b):
+  if b == 1:
+    return a
+  else:
+    return a + mult(a, b-1)
+</pre>
+<ul>
+<li>How do we know that our recursive code will work?</li>
+<li><code>mult_iter</code> terminates because <code>b</code> is initially positive, and decreases by <code>1</code> each time around loop; thus must eventually become less than <code>1</code>.</li>
+<li><code>mult</code> called with <code>b=1</code> has no recursive call and stops</li>
+<li><code>mult</code> called with <code>b&gt;1</code> makes a recursive call with a smaller version of <code>b</code>; must eventually reach call with <code>b=1</code>.</li>
+</ul>
+
+<p>Mathematical Induction
+<ul>
+<li> To prove a statement indexed on integers is true for all values of <code>n</code>:
+<ul>
+<li> Prove it is true when <code>n</code> is smallest value (e.g., <code>n=0</code> or <code>n=1</code>).</li>
+<li> Then prove that if is true for an arbitrary value of <code>n</code>, one
+can show that it must be true for <code>n+1</code>.
+</ul>
+</li>
+</ul>
+
+<p>Example of Induction
+<ul>
+<li> 0+1+2+...+n = (n(n+1))/2</li>
+<li> Proof:
+<ul>
+<li> If <code>n=0</code>, then LHS is 0 and RHS is <code>0*1/2=0</code>, so true</li>
+<li>Assume true for some <code>k</code>, then need to show that
+<pre>
+0+1+2+...+k+(k+1) = ((k+1)(k+2))/2
+</pre>
+</li>
+<li>LHS is <code>k(k+1)/2 + (k+1)</code> by assumption that property holds for problem of size <code>k</code>.</li>
+<li>This becomes, by algebra, <code>((k+1)(k+2))/2</code>.</li>
+</ul>
+</li>
+<li> Hence expression holds for all <code>n &gt;= 0</code></li>
+</ul>
+
+<p>Relevance to code?
+<pre>
+def mult(a, b):
+  if b == 1:
+    return a
+  else:
+    return a + mult(a, b-1)
+</pre>
+Same logic applies:
+<ul>
+<li> Base case, we can show that <code>mult</code> must return correct answer</li>
+<li> For recursive case, we can assume that <code>mult</code> correctly returns an answer for problems of size smaller than <code>b</code>, then by the addition step, it must also return a correct answer for problem of size <code>b</code>.</li>
+<li>Thus, by induction, code correctly returns answer</li>
+</ul>
+
+<p>Towers of Hanoi.
+The story
+<ul>
+<li> Three tall spikes</li>
+<li> Stack of 64 different sized disks -- start on one spile</li>
+<li> Need to move stack to second spike (at which point universe ends)</li>
+<li> Can only move one disc at a time, and a larger disc can never cover
+up a small disc</li>
+</ul>
+Show some examples of a small number of disks.
+Having seen a set of examples of different sized stacks, how would you write
+a program to print out the right set of moves? Think recursively:
+<ul>
+<li>Solve a smaller problem</li>
+<li>Solve a basic problem</li>
+<li>Solve a smaller problem</li>
+</ul>
+<pre>
+def printMove(fr, to):
+  print('move from ' + str(fr) + ' to ' + str(to))
+
+def Towers(n, fr, to, spare):
+  if n == 1:
+    printMove(fr, to)
+  else:
+    Towers(n-1, fr, spare, to)
+    Towers(1, fr, to, spare)
+    Towers(n-1, spare, to, fr)
+</pre>
+
+<p><b>Recursion with multiple base cases</b>
