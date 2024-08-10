@@ -16,11 +16,15 @@ LEC: <a href=lec/intro_to_python.html>Introduction to Python</a>
 ==
 LEC: <a href=lec/intro_to_python2.html>Introduction to Python continued</a>
 ==
-LEC: <a href=lec/strings_guess_and_check.html>Strings, Guess-and-Check, Approximations, Bisection</a>
+LEC: <a href=lec/strings_guess_and_check.html>Strings, Guess-and-Check</a>
+==
+LEC: <a href=lec/guess_and_check.html>Guess-and-Check, Approximations, Bisection</a>
 ==
 LEC: <a href=lec/functions.html>Functions</a>
 ==
-LEC: <a href=lec/lists.html>Tuples, Lists, Aliasing, Mutability, Cloning</a>
+LEC: <a href=lec/lists.html>Tuples, Lists</a>
+==
+LEC: <a href=lec/mutation.html>Aliasing, Mutability, Cloning</a>
 ==
 LEC: <a href=lec/recursion.html>Recursion, Dictionaries</a>
 ==

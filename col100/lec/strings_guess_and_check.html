@@ -132,7 +132,7 @@ for guess in range(cube+1):
 </pre>
 Do we really need to iterate all the way till <code>cube+1</code>?
 
-<p>A more robust version
+<p>A faster and more robust version
 <pre>
 cube = int(input("Enter a number: ")
 for guess in range(abs(cube)+1):
@@ -146,85 +146,3 @@ else:
   print('Cube root of ' + str(cube) + ' is ' + str(guess))
 </pre>
 
-<h3>Approximate solutions</h3>
-What if we are interested in approximate solutions for numbers that are not
-perfect cubes?
-<ul>
-<li> <em>good enough</em> solution </li>
-<li> start with a guess and increment by some <em>small value</em> </li>
-<li> keep guessing until <code>|guess<sup>3</sup>-cube| &gt;= epsilon</code>
-for some <em>small epsilon</em> </li>
-</ul>
-
-<p>
-<pre>
-cube = int(input("Enter a number: ")
-epsilon = 0.01
-guess = 0.0
-increment = 0.0001
-num_guesses = 0
-while abs(guess**3 - cube) &gt;= epsilon and guess &lt;= cube:
-  guess += increment
-  num_guesses += 1
-if abs(guess**3 - cube) &gt;= epsilon:
-  print('Failed on cube root of', cube)
-else:
-  print(guess, 'is close to the cube root of', cube)
-</pre>
-Problem:
-<ul>
-<li> decreasing increment size -&gt; slower program
-<li> increasing epsilon -&gt; less accurate answer
-</ul>
-
-<h3>Bisection Search</h3>
-<ul>
-<li> half interval each iteration</li>
-<li> new guess is halfway in between</li>
-<li> Play a game to illustrate this</li>
-</ul>
-
-<p>Finding the cube root through a bisection search
-<pre>
-cube = int(input("Enter a number: ")
-epsilon = 0.01
-low = 0
-high = cube
-guess = (low+high)/2.0
-num_guesses = 0
-while abs(guess**3 - cube) &gt;= epsilon:
-  if guess**3 &lt; cube:
-    low = guess
-  else:
-    high = guess
-  guess = (high + low)/2.0
-  num_guesses += 1
-print 'num_guesses =', num_guesses
-print(guess, 'is close to the cube root of', cube)
-</pre>
-
-<p>Convergence of Bisection Search
-<ul>
-<li>Search space (using <code>N=(cube+1)*epsilon</code>)
-<ul>
-<li>first guess:  <code>N/2</code></li>
-<li>second guess:  <code>N/4</code></li>
-<li>k<sup>th</sup> guess:  <code>N/2<sup>k</sup></code></li>
-</ul>
-<li>guess converges on the order of <code>log<sub>2</sub>N</code> steps</li>
-<li>bisection search works when value of function varies monotonically with input</li>
-<li>code as shown only works for positive cubes &gt; 1 -- why?</li>
-<li>challenges:
-<ul>
-<li>modify to work with negative cubes!
-<ul>
-<li>Use the <code>abs()</code> function.</li>
-</ul>
-</li>
-<li>modify to work with cube&lt;1!</li>
-<ul>
-<li>For <code>cube&lt;1</code>, search space is <code>0</code> to <code>x</code>, but cube root is greater than <code>cube</code> and less than <code>1</code>.</li>
-<li>Modify the code to choose the search space depending on value of <code>cube</code>.</li>
-</ul>
-</ul>
-</ul>

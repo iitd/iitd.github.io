@@ -1,0 +1,166 @@
+<h3>Mutation, Aliasing, Cloning</h3>
+<em>Aliasing</em> is tricky, and <a href=http://www.pythontutor.com>Python tutor</a> is your friend.
+
+<p>Lists in memory:
+<ul>
+<li> lists are <em>mutable</em></li>
+<li> behave differently than immutable types</li>
+<li> is an object in memory</li>
+<li> variable name points to object</li>
+<li> any variable pointing to that object is affected (upon a mutation of the object)</li>
+<li> <em>Side effects</em> are the effects of an operation on variables that are not necessarily named in the operation. </li>
+</ul>
+
+<p>An analogy
+<ul>
+<li> Attributes of a person: cricketer, fit</li>
+<li> He is known by many names </li>
+<li> all nicknames point to the <em>same person</em>
+<ul>
+<li> add new attribute to <em>one nickname</em>
+<pre>
+VIRAT: cricketer, fit, famous
+</pre>
+</li>
+<li>... all his nicknames refer to old attributes <em>and</em> all new ones
+<pre>
+Cheeku: cricketer, fit, famous
+King Kohli: cricketer, fit, famous
+</pre>
+<code>Virat</code>, <code>Cheeku</code>, and <code>King Kohli</code> are aliases for the same person.
+</li>
+</ul>
+</li>
+</ul>
+
+<p><b>Aliases</b>
+<pre>
+a = 1
+b = a  #b and a are associated with separate objects
+a = 2
+print(a)
+print(b)
+
+warm = ['red', 'yellow', 'orange']
+hot = warm #hot and warm are associated with the same list object
+hot.append('pink')
+print(hot)
+print(warm)
+</pre>
+The program prints:
+<pre>
+2
+1
+['red', 'yellow', 'orange', 'pink']
+['red', 'yellow', 'orange', 'pink']
+</pre>
+Show the global scope and how the variables <code>warm</code> and <code>hot</code>
+are associated with the same list object, i.e., <code>warm</code> and
+<code>hot</code> alias, i.e., changing one changes the other!
+
+<p><b>Cloning a list</b>
+<ul>
+<li>create a new list and <em>copy every element</em> using
+<pre>
+chill = cool[:]
+</pre>
+</li>
+</ul>
+<pre>
+cool = ['blue', 'green', 'grey']
+chill = cool[:]
+chill.append('black')
+print(chill)
+print(cool)
+</pre>
+The program prints:
+<pre>
+['blue', 'green', 'grey', 'black']
+['blue', 'green', 'grey']
+</pre>
+Show the global scope and how the variables <code>cool</code> and <code>chill</code>
+are associated with different list objects.
+
+<p><b>Sorting Lists</b>
+<ul>
+<li> calling <code>sort()</code> <em>mutates</em> the list, returns nothing.</li>
+<li> calling <code>sorted()</code> <em>does not mutate</em> the list, must assign result to a variable.</li>
+</ul>
+<pre>
+warm = ['red', 'yellow', 'orange']
+sortedwarm = warm.sort()
+print(warm)
+print(sortedwarm)
+
+cool = ['grey', 'green', 'blue']
+sortedcool = sorted(cool)
+print(cool)
+print(sortedcool)
+</pre>
+The program prints:
+<pre>
+['orange', 'red', 'yellow']
+None
+['grey', 'green', 'blue']
+['blue', 'green', 'grey']
+</pre>
+Show the global scope with variables and their associations.
+
+<p><b>Lists of lists of lists of ...</b>
+<ul>
+<li> can have <em>nested</em> lists</li>
+<li> side effects still possible after mutation</li>
+</ul>
+<pre>
+warm = ['yellow', 'orange']
+hot = ['red']
+brightcolors = [warm]
+brightcolors.append(hot)
+print(brightcolors)
+hot.append('pink')
+print(hot)
+print(brightcolors)
+</pre>
+The program prints:
+<pre>
+[['yellow', 'orange'], ['red']]
+['red', 'pink']
+[['yellow', 'orange'], ['red', 'pink']]
+</pre>
+Show the global scope with variables and their associations.  The <code>brightcolors</code> has pointers to the objects that are also pointed-to by
+<code>warm</code> and <code>hot</code>.
+
+<p><b>Mutation and Iteration</b>.  Try this in <a href=http://www.pythontutor.com>Python tutor</a>.
+<ul>
+<li> <em>avoid</em> mutating a list as you are iterating over it
+<pre>
+def remove_dups(L1, L2):
+  for e in L1:
+    if e in L2:
+      L1.remove(e)
+
+L1 = [1, 2, 3, 4]
+L2 = [1, 2, 5, 6]
+remove_dups(L1, L2)
+</pre>
+<ul>
+<li> <code>L1</code> is <code>[2,3,4]</code>, not <code>[3,4]</code>.  Why?
+<ul>
+<li>Python uses an internal counter to keep track of the current index in the list at which it is in the loop.</li>
+<li>Mutating changes the list length but Python does not update the counter.</li>
+<li>And so: loop never sees element <code>2</code>.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li> Instead, clone the list first, and then iterate on the cloned copy while mutating the original copy:
+<pre>
+def remove_dups(L1, L2):
+  L1_copy = L1[:]
+  for e in L1_copy:
+    if e in L2:
+      L1.remove(e)
+</pre>
+Notice that <code>L1_copy = L1</code> does not clone, need <code>L1_copy = L1[:]</code>.
+</li>
+</ul>
