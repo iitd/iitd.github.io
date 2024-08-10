@@ -5,6 +5,8 @@ Stop: Nov 14, 2024
 Schedule: Monday, Thursday
 HEADER: Links to notes etc. on future days are <i>tentative only</i>. They are here only to give you an idea what the future will bring.<br>Acknowledgements: Much of this course material has been adapted from MIT's 6.0001 course.<br>
 
+HOLIDAY: Aug 19. Rakshabandhan
+
 EVENT: Sep 30. Return of Midterm scripts
 
 ==
@@ -20,7 +22,7 @@ LEC: <a href=lec/strings_guess_and_check.html>Strings, Guess-and-Check</a>
 ==
 LEC: <a href=lec/guess_and_check.html>Guess-and-Check, Approximations, Bisection</a>
 ==
-LEC: <a href=lec/functions.html>Functions</a>
+LEC: <a href=lec/functions.html>Functions</a><br>(lecture held on Aug. 13)
 ==
 LEC: <a href=lec/lists.html>Tuples, Lists</a>
 ==
