@@ -80,3 +80,64 @@ print(guess, 'is close to the cube root of', cube)
 </ul>
 </ul>
 </ul>
+
+<h3>Functions</h3>
+<ul>
+<li>More code is not necessarily a good thing</li>
+<li>Measure good programmers by the amount of functionality
+<ul>
+<li> Introduce <em>functions</em></li>
+<li> Mechanism to achieve <em>decomposition</em> and <em>abstraction</em></li>
+</ul>
+</li>
+</ul>
+
+<p>Example: Pen
+<ul>
+<li> A pen is a black-box</li>
+<li> We don't need to know how it works</li>
+<li> Know the interface: click before use, press against paper to release ink</li>
+<li> <b>Abstraction</b>: do not need to know how pen works to use it.</li>
+<li> Different components in the pen are manufactured by different entities.  The assembler simply assembles the components to produce something useful.</li>
+<li> <b>Decomposition</b>: different components work together to achieve an end goal.</li>
+</ul>
+
+<p>In programming, create structure with <em>decomposition</em>
+<ul>
+<li> Divide code into <em>modules</em>:
+<ul>
+<li> Modules are self contained </li>
+<li> used to break-up code </li>
+<li> intended to be reusable </li>
+<li> keep code organized </li>
+<li> keep code coherent </li>
+</ul>
+In this lecture, we achieve decomposition with <em>functions</em>. Later, we achieve
+decomposition with <em>classes</em>.
+</ul>
+
+<p><b>Functions</b> are reusable pieces/chunks of code.  Functions are not run in a program until they are <em>called</em> or <em>invoked</em> in a program. Function characteristics:
+<ul>
+<li> has a name</li>
+<li> has parameters (0 or more)</li>
+<li> has a <em>docstring</em> (optional but recommended)</li>
+<li> has a body</li>
+<li> returns something</li>
+</ul>
+
+<p>Writing a function
+<pre>
+def is_odd(i):  #keyword name parameeters
+  """  #docstring begin
+  Input: i, a positive int
+  Returns true if i is odd, otherwise False
+  """  #docstring end
+  #body
+  print("inside is_odd")
+  return i%2 == 1   #return is a keyword
+
+
+is_odd(4)  #later in the code, you call the function using its name and values for parameters
+</pre>
+
+
