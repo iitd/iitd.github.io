@@ -1,1 +1,284 @@
 <h3>Dictionaries</h3>
+How to store student info?
+<ul>
+<li> So far, can store using separate lists for every info:
+<pre>
+names =  ['Agrim', 'Gagan', 'Tanish', 'Punj']
+grade =  ['B',     'A-',    'A',      'A']
+course = ['COL100','MTL100','PHL100', 'HUL100']
+</pre>
+For example, Gagan scored an A- in MTL100.
+</li>
+<li> a separate <em>list</em> for each item</li>
+<li> each list must have the <em>same length</em></li>
+<li> info stored across lists at <em>same index</em>, each index refers to info for a different person</li>
+<li> How to update/retrieve student info?
+<pre>
+def get_grade(student, name_list, grade_list, course_list):
+  i = name_list.index(student)
+  grade = grade_list[i]
+  course = course_list[i]
+  return (course, grade)
+</pre>
+<ul>
+<li> <em>messy</em> if have a lot of different info to keep track of</li>
+<li> must maintain <em>many lists</em> and pass them as arguments</li>
+<li> must <em>always index</em> using integers</li>
+<li> must remember to change multiple lists (on an update)</li>
+</ul>
+</li>
+</ul>
+
+<p>A better and cleaner way: a dictionary
+<ul>
+<li>nice to <em>index item of interest directly</em> (not always int)</li>
+<li>nice to use <em>one data structure</em>, no separate lists</li>
+<li>A list
+<pre>
+0 --&gt; Elem1
+1 --&gt; Elem2
+2 --&gt; Elem3
+3 --&gt; Elem4
+...
+</pre>
+Index (int) maps to element.
+</li>
+<li>
+A dictionary
+<pre>
+Key1 --&gt; Elem1
+Key2 --&gt; Elem2
+Key3 --&gt; Elem3
+Key4 --&gt; Elem4
+...
+</pre>
+Custom index (by label) maps to element.
+</li>
+</li>
+</ul>
+
+<p>A Python dictionary
+<ul>
+<li> store pairs of data
+<ul>
+<li> key</li>
+<li> value</li>
+</ul>
+</li>
+</ul>
+<pre>
+my_dict = {}  # empty dictionary
+grades = {'Agrim':'B', 'Gagan':'A-', 'Tanish':'A', 'Punj':'A'}  #'Agrim' is a key, 'B' is a value (element)
+</pre>
+
+<p>Dictionary lookup
+<ul>
+<li> similar to indexing a list</li>
+<li> <em>looks up</em> the <em>key</em></li>
+<li> <em>returns</em> the value associated with the <em>key</em></li>
+<li> if key isn't found, get an error</li>
+</ul>
+<pre>
+grades = {'Agrim':'B', 'Gagan':'A-', 'Tanish':'A', 'Punj':'A'}  #'Agrim' is a key, 'B' is a value (element)
+grades['Gagan']  # evaluates to 'A-'
+grades['Ashish']  # gives a KeyError
+</pre>
+
+<p>Dictionary operations
+<pre>
+grades = {'Agrim':'B', 'Gagan':'A-', 'Tanish':'A', 'Punj':'A'}  #'Agrim' is a key, 'B' is a value (element)
+</pre>
+<ul>
+<li> <em>add</em> an entry
+<pre>
+grades['Asmit'] = 'A'
+</pre>
+</li>
+<li> <em>test</em> if key in dictionary
+<pre>
+'Gagan' in grades  # evaluates to true
+'Lakshay' in grades  # evaluates to false
+</pre>
+</li>
+<li> <em>delete</em> entry
+<pre>
+del(grades['Tanish'])
+</pre>
+</ul>
+
+<p>More dictionary operations
+<pre>
+grades = {'Agrim':'B', 'Gagan':'A-', 'Tanish':'A', 'Punj':'A'}  #'Agrim' is a key, 'B' is a value (element)
+</pre>
+<ul>
+<li> get an <em>iterable that acts like a tuple of all keys</em> (no guaranteed order)
+<pre>
+grades.keys()  # returns ['Gagan', 'Agrim', 'Tanish', 'Punj']
+</pre>
+</li>
+<li> get an <em>iterable that acts like a tuple of all values</em> (no guaranteed order)
+<pre>
+grades.values()  # returns ['A-', 'B', 'A', 'A']
+</pre>
+</li>
+</ul>
+
+<p>Dictionary keys and values
+<ul>
+<li> values
+<ul>
+<li> any type (<em>immutable</em> and <em>mutable</em>)</li>
+<li> can be <em>duplicates</em></li>
+<li> dictionary values can be lists, even other dictionaries!</li>
+</ul>
+</li>
+<li> keys
+<ul>
+<li> must be <em>unique</em></li>
+<li> <em>immutable</em> type (<code>int</code>, <code>float</code>, <code>string</code>, <code>tuple</code>, <code>bool</code>)
+<ul>
+<li> actually need an object that is <b>hashable</b>, but think of immutable as all immutable types are hashable</li>
+</ul>
+<li> careful with float type as key, as float computations are often approximate</li>
+</li>
+</ul>
+</li>
+<li> <em>no order</em> to keys and values!
+<pre>
+d = {4:{1:0}, (1,3):"twelve", 'const':[3.14,2.7,8.44]}
+</pre>
+</li>
+</ul>
+
+<p><code>list</code> vs. <code>dict</code>
+<table>
+<tr>
+<th><code>list</code></th>
+<th><code>dict</code></th>
+</tr>
+<tr>
+<td> <em>ordered</em> sequence of elements</td>
+<td> <em>matches</em> keys to values</td>
+</tr>
+<tr>
+<td> look up elements by an integer index</td>
+<td> look up one item (value) by another item (key)</td>
+</tr>
+<tr>
+<td> indices have an <em>order</em></td>
+<td> <em>no order</em> is guaranteed</td>
+</tr>
+<tr>
+<td> index is an <em>integer</em></td>
+<td> key can be any <em>immutable</em> type</td>
+</tr>
+</table>
+
+<h3>Example: Three functions to analyze song lyrics</h3>
+<ol>
+<li> create a <em>frequency dictionary</em> mapping <code>str:int</code></li>
+<li> find <em>word that occurs the most</em> and how many times
+<ul>
+<li> use a list, in case there is more than one word</li>
+<li> return a list <code>(list, int)</code> for <code>(words_list, highest_freq)</code>.</li>
+<li> find the words <em>that occur at least X times</em>
+<ul>
+<li> let user choose "at least X times", so allow as parameter</li>
+<li> return a list of tuples, each tuple is a <code>(list, int)</code> containing the list of words ordered by their frequency</li>
+<li> IDEA: From	song dictionary, find most frequent word. Delete most common word. Repeat. It works because you are	mutating the song dictionary.</li>
+</ul>
+</ul>
+</ol>
+
+<p>Creating a dictionary
+<pre>
+def lyrics_to_frequency(lyrics):
+  myDict = {}
+  for word in lyrics:  #can iterate over list
+    if word in myDict:  #check if word in dictionary
+      myDict[word] += 1  #update value associated with word
+    else:
+      myDict[word] = 1
+  return myDict
+</pre>
+
+<p>Using the dictionary
+<pre>
+def most_common_words(freqs):
+  values = freqs.values()
+  best = max(values)  # values is an iterable, so can apply built-in function max
+  words = []
+  for k in freqs:  #can iterate over keys in dictionary
+    if freqs[k] == best:
+      words.append(k)
+  return (words, best)
+</pre>
+
+<p>Leveraging dictionary properties
+<pre>
+def words_often(freqs, minTimes):
+  result = []
+  done = False
+  while not done:
+    temp = most_common_words(freqs)
+    if temp[1] &gt;= minTimes:
+      result.append(temp)
+      for w in temp[0]:
+        del(freqs[w])  #can directly mutate dictionary; makes it easier to iterate
+    else:
+      done = True
+  return result
+
+beatles = "....."
+print words_often(beatles, 5)
+</pre>
+
+<h3>Fibonacci Recursive Code</h3>
+<pre>
+def fib(n):
+  if n == 1:
+    return 1
+  elif n == 2:
+    return 2
+ else:
+    return fib(n-1) + fib(n-2)
+</pre>
+<ul>
+<li> two base cases</li>
+<li> calls itself twice</li>
+<li> this code is inefficient</li>
+</ul>
+
+<p>This recursive implementation is inefficient
+<ul>
+<li>Show the computation tree</li>
+<li><em>Recalculating</em> the same values many times!</li>
+<li>Could keep <em>track</em> of already calculated values</li>
+</ul>
+
+<p><b>Fibonacci with a dictionary</b>
+<pre>
+def fib_efficient(n, d):
+  if n in d:
+    return d[n]
+  else:
+    ans = fib_efficient(n-1, d) + fib_efficient(n-2, d) #method sometimes called "memoization"
+    d[n] = ans
+    return ans
+
+d = {1:1, 2:2}
+print(fib_efficient(6, d))
+</pre>
+<ul>
+<li>do a <em>lookup first</em> in case already calculated the value</li>
+<li><em>modify dictionary</em> as progress through function calls</li>
+<li>Efficiency gains:
+<ul>
+<li> Calling <code>fib(34)</code> results in <code>11,405,773</code> recursive calls to the procedure</li>
+<li> Calling <code>fib(34)</code> results in <code>65</code> recursive calls to the procedure</li>
+<li> Using dictionaries to capture intermediate results can be very efficient</li>
+<li> But note that this only works for procedures without side effects (i.e., the procedure will always produce
+the same result for a specific argument independent of any other computations between calls).</li>
+</ul>
+</li>
+</ul>

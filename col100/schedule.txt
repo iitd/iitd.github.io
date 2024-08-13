@@ -32,3 +32,5 @@ LEC: <a href=lec/recursion.html>Recursion</a><br>(lecture held on Aug. 31)
 ==
 LEC: <a href=lec/dictionaries.html>Dictionaries</a>
 ==
+LEC: <a href=lec/testing.html>Testing, Debugging, Exceptions, Assertions</a>
+==
