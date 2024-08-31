@@ -477,9 +477,10 @@ Notice that the address-of operator is only well-typed when used on a reference 
 
 <h4>If-then-else</h4>
 <pre>
-    |- e1 : bool
+    |- e1 : TB
     |- e2 : T2
     |- e3 : T3
+    TB &lt;: bool
 --------------------------------  [if-then-else]
 |- if e1 then e2 else e3 : void
 </pre>
@@ -487,9 +488,10 @@ Notice that it is by design that <code>if-then-else</code> always returns type, 
 
 <h4>Ternary</h4>
 <pre>
-    |- e1 : bool
+    |- e1 : TB
     |- e2 : T2
     |- e3 : T3
+    TB &lt;: bool
 --------------------------------  [if-then-else]
 |- e1 ? e2 : e3 : val(lub(T2,T3))
 </pre>

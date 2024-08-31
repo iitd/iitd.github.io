@@ -24,11 +24,13 @@ LEC: <a href=lec/guess_and_check.html>Guess-and-Check, Approximations, Bisection
 ==
 LEC: <a href=lec/functions.html>Functions</a><br>(lecture held on Aug. 13)
 ==
-LEC: <a href=lec/lists.html>Tuples, Lists</a>
+LEC: <a href=lec/tuples.html>Functions as arguments, Tuples</a>
 ==
-LEC: <a href=lec/mutation.html>Aliasing, Mutability, Cloning</a><br>(lecture held on Aug. 29)
+LEC: <a href=lec/lists.html>Lists</a>(lecture held on Aug. 29)
 ==
-LEC: <a href=lec/recursion.html>Recursion</a><br>(lecture held on Aug. 31)
+LEC: <a href=lec/mutation.html>Aliasing, Mutability, Cloning</a><br>(lecture held on Aug. 31)
+==
+LEC: <a href=lec/recursion.html>Recursion</a><br>
 ==
 LEC: <a href=lec/dictionaries.html>Dictionaries</a>
 ==
