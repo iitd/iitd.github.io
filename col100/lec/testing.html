@@ -1,1 +1,56 @@
-<h3>We aim for high quality --- an analogy, a soup</h3>
+<h3>Defensive Programming</h3>
+When we program, we often miss certain important aspects, and introduce
+potential errors in the programs, that may manifest only for certain inputs.
+For example, it is estimated that even in mature software, it is common to
+find at least one bug in every thousand lines of code.
+<em>Defensive programming</em> is a term used to describe a collection
+of techniques that reduce the chances of errors (also called <em>bugs</em>)
+escaping into the program.
+<ul>
+<li> write <em>specifications</em> for functions</li>
+<li> <em>Modularize</em> programs</li>
+<li> Check <em>conditions</em> for inputs and outputs (assertions)</li>
+</ul>
+
+<p>Two very common methods for defensive programming are:
+<ul>
+<li> <b>Testing / Validation</b>
+<ul>
+<li> <em>Compare</em> input/output pairs to specification.  Some common
+sentiments during this process:
+<ul>
+<li> "How can I break my program?"</li>
+<li> "It is not working!"</li>
+</ul>
+</li>
+</ul>
+</li>
+<li> <b> Debugging</b>
+<ul>
+<li> <em>Study events</em> leading up to an error:
+<ul>
+<li> "Why is it not working?"</li>
+<li> "How can I fix my program?"</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<p>Set yourself up for easy testing and debugging
+<ul>
+<li> from the <em>start</em>, design code to ease this part</li>
+<li> break up the program into <em>modules</em> that can be tested and debugged
+individually</li>
+<li> <em>document constraints</em> on modules
+<ul>
+<li> what do you expect the input to be?</li>
+<li> what do you expect the output to be?</li>
+</ul>
+</li>
+<li> <em>document assumptions</em> behind code design. e.g., the input must be a tuple of tuples.</li>
+</ul>
+
+<p>When are you ready to test?
+<ul>
+</ul>
