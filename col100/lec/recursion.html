@@ -1,3 +1,55 @@
+<h3> Reviewing Mutation and Aliasing</h3>
+
+<p>The following code works as expected, and prints <code>[[1,4], [2,5], [3,6]]</code>
+<pre>
+def trans(given):
+  nrows = len(given)
+  ncols = len(given[0])
+  matrix = [[0,0],[0,0],[0,0]]
+  for i in range(ncols):
+    for j in range(nrows):
+      matrix[i][j] = given[j][i]
+  return matrix
+
+a = [[1,2,3],[4,5,6]]
+</pre>
+However, the following code prints <code>[[3,6], [3,6], [3,6]]</code>:
+<pre>
+def trans(given):
+  nrows = len(given)
+  ncols = len(given[0])
+  #matrix = [[0,0],[0,0],[0,0]] #commented this out and replaced it with the line below
+  matrix = [[0]*nrows]*ncols
+  for i in range(ncols):
+    for j in range(nrows):
+      matrix[i][j] = given[j][i]
+  return matrix
+
+a = [[1,2,3],[4,5,6]]
+</pre>
+Why?  Because the multiplication with <code>ncols</code> simply duplicates the references to the same list.
+
+<p>Here is the correct version:
+<pre>
+def trans(given):
+  nrows = len(given)
+  ncols = len(given[0])
+  matrix = [[0 for _ in range(nrows)] for _ in range(ncols)]  #initialize as separate lists for each row
+  for i in range(ncols):
+    for j in range(nrows):
+      matrix[i][j] = given[j][i]
+  return matrix
+
+a = [[1,2,3],[4,5,6]]
+</pre>
+
+<p>Once again, is their a difference between:
+<ul>
+<li> <code>L.append(item)</code></li>
+<li> <code>L = L + [item]</code></li>
+</ul>
+Yes, there is an important difference!  In the first case, the original list (associated with <code>L</code>) is getting modified; while in the second case, a new list is getting created and <code>L</code> is then associated with the new list.
+
 <h3>Recursion</h3>
 What is recursion?
 <ul>

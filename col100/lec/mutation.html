@@ -66,6 +66,17 @@ chill = cool[:]
 </pre>
 </li>
 </ul>
+This is not the only way to create a new list, there are several other ways, as shown below.  In the way above, we simply slice the list with the
+default <code>begin</code> and <code>end</code> values of <code>0</code> and <code>len(cool)</code> respectively.
+<ul>
+<li> chill = cool + [] </li>
+<li> chill = cool[0:len(cool)]</li>
+<li> chill = cool[0:1] + cool[1:len(cool)] </li>
+<li> ...</li>
+</ul>
+In all the expressions above, the RHS of the assignment simply creates a new list (leaving the original list intact), and then performs the assignment.
+
+<p>Examples:
 <pre>
 cool = ['blue', 'green', 'grey']
 chill = cool[:]
