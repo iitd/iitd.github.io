@@ -32,6 +32,8 @@ LEC: <a href=lec/mutation.html>Aliasing, Mutability, Cloning</a><br>(lecture hel
 ==
 LEC: <a href=lec/recursion.html>Recursion</a><br>
 ==
+LEC: <a href=lec/recursion2.html>Recursion continued</a><br>
+==
 LEC: <a href=lec/dictionaries.html>Dictionaries</a>
 ==
 LEC: <a href=lec/testing.html>Testing, Debugging, Exceptions, Assertions</a>
