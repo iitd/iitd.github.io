@@ -68,7 +68,7 @@ individually</li>
 </li>
 </ul>
 
-<p>Classes of tests
+<p>Classes of tests:
 <ul>
 <li> Unit testing
 <ul>
@@ -88,4 +88,76 @@ individually</li>
 <li> tend to rush to do this</li>
 </ul>
 </li>
+</ul>
+
+<p>Testing approaches:
+<ul>
+<li> <em>intuition</em> about natural boundaries to the problem
+<pre>
+def is_bigger(x, y):
+  """ Assumes x and y are ints
+      Returns True if x is less than y, else False """
+</pre>
+What are some natural partitions to check for? I can think of three partitions: one where x is less than y, second where x is equal to y, and third where x is greater than y.
+</li>
+<li> if no natural partitions, might do <em>random testing</em>
+<ul>
+<li> probability that code is correct increases with more tests</li>
+<li> there are better options, see below</li>
+</ul>
+</li>
+<li> <em>blackbox testing</em>
+<ul>
+<li> Without looking at the code, but just looking at the specification (like our intuition example). For example, we may not know if the program is using linear search or bisection search.</li>
+<li> Avoids potential "implementation biases", i.e., the tester does not know about the implementation and so can try ideas that are independent of the implementation</li>
+</ul>
+</li>
+<li> <em>glassbox testing</em>
+<ul>
+<li> Have access to the implementation, aka code, and the tests can be designed to exercise different aspects of the implementation.  For example, if we know it is binary search, we may want to test for cases where the desired element is at an odd or at an even index.</li>
+<li> Can measure statistics on how well we are exercising different code behaviours.</li>
+<li> Suffer from a potential implementation bias though.  Similar to the implementer testing their own code</li>
+</ul>
+</li>
+</ul>
+
+<p><b>Blackbox testing</b>
+<pre>
+def sqrt(x, eps):
+  """ Assumes x and eps are non-negative floats
+      Returns res such that x - eps &lt;= res*res &lt;= x+eps"""
+</pre>
+<ul>
+<li> designed <em>without looking</em> at the code</li>
+<li> testing can <em>be reused</em> if implementation changes
+<ul>
+<li> Actually, it can be reused in both blackbox and glassbox testing, but for blackbox testing, we do not expect any biases due to a change in implementation.</li>
+</ul>
+</li>
+<li> paths through specification (not implementation):
+<ul>
+<li> build testcases in different input space partitions based on the specification</li>
+<li> consider boundary conditions, e.g., empty lists, singleton lists, large numbers, small numbers, ...</li>
+<li> Examples:
+<table border=1>
+<tr> <td>Case</td><td>x</td><td>eps</td></tr>
+<tr> <td>boundary</td> <td>0</td> <td>0.00001</td></tr>
+<tr> <td>perfect square</td> <td>25</td> <td>0.00001</td></tr>
+<tr> <td>less than 1</td> <td>0.05</td> <td>0.00001</td></tr>
+<tr> <td>irrational square root</td> <td>2</td> <td>0.00001</td></tr>
+<tr> <td>extremes </td> <td>2</td> <td>1.0/2.0**64.0</td></tr>
+<tr> <td>extremes </td> <td>1.0/2.0**64.0</td> <td>1.0/2.0**64.0</td></tr>
+<tr> <td>extremes </td> <td>2.0**64.0</td> <td>1.0/2.0**64.0</td></tr>
+<tr> <td>extremes </td> <td>1/2.0**64.0</td> <td>2.0**64.0</td></tr>
+<tr> <td>extremes </td> <td>2.0**64.0</td> <td>2.0**64.0</td></tr>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+
+<p><b>Glassbox testing</b>
+<ul>
+<li> <em>use code</em> directly to guide design of test cases</li>
+<li> called <em>path complete</em> if every potential path through code is tested at least once</li>
 </ul>
