@@ -1,0 +1,118 @@
+<h3>Recursion with multiple base cases</h3>
+<ul>
+<li>Fibonacci numbers
+<ul>
+<li>Leonardo of Pisa (aka Fibonacci) modeled the following challenge
+<ul>
+<li>Newborn pair of rabbits (one female, one male) are put in a pen</li>
+<li>Rabbits mate at age of one month</li>
+<li>Rabbits have a one month gestation period</li>
+<li>Assume rabbits never die, that female always produces one new pair (one male, one female) every month from its second month on.</li>
+<li>How many female rabbits are there at the end of one year?</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+Show a graphical picture of a pair of rabbits (A), they mate after one month, and generate another pair (B) after two months.  After three months, the original pair produces another pair (C); while pair B mates. After four months, both pairs A and B, produce two pairs (D and E), while C mates.  And so on...
+
+<p>
+Let's work out the numbers:
+<ul>
+<li> After one month (call it 0): 1 female</li>
+<li> After second month --- still one female (now pregnant)</li>
+<li> After third month --- two females, one pregnant, one not</li>
+<li> In general: <code>females(n) = females(n-1)+females(n-2)</code>:
+<ul>
+<li>Every female alive at month <code>n-2</code> will produce one female
+in month <code>n</code>.</li>
+<li>These can be added to those alive in month <code>n-1</code> to get total
+alive in month <code>n</code>.</li>
+</ul>
+</li>
+</ul>
+
+<p>Fibonacci
+<ul>
+<li> Base cases:
+<ul>
+<li> females(0) = 1</li>
+<li> females(1) = 1</li>
+</ul>
+</li>
+<li> Recursive case:
+<ul>
+<li> females(n) = females(n-1) + females(n-2)</li>
+</ul>
+</li>
+</ul>
+<pre>
+def fib(x):
+  """assume x an int &gt;= 0
+     returns Fibonacci of x"""
+  if x == 0 or x == 1:
+    return 1
+  else:
+    return fib(x-1) + fib(x-2)
+</pre>
+
+<h3>Recursion on Non-Numerics</h3>
+<ul>
+<li> how to check if a string of characters is a palindrome, i.e., reads the
+same forwards and backwards
+<ul>
+<li> "Able was I, ere I saw Elba" --- attributed to Napoleon</li>
+<li> "Are we not drawn onward, we few, drawn onward to new era? --- attributed to Anne Michaels</li>
+</ul>
+</li>
+</ul>
+Solving recursively?
+<ul>
+<li> First, convert the string to just characters, by stripping out punctuation, and converting upper case to lower case</li>
+<li> Then
+<ul>
+<li> Base case: a string of length 0 or 1 is a palindrome</li>
+<li> Recursive case:
+<ul>
+<li>If first character matches last character, then is a palindrome if middle section is a palindrome</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<p>Example
+<ul>
+<li> "Able	was	I,	ere	I	saw	Elba"	--&gt; "ablewasiereisawelba"</li>
+<li> <code>isPalindrome("ablewasiereisawleba")</code> is same as:
+<ul>
+<li> <code>"a" == "a"</code> and <code>isPalindrome("blewasiereisawelb")</code>.</li>
+</ul>
+</ul>
+<pre>
+def isPalindrome(s):
+  def toChars(s):
+    s = s.lower()
+    ans = ''
+    for c in s:
+      if c in 'abcdefghijklmnopqrstuvwxyz':
+        ans = ans + c
+    return ans
+
+  def isPal(s):
+    if len(s) &lt;= 1:
+      return True
+    else:
+      return s[0] == s[-1] and isPal(s[1:-1])
+
+  return isPal(toChars(s))
+</pre>
+This is an example of a <em>divide and conquer</em> algorithm.
+<ul>
+<li> Solve a hard problem by breaking it into a set of subproblems such that:
+<ul>
+<li> subproblems are easier to solve than the original</li>
+<li> solutions of the subproblems can be combined to solve the original</li>
+</ul>
+</li>
+</ul>
