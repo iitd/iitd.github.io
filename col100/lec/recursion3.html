@@ -1,3 +1,69 @@
+<h3>Reviewing Recursion</h3>
+<p>Recursive blue shirt
+<ul>
+<li>We want to count the number of people in the room who are wearing a blue shirt</li>
+<li>We can't directly count (there are a lot of people in the room)</li>
+<li>But all of you can help</li>
+<li>You can ask questions of the person behind you and respond to the questions of the person in front of you</li>
+</ul>
+<em>How can we solve this recursively?</em>
+
+<p>The first person looks behind them:
+<ul>
+<li>If there is no one there, the person responds with 1 if he/she is wearing a blue shirt or 0 if he/she is not.</li>
+<li>If there is someone behind the person, <em>ask them how many people behind them (including the answerer) are wearing a blue shirt</em> (<b>recursive call</b>)</li>
+<li>Once the person receives a response, they add 1 if he/she is wearing a blue shirt, or 0 if he/she is not, and respond to the person in front of them.</li>
+<li>Now I (the instructor) needs to ask everyone in the front row --- much simpler!</li>
+</ul>
+
+<p>Recursion and cases: Every recursive algorithm involves at least two cases:
+<ul>
+<li> <b>base case</b>: A simple occurrence that can be answered directly.</li>
+<li><b>recursive case</b>: A more complex occurrence of the problem that cannot be directly answered, but can be instead described in terms of smaller occurrences of the same problem</li>
+</ul>
+
+<p>Key idea: In a recursive piece of code, you handle a small part of the 
+overall task yourself (usually the work involves modifying the results of 
+the smaller problems), then make a recursive call to handle the rest.
+
+<p>Ask yourself, "how is ths task <b>self-similar</b>?"
+<ul>
+<li>"How can I describe this algorithm in terms of a smaller or simpler version of itself?"</li>
+</ul>
+
+<p>Recursion Tips
+<ul>
+<li>Look for <em>self-similarity</em></li>
+<li>Find the minimum <em>amount of work</em></li>
+<li>Make the problem <em>simpler</em> by doing the least amount of work possible.</li>
+<li><em>Trust</em> the recursion</li>
+<li>Find a stopping point (<em>base case</em>)</li>
+</ul>
+
+<p>Three rules of recursion
+<ul>
+<li>Every (valid) input must have a case (either recursive or base)</li>
+<li>There <b>must</b> be a base case that makes not recursive calls, i.e., on some input(s), the code should not make any recursive calls</li>
+<li>The recursive case must make the problem simpler and make forward progress to the base case. e.g., if the person behind you asks the person in front of him/her, that is not going to make progress</li>
+</ul>
+
+<p>Recursive Program structure
+<pre>
+recursiveFunc ()
+{ 
+  if (test for simple case) { // base case 
+    Compute the solution without recursion 
+  } else { // recursive case
+    1. Break the problem into  subproblems of the same form 
+    2. Call  recursiveFunc() on each  self-similar  subproblem
+    3. Reassamble the results of the subproblems
+  } 
+} 
+</pre>
+
+
+
+
 <h3>Recursion with multiple base cases</h3>
 <ul>
 <li>Fibonacci numbers
