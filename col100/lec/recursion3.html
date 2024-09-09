@@ -199,31 +199,25 @@ This is an example of a <em>divide and conquer</em> algorithm.
 </ul>
 
 <pre>
-//Assumes exp >= 0
-int power(int base, int exp)
-{
-  if (exp == 0) {
-    return 1;
-  } else {
-    return base * power(base, exp - 1);
-  }
-}
+//Assumes exp &gt;= 0
+def power(base, exp):
+  if exp == 0:
+    return 1
+  else:
+    return base * power(base, exp - 1)
 </pre>
 Show the execution of power(5, 3);
 
 <p>Can we do better? Notice that x^18 = (x*x)^9; x^9=x*x^8
 <pre>
-//Assumes exp >= 0
-int power(int base, int exp)
-{
-  if (exp == 0) {
-    return 1;
-  } else if (exp % 2 == 0) {
-    return power(base * base, exp/2); //recursive case 1
-  } else {
-    return base * power(base, exp - 1); //recursive case 2
-  }
-}
+//Assumes exp &gt;= 0
+def power(base, exp):
+  if exp == 0:
+    return 1
+  elif exp % 2 == 0:
+    return power(base * base, exp/2) #recursive case 1
+  elif:
+    return base * power(base, exp - 1) #recursive case 2
 </pre>
 
 <p>Exercise: write a recursive function convertFromBinary that accepts an a
@@ -236,48 +230,16 @@ convertFromBinary("101010") returns 42
 </pre>
 How is this problem self-similar? What is the smallest amount of work? When to stop?
 <pre>
-// Returns the given int's binary representation. 
-// Precondition: n >= 0 
-int convertFromBinary(string binary) {     
-    int length = binary.length();     
-    if (length == 1) {         
-        // base case: binary is same as base 10         
-        return stringToInteger(binary); 
-    } 
-    // recursive case: break number apart 
-    string lastCharacter = binary.substr(length - 1); 
-    string beginning = binary.substr(0, length - 1); 
-    return 2 * convertFromBinary(beginning) + 
-               convertFromBinary(lastCharacter); 
-} 
+# Returns the given int's binary representation. 
+# Precondition: n &gt;= 0 
+def convertFromBinary(binary):
+  length = len(binary)
+  if length == 1:
+    # base case: binary is same as base 10         
+    return int(binary)
+  # recursive case: break number apart 
+  lastCharacter = binary[length - 1]
+  beginning = binary[0:length - 1]
+  return 2 * convertFromBinary(beginning) + convertFromBinary(lastCharacter)
+}
 </pre>
-
-<p>Exercise: write a recursive function <code>reverseLines</code> that accepts a file input stream and prints the lines of that file in reverse order.
-<br>Example input:
-<pre>
-Hello world
-Hello foo
-Hello bar
-baz hello
-</pre>
-Expected output:
-<pre>
-baz hello
-Hello bar
-Hello foo
-Hello world
-</pre>
-Is this problem self-similar? What is a file that is very easy to reverse? Hint: reversing the lines of a file can be done by (1) reading a line L from the file, (2) printing the rest of the lines in reverse order --- self-similarity, (3) printing the line L.
-<pre>
-void reverseLines(ifstream& input) { 
-    string line; 
-    if (getline(input, line)) { 
-        // recursive case 
-        reverseLines(input); 
-        cout << line << endl; 
-    } 
-} 
-</pre>
-Where is the base-case?
-
-
