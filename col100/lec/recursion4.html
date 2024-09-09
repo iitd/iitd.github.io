@@ -1,0 +1,159 @@
+
+<h3>Practicing Recursion</h3>
+
+<ul>
+<li>Lab 7 Problem 1:
+Implement a function num_ways(R, G, B), that takes as input R, G and B,
+and returns the number of ways to arrange R identical red balls,
+G identical green balls and B identical blue balls in a line such that
+no two consecutive balls have the same color.
+
+For example, If R = 1, G = 2, B = 1, the following are the valid ways:
+
+1. RGBG
+2. BGRG
+3. GBRG
+4. GRBG
+5. GRGB
+6. GBGR
+
+Hence, num_ways(1, 2, 1)  should return 6.
+<pre>
+def helper(R,G,B,C):
+    if R==1 and G==0 and B==0 and C=="R":
+
+        return 1
+    if R==0 and G==1 and B==0 and C=="G":
+
+        return 1
+    if R==0 and G==0 and B==1 and C=="B":
+
+        return 1
+    if C=="R" and R&gt;0:
+        return (helper(R-1,G,B,'G')+helper(R-1,G,B,'B'))
+    if C=="G" and G&gt;0:
+        return (helper(R,G-1,B,'R')+helper(R,G-1,B,'B'))
+    if C=="B" and B&gt;0:
+        return (helper(R,G,B-1,'G')+helper(R,G,B-1,'R'))
+    else:
+        return 0
+
+def num_ways(R,G,B):
+    return(helper(R,G,B,'R') + helper(R,G,B,'G') + helper(R,G,B,'B'))
+</pre>
+</li>
+
+<li><b>Longest common subsequence</b>:
+A longest common subsequence (LCS) is the longest subsequence common to all sequences in two sequences.
+It differs from the longest common substring: unlike substrings, subsequences are not required to occupy
+consecutive positions within the original sequences. The problem of computing longest common subsequences is
+a classic computer science problem, the basis of data comparison programs such as the diff utility,
+and has applications in computational linguistics and bioinformatics.
+It is also widely used by revision control systems such as Git for
+reconciling multiple changes made to a revision-controlled collection of files.
+
+<pre>
+LCS("BANANA", "ATANA") = LCS("BANAN", "ATAN")^"A"
+LCS("BANAN", "ATAN") = LCS("BANA", "ATA")^"NA"
+LCS("BANA", "ATA") = LCS("BAN", "AT")^"ANA"
+LCS("BAN", "AT") = ?
+</pre>
+
+<p>The LCS problem has an optimal substructure: the problem can be broken down into
+smaller, simpler subproblems, which can, in turn, be broken down into simpler subproblems,
+and so on, until, finally, the solution becomes trivial. LCS in particular has
+overlapping subproblems: the solutions to high-level subproblems often reuse solutions
+to lower level subproblems.
+
+<p>Consider two cases:
+<ol>
+<li> If <code>LCS("BAN", "AT")</code> ends with <code>"T"</code>, then it cannot end with "N", and so <code>LCS("BAN", "AT") = LCS("BA", "AT")</code>.</li>
+<li> If <code>LCS("BAN", "AT")</code> does not end with <code>"T"</code>, then <code>LCS("BAN", "AT") = LCS("BAN", "A")</code>.</li>
+</ol>
+We do not know which case it is, so we try both cases and take the maximum.
+
+<p>Towards a general solution:
+<pre>
+LCS(X, Y) = "" if X or Y is an empty string
+LCS(X."c", Y."c") = LCS(X,Y)."c"
+LCS(X."c", Y."d") = max(LCS(X,Y."d"), LCS(X."c", Y))  for c not equal to d
+</pre>
+
+<p>Recursive code:
+<pre>
+def lcs(X, Y):
+  if len(X) == 0 or len(Y) == 0:
+    return ""
+  elif X[-1] == Y[-1]:
+    return lcs(X[0:-1], Y[0:-1]) + X[-1]
+  else:
+    return max(lcs(X[0:-1], Y), lcs(X, Y[0:-1]))
+</pre>
+
+</li>
+</ul>
+
+<h3>Matrix Multiplication</h3>
+<pre>
+def matmul(X, Y):
+  nrowsX = len(X)
+  ncolsX = len(X[0])
+  nrowsY = len(Y)
+  ncolsY = len(Y[0])
+  result = [[0 for _ in range(nrowsX)] for _ in range(ncolsY)]  #initialize as separate lists for each row
+  for i in range(nrowsX):
+   # iterate through columns of Y
+   for j in range(ncolsY)):
+       # iterate through rows of Y
+       for k in range(ncolsX):
+           result[i][j] += X[i][k] * Y[k][j]
+
+# 3x3 matrix
+X = [[12,7,3],
+    [4 ,5,6],
+    [7 ,8,9]]
+
+# 3x4 matrix
+Y = [[5,8,1,2],
+    [6,7,3,0],
+    [4,5,9,1]]
+
+print(matmul(X, Y))
+</pre>
+
+
+<p>Exercise: compute X^n
+<pre>
+//Assumes exp &gt;= 0
+def power(base, exp):
+  if exp == 0:
+    return 1
+  elif exp % 2 == 0:
+    return power(matmul(base, base), exp/2) #recursive case 1
+  elif:
+    return matmul(base, power(base, exp - 1)) #recursive case 2
+</pre>
+
+
+<p>Exercise: write a recursive function convertFromBinary that accepts an a
+string of that number's representation in binary (base 2) and
+returns the base 10 int equivalent. e.g.,
+<pre>
+convertFromBinary("111") returns 7
+convertFromBinary("1100") returns 12
+convertFromBinary("101010") returns 42
+</pre>
+How is this problem self-similar? What is the smallest amount of work? When to stop?
+<pre>
+# Returns the given int's binary representation. 
+# Precondition: n &gt;= 0 
+def convertFromBinary(binary):
+  length = len(binary)
+  if length == 1:
+    # base case: binary is same as base 10         
+    return int(binary)
+  # recursive case: break number apart 
+  lastCharacter = binary[length - 1]
+  beginning = binary[0:length - 1]
+  return 2 * convertFromBinary(beginning) + convertFromBinary(lastCharacter)
+</pre>

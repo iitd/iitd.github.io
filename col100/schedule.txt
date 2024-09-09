@@ -36,6 +36,8 @@ LEC: <a href=lec/recursion2.html>Recursion continued</a><br>
 ==
 LEC: <a href=lec/recursion3.html>Recursion continued (2)</a><br>
 ==
+LEC: <a href=lec/recursion4.html>Recursion continued (3)</a><br>
+==
 LEC: <a href=lec/dictionaries.html>Dictionaries</a>
 ==
 LEC: <a href=lec/testing.html>Testing, Debugging, Exceptions, Assertions</a>
