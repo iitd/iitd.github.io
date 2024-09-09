@@ -49,20 +49,14 @@ the smaller problems), then make a recursive call to handle the rest.
 
 <p>Recursive Program structure
 <pre>
-recursiveFunc ()
-{ 
-  if (test for simple case) { // base case 
-    Compute the solution without recursion 
-  } else { // recursive case
-    1. Break the problem into  subproblems of the same form 
-    2. Call  recursiveFunc() on each  self-similar  subproblem
-    3. Reassamble the results of the subproblems
-  } 
-} 
+def recursiveFunc(...):
+  if (test for simple case): # base case 
+    # Compute the solution without recursion 
+  else:  # recursive case
+    # 1. Break the problem into  subproblems of the same form 
+    # 2. Call  recursiveFunc() on each  self-similar  subproblem
+    # 3. Reassamble the results of the subproblems
 </pre>
-
-
-
 
 <h3>Recursion with multiple base cases</h3>
 <ul>
