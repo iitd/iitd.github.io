@@ -1,3 +1,44 @@
+<h3>Matrix Multiplication</h3>
+<pre>
+def matmul(X, Y):
+  nrowsX = len(X)
+  ncolsX = len(X[0])
+  nrowsY = len(Y)
+  ncolsY = len(Y[0])
+  result = [[0 for _ in range(nrowsX)] for _ in range(ncolsY)]  #initialize as separate lists for each row
+  for i in range(nrowsX):
+   # iterate through columns of Y
+   for j in range(ncolsY)):
+       # iterate through rows of Y
+       for k in range(ncolsX):
+           result[i][j] += X[i][k] * Y[k][j]
+
+# 3x3 matrix
+X = [[12,7,3],
+    [4 ,5,6],
+    [7 ,8,9]]
+
+# 3x4 matrix
+Y = [[5,8,1,2],
+    [6,7,3,0],
+    [4,5,9,1]]
+
+print(matmul(X, Y))
+</pre>
+
+
+<h3>Matrix Exponentiation</h3>
+Given matrix <code>X</code>, compute <code>X^n</code>:
+<pre>
+//Assumes exp &gt;= 0
+def power(base, exp):
+  if exp == 0:
+    return 1
+  elif exp % 2 == 0:
+    return power(matmul(base, base), exp/2) #recursive case 1
+  elif:
+    return matmul(base, power(base, exp - 1)) #recursive case 2
+</pre>
 
 <h3>Practicing Recursion</h3>
 
@@ -93,48 +134,7 @@ def lcs(X, Y):
 </li>
 </ul>
 
-<h3>Matrix Multiplication</h3>
-<pre>
-def matmul(X, Y):
-  nrowsX = len(X)
-  ncolsX = len(X[0])
-  nrowsY = len(Y)
-  ncolsY = len(Y[0])
-  result = [[0 for _ in range(nrowsX)] for _ in range(ncolsY)]  #initialize as separate lists for each row
-  for i in range(nrowsX):
-   # iterate through columns of Y
-   for j in range(ncolsY)):
-       # iterate through rows of Y
-       for k in range(ncolsX):
-           result[i][j] += X[i][k] * Y[k][j]
-
-# 3x3 matrix
-X = [[12,7,3],
-    [4 ,5,6],
-    [7 ,8,9]]
-
-# 3x4 matrix
-Y = [[5,8,1,2],
-    [6,7,3,0],
-    [4,5,9,1]]
-
-print(matmul(X, Y))
-</pre>
-
-
-<p>Exercise: compute X^n
-<pre>
-//Assumes exp &gt;= 0
-def power(base, exp):
-  if exp == 0:
-    return 1
-  elif exp % 2 == 0:
-    return power(matmul(base, base), exp/2) #recursive case 1
-  elif:
-    return matmul(base, power(base, exp - 1)) #recursive case 2
-</pre>
-
-
+<!--
 <p>Exercise: write a recursive function convertFromBinary that accepts an a
 string of that number's representation in binary (base 2) and
 returns the base 10 int equivalent. e.g.,
@@ -157,3 +157,4 @@ def convertFromBinary(binary):
   beginning = binary[0:length - 1]
   return 2 * convertFromBinary(beginning) + convertFromBinary(lastCharacter)
 </pre>
+-->
