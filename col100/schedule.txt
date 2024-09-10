@@ -34,9 +34,9 @@ LEC: <a href=lec/recursion.html>Recursion</a><br>
 ==
 LEC: <a href=lec/recursion2.html>Recursion continued</a><br>
 ==
-LEC: <a href=lec/recursion3.html>Recursion continued (2)</a><br>
+LEC: <a href=lec/recursion3.html>Recursion continued (2)</a><br>(lecture held on Sep. 7)
 ==
-LEC: <a href=lec/recursion4.html>Recursion continued (3)</a><br>
+LEC: <a href=lec/recursion4.html>Recursion continued (3)</a><br>(lecture held on Sep. 9)
 ==
 LEC: <a href=lec/dictionaries.html>Dictionaries</a>
 ==
