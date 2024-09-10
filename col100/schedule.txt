@@ -3,7 +3,7 @@ SEMESTER: Sem I, 2024-25
 Start: Jul 25, 2024
 Stop: Nov 14, 2024
 Schedule: Monday, Thursday
-HEADER: Links to notes etc. on future days are <i>tentative only</i>. They are here only to give you an idea what the future will bring.<br>Acknowledgements: Much of this course material has been adapted from MIT's 6.0001 course.<br>
+HEADER: Links to notes etc. on future days are <i>tentative only</i>. They are here only to give you an idea what the future will bring.<br>Acknowledgements: Some of this course material has been adapted from MIT's 6.0001 and Stanford COL106a courses.<br>
 
 HOLIDAY: Aug 19. Rakshabandhan
 
