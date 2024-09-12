@@ -74,46 +74,21 @@ for line in file:
 No!  Internally, the <code>file</code> object maintains the current position that gets incremented for every line read from it.
 
 
-<p>Example: lab7 problem 1
+<p>Example lab code:
 <pre>
-def num_ways(R, G, B):
-    # R, G and B are inputs to the function
-    # R denotes the number of red balls
-    # G denotes the number of green balls
-    # B denotes the number of blue balls
-    
-    # Write your code below to return the number of ways to
-    # arrange R red balls, G green balls and B blue balls
-    # in a line such that no two consecutive balls have the
-    # same color.
-    return -1
-    
-
-def solution(inp):
-    return num_ways(*inp)
-
 def process_input(filename):
     lines = open(filename, 'r').readlines()
     lines = [line.strip() for line in lines]
-    pos = 0
-    num_tests = int(lines[0])
-    input_tests = []
-    for t in range(num_tests):
-        pos += 1
-        inp = [int(x) for x in lines[pos].split()]
-        input_tests += [inp]
-    return input_tests
-
-if __name__ == "__main__":
-    Input = process_input('p1_input.txt')
-    for inp in Input:
-        print(solution(inp))
+    ...
 </pre>
 
-<h3>Directories</h3>
+<p>The <code>readline</code> function is used to read a single line from the file.  The function returns a string that includes the newline character <code>'\n'</code> at its end.  The string is empty only if the <em>end of file</em> (also called <em>EOF</em>) is reached.  The function also increments the
+current position in the file, so that a next call to <em>readline</em> returns the next line.
+<pre>
+file = open("mydata.txt")
+line = file.readline()
+</pre>
 
-
-<h3>Let's write some programs</h3>
 <p>Exercise: write a recursive function <code>reverseLines</code> that accepts a file input stream and prints the lines of that file in reverse order.
 <br>Example input:
 <pre>
@@ -131,16 +106,39 @@ Hello world
 </pre>
 Is this problem self-similar? What is a file that is very easy to reverse? Hint: reversing the lines of a file can be done by (1) reading a line L from the file, (2) printing the rest of the lines in reverse order --- self-similarity, (3) printing the line L.
 <pre>
-void reverseLines(ifstream& input) { 
-    string line; 
-    if (getline(input, line)) { 
-        // recursive case 
-        reverseLines(input); 
-        cout << line << endl; 
-    } 
-} 
+def reverseLines(input):
+    line = input.readline()
+    if len(line) != 0:
+        # recursive case
+        reverseLines(input)
+        print(line.strip())
+reverseLines(open("input.txt"))
 </pre>
 Where is the base-case?
+
+<h3>Directories</h3>
+A directory is a cataloging structure which contains
+references to other computer files, and possibly other directories.
+It is also called a <em>folder</em> on some operating systems.
+
+<p>Need to <code>import os</code> for all directory operations.
+
+<p><code>os.listdir(dir)</code> is used to obtain the names of files (and directories) in
+directory <code>dir</code>, as a list of strings.
+
+<p>A file or a directory could be nested in another directory.  The full sequence of directory names to reach a file (including the filename)
+separated by a <em>forward-slash /</em> character is called a <em>path</em>. e.g., <code>a/b/c</code>.  If the first character
+is a forward-slash, then the path is an <em>absolute path</em> starting from the root directory <code>/</code>; else it is
+a relative path from the <em>current working directory</em>.
+
+<p><code>os.path.isfile(path)</code> returns <code>True</code> if and only if the file represented by <code>path</code> is a file.
+
+<p><code>os.path.isdir(path)</code> returns <code>True</code> if and only if the file represented by <code>path</code> is a directory.
+
+<p><code>os.path.basename(path)</code> extracts the filename from <code>path</code> (and ignores all the parent directories leading
+up to the filename).
+
+<p>In all cases, <code>path</code> can either be relative or absolute.
 
 <p>Exercise: write a function <code>crawl</code> that accepts a file name as a parameter and prints information about that file.
 <ul>
@@ -158,39 +156,23 @@ courses
             if_then_else.cpp
         minor1.pdf
         minor2.pdf
-    eel200
+    phl100
         ...
 </pre>
-
-<p>Assume following functions are available (using SPL's "filelib.h"):
-<table style="width:100%" border="1">
-<tr>
-<td><code>isDirectory("name")</code></td>
-<td>Returns whether the filename represents a directory. Can use <code>stat()</code> method in standard C library but with more complicated syntax and semantics.</td>
-</tr>
-<tr>
-<td><code>listDirectory("name")</code></td>
-<td>returns a Vector&lt;string&gt; with the names of all files contained in the given directory. Can use a combination of <code>opendir/readdir/closedir</code> operations available in standard C library but with more complicated syntax and semantics.</td>
-</tr>
-</table>
 
 <p>How is this problem self-similar? Crawling a directory can be expressed in terms of crawling the subdirectories, albeit with a different indentation.
 <br>Base-case? File
 <pre>
-// Prints information about this file, 
-// and (if it is a directory) any files inside it. 
-void crawl(string filename, string indent) { 
-    cout << indent << getTail(filename) << endl; 
-    if (isDirectory(filename)) { 
-        // recursive case; print contained files/dirs 
-        Vector&lt;string&gt; filelist; 
-        listDirectory(filename, filelist); 
-        for (string subfile : filelist) { 
-            crawl(filename + "/" + subfile, 
-                  indent + "    "); 
-        } 
-    } 
-} 
+import os
+
+# Prints information about this file, 
+# and (if it is a directory) any files inside it. 
+def crawl(path, indent):
+    print(indent + os.path.basename(path))
+    if os.path.isdir(path):
+        # recursive case; print contained files/dirs 
+        for subfile in os.listdir(path):
+            crawl(path + "/" + subfile, indent + "    ")
+
+crawl(".", "")
 </pre>
-
-
