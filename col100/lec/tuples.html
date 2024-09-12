@@ -73,6 +73,21 @@ This yields <code>UnboundLocalError: local variable 'x' referenced before assign
 </li>
 </ul>
 
+<p>Complex example:
+<pre>
+def g(x):
+  x = x + 1
+  print('g: y = ', y, 'x = ', x)  # this causes an error, as y is neither defined in the current scope nor defined in the (static) outer scope
+  return x
+
+def h(w):
+  y = 'abc'
+  return g(w)
+
+x = 3
+z = h(x)
+</pre>
+
 <p>More complex example:
 <pre>
 def g(x):
