@@ -401,4 +401,174 @@ raise Exception("descriptive string")
 </li>
 </ul>
 
-<p>Stop 
+<p>Exceptions as control flow
+<ul>
+<li> The <code>raise</code> keyword can be used to indicate an exception (with its name and
+description) at runtime.</li>
+<li> Application:
+<ul>
+<li> When an error occurs, do not return special values, instead raise an exception, and add an <code>except</code> block at the very end.</li>
+<li> <em>Relay</em> an exception after potentially changing its name (e.g., a common name for many exceptions depending on the context) and description.</li>
+</ul>
+</li>
+</ul>
+Syntax:
+<pre>
+raise &lt;exceptionName&gt;(&lt;arguments&gt;)
+</pre>
+Example:
+<pre>
+raise ValueError("something is wrong")  #The string description is optional
+</pre>
+
+<p>Example: raising an exception
+<pre>
+def get_ratios(L1, L2):
+""" Assumes: L1 and L2 are lists of equal length of numbers
+    Returns: a list containing L1[i]/L2[i] """
+  ratios = []
+  for index in range(len(L1)):
+    try:
+      ratios.append(L1[index]/L2[index])
+    except ZeroDivisionError:
+      ratios.append(float('nan')) #nan = not a number
+    except:
+      raise ValueError('get_ratios called with bad arg') #manage flow of program by raising own error
+    return ratios
+
+get_ratios("") #will raise ValueError.  Can enclose this within an except block
+</pre>
+Notice that an exception searches for the innermost <code>try/except</code> block.  If it does not exist in the
+current function, it exits the function (destroying its scope) and going to the caller's scope, caller's caller's scope,
+and so on, until a <code>try/except</code> block is found. If no <code>try/except</code>
+block is found, the program terminates and the user is shown the details of the exception raised.
+
+<p>Example: We are given a <em>class list</em> for a subject, such that each list entry is a list of two parts:
+<ul>
+<li> The first entry is a list of the first and last names</li>
+<li> The second entry is a list of the marks in different course components, scaled to 100</li>
+</ul>
+<pre>
+marks = [ [ ['rahul', 'tendulkar'], [80.0, 70.0, 85.0] ],
+          [ ['sachin', 'dravid'], [100.0, 80.0, 74.0] ] ]
+</pre>
+Create a <em>new class list</em>, with name, marks, and an average
+<pre>
+[ [ ['rahul', 'tendulkar'], [80.0, 70.0, 85.0], 78.33333 ],
+  [ [ 'sachin', 'dravid'], [100.0, 80.0, 74.0], 84.66667 ] ]
+</pre>
+
+<p>Example code
+<pre>
+def get_stats(class_list):
+  new_stats = []
+  for elt in class_list:
+    new_stats.append([elt[0], elt[1], avg(elt[1])])
+  return new_stats
+
+def avg(marklist):
+  return sum(marklist)/len(marklist)
+</pre>
+
+<p>We will get an error on the following input:
+<pre>
+marks = [ [ ['rahul', 'tendulkar'], [80.0, 70.0, 85.0] ],
+          [ [ 'sachin', 'dravid'], [100.0, 80.0, 74.0] ],
+          [ ['test'], [] ] ]
+</pre>
+Get <code>ZeroDivisionError: float division by zero</code> because try to divide by <code>len(marklist)</code> which
+is <code>0</code> for <code>test</code>.
+
+<p>Multiple choices for handling these errors using <code>except</code>:
+<ul>
+<li> Print a warning and set the average for an empty list to the <code>None</code> value.
+<pre>
+def avg(marklist):
+  try:
+    return sum(marklist)/len(marklist)
+  except:
+    print('warning: no marks data')
+</pre>
+This results in the following output:
+<pre>
+warning: no marks data
+marks = [ [ ['rahul', 'tendulkar'], [80.0, 70.0, 85.0], 78.33333 ],
+          [ [ 'sachin', 'dravid'], [100.0, 80.0, 74.0], 84.66667 ],
+          [ ['test'], [], None ] ]
+</pre>
+Notice that the <code>None</code> value is output because <code>avg</code> did not return anything in the <code>except</code> block, which is equivalent to returning the <code>None</code> value.
+</li>
+<li> Print a warning and set the average for an empty list to the <code>0.0</code>.
+<pre>
+def avg(marklist):
+  try:
+    return sum(marklist)/len(marklist)
+  except:
+    print('warning: no marks data')
+    return 0.0
+</pre>
+This results in the following output:
+<pre>
+warning: no marks data
+marks = [ [ ['rahul', 'tendulkar'], [80.0, 70.0, 85.0], 78.33333 ],
+          [ [ 'sachin', 'dravid'], [100.0, 80.0, 74.0], 84.66667 ],
+          [ ['test'], [], 0.0] ]
+</pre>
+</li>
+<li> Print a warning and raise a ValueError exception with a helpful message.
+<pre>
+def avg(marklist):
+  try:
+    return sum(marklist)/len(marklist)
+  except:
+    print('warning: no marks data')
+    raise ValueError("marklist found empty")
+</pre>
+This results in the following output:
+<pre>
+warning: no marks data
+Traceback: ...
+....
+ValueError: "marklist found empty"
+</pre>
+</li>
+</ul>
+
+<p>Assertions
+<ul>
+<li> Want to be sure that <em>assumptions</em> on state of computation are as expected.</li>
+<li> Use an <code>assert</code> statement to raise an <code>AssertionError</code> exception if assumptions not met.</li>
+<li> An example of good <em>defensive programming</em>:
+<pre>
+def avg(marklist):
+  assert len(marklist) != 0, 'no grades data'
+  return sum(marklist)/len(marklist)
+</pre>
+<ul>
+<li> raises an <code>AssertionError</code> if it is given an empty <code>marklist</code></li>
+<li> otherwise runs ok</li>
+</ul>
+</li>
+</ul>
+
+<p>Assertions as defensive programming
+<ul>
+<li> Can be used to check user inputs</li>
+<li> Can be used to check the outputs of a function</li>
+<li> Can be used to check a certain property intended by a programmer at a certain location of code, e.g., <code>z0_power_i == z0**i</code> at the beginning the body of a for-loop.</li>
+<li> Can make it easier to locate a source of bug.  For example, can be used to manifest an error closer to where a bug occurs</li>
+</ul>
+
+<p>Where to use assertions?
+<ul>
+<li> Goal is to spot bugs as soon as introduced and make clear where they happened</li>
+<li> Use as a supplement to testing:
+<ul>
+<li> Check bad user input</li>
+<li> Check types of arguments or values</li>
+<li> Check that <em>invariants</em> on values and data structures are met, e.g., <code>n=len(L)</code>, or <code>z0_power_i == z0**i</code> at certain program points.</li>
+<li> Check constraints on return values.</li>
+<li> Check for violations of constraints on a procedure, e.g., no duplicates in a list.</li>
+</ul>
+</li>
+</ul>
