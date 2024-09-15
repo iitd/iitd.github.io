@@ -44,3 +44,5 @@ LEC: <a href=lec/dictionaries.html>Dictionaries</a>
 ==
 LEC: <a href=lec/testing.html>Testing, Debugging, Exceptions, Assertions</a>
 ==
+LEC: <a href=lec/efficiency.html>Understanding Program Efficiency</a>
+==

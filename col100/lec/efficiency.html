@@ -1,0 +1,50 @@
+<h3>Understanding Program Efficiency</h3>
+<ul>
+<li> A modern computer can execute over a billion instructions per second.  So maybe program efficiency does not matter?
+<ul>
+<li> Some algorithms grow exponentially, e.g., finding prime numbers, compiler optimization algorithms</li>
+<li> Need to tackle trillions of bytes of data, e.g., search engine</li>
+<li> Some algorithms require both data and computation, e.g., large-language models</li>
+</ul>
+</li>
+<li>There are multiple possible programs that achieve the same objective.  How can we decide which program is most efficient?</li>
+</ul>
+
+
+<p><b>Time vs. Space Efficiency</b>
+<ul>
+<li> Sometimes more space efficient algorithms are also more time efficient, e.g., fib-iterative is more space- and time-efficient than fib-recursive.</li>
+<li> Sometimes, there is a tradeoff between space and time efficiency
+<ul>
+<li> Can create copies of inputs, or use large data structures for efficient lookup for an overall faster algorithm</li>
+</ul>
+</li>
+<li> Can store 1000s of Gigabytes (trillions of bytes) in a modern computer's memory and disk </li>
+<li> Will focus on time efficiency </li>
+</ul>
+
+<p>Want to understand efficiency of programs. But there are
+challenges in understanding efficiency of solution to a
+computational problem:
+<ul>
+<li>A program can be implemented in many different
+ways</li>
+<li> You can solve a problem using only a handful of
+different algorithms</li>
+<li>Would like to separate choices of implementation
+from choices of more abstract algorithm</li>
+</ul>
+
+<p>How to evaluate efficiency of programs
+<ul>
+<li> Measure with a <em>timer</em></li>
+<li> <em>Count</em> the operations</li>
+<li> Abstract notion of <em>order of growth</em>
+<ul>
+<li> Will argue that this is the most appropriate ways of assessing
+the impact of choices of algorithm in solving a problem; and measuring
+the inherent difficulty in solving a problem
+</li>
+</ul>
+</li>
+</ul>
