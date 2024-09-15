@@ -128,7 +128,12 @@ def lcs(X, Y):
   elif X[-1] == Y[-1]:
     return lcs(X[0:-1], Y[0:-1]) + X[-1]
   else:
-    return max(lcs(X[0:-1], Y), lcs(X, Y[0:-1]))
+    lcsY = lcs(X[0:-1], Y)
+    lcsX = lcs(X, Y[0:-1])
+    if len(lcsY) &lt; len(lcsX):
+      return lcsX
+    else:
+      return lcsY
 </pre>
 
 </li>

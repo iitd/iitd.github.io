@@ -609,3 +609,37 @@ while abs(guess**3 - cube) &gt;= epsilon:
 print 'num_guesses =', num_guesses
 print(guess, 'is close to the cube root of', cube)
 </pre>
+
+<p>Example on <em>longest common subsequence (LCS)</em>:
+<pre>
+def isCommonSubsequence(X, Y, R):
+  xi = 0
+  yi = 0
+  for c in R:
+    while X[xi] != c:
+      xi+=1
+      if xi == len(X):
+        return False
+    while Y[yi] != c:
+      yi+=1
+      if yi == len(Y):
+        return False
+  return True
+
+def lcs(X, Y):
+  ret = ""
+  if len(X) == 0 or len(Y) == 0:
+    ret = ""
+  elif X[-1] == Y[-1]:
+    lcsXY = lcs(X[0:-1], Y[0:-1])
+    ret = lcsXY + X[-1]
+  else:
+    lcsY = lcs(X[0:-1], Y)
+    lcsX = lcs(X, Y[0:-1])
+    if len(lcsY) &lt; len(lcsX):
+      ret = lcsX
+    else:
+      ret = lcsY
+  assert(isCommonSubsequence(X, Y, ret))
+  return ret
+</pre>
