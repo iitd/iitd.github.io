@@ -139,27 +139,4 @@ def lcs(X, Y):
 </li>
 </ul>
 
-<!--
-<p>Exercise: write a recursive function convertFromBinary that accepts an a
-string of that number's representation in binary (base 2) and
-returns the base 10 int equivalent. e.g.,
-<pre>
-convertFromBinary("111") returns 7
-convertFromBinary("1100") returns 12
-convertFromBinary("101010") returns 42
-</pre>
-How is this problem self-similar? What is the smallest amount of work? When to stop?
-<pre>
-# Returns the given int's binary representation. 
-# Precondition: n &gt;= 0 
-def convertFromBinary(binary):
-  length = len(binary)
-  if length == 1:
-    # base case: binary is same as base 10         
-    return int(binary)
-  # recursive case: break number apart 
-  lastCharacter = binary[length - 1]
-  beginning = binary[0:length - 1]
-  return 2 * convertFromBinary(beginning) + convertFromBinary(lastCharacter)
-</pre>
--->
+

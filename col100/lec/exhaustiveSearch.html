@@ -1,0 +1,488 @@
+<h3>Reviewing Recursion</h3>
+
+<p>Exercise: write a recursive function convertFromBinary that accepts an a
+string of that number's representation in binary (base 2) and
+returns the base 10 int equivalent. e.g.,
+<pre>
+convertFromBinary("111") returns 7
+convertFromBinary("1100") returns 12
+convertFromBinary("101010") returns 42
+</pre>
+How is this problem self-similar? What is the smallest amount of work? When to stop?
+<pre>
+# Returns the given int's binary representation. 
+# Precondition: n &gt;= 0 
+def convertFromBinary(binary):
+  length = len(binary)
+  if length == 1:
+    # base case: binary is same as base 10         
+    return int(binary)
+  # recursive case: break number apart 
+  lastCharacter = binary[length - 1]
+  beginning = binary[0:length - 1]
+  return 2 * convertFromBinary(beginning) + convertFromBinary(lastCharacter)
+</pre>
+
+<p><b>Arm's length recursion</b> or <em>short-circuit recursion</em>.  Consider the following recursive implementation of <code>power()</code>:
+<pre>
+//Assumes exp &gt;= 0
+def power(base, exp):
+  if exp == 0:
+    return 1
+  elif exp % 2 == 0:
+    return power(base * base, exp/2) #recursive case 1
+  elif:
+    return base * power(base, exp - 1) #recursive case 2
+</pre>
+
+<p>Here is a short-circuit implementation of the same logic:
+<pre>
+//Assumes exp &gt;= 0
+def power(base, exp):
+  if exp == 0:
+    return 1
+  elif exp % 2 == 0:
+    return power(base * base, exp/2) #recursive case 1
+  elif:
+    return base * power(base * base, (exp - 1)/2) #recursive case 2
+</pre>
+
+<p>Similarly, consider the following recursive implementation of <code>fac()</code>:
+<pre>
+def fac(n):
+  if n &lt;= 0:
+    return 1
+  else:
+    return n*fac(n-1)
+</pre>
+And below is a short-circuit implementation (also called <em>arms-length recursion</em>) of the <code>fac()</code> function:
+<pre>
+def facHelper(n):
+  if n == 2:
+    return 2
+  else:
+    return n*facHelper(n-1)
+
+def fac(n):
+  if n &lt;= 1:
+    return 1
+  else:
+    return facHelper(n)
+</pre>
+
+
+
+<h3>Exhaustive search</h3>
+Explore every possible combination from a set of choices or values.
+<ul>
+<li> often implemented recursively</li>
+<li> sometimes called <em>recursive enumeration</em></li>
+</ul>
+
+<p>Applications
+<ul>
+<li> producing all permutations of a set of values</li>
+<li> enumerating all possible names, passwords, etc.</li>
+<li> combinatorics and logic programming</li>
+</ul>
+
+<p>Often the search space consists of many <em>decisions</em>, each of which has several available <em>choices</em>
+<ul>
+<li> Example: when enumerating all 5-letter strings, each of the 5 letters is a <em>decision</em> and each of those decisions has 26 possible <em>choices</em>.
+</ul>
+
+<p>A general pseudo-code algorithm for exhaustive search:
+<pre>
+Explore(decisions):
+  -- if there are no more decisions to make: Stop
+
+  -- else let's handle one decision ourselves, and the rest by recursion.
+     For each available choice C for this decision:
+     -- Choose C by modifying parameters
+     -- Explore the remaining decisions that could follow C.
+     -- Un-choose C by returning parameters to original state (if necessary)
+</pre>
+
+<p>Exhaustive search model.
+<ul>
+<li> Choosing
+<ol>
+<li> We generally iterate over <b>decisions</b>. What are we iterating over here?  The iteration will be done by recursion.</li>
+<li> What are the <b>choices</b> for each decision?  Do we need a for loop?</li>
+</ol>
+</li>
+<li> Exploring
+<ol>
+<li> How can we <em>represent</em> that choice? How should we <b>modify the parameters</b>?
+<ul>
+<li> Do we need to use a <b>helper function</b> due to extra parameters?
+</ul>
+</li>
+<li> Un-Choosing
+<ol>
+<li> How do we <b>un-modify</b> the parameters from the "Exploring" step?  Do we need to explicitly un-modify or are they copied?   Are they un-modified at the same level as they were modified?
+</li>
+</ol>
+<li> Base Case
+<ol>
+<li> What should we do in the <b>base cases</b> when we are out of decisions?</li>
+</ol>
+</ul>
+
+<p>Exercise: printAllBinary
+<ul>
+<li> Write a recursive function <b>printAllBinary</b> that accepts an
+integer number of digits and prints all binary numbers that have exactly
+that many digits, in ascending order, one per line.
+
+<pre>
+printAllBinary(2):
+00
+01
+10
+11
+
+printAllBinary(3):
+000
+001
+010
+011
+100
+101
+110
+111
+</pre>
+
+</li>
+<li> Choosing
+<ol>
+<li>We generally iterate over decisions. What are we iterating over here? <em>We are iterating over characters in the binary string</em></li>
+<li> What are the choices for each decision?  Do we need a for loop?  <em>Choose 0 or 1</em></li>
+</ol>
+</li>
+<li> Exploring
+<ol>
+<li> How can we represent that choice? Should we modify the parameters and store our previous choices?  <em>Build up a string that will eventually print.  Add the 0 or 1 (choice) to it.  String tracks our previous choices</em>.</li>
+<li> Do we need to use a helper due to extra parameters?  Yes</li>
+</ol>
+</li>
+<li> Un-Choosing
+<ol>
+<li> How do we un-modify the parameters from the Exploring step? Do we need to un-modify, or are they copied?  Are they un-modified at the same level as they were modified? <em>If new strings for each call, we don't need to unchoose</em></li>
+</ol>
+</li>
+<li> Base Case
+<ol>
+<li> What should we do in the base case when we are out of decisions? <em>Print the string</em></li>
+</ol>
+</ul>
+
+<p>Solution:
+<pre>
+def printAllBinary(numDigits):
+  printAllBinaryHelper(numDigits, "")
+
+def printAllBinaryHelper(digits, soFar):
+  if digits == 0:
+    print soFar
+  else:
+    printAllBinaryHelper(digits - 1, soFar + "0")
+    printAllBinaryHelper(digits - 1, soFar + "1")
+</pre>
+
+<p>Show the balanced tree of calls for <code>printAllBinary(2)</code> of depth 3, showing the <code>digits</code> and <code>soFar</code> arguments for each call.  This kind of diagram is called a <em>call tree</em> or <em>decision tree</em>.  Think of each call as a choice or decision made by the algorithm:
+<ul>
+<li> Should I choose 0 as the next digit?</li>
+<li> Should I choose 1 as the next digit?</li>
+</ul>
+
+
+<p>printDecimal: Write a recursive function <em>printDecimal</em> that accepts an integer number of digits and prints all <u>base-10</u> numbers that have exactly that many digits, in ascending order, one per line.
+<pre>
+printDecimal(2):
+00
+01
+02
+03
+..
+..
+98
+99
+
+printDecimal(3):
+000
+001
+...
+998
+999
+</pre>
+<ul>
+<li> Choosing
+<ol>
+<li>We generally iterate over decisions. What are we iterating over here? <em>We are iterating over characters in the binary string</em></li>
+<li> What are the choices for each decision?  <u>Do we need a for loop?</u>  <b><em>Yes, we need a for loop</em></b></li>
+</ol>
+</li>
+<li> Exploring
+<ol>
+<li> How can we represent that choice? Should we modify the parameters and store our previous choices?  <em>Build up a string that will eventually print.  Add the 0 or 1 (choice) to it.  String tracks our previous choices</em>.</li>
+<li> Do we need to use a helper due to extra parameters?  Yes</li>
+</ol>
+</li>
+<li> Un-Choosing
+<ol>
+<li> How do we un-modify the parameters from the Exploring step? Do we need to un-modify, or are they copied?  Are they un-modified at the same level as they were modified? <em>If new strings for each call, we don't need to unchoose</em></li>
+</ol>
+</li>
+<li> Base Case
+<ol>
+<li> What should we do in the base case when we are out of decisions? <em>Print the string</em></li>
+</ol>
+</ul>
+
+<p>Solution:
+<pre>
+def printDecimal(numDigits):
+  printDecimalHelper(numDigits, "")
+
+def printDecimalHelper(digits, soFar):
+  if digits == 0:
+    print soFar
+  else:
+    for i in range(10):
+      printAllBinaryHelper(digits - 1, soFar + str(i))
+</pre>
+When the set of digit choices is large, using a loop to enumerate them makes the code succinct (this is okay!).  Notice that we are looping over choices, and recursing over decisions.
+
+<h3>Backtracking</h3>
+Backtracking is about finding solution(s) by trying all possible paths and then abandoning them if they are not suitable.
+<ul>
+<li> a "brute force" algorithmic technique (tries all paths)</li>
+<li> often implemented recursively </li>
+<li> Could involve looking for <b>one</b> solution
+<ul>
+<li> If any of the paths finds a solution, a solution exists.  If none find a solution, no solution exists.
+</ul>
+</li>
+<li> Could involve finding <b>all</b> solutions</li>
+<li> Idea: it's exhaustive search <b>with conditions</b></li>
+</ul>
+
+<p>Applications:
+<ul>
+<li> Parsing languages</li>
+<li> Games: anagrams, crosswords, word jumbles, 8 queens, sudoku</li>
+<li> Combinatorics	and	logic	programming. e.g., type inference</li>
+<li> Escaping from a maze</li>
+</ul>
+
+<p>A general pseudo-code algorithm for backtracking problems searching for one solution:
+<pre>
+Backtrack(decisions):
+  -- if there are no more decisions to make:
+     -- if our current solution is valid, return true
+     -- else, return false
+  -- else let's handle one decision ourselves, and the rest by recursion.
+     For each available VALID choice C for this decision:
+     -- Choose C by modifying parameters
+     -- Explore the remaining decisions that could follow C. If any of them find a solution, return true
+     -- Un-choose C by returning parameters to original state (if necessary)
+
+  -- If no solutions were found, return false
+</pre>
+
+<p>A general pseudo-code algorithm for backtracking problems searching for all solution:
+<pre>
+Backtrack(decisions):
+  -- if there are no more decisions to make:
+     -- if our current solution is valid, ADD IT TO OUR LIST OF FOUND SOLUTIONS
+     -- else, DO NOTHING OR RETURN
+
+  -- else let's handle one decision ourselves, and the rest by recursion.
+     For each available VALID choice C for this decision:
+     -- Choose C by modifying parameters
+     -- Explore the remaining decisions that could follow C. KEEP TRACK OF WHICH SOLUTIONS THE RECURSIVE CALLS FIND.
+     -- Un-choose C by returning parameters to original state (if necessary)
+
+  -- RETURN THE LIST OF SOLUTIONS FOUND BY ALL THE HELPER RECURSIVE CALLS
+</pre>
+
+<p>Backtracking model
+<ul>
+<li> Choosing
+<ol>
+<li>We generally iterate over decisions. What are we iterating over here? What are the choices for each decision? Do we need a for loop?</li>
+</ol>
+</li>
+<li> Exploring
+<ol>
+<li> How can we represent that choice? Should we modify the parameters and store our previous choices?  Do we need to use a helper due to extra parameters? </li>
+<li> <u>How should we restrict our choices to be valid?</u></li>
+<li> <u>How should we use the return value of the recursive calls?  Are we looking for all solutions or just one?</u></li>
+</ol>
+</li>
+<li> Un-Choosing
+<ol>
+<li> How do we un-modify the parameters from the Exploring step? Do we need to un-modify, or are they copied?  Are they un-modified at the same level as they were modified?</li>
+</ol>
+</li>
+<li> Base Case
+<ol>
+<li> What should we do in the base case when we are out of decisions (<u>usually return true</u>)?</li>
+<li> <u>Is there a case for when there aren't any valid choices left or a "bad" state is reached (usually return false)</u>?</li>
+<li> <u>Are the base cases ordered properly? Are we avoiding arms-length recursion?</u>
+</ol>
+</ul>
+
+<p>Dice roll sum
+<ul>
+<li>Write a function <b>diceSum</b> that accepts two integer parameters: a number of dice to roll, and a desired
+sum of all dice values.  Output all die values that add up exactly to that sum.
+<pre>
+diceSum(2, 7):
+{1, 6}
+{2, 5}
+{3, 4}
+{4, 3}
+{5, 2}
+{6, 1}
+</pre>
+
+diceSum(3, 7):
+{1, 1, 5}
+{1, 2, 4}
+{1, 3, 3}
+{1, 4, 2}
+{1, 5, 1}
+{2, 1, 4}
+{2, 2, 3}
+{2, 3, 2}
+{2, 4, 1}
+{3, 1, 3}
+{3, 2, 2}
+{3, 3, 1}
+{4, 1, 2}
+{4, 2, 1}
+{5, 1, 1}
+</pre>
+</li>
+</ul>
+
+<p>Easier solution: First just output <em>all</em> possible combinations of values that could appear on the dice.  This is just exhaustive search!  In general, starting with exhaustive search and then adding conditions is not a bad idea.
+<pre>
+diceSum(2, 7):  #36 possibilities
+{1, 1}  {3, 1}  {5, 1}
+{1, 2}  {3, 2}  {5, 2}
+{1, 3}  {3, 3}  {5, 3}
+{1, 4}  {3, 4}  {5, 4}
+{1, 5}  {3, 5}  {5, 5}
+{1, 6}  {3, 6}  {5, 6}
+{2, 1}  {4, 1}  {6, 1}
+{2, 2}  {4, 2}  {6, 2}
+{2, 3}  {4, 3}  {6, 3}
+{2, 4}  {4, 4}  {6, 4}
+{2, 5}  {4, 5}  {6, 5}
+{2, 6}  {4, 6}  {6, 6}
+
+diceSum(3, 7):  #216 possibilities
+{1, 1, 1}
+{1, 1, 2}
+...
+{6, 6, 6}
+</pre>
+
+<p>Show the top part of the decision tree for <code>diceSum(4,7)</code>, where we maintain the "chosen values in first few dice" and "number of remaining dice where a value has not yet been chosen".  Initially, <code>chosen=<empty></code> and <code>available=4</code>. At the next level, we have six children, with <code>chosen={1}</code>, <code>available={3}</code>, and so on.
+
+
+<p>Code for easier solution:
+<pre>
+def diceSum(dice, desiredSum):
+  chosen = []
+  diceSumHelper(dice, desiredSum, chosen)
+
+def diceSumHelper(dice, desiredSum, chosen):
+  if dice == 0:
+    if sumAll(chosen) == desiredSum:
+      print(chosen)  #solution found, base case
+  else:
+    for i in range(1, 7):
+      diceSumHelper(dice - 1, desiredSum, chosen + [i])
+
+def sumAll(l):
+  sum = 0
+  for i in l:
+    sum += i
+  return sum
+</pre>
+What is the problem with this?
+
+<p>Wasteful decision tree. Show the decision tree and the <code>chosen</code> lists that are output.
+
+<p>Optimizations
+<ul>
+<li> We need not visit every branch of the decision tree.
+<ul>
+<li> Some branches are clearly not going to lead to success.</li>
+<li> We can preemptively stop, or <em>prune</em>, these branches.</li>
+</ul>
+</li>
+<li> Inefficiencies in our dice sum algorithm:
+<ul>
+<li> Sometimes the current sum is already <em>too high</em>, i.e., even rolling 1 for all remaining dice would exceed the desired sum.</li>
+<li> Sometimes the current sum is already <em>too low</em>, i.e., even rolling 6 for all remaining dice would be less than the desired sum.</li>
+<li> The code must recompute the sum many times, e.g., 1+1+1, 1+1+2, 1+1+3, 1+1+4, and so on.  Better if we remember that 1+1=2, to replace the computation with 2+1,2+2,2+3,...</li>
+</ul>
+</li>
+</ul>
+
+<p>Code for optimized solution:
+<pre>
+def diceSum(dice, desiredSum):
+  chosen = []
+  diceSumHelper(dice, 0, desiredSum, chosen)
+
+def diceSumHelper(dice, curSum, desiredSum, chosen):
+  if dice == 0:
+    if curSum == desiredSum:
+      print(chosen)  #solution found, base case
+  elif curSum + 1*dice &gt; desiredSum or curSum + 6*dice &lt; desiredSum:  # invalid state base case
+    return
+  else:
+    for i in range(1, 7):
+      diceSumHelper(dice - 1, curSum + i, desiredSum, chosen + [i])
+</pre>
+
+<p>Question (that I will not answer): How would you modify <code>diceSum</code> so that it prints only unique combinations of dice, ignoring order? e.g., do not print both <code>{1,1,5}</code> and <code>{1,5,1}</code>.
+<pre>
+diceSum(2, 7):
+  {1, 6}
+  {2, 5}
+  {3, 4}
+
+erased:
+  {4, 3}
+  {5, 2}
+  {6, 1}
+
+
+diceSum(3, 7):
+  {1, 1, 5}
+  {1, 2, 4}
+  {1, 3, 3}
+erased:
+  {1, 4, 2}
+  {1, 5, 1}
+  {2, 1, 4}
+printed:
+  {2, 2, 3}
+erased:
+  {2, 3, 2}
+  {2, 4, 1}
+  {3, 1, 3}
+  {3, 2, 2}
+  {3, 3, 1}
+  {4, 1, 2}
+  {4, 2, 1}
+  {5, 1, 1}
+</pre>
+<!-- Answer: keep track of the largest choice so far, and only enumerate choices equal or above it  in future -->
