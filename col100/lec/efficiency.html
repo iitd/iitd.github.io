@@ -48,3 +48,132 @@ the inherent difficulty in solving a problem
 </ul>
 </li>
 </ul>
+
+<p>Timing a program
+<ul>
+<li> use time module: <code>import time</code>
+<ul>
+<li> recall that importing means to bring in that class into your own file
+</ul>
+</li>
+<li> Use the <code>clock</code> function to record the current physical time
+<pre>
+import time
+def c2f(c):
+  return c*9/5 + 32
+
+t0 = time.clock()
+c2f(100000)
+t1 = time.clock() - t0
+print("call took", t1, "s")
+</pre>
+</li>
+</ul>
+
+<p>Timing programs is inconsistent
+<ul>
+<li> Goal: to evaluate different algorithms</li>
+<li> running time <em>varies between algorithms</em>.  <code>Good</code></li>
+<li> running time <em>varies between implementations</em>.  <code>Bad</code></li>
+<li> running time <em>varies between computers</em>.  <code>Bad</code></li>
+<li> running time <em>is not predictable based on small inputs</em>.  <code>Bad</code></li>
+<ul>
+<li> time varies for different inputs but cannot really express a relationship between inputs and time.  <code>Bad</code></li>
+</ul>
+</li>
+</ul>
+
+<p>Counting operations
+<ul>
+<li> assume these steps take <em>constant time</em>:
+<ul>
+<li> mathematical operations</li>
+<li> comparisons</li>
+<li> assignments</li>
+<li> accessing objects in memory</li>
+<li> function call and return</li>
+</ul>
+</li>
+<li> then count the number of operations executed as function of size of input</li>
+</ul>
+<pre>
+import time
+def c2f(c):
+  return c*9/5 + 32  # 4 ops
+
+def mysum(x):
+  total = 0  # 1 op
+  for i in range(x+1):  # loop x+1 times.  1 op for x+1
+    total += i  # 2 ops
+  return total  # 1 op
+
+#mysum takes 2 + 3(x+1) ops
+</pre>
+
+<p>Counting operations is also inconsistent
+<ul>
+<li> Goal: to evaluate different algorithms</li>
+<li> count <em>depends on algorithm</em>.  <code>Good</code></li>
+<li> count <em>depends on implementation</em>.  <code>Bad in some contexts, good in others</code></li>
+<li> count <em>independent of computers</em>.  <code>Good</code></li>
+<li> no clear definition of <em>which operations</em> to count.  <code>Bad</code></li>
+<li> count varies for different inputs and can come up with a relationship between inputs and time.  <code>Good!</code></li>
+</ul>
+
+<p>Still need a better way
+<ul>
+<li> timing and counting <em>evaluate implementations</em>.</li>
+<li> timing <em>evaluates machines</em>.</li>
+</ul>
+<ul>
+<li> want to <em>evaluate algorithm</em></li>
+<li> want to <em>evaluate scalability</em></li>
+<li> want to <em>evaluate in terms of input size</em></li>
+</ul>
+
+
+<p>Ideas
+<ul>
+<li>  Going to focus on idea of counting operations in an
+algorithm, but not worry about small variations in
+implementation (e.g., whether we take 3 or 4 primitive
+operations to execute the steps of a loop) </li>
+<li> Going to focus on how algorithm performs when size of
+problem gets arbitarily large</li>
+<li> Want to relate time needed to complete a computation,
+measured this way, against the size of the input to the problem</li>
+<li> Need to decide what to measure, given that actual number of steps
+may depend on specifics of trial</li>
+</ul>
+
+
+<p>Need to choose which input to use to evaluate a function
+<ul>
+<li> want to express <em>efficiency in terms of size of input</em>, so need
+to decide what your input is</li>
+<li> could be an <em>integer</em>, e.g., <code>mysum(x)</code>.</li>
+<li> could be <em>length of a list</em>, e.g., <code>listSum(ls)</code>.</li>
+<li> <em>you decide</em> when multiple parameters to a function, e.g., <code>searchForElement(ls, e)</code>.
+</ul>
+
+<p>Different inputs change how the program runs
+<ul>
+<li> a function that searches for an element in a list
+<pre>
+def searchForElement(ls, e):
+  for i in ls:
+    if i == e:
+      return True
+  return False
+</pre>
+</li>
+<li> when <code>e</code> is <em>first element</em> in the list: BEST CASE</li>
+<li> when <code>e</code> is <em>not in the list</em>: WORST CASE</li>
+<li> when <em>look through about half</em> of the elements in the list: AVERAGE CASE</li>
+<li> want to measure this behaviour in a general way</li>
+</ul>
+
+<p>BEST, AVERAGE, WORST cases
+<ul>
+<li> suppose you are given a list <code>L</code> of some length <code>len(L)</code>.
+</ul>
