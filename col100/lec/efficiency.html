@@ -175,5 +175,96 @@ def searchForElement(ls, e):
 
 <p>BEST, AVERAGE, WORST cases
 <ul>
-<li> suppose you are given a list <code>L</code> of some length <code>len(L)</code>.
+<li> suppose you are given a list <code>L</code> of some length <code>len(L)</code>.</li>
+<li> <em>best case</em>: minimum running time over all possible inputs of
+a given size, <code>len(L)</code>:
+<ul>
+<li> constant for <code>searchForElement</code></li>
+<li> first element in any list</li>
 </ul>
+</li>
+<li> <em>average case</em>: average running time over all possible inputs of
+a given size, <code>len(L)</code>
+<ul>
+<li> May use a practical measure to define frequency of each possible input</li>
+</ul>
+</li>
+<li> <em>worst case</em>: maximum running time over all possible inputs of
+a given size, <code>len(L)</code>
+<ul>
+<li> linear in length of list for <code>searchForElement</code></li>
+<li>must search entire list and not find it</li>
+<li> <em>We will generally focus on this case</em></li>
+</ul>
+</li>
+</ul>
+
+<p><b>Orders of growth</b>. Goals:
+<ul>
+<li> Want to evaluate program's efficiency when <em>input is very big</em></li>
+<li> Want to express the <em>growth of program's run time</em> as input size grows</li>
+<li> Want to put an <em>upper bound</em> on growth --- as tight as possible</li>
+<li> Do not need to be precise: "order of", not "exact" growth</li>
+<li> We will look at <em>largest factors</em> in run time (which section of the program will take the longest to run?)</li>
+<li> <em>Thus, generally, we want tight upper bound on growth, as function of size of input, in worst case</em> </li>
+</ul>
+
+<p>Measuring Order of Growth: Big Oh Notation
+<ul>
+<li> Big Oh notation measures an <em>upper bound on the asymptotic growth</em>, often called order of growth</li>
+<li> Big Oh or O() is used to describe worst case
+<ul>
+<li> worst case occurs often and is the bottleneck when a program runs</li>
+<li> express rate of growth of program relative to the input size</li>
+<li> evaluate algorithm NOT machine or implementation</li>
+</ul>
+</ul>
+
+<p>Exact steps vs. O():
+<pre>
+def fact_iter(n):
+  """ assumes n an int &gt;= 0 """
+  answer = 1
+  while n &gt; 1:  # comparison is 1 step
+    answer *= n #2 steps
+    n -= 1  #2 steps
+  return answer
+</pre>
+<ul>
+<li> computes factorial</li>
+<li> number of steps: 1 + 5n + 1</li>
+<li> worst case asymptotic complexity: <code>O(n)</code>
+<ul>
+<li> ignore additive constants</li>
+<li> ignore multiplicative constants</li>
+</ul>
+</li>
+</ul>
+
+<p>What does <code>O(n)</code> measure?
+<ul>
+<li> Interested in describing how amount of time needed 
+grows as size of (input to) problem grows</li>
+<li> Thus, given an expression for the number of operations needed to
+compute an algorithm, want to know asymptotic behaviour as size of
+problem gets large</li>
+<li> Hence, will focus on term that grows most rapidly in a sum of terms</li>
+<li> And will ignore multiplicative constants, since want to know how
+rapidly time required increases as we increase size of input</li>
+</ul>
+
+<p>Simplification examples
+<ul>
+<li> drop constants and multiplicative factors</li>
+<li>focus on <em>dominant terms</em></li>
+</ul>
+<pre>
+O(n^2): n^2 + 2n + 2
+O(n^2): n^2 + 10000000n + 3^10000
+O(n): log(n) + n + 4
+O(n log(n)): 0.0001*n*log(n) + 300n
+O(3^n): 2n^30 + 3^n
+</pre>
+
+<p>Examples of Types of Order of Growth<br>
+<img src="order-of-growth.png" alt="Order of Growth" width=600>
