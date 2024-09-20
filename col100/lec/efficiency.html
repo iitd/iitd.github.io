@@ -268,3 +268,197 @@ O(3^n): 2n^30 + 3^n
 
 <p>Examples of Types of Order of Growth<br>
 <img src="order-of-growth.png" alt="Order of Growth" width=600>
+
+<p>Analyzing programs and their complexity
+<ul>
+<li> <em>combine</em> complexity classes
+<ul>
+<li> analyze statements inside functions</li>
+<li> apply some rules, focus on dominant term</li>
+</ul>
+</li>
+<li> <em>Law of addition</em> for O():
+<ul>
+<li> used with <em>sequential</em> statements</li>
+<li> O(f(n)) + O(g(n)) is O(f(n)+g(n))</li>
+<li>For example:
+<pre>
+for i in range(n):  #O(n)
+  print('a')
+for i in range(n*n):  #O(n^2)
+  print('a')
+</pre>
+is <code>O(n)+O(n^2)</code> which is <code>O(n+n^2)</code> which is O(n^2) because of dominant term.
+</li>
+</ul>
+</li>
+</ul>
+
+<p>Analyzing programs and their complexity
+<ul>
+<li> <em>combine</em> complexity classes
+<ul>
+<li> analyze statements inside functions</li>
+<li> apply some rules, focus on dominant term</li>
+</ul>
+</li>
+<li> <em>Law of multiplication</em> for O():
+<ul>
+<li> used with <em>nested</em> statements or loops.</li>
+<li> <code>O(f(n))*O(g(n))</code> is <code>O(f(n)*g(n))</code>.</li>
+<li> for example:
+<pre>
+for i in range(n):  #n loops, each O(n), for a total of O(n)*O(n)
+  for j in range(n):
+    print(a)
+</pre>
+<code>O(n)*O(n)</code> is <code>O(n*n)</code> is <code>O(n^2)</code> because
+the outer loop goes <code>n</code> times and the inner loop goes <code>n</code>
+times for every outer loop iteration.
+</li>
+</ul>
+</li>
+</ul>
+
+<p>Complexity Classes
+<ul>
+<li> <code>O(1)</code> denotes constant running time</li>
+<li> <code>O(log n)</code> denotes logarithmic running time</li>
+<li> <code>O(n)</code> denotes linear running time</li>
+<li> <code>O(n log(n))</code> denotes log-linear running time</li>
+<li> <code>O(n^c)</code> denotes polynomial running time (<code>c</code> is a constant)</li>
+<li> <code>O(c^n)</code> denotes exponential running time (<code>c</code> is a constant raised to a power based on size of input)</li>
+</ul>
+
+<p>Complexity classes ordered low to high<br>
+<img src="complexity-classes.png" alt="Complexity classes" width=600>
+
+<p>Complexity growth
+<table>
+<tr><td>Class</td> <td>n=10</td> <td>n=100</td> <td>n=1000</td> <td>n=1000000</td></tr>
+<tr> <td>O(1)</td> <td>1</td> <td>1</td> <td>1</td> <td>1</td></tr>
+<tr> <td>O(log n)</td> <td>1</td> <td>2</td> <td>3</td> <td>6</td></tr>
+<tr> <td>O(n)</td> <td>10</td> <td>100</td> <td>1000</td> <td>1000000</td></tr>
+<tr> <td>O(n log(n))</td> <td>10</td> <td>200</td> <td>3000</td> <td>6000000</td></tr>
+<tr> <td>O(n^2)</td> <td>100</td> <td>10000</td> <td>1000000</td> <td>1000000000000</td></tr>
+<tr> <td>O(2^n)</td> <td>1024</td> <td>1.2*10^31</td> <td>1.07*10^311</td> <td>forget it!</td></tr>
+</table>
+
+<p>Linear complexity: Simple iterative loop algorithms are typically linear in
+complexity.
+
+<p>Linear search on unsorted list
+<pre>
+def linearSearch(L, e):
+  found = False
+  for i in range(len(L)):
+    if e == L[i]:
+      found = True  # can speed up a little by returning True here
+                    # but speed up doesn't impact worst case
+  return found
+</pre>
+<ul>
+<li> must look through all elements to decide it's not there</li>
+<li> <code>O(len(L))</code> for the loop * O(1) to test if <code>e == L[i]</code>.  <em>Subtle</em>: assumes we can retrieve element of list in constant time.</li>
+<ul>
+<li> <code>O(1+4n+1)</code> = <code>O(4n+2)</code> = <code>O(n)</code>.</li>
+</ul>
+</li>
+<li> overall complexity is <code>O(n)</code> where <code>n</code> is <code>len(L)</code>.</li>
+</ul>
+
+<p>Constant-time list access
+<img src="constant-time-list-access.png" alt="Constant-time list access" width=600>
+
+<p>Linear search on <em>sorted</em> list
+<pre>
+def search(L, e):
+  for i in range(len(L)):
+    if L[i] == e:
+      return True
+    if L[i] &gt; e:
+      return False
+  return False
+</pre>
+<ul>
+<li> must only look until reach a number greater than <code>e</code></li>
+<li> <code>O(len(L))</code> for the loop <code>* O(1)</code> to test if <code>e == L[i]</code>.  <em>Worst case will need to look at whole list</em>.</li>
+<li> overall complexity is <code>O(n)</code> where <code>n</code> is <code>len(L)</code></li>
+<li> NOTE: order of growth is same, though run time may differ for the two search methods (sorted and unsorted)</li>
+</ul>
+
+<p>Linear algorithm: add characters of a string, assumed to be composed of decimal digits
+<pre>
+def addDigits(s):
+  val = 0
+  for c in s:
+    val += int(c)
+  return val
+</pre>
+This is <code>O(len(s))</code>.
+
+<p>Linear complexity example: complexity often depends on the number of iterations
+<pre>
+def fact_iter(n):
+  prod = 1
+  for i in range(1, n+1):
+    prod *= i
+  return prod
+</pre>
+<ul>
+<li> number of times around loop is <code>n</code></li>
+<li> number of operations inside loop is a constant (in this case, three; set i, multiply, set prod)
+<ul>
+<li> <code>O(1+3n+1)</code> is <code>O(3n+2)</code> is <code>O(n)</code></li>
+</ul>
+</li>
+<li> Overall just <code>O(n)</code></li>
+</ul>
+
+<p>Nested loops
+<ul>
+<li> simple loops are linear in complexity</li>
+<li> what about loops that have loops within them?</li>
+</ul>
+
+<p>Quadratic complexity: determine if one list is subset of second, i.e.,
+every element of first, appears in second (assume no duplicates)
+<pre>
+def isSubset(L1, L2):
+  for e1 in L1:
+    matched = False
+    for e2 in L2:
+      if e1 == e2:
+        matched = True
+        break
+    if not matched:
+      return False
+  return True
+</pre>
+<ul>
+<li> Outer loop executed <code>len(L1)</code> times</li>
+<li> Each iteration will execute inner loop up to <code>len(L2)</code> times, with constant number of operations: <code>O(len(L1)*len(L2))</code>.</li>
+<li> Worst case when L1 and L2 same length, all of elements of L1 in L2. The outer loop iterates <code>O(len(L1))</code> times, and the inner loop iterates <code>O(len(L2)/2)</code> times on average (averaged over outer loop iterations). Given that the lists are of equal length, let <code>n=len(L1)=len(L2)</code>, then the worst-case running time of this program is <code>O(n^2)</code>.</li>
+</ul>
+
+<p>Quadratic complexity example: Find intersection of two lists, return a list with each element appearing only once.
+<pre>
+def intersect(L1, L2):
+  tmp = []
+  for e1 in L1:
+    for e2 in L2:
+      if e1 == e2:
+        tmp.append(e1) #collect all intersections in tmp
+        break
+  res = []
+  for e in tmp:
+    if not(e in res):
+      res.append(e)  #eliminate duplicates
+  return res
+</pre>
+<ul>
+<li> First nested loop takes <code>len(L1)*len(L2)</code> steps</li>
+<li> Second loop takes at most <code>len(tmp)</code> steps, which is at most <code>len(L1)</code>.</li>
+<li> Determining <code>e in res</code> takes at most <code>len(res)</code> steps which can be at most <code>min(len(L1),len(L2))</code>.</li>
+<li> If we assume lists are of roughly same length, then the running time is <code>O(len(L1)^2)</code>.</li>
+</ul>
