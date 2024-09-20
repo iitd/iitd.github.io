@@ -38,7 +38,9 @@ LEC: <a href=lec/recursion3.html>Recursion continued (2)</a><br>(lecture held on
 ==
 LEC: <a href=lec/recursion4.html>Recursion continued (3)</a><br>(lecture held on Sep. 9)
 ==
-LEC: <a href=lec/exhaustiveSearch.html>Exhaustive search</a><br>
+LEC: <a href=lec/exhaustiveSearch.html>Exhaustive search</a><br>(lecture held on Sep. 19)
+==
+LEC: <a href=lec/backtracking.html>Backtracking</a><br>(lecture held on Sep. 22)
 ==
 LEC: <a href=lec/files.html>File handling</a>
 ==
