@@ -290,4 +290,21 @@ def allSubsetsHelper(remaining, curChoices):
 allSubsets([1,2])
 </pre>
 
+<p>Why do we need to clone the list: <code>remainingCopy = remaining[:]</code>.  Consider an implementation where we replace this cloning operation by a simple assignment that creates aliases: <code>remainingCopy = remaining</code>.  Now consider the function activation <code>allSubsetsHelper([1,2], [])</code> which will in turn call <code>allSubsetsHelper([1], [])</code> which will in turn pop the list associated with <code>remainingCopy</code>.  So, the second call from <code>allSubsetsHelper([1,2], [])</code> will now be to <code>allSubsetsHelper([], [2])</code> (instead of the expected <code>allSubsetsHelper([1], [2])</code>.
 
+<p>Instead of copying, we could alternatively, <em>modify</em> and <em>unmodify</em> the input parameter as follows:
+<pre>
+def allSubsets(s):
+  allSubsetsHelper(s, [])
+
+def allSubsetsHelper(remaining, curChoices):
+  if len(remaining) == 0:
+    print curChoices
+  else:
+    decisionOn = remaining.pop()  #modify
+    allSubsetsHelper(remaining, curChoices)
+    allSubsetsHelper(remaining, [decisionOn] + curChoices)
+    remaining.append(decisionOn)  #unmodify
+
+allSubsets([1,2])
+</pre>
