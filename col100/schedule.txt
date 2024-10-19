@@ -50,3 +50,5 @@ LEC: <a href=lec/testing.html>Testing, Debugging, Exceptions, Assertions</a>
 ==
 LEC: <a href=lec/efficiency.html>Understanding Program Efficiency</a>
 ==
+LEC: <a href=lec/efficiency2.html>Program Efficiency Part 2</a>
+==

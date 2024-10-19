@@ -1,0 +1,307 @@
+<h3>Recap</h3>
+Why do we want to understand the efficiency of programs?
+<ul>
+<li> How	can	we	reason	about	an	algorithm	in	order	to	
+predict	the	amount	of	time	it	will	need	to	solve	a	
+problem	of	a	particular	size?	</li>
+<li> How	can	we	relate	choices	in	algorithm	design	to	the	
+time	efficiency	of	the	resulting	algorithm?	
+<ul>
+<li> Are there fundamental limits on the amount of time we will
+need to solve a particular problem?</li>
+</ul>
+</li>
+</ul>
+
+<p>Goals:
+<ul>
+<li> Want to evaluate program's efficiency when <em>input is very big</em></li>
+<li> Want to express the <em>growth of program's runtime</em> as input size grows</li>
+<li> Want to put an <em>upper bound</em> on growth --- as tight as possible</li>
+<li> Do not need to be precise: <em>order of</em> not <em>exact</em> growth</li>
+<li> We will look at the <em>largest factors</em> in runtime
+<ul>
+<li> Which section of the program will take the longest to run?</li>
+</ul>
+</li>
+<li> <em>Thus, generally we want a tight upper bound on growth as function of size of input, in worst case</em></li>
+</ul>
+
+<p>Complexity classes in increasing order:
+<ul>
+<li> <em>O(1)</em> denotes constant running time</li>
+<li> <em>O(log n)</em> denotes logarithmic running time</li>
+<li> <em>O(n)</em> denotes linear running time</li>
+<li> <em>O(n log n)</em> denotes log-linear running time</li>
+<li> <em>O(n<sup>c</sup>)</em> denotes polynomial running time (<em>c</em> is a constant)</li>
+<li> <em>O(c<sup>n</sup>)</em> denotes exponential running time (<em>c</em> is a constant being raised to a power based on size of input)</li>
+</ul>
+
+<img src="complexity-classes-charts.png" alt="Complexity classes" width=600>
+
+<table>
+<tr><td>Class</td> <td>n=10</td> <td>n=100</td> <td>n=1000</td> <td>n=1000000</td></tr>
+<tr> <td>O(1)</td> <td>1</td> <td>1</td> <td>1</td> <td>1</td></tr>
+<tr> <td>O(log n)</td> <td>1</td> <td>2</td> <td>3</td> <td>6</td></tr>
+<tr> <td>O(n)</td> <td>10</td> <td>100</td> <td>1000</td> <td>1000000</td></tr>
+<tr> <td>O(n log(n))</td> <td>10</td> <td>200</td> <td>3000</td> <td>6000000</td></tr>
+<tr> <td>O(n^2)</td> <td>100</td> <td>10000</td> <td>1000000</td> <td>1000000000000</td></tr>
+<tr> <td>O(2^n)</td> <td>1024</td> <td>1.2*10^31</td> <td>1.07*10^311</td> <td>forget it!</td></tr>
+</table>
+
+<h3>Complexity classes in more detail</h3>
+
+<p>Constant complexity class
+<ul>
+<li> Complexity independent of input</li>
+<li> Very few interesting algorithms in this complexity class, but can often have pieces that fit this class</li>
+<li> Can have loops or recursive calls, but ONLY IF number of iterations or calls independent of input size</li>
+</ul>
+
+<p>Logarithmic complexity class
+<ul>
+<li> Complexity grows as log of size of one of the inputs</li>
+<li> Examples: bisection search</li>
+</ul>
+
+<p>Searching in a list
+<ul>
+<li> Suppose we want to know if a particular element is present in a list</li>
+<li> Suppose we know that the list is ordered from smallest to largest</li>
+<li> Saw previously that we could just "walk down" the list, checking each element
+<pre>
+def search(L, e):
+  for i in range(len(L)):
+    if L[i] == e:
+      return True
+    if L[i] &gt; e:
+      return False
+  return False
+</pre>
+This method is called a <em>sequential search</em>.
+</li>
+<li> Sequential search complexity is linear in length of the list. Can we do better?</li>
+</ul>
+
+<p>Binary search
+<ol>
+<li> Interested in search for element <code>e</code> in list <code>L</code></li>
+<li> Pick an index <em>i</em> that divides list in half</li>
+<li> Ask if <code>L[i] == e</code></li>
+<li> If not, ask if <code>L[i]</code> is larger or smaller than <code>e</code></li>
+<li> Depending on answer, search left or right half of <code>L</code> for <code>e</code>.</li>
+<ul>
+<li> Self-similarity: the same search can be executed on a smaller list (of around half size)</li>
+<li> Base-cases: when list is empty or a single element</li>
+</ul>
+</li>
+<li> Answer to smaller problem is the answer to the original problem</li>
+</ol>
+
+<p>Binary search complexity analysis<br>
+<img src="binary-search-complexity.png" alt="Binary search complexity analysis" width=400>
+<ul>
+<li> Let the original size of the list be <em>n</em>.</li>
+<li> In the <em>i</em>th steps, the size of the list is <em>n/2<sup>i</sup></em>.</li>
+<li> Will finish looking through the list when <em>1 = n/2<sup>i</sup></em>, and so <em>i</em> (the number of total steps) is <code>log n</code>.</li>
+<li> Complexity of recursion is <code>O(log n)</code> where <em>n is len(L)</em>.</li>
+</ul>
+
+<p>Binary search implementation 1
+<pre>
+def binsearch1(L, e):
+  if L == []:             # this check and return is constant-time-complexity, or O(1)
+    return False    
+  elif len(L) == 1:       # this check is also O(1)
+    return L[0] == e      # this check is also O(1)
+  else:
+    half = len(L)//2      # constant O(1)
+    if L[half] &gt; e:    # Is L[half] O(1)?  Let's assume for now it is.
+      return binsearch1(L[:half], e)   # involves copying the list, not constant
+    else:
+      return binsearch1(L[half:], e)   # involves copying the list, not constant
+      
+</pre>
+
+<p>Complexity of <code>binsearch1</code>:
+<ul>
+<li> <code>O(log n)</code> calls to <code>binsearch1</code>
+<ul>
+<li> On each recursive call, size of range to be searched is cut in half.</li>
+<li> If original range is of size <code>n</code>, in worst case in case of range of size <code>1</code> when <code>n/2<sup>k</sup>=1</code>, or <code>k=log n</code></li>
+<li> <code>O(n)</code> for each <code>binsearch1</code> call to copy list:
+<ul>
+<li> This is the cost to set up each call (as a call involves creating a new list by copying elements from the incoming list), so do this for every level of recursion.</li>
+</ul>
+</li>
+<li> <code>O(log n)*O(n)</code> indicates that the complexity can be as high as <code>O(n log n)</code>.</li>
+<li> A more careful analysis: in the <em>i</em>th recursive call, the cost of setting up the call is <code>O(n/2<sup>i</sup>)</code>. Thus, the total cost of copying is <code>n + n/2 + n/2<sup>2</sup> + ... + 1</code>, which is equal to <code>2n</code>.</li>
+</ul>
+</li>
+</ul>
+
+<p>A better implementation of binary search
+<ul>
+<li> Still reduce the size of problem by a factor of two on each step</li>
+<li> But just keep track of low and high portion of list to be searched
+<ul>
+<li> Will need a helper function to keep track of these additional parameters</li>
+</ul>
+</li>
+<li> Avoid copying the list</li>
+<li> The complexity of recursion is again <em>O(log n)</em> where <code>n=len(L)</code>.</li>
+</ul>
+<img src="binsearch2.png" alt="Binary search without copying" width=400>
+<pre>
+def binsearch_helper(L, e, low, high):
+  if high == low:
+    return L[low] == e
+  mid = (low + high)//2
+  if L[mid] == e:
+    return True
+  elif L[mid] &gt; e:
+    if low == mid:   #nothing left to search
+      return False
+    else:
+      return binsearch_helper(L, e, low, mid - 1)    #constant to set up the call.  The actual call takes longer
+  else:
+    return binsearch_helper(L, e, mid + 1, high)  #constant to set up the call.  The actual call takes longer
+
+def binsearch(L, e):
+  if len(L) == 0:
+    return False
+  else:
+    return binsearch_helper(L, e, 0, len(L) - 1)  #constant to set up the call.  The actual call takes longer
+</pre>
+
+<p>Complexity of <code>binsearch</code>:
+<ul>
+<li> <code>O(log n)</code> calls to <code>binsearch_helper</code>
+<li> On each recursive call, size of range to be searched is cut in half.</li>
+<li> If original range is of size <code>n</code>, in worst case in case of range of size <code>1</code> when <code>n/2<sup>k</sup>=1</code>, or <code>k=log n</code></li>
+<li> <code>O(1)</code> for each <code>binsearch_helper</code> execution (including the cost to set up the call)</li>
+<li> <code>O(log n)*O(1)</code> indicates that the complexity is <code>O(log n)</code>.</li>
+</ul>
+
+<p>Another example of logarithmic complexity: <code>int2str</code>
+<pre>
+def int2str(n):
+  digits = '0123456789'
+  if n == 0:
+    return '0'
+  result = ''
+  i = n
+  while i &gt; 0:
+    result = digits[i%10] + result
+    i = i//10
+    # can you place an assertion here?
+  return result
+</pre>
+What is the correctness argument?  What assertion can you put at the end of the body of the <code>while</code> loop? Ans: <code>assert(10**(len(result))*i+int(result)==n)</code>.  This is an invariant.
+
+<p>Analyzing the complexity of the program above:
+<ul>
+<li>Only have to look at loop as no function calls</li>
+<li>Within while loop, execute a constant number of steps</li>
+<li>How many loop iterations do we execute?
+<ul>
+<li>How many times can we divide <code>n</code> by <code>10</code> such that it remains greater than <code>0</code>?</li>
+<li><code>O(log(n))</code></li>
+</ul>
+</li>
+</ul>
+
+<p>Linear complexity
+<ul>
+<li> Sequential search in a list to check the presence of an element</li>
+<li> Iterative loops</li>
+</ul>
+
+<p>Analyzing the complexity of an iterative implementation of the factorial function
+<ul>
+<li> Complexity can depend on the number of iterative calls
+<pre>
+def fact_iter(n):
+  prod = 1
+  for i in range(1, n+1):
+    prod *= i
+  return prod
+</pre>
+</li>
+<li> Overall, <code>O(n)</code>. <code>n</code> times around loop, constant time each time.</li>
+</ul>
+
+<p>Analyzing the complexity of a recursive implementation of the factorial function
+<pre>
+def fact_rec(n):
+  """ assume n &gt;= 0 """
+  if n &lt;= 0:
+    return 1
+  else:
+    return n*fact_rec(n-1)
+</pre>
+<ul>
+<li> Computes factorial recursively</li>
+<li> If you time it, you may notice that it runs a bit slower than iterative versions due to function calls</li>
+<li> Still <code>O(n)</code> because the number of function calls is linear in <code>n</code>, and constant effort to set up call.</li>
+<li> For factorial, <em>iterative and recursive implementations</em> are the <em>same order of growth</em>.</li>
+</ul>
+
+<p>Log-linear <code>O(n log n)</code> complexity
+<ul>
+<li> Many practical algorithms are log-linear</li>
+<li> Very commonly used log-linear algorithm is merge-sort</li>
+<li> Will return to this in the next lecture</li>
+</ul>
+
+<p>Polynomial complexity
+<ul>
+<li> Most common polynomial algorithms are quadratic, i.e., complexity grows with the square of size of input</li>
+<li> This commonly occurs when we have nested loops or recursive function calls</li>
+<li> Saw this previously in the <code>isSubset</code> function:
+<pre>
+def isSubset(L1, L2):
+  for e1 in L1:
+    matched = False
+    for e2 in L2:
+      if e1 == e2:
+        matched = True
+        break
+    if not matched:
+      return False
+  return True
+</pre>
+</li>
+</ul>
+
+<p>Exponential complexity
+<ul>
+<li> Recursive functions where more than one recursive call for each size of problem
+<ul>
+<li> Towers of Hanoi</li>
+</ul>
+</li>
+<li> Many important problems are inherently exponential
+<ul>
+<li> Unfortunate as cost can be high</li>
+<li> Will lead us to consider approximate solutions as may provide reasonable answer more quickly</li>
+<li>Examples: knapsack problem, N-queens problem, ...</li>
+</ul>
+</li>
+</ul>
+
+<p>Complexity of Towers of Hanoi
+<ul>
+<li> Let <code>t<sub>n</sub></code> denote time to solve tower of size <code>n</code>.</li>
+<li> <code>t<sub>n</sub> = 2t<sub>n-1</sub> + 1 = 2(2t<sub>n-2</sub> + 1) + 1 = 4t<sub>n-2</sub>+ 2 + 1</code></li>
+<li> <code>4t<sub>n-2</sub>+ 2 + 1 = 4(2t<sub>n-3</sub>+1)+2 + 1 = 8t<sub>n-3</sub> + 4 + 2 + 1</code></li>
+<li> After <code>k</code> expansions: <code>2<sup>k</sup>t<sub>n-k</sub>+2<sup>k-1</sup> + 2<sup>k-2</sup> + ... + 4 + 2 + 1</code></li>
+<li> When <code>n-k=1</code>: <code>2<sup>n-1</sup> + 2<sup>n-2</sup> + 2<sup>n-3</sup> + ... + 4 + 2 + 1</code></li>
+<li> Which is equal to: <code>2<sup>n</sup>-1</code>.</li>
+<li> So order of growth is <code>2<sup>n</sup></code>.</li>
+</ul>
+
+<p>Exponential complexity example: Power set<br>
+<ul>
+<li> Given a set of integers (with no repeats), want to generate a collection of all possible subsets, called the <em>power set</em>.</li>
+<li> <code>1
