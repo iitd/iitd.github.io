@@ -350,12 +350,12 @@ Let's analyze:
 <li> Let <code>t<sub>n</sub></code> denote time to solve problem of size <code>n</code>.</li>
 <li> Let <code>s<sub>n</sub></code> denote size of solution to a problem of size <code>n</code>.</li>
 <li> <code>t<sub>n</sub>=t<sub>n-1</sub>+c1*s<sub>n-1</sub>+c2</code> (where <code>c1,c2</code> are some constants)</li>
-<li> <code>t<sub>n</sub>=t<sub>n-1</code>+c1*2<sup>n-1</sup>+c2</code</li>
-<li> <code>=t<sub>n-2</sub>+c1*2<sup>n-2</sup>+c1*2<sup>n-1</sup>+2*c2</code</li>
-<li> <code>=t<sub>n-k</sub>+c1*2<sup>n-k</sup>+c1*2<sup>n-k-1</sup>+...+2<sup>n-1</sup>+k*c2</code</li>
-<li> <code>=t<sub>0</sub>+c1*2<sup>0</sup>+c1*2<sup>1</sup>+...+c1*2<sup>n-1</sup>+n*c2</code</li>
-<li> <code>=1+c1*2<sup>n</sup>+n*c2</code</li>
-<li> <code>O(2<sup>n</sup>)</code>
+<li> <code>t<sub>n</sub>=t<sub>n-1</code>+c1*2<sup>n-1</sup>+c2</code></li>
+<li> <code>=t<sub>n-2</sub>+c1*2<sup>n-2</sup>+c1*2<sup>n-1</sup>+2*c2</code></li>
+<li> <code>=t<sub>n-k</sub>+c1*2<sup>n-k</sup>+c1*2<sup>n-k-1</sup>+...+2<sup>n-1</sup>+k*c2</code></li>
+<li> <code>=t<sub>0</sub>+c1*2<sup>0</sup>+c1*2<sup>1</sup>+...+c1*2<sup>n-1</sup>+n*c2</code></li>
+<li> <code>=1+c1*2<sup>n</sup>+n*c2</code></li>
+<li> <code>O(2<sup>n</sup>)</code></li>
 </ul>
 
 <p>Summary of examples of complexity classes
@@ -369,4 +369,93 @@ Let's analyze:
 </ul>
 
 <p>Example: Iterative Fibonacci
+<pre>
+def fib_iter(n):
+  if n == 0:    # O(1)
+    return 0    # O(1)
+  elif n == 1:  # O(1)
+    return 1    # O(1)
+  else:         # O(1)
+    fib_i = 0   # O(1)
+    fib_ii = 1  # O(1)
+    for i in range(n-1):      # the loop executes O(n) iterations
+      tmp = fib_i             # O(1)
+      fib_i = fib_ii          # O(1)
+      fib_ii = tmp + fib_ii   # O(1)
+    return fib_ii             # O(1)
+</pre>
+Analysis:
+<ul>
+<li> Best case: <code>O(1)</code></li>
+<li> Worst case: <code>c1*O(1) + O(n)*c2*O(1) = O(n)</code>
+</ul>
 
+<p>Example: Recursive Fibonacci
+<pre>
+def fib_rec(n):
+  """ assumes n an int &gt;= 0 """
+  if n == 0:    # O(1)
+    return 0    # O(1)
+  elif n == 1:  # O(1)
+    return 1    # O(1)
+  else:         # O(1)
+    return fib_rec(n-1) + fib_rec(n-2)
+</pre>
+Draw tree.  Show the growth for small values of <code>n</code>.  Claim (without proof) that the complexity is exponential, slightly lower than <code>2<sup>n</sup></code>.
+
+<p>Big-O summary
+<ul>
+<li> compare <em>efficiency of algorithms</em>
+<ul>
+<li> notation that describes growth</li>
+<li> lower order of growth is better</li>
+<li> independent of machine or specific implementation</li>
+</ul>
+</li>
+<li> Use big-O:
+<ul>
+<li> describe order of growth</li>
+<li> asymptotic notation</li>
+<li> upper bound</li>
+<li> worst case analysis</li>
+</ul>
+</li>
+</ul>
+
+<h3>Complexity of common Python functions</h3>
+
+<p>Lists: <code>n</code> is <code>len(L)</code>
+<ul>
+<li> index: O(1)</li>
+<li> store: O(1)</li>
+<li> length: O(1)</li>
+<li> append: O(1)</li>
+<li> == : O(n)</li>
+<li> remove: O(n)</li>
+<li> copy: O(n)</li>
+<li> reverse: O(n)</li>
+<li> iteration: O(n)</li>
+<li> in list: O(n)</li>
+</ul>
+
+<p>Dictionaries: <code>n</code> is <code>len(d)</code>
+<ul>
+<li>worst case
+<ul>
+<li> index: O(n)</li>
+<li> store: O(n)</li>
+<li> length: O(n)</li>
+<li> delete: O(n)</li>
+<li> iteration: O(n)</li>
+</ul>
+</li>
+<li>average case
+<ul>
+<li> index: O(1)</li>
+<li> store: O(1)</li>
+<li> delete: O(1)</li>
+<li> iteration: O(n)</li>
+</ul>
+</li>
+
+</ul>
