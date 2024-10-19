@@ -304,4 +304,69 @@ def isSubset(L1, L2):
 <p>Exponential complexity example: Power set<br>
 <ul>
 <li> Given a set of integers (with no repeats), want to generate a collection of all possible subsets, called the <em>power set</em>.</li>
-<li> <code>1
+<li> <code>{1, 2, 3, 4}</code> would generate (order does not matter):
+<pre>
+{}, {1}, {2}, {1,3}, {1,4}, {2,3}, {2,4}, {3,4}, {3}, {4}, {1,2}, {1,2,3}, {1,2,4}, {1,3,4}, {2,3,4}, {1,2,3,4}
+</pre>
+</li>
+</ul>
+
+<p>Power set --- concept
+<ul>
+<li> We want to generate the power set of integers from 1 to n</li>
+<li> Assume we can generate power set of integers from 1 to n-1</li>
+<li> Then all of those subsets belong to bigger power set (choosing
+not include <code>n</code>); and all of those subsets with <code>n</code>
+added to each of them belong to the bigger power set.</li>
+<li> nice recursive description!</li>
+</ul>
+
+<p>Exponential complexity
+<pre>
+def genSubsets(L):
+  res = []
+  if len(L) == 0:
+    return [[]]  # list of empty list
+  smaller = genSubsets(L[:-1]) #all elements without last element
+  extra = L[-1:]
+  new = []
+  for small in smaller:
+    new.append(small+extra)  # for all smaller solutions, add one with last element
+  return smaller+new  # combine those with last element and those without
+</pre>
+Assumptions:
+<ul>
+<li> <code>append()</code> is constant time</li>
+</ul>
+Method:
+<ul>
+<li> Time includes time to solve smaller problem, plus time needed to make a copy of all the elements in the smaller problem.</li>
+<li> Important to think about size of the solution of the smaller problem</li>
+<li> We already know that for a set of size <code>k</code>, the solution is of size <code>2<sup>k</sup></code>.</li>
+<li>How can we deduce the overall complexity from all this information?</li>
+</ul>
+Let's analyze:
+<ul>
+<li> Let <code>t<sub>n</sub></code> denote time to solve problem of size <code>n</code>.</li>
+<li> Let <code>s<sub>n</sub></code> denote size of solution to a problem of size <code>n</code>.</li>
+<li> <code>t<sub>n</sub>=t<sub>n-1</sub>+c1*s<sub>n-1</sub>+c2</code> (where <code>c1,c2</code> are some constants)</li>
+<li> <code>t<sub>n</sub>=t<sub>n-1</code>+c1*2<sup>n-1</sup>+c2</code</li>
+<li> <code>=t<sub>n-2</sub>+c1*2<sup>n-2</sup>+c1*2<sup>n-1</sup>+2*c2</code</li>
+<li> <code>=t<sub>n-k</sub>+c1*2<sup>n-k</sup>+c1*2<sup>n-k-1</sup>+...+2<sup>n-1</sup>+k*c2</code</li>
+<li> <code>=t<sub>0</sub>+c1*2<sup>0</sup>+c1*2<sup>1</sup>+...+c1*2<sup>n-1</sup>+n*c2</code</li>
+<li> <code>=1+c1*2<sup>n</sup>+n*c2</code</li>
+<li> <code>O(2<sup>n</sup>)</code>
+</ul>
+
+<p>Summary of examples of complexity classes
+<ul>
+<li> <code>O(1)</code>: code does not depend on size of the input</li>
+<li> <code>O(log n)</code>: reduce problem in half with constant effort at each step</li>
+<li> <code>O(n)</code>: simple iterative or recursive programs with a single loop or linear recursion</li>
+<li> <code>O(nlog n)</code>: will see next time</li>
+<li> <code>O(n<sup>c</sup>)</code>: nested loops or recursive calls</li>
+<li> <code>O(c<sup>n</sup>)</code>: multiple recursive calls at each level, where the number of levels is linear in <code>n</code></li>
+</ul>
+
+<p>Example: Iterative Fibonacci
+
