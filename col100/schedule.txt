@@ -56,3 +56,5 @@ LEC: <a href=lec/tailRecursion.html>Tail Recursion</a>
 ==
 LEC: <a href=lec/searchSort.html>Searching and Sorting</a>
 ==
+LEC: <a href=lec/summary.html>Summary</a>
+==
