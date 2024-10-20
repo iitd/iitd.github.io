@@ -6,6 +6,9 @@ Schedule: Monday, Thursday
 HEADER: Links to notes etc. on future days are <i>tentative only</i>. They are here only to give you an idea what the future will bring.<br>Acknowledgements: Some of this course material has been adapted from MIT's 6.0001 and Stanford COL106a courses.<br>
 
 HOLIDAY: Aug 19. Rakshabandhan
+HOLIDAY: Oct 7. Mid-semester break
+HOLIDAY: Oct 10. Mid-semester break
+HOLIDAY: Sep 30. No lecture
 
 EVENT: Sep 30. Return of Midterm scripts
 
@@ -46,7 +49,7 @@ LEC: <a href=lec/files.html>File handling</a>
 ==
 LEC: <a href=lec/dictionaries.html>Dictionaries</a>
 ==
-LEC: <a href=lec/testing1.html>Blackbox testing/a>
+LEC: <a href=lec/testing1.html>Blackbox testing</a>
 ==
 LEC: <a href=lec/testing2.html>Glassbox testing, Debugging, Exceptions</a>
 ==
