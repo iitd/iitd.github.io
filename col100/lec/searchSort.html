@@ -1,0 +1,116 @@
+<h3>Search Algorithms</h3>
+
+<ul>
+<li> Search algorithm --- method for finding an item or group of items with specific properties within a collection of items.</li>
+<li> Collection could be implicit
+<ul>
+<li> example --- find square root as a search problem
+<ul>
+<li> Exhaustive enumeration</li>
+<li> Bisection search</li>
+<li> Newton-Raphson method</li>
+</ul>
+</li>
+<li> Collection could be explicit
+<ul>
+<li> Example --- is a student record in a stored collection of data?
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<p>Searching algorithms:
+<ul>
+<li>Linear search
+<ul>
+<li> Brute force search (aka Museum algorithm)</li>
+<li> List does not have to be sorted</li>
+<li> Search for an element is <code>O(n)</code></li>
+</ul>
+</li>
+<li>Binary search
+<ul>
+<li> List must be sorted to give correct answer</li>
+<li> Saw two different implementations of this algorithm: with and without copying</li>
+<li> Search for an element is <code>O(log n)</code> (for the implementation that avoids copying)</li>
+</ul>
+</li>
+<li> When does it make sense to <em>sort first then search (using binary search)</em>?
+<ul>
+<li> <code>SORT + O(log n) &lt; O(n)</code>, or <code>SORT &lt;O(n)-O(log n)</code></li>
+<li> When is <code>SORT</code> less than <code>O(n)>/code>?  NEVER!  To sort a collection of <code>n</code> elements, you must look at each element at least once!</li>
+</ul>
+</li>
+</ul>
+
+<h3>Amortized cost</h3>
+Why may one bother sorting first?
+<ul>
+<li> In some cases, may sort the list once, and then do many searches</li>
+<li> Amortize cost of the sort over many (say K) searches</li>
+<li> <code>SORT + k*O(log n) &lt; K*O(n)</code>
+<ul>
+<li> For large <code>K</code>, SORT time becomes irrelevant, if cost of sorting is small enough</li>
+</ul>
+</ul>
+
+<h2>Sort Algorithms</h2>
+<ul>
+<li> Want to efficiently sort a list of entries</li>
+<li> Will see a range of methods, including one that is quite efficient</li>
+</ul>
+
+<h3>Monkey sort</h3>
+<ul>
+<li> Also known as bogosort, stupid sort, slow sort, permutation sort, shotgun sort</li>
+<li> To sort a deck of cards:
+<ol>
+<li> Throw them in the air</li>
+<li> Pick them up</li>
+<li> Are they sorted?</li>
+<li> Repeat if not sorted</li>
+</ol>
+</li>
+</ul>
+<pre>
+def bogo_sort(L):
+  while not is_sorted(L):
+    random.shuffle(L)
+</pre>
+<ul>
+<li> best case: <code>O(n) where n is len(L)</code> to check if sorted</li>
+<li> worst case: <code>O(?)</code> it is unbounded if really unlucky</li>
+</ul>
+
+<h3>Bubble sort</h3>
+<ul>
+<li> Compare consecutive pairs of elements</li>
+<li> Swap elements in pair such that smaller is first</li>
+<li> When reach end of list, start over again</li>
+<li> Stop when no more swaps have been made</li>
+<li> Largest unsorted element always at end after pass, so at most <code>n</code> passes</li>
+</ul>
+<img src="Bubble_sort_animation.gif" alt="Bubble sort animation">
+In this animation, we assume that the first <code>n</code> integers are present in the list in a random order. As the passes of bubble sort proceed, the largest elements start identifying their correct position, e.g., the integer of value <code>n</code> is at the <code>n</code>th index.
+
+<p>Code:
+<pre>
+def bubble_sort(L):
+  swap = False
+  while not swap:  # O(len(L))
+    swap = True
+    for j in range(1, len(L)):  # O(len(L))
+      if L[j-1] &gt; L[j]:
+        swap = False
+        temp = L[j]
+        L[j] = L[j-1]
+        L[j-1] = temp
+</pre>
+<ul>
+<li> Inner loop is for doing the comparisons</li>
+<li> Outer while loop is for doing multiple passes until no more swaps</li>
+<li> <code>O(n<sup>2</sup>)</code> where <code>n=len(L)</code> to do <code>n-1</code> comparisons and <code>n-1</code> passes.</li>
+</ul>
+
+<h3>Selection sort</h3>
