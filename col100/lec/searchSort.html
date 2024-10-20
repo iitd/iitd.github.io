@@ -39,7 +39,7 @@
 <li> When does it make sense to <em>sort first then search (using binary search)</em>?
 <ul>
 <li> <code>SORT + O(log n) &lt; O(n)</code>, or <code>SORT &lt;O(n)-O(log n)</code></li>
-<li> When is <code>SORT</code> less than <code>O(n)>/code>?  NEVER!  To sort a collection of <code>n</code> elements, you must look at each element at least once!</li>
+<li> When is <code>SORT</code> less than <code>O(n)</code>?  NEVER!  To sort a collection of <code>n</code> elements, you must look at each element at least once!</li>
 </ul>
 </li>
 </ul>
@@ -114,3 +114,209 @@ def bubble_sort(L):
 </ul>
 
 <h3>Selection sort</h3>
+<ul>
+<li> First step
+<ul>
+<li> Extract <em>minimum element</em></li>
+<li> Swap it with element at index 0</li>
+</ul>
+</li>
+<li> Subsequent step
+<ul>
+<li> In remaining sublist, extract minimum element</li>
+<li> Swap it with the element in index 1</li>
+</ul>
+</li>
+<li> Keep the left portion of the list sorted
+<ul>
+<li> At <em>i</em>th step, first <em>i</em> elements in the list are sorted</li>
+<li> All other elements are bigger than the first <em>i</em> elements</li>
+</ul>
+</li>
+</ul>
+
+<p>Analyzing slection sort
+<ul>
+<li> Loop invariant
+<ul>
+<li> Given prefix of list <code>L[0:i]</code> and suffix <code>L[i:len(L)]</code>, then prefix is sorted and no element in prefix is larger than the smallest element in the suffix.
+<ol>
+<li> Base case: prefix empty, suffix whole list -- invariant true</li>
+<li> Induction step: move minimum element from suffix to the end of prefix. Since invariant true before move, prefix sorted after append. Also, no element in prefix larger than the smallest element in the suffix still holds.</li>
+<li> When exit, prefix is entire list, suffix empty, so list sorted.</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+
+<p>Complexity of selection sort
+<pre>
+def selection_sort(L):
+  suffixSt = 0
+  while suffixSt != len(L):     # executed len(L) times
+    for i in range(suffixSt, len(L)):   #executed len(L) - suffixSt times
+      if L[i] < L[suffixSt]:
+        L[suffixSt], L[i] = L[i], L[suffixSt]
+    suffixSt += 1
+</pre>
+<ul>
+<li> Outer loop executes <code>len(L)</code> times</li>
+<li> Inner loop executes <code>len(L)-suffixSt</code> times</li>
+<li> Complexity of selection sort is (where <code>n=len(L)</code>): <code>n+(n-1)+(n-2)+...+(n-n)</code> or <code>O(n<sup>2</sup>)</code>.
+</ul>
+
+<h3>Merge sort</h3>
+Use a divide-and-conquer approach:
+<ul>
+<li> If list is of length 0 or 1, already sorted</li>
+<li> If list has more than one element, split into two lists and sort each
+<ul>
+<li> Sorting of smaller lists is self-similar</li>
+</ul>
+</li>
+<li> Merge sorted sublists
+<ol>
+<li> Look at the first element of each, move smaller to end of the result</li>
+<li> When one list empty, just copy rest of other list</li>
+</ol>
+</li>
+</ul>
+
+<p>Idea:
+<ul>
+<li> Divide and conquer
+<img src="mergesort.png" alt="Merge sort" width=600>
+</li>
+<li> <em>Split list in half</em> until have sublists of only one element.</li>
+<li> Merge such that sublists will be sorted after merge
+<img src="mergesort2.png" alt="Merge sort" width=600>
+</li>
+<li> Merge sorted sublists; sublists will be sorted after merge.
+<img src="mergesort3.png" alt="Merge sort" width=600>
+</li>
+<li> Again.
+<img src="mergesort4.png" alt="Merge sort" width=600>
+</li>
+<li> Done!
+<img src="mergesort5.png" alt="Merge sort" width=600>
+</li>
+</li>
+</ul>
+
+<p>Example of merging:
+<br>
+<table>
+<tr> <td>Left in list 1</td> <td>Left in list 2</td> <td>Compare</td> <td>Result</td> </tr>
+<tr> <td>[1,5,12,18,19,20]</td> <td>[2,3,4,17]</td> <td> 1, 2</td> <td>[]</td> </tr>
+<tr><td>[5,12,18,19,20]</td><td>[2,3,4,17]</td><td>5, 2</td><td>[1]</td></tr>
+<tr><td>[5,12,18,19,20]</td><td>[3,4,17]</td><td>5,3</td><td>[1,2]</td></tr>
+<tr><td>[5,12,18,19,20]</td><td>[4,17]</td><td>5,4</td><td>[1,2,3]</td></tr>
+<tr><td>[5,12,18,19,20]</td><td>[17]</td><td>5,17</td><td>[1,2,3,4]</td></tr>
+<tr><td>[12,18,19,20]</td><td>[17]</td><td>12,17</td><td>[1,2,3,4,5]</td></tr>
+<tr><td>[18,19,20]</td><td>[17]</td><td>18,17</td><td>[1,2,3,4,5,12]</td></tr>
+<tr><td>[18,19,20]</td><td>[]</td><td>18,--</td><td>[1,2,3,4,5,12,17]</td></tr>
+<tr><td>[]</td><td>[]</td><td>18,--</td><td>[1,2,3,4,5,12,17,18,19,20]</td></tr>
+</table>
+
+<p>Merging sublists step
+<pre>
+def merge(left, right):
+  result = []
+  i, j = 0, 0
+  while i &lt; len(left) and j &lt; len(right):
+    #left and right sublists are ordered.
+    #move indices for sublists depending on which sublist holds next smallest element
+    if left[i] &lt; right[i]:
+      result.append(left[i])
+      i += 1
+    else:
+      result.append(right[j])
+      j += 1
+  while i < len(left):
+    #when right sublist is empty
+    result.append(left[i])
+    i += 1
+  while j < len(right):
+    #when left sublist is empty
+    result.append(right[j])
+    j += 1
+  return result
+</pre>
+
+<p>Complexity of merging sublists step
+<ul>
+<li> Go through two lists, only one pass</li>
+<li> Compare only smallest elements in each sublist</li>
+<li> <code>O(len(left)+len(right))</code> copied elements</li>
+<li> <code>O(len(longer list))</code> comparisons</li>
+<li> Linear in length of the lists</li>
+</ul>
+
+<p>Mergesort algorithm recursive
+<pre>
+def merge_sort(L):
+  if len(L) &lt; 2:
+    return L[:]   #base case
+  else:
+    middle = len(L)//2
+    left = merge_sort(L[:middle])  #divide; first half
+    right = merge_sort(L[middle:]) #divide; second half
+    return merge(left, right)
+</pre>
+<ul>
+<li> Divide list successively into halves.</li>
+<li> Depth-first such that conquer smallest pieces down one branch first before moving to larger pieces.</li>
+<li> Notice that we are copying the lists while seeting up the recursive calls, and also inside <code>merge()</code>.  We do not worry about it because the <code>merge()</code> step is anyway <code>O(n)</code>.</li>
+</ul>
+<img src="mergesort_example.png" alt="Mergesort example" width=600>
+
+<p>Complexity of mergesort
+<ul>
+<li> At first recursion level
+<ul>
+<li> n/2 elements in each list, where n is len(L)</li>
+<li> c1*n/2 [copy] + c1*n/2 [copy] + c2*n [merge] = (c1+c2)*n</li>
+</ul>
+</li>
+<li> At second recursion level
+<ul>
+<li> n/4 elements in each list</li>
+<li> Two merges: 2*(c1*n/4 [copy] + c1*n/4 [copy] + c2*n/2 [merge]) = (c1+c2)*n</li>
+</ul>
+</li>
+<li> At <em>k</em>th recursion level
+<ul>
+<li> n/2<sup>k</sup> elements in each list</li>
+<li> <code>2<sup>k</sup></code> merges: 2<sup>k</sup>*(c1*n/2<sup>k+1</sup> [copy] + c1*n/2<sup>k+1</sup> [copy] + c2*n/2<sup>k</sup> [merge]) = (c1+c2)*n</li>
+</ul>
+</li>
+<li> Each recursion level is <code>O(n)</code></li>
+<li> Number of recursion levels is <code>O(log n)</code></li>
+<li> Overall complexity: <code>O(nlog n)</code></li>
+</ul>
+
+<p>Sorting summary:
+<ul>
+<li> Bogo sort
+<ul>
+<li> randomness, unbounded <code>O()</code></li>
+</ul>
+</li>
+<li> Bubble sort
+<ul>
+<li> O(n<sup>2</sup>)</li>
+</ul>
+</li>
+<li> Selection sort
+<ul>
+<li> O(n<sup>2</sup>)</li>
+</ul>
+</li>
+<li> Mergesort
+<ul>
+<li> O(n log n)</li>
+</ul>
+</li>
+<li> Claim (without proof): <code>O(n log n)</code> is the fastest sort there can be for elements of arbitrary type.</li>
+</ul>
