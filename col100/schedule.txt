@@ -46,7 +46,11 @@ LEC: <a href=lec/files.html>File handling</a>
 ==
 LEC: <a href=lec/dictionaries.html>Dictionaries</a>
 ==
-LEC: <a href=lec/testing.html>Testing, Debugging, Exceptions, Assertions</a>
+LEC: <a href=lec/testing1.html>Blackbox testing/a>
+==
+LEC: <a href=lec/testing2.html>Glassbox testing, Debugging, Exceptions</a>
+==
+LEC: <a href=lec/testing3.html>More exceptions, Assertions</a>
 ==
 LEC: <a href=lec/efficiency.html>Understanding Program Efficiency</a>
 ==

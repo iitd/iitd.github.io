@@ -1,0 +1,264 @@
+<p><b>Glassbox testing</b>
+<ul>
+<li> <em>use code</em> directly to guide design of test cases</li>
+<li> called <em>path complete</em> if every potential path through code is tested at least once</li>
+<li> What are some drawbacks of this type of testing?
+<ul>
+<li> can go through loops arbitarily many times</li>
+<li> even in the absence of loops, the number of paths can be huge. Show a stacked-diamonds shaped control flow.</li>
+</ul>
+</li>
+<li> Guidelines
+<ul>
+<li> Branches
+<ul>
+<li> Exercise all parts of a conditional</li>
+</ul>
+</li>
+<li> For loops
+<ul>
+<li> Loop not entered</li>
+<li> Body of loop executed exactly once</li>
+<li> Body of loop executed more than once</li>
+</ul>
+</li>
+<li> While loops
+<ul>
+<li> Same as for loops</li>
+<li> Cases that catch all ways to exit the loop</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<p>Path-complete testing is not necessarily enough
+<pre>
+def abs(x):
+  """ Assumes x is an int
+      Returns x if x&gt;=0 and –x otherwise """
+  if x &lt; -1:
+    return –x
+  else:
+    return x
+</pre>
+<ul>
+<li> A path-complete test suite could <em>miss a bug</em></li>
+<li> Path-complete test	suite: -2 and 2</li>
+<li> But <code>abs(-1)</code> incorrectly returns <code>-1</code></li>
+<li> Should still test boundary cases</li>
+</ul>
+
+<p>Debugging
+<ul>
+<li> Steep learning curve</li>
+<li> Goal is to have a bug-free program</li>
+<li> Tools
+<ul>
+<!--<li> <em>built in</em> to IDLE and Anaconda</li>-->
+<li> <em>Python tutor</em></li>
+<li> <em>print</em> statement</li>
+<li> use your brain, be <em>systematic</em> in your hunt</li>
+</ul>
+</li>
+</ul>
+
+<p>Print statements
+<ul>
+<li> good way to <em>test hypothesis</em></li>
+<li> when to print
+<ul>
+<li> enter function</li>
+<li> parameters</li>
+<li> function results</li>
+</ul>
+</li>
+<li> use <em>bisection method</em>
+<ul>
+<li> put print halfway in code</li>
+<li> decide where bug may be depending on values</li>
+</ul>
+</li>
+</ul>
+
+<p>Debugging steps
+<ul>
+<li> <em>study</em> program code
+<ul>
+<li> don't ask what is wrong</li>
+<li> ask how did I get the unexpected result</li>
+<li> is it part of a family</li>
+</ul>
+</li>
+<li> <em>scientific</em> method
+<ul>
+<li> study available data</li>
+<li> form hypothesis</li>
+<li> repeatable experiments</li>
+<li> pick simplest (or smallest) input to reproduce the bug</li>
+</ul>
+</li>
+</ul>
+
+<p>Error messages - easy
+Consider the following program
+<pre>
+test = [1, 2, 3]
+</pre>
+<ul>
+<li> Trying to access beyond the limits of a list
+<pre>
+test[4] # IndexError
+</pre>
+</li>
+<li> Trying to convert an inappropriate type
+<pre>
+int(test)  #TypeError
+</pre>
+</li>
+<li> Referencing a non-existent variable
+<pre>
+a  #NameError
+</pre>
+</li>
+<li> Mixing data types without appropriate coercion
+<pre>
+'3'/4  #TypeError
+</pre>
+</li>
+<li> Forgetting to close parenthesis, quotation, etc.
+<pre>
+a = len([1, 2, 3]
+print(a)  #Syntax Error
+</pre>
+</li>
+</ul>
+
+<p>Logic Errors - Hard
+<ul>
+<li> <em>think</em> before writing new code</li>
+<li> <em>draw</em> pictures, take a break</li>
+<li> <em>explain</em> the code to
+<ul>
+<li> someone else</li>
+<li> to yourself (if nobody wants to listen to you)</li>
+</ul>
+</li>
+</ul>
+
+<p>Exceptions and Assertions
+<ul>
+<li> What happens when procedure execution hits an <em>unexpected condition</em>?
+<li> Get an exception... to what was expected
+<ul>
+<li> trying to access beyond list limits
+<pre>
+test = [1, 7, 4]
+test[4] # IndexError
+</pre>
+</li>
+</ul>
+</li>
+<li> trying to convert an inappropriate type
+<pre>
+int(test) # TypeError
+</pre>
+</li>
+<li> referencing a non-existing variable
+<pre>
+a  # NameError
+</pre>
+</li>
+<li> mixing datatypes without coercion
+<pre>
+'a'/4  # TypeError
+</pre>
+</li>
+</ul>
+
+<p>Other examples of exceptions: already seen common datatypes
+<ul>
+<li> <code>SyntaxError</code>: Python can't parse program</li>
+<li> <code>NameError</code>: Local or global name not found</li>
+<li> <code>AttributeError</code>: Attribute reference fails</li>
+<li> <code>TypeError</code>: Operand does not have correct type</li>
+<li> <code>ValueError</code>: Operand type okay, but value is illegal</li>
+<li> <code>IOError</code>: IO system reports malfunction (e.g., file not found)</li>
+</ul>
+
+<p>Dealing with exceptions
+<ul>
+<li> Python code can provide <em>handlers</em> for exceptions
+<pre>
+try:
+  a = int(input("Tell me one number:"))
+  b = int(input("Tell me another number:"))
+  print(a/b)
+except:
+  print("Bug in user input.")
+</pre>
+</li>
+<li> Exceptions <em>raised</em> by any statement in body of <em>try</em> are
+<em>handled</em> by the <em>except</em> statement and execution continues with
+the body of the <code>except</code> statement.
+</ul>
+
+<p>You can have <em>separate except clauses</em> to deal with a particular type of exception
+<pre>
+try:
+  a = int(input("Tell me one number:"))
+  b = int(input("Tell me another number:"))
+  print(a/b)
+except ValueError:
+  print("Could not convert to a number.")  # only executes if ValueError comes up
+except ZeroDivisionError:
+  print("Can't divide by zero.")  # only executes if ZeroDivisionError comes up
+except:  # for all other errors
+  print("Something else went wrong.")
+</pre>
+
+<p>What to do when you encounter an exception?
+<ul>
+<li> <em>fail silently</em>:
+<ul>
+<li> substitute default values or just continue</li>
+<li> bad idea! user gets no warning</li>
+</ul>
+</li>
+<li> return an <em>"error" value</em>
+<ul>
+<li> Examples: -1, empty string, None, etc.</li>
+<li> What value to choose?</li>
+<li> Complicates code having to check for a special value.   A good value should keep the code succinct and intuitive, e.g., return zero on success and negative integers on error, where the magnitude of a negative number indicates the reason for error.</li>
+</ul>
+</li>
+<li> stop execution, <em>signal error</em> condition
+<ul>
+<li> In Python: <em>raise an exception</em>
+<pre>
+raise Exception("descriptive string")
+</pre>
+</li>
+</ul>
+</li>
+</ul>
+
+<p>Exceptions as control flow
+<ul>
+<li> The <code>raise</code> keyword can be used to indicate an exception (with its name and
+description) at runtime.</li>
+<li> Application:
+<ul>
+<li> When an error occurs, do not return special values, instead raise an exception, and add an <code>except</code> block at the very end.</li>
+<li> <em>Relay</em> an exception after potentially changing its name (e.g., a common name for many exceptions depending on the context) and description.</li>
+</ul>
+</li>
+</ul>
+Syntax:
+<pre>
+raise &lt;exceptionName&gt;(&lt;arguments&gt;)
+</pre>
+Example:
+<pre>
+raise ValueError("something is wrong")  #The string description is optional
+</pre>
