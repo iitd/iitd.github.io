@@ -1,0 +1,106 @@
+<h3>Tail recursion</h3>
+<b>Tail recursion</b>: when a recursive call is made as the <u>final</u> action of a recursive function.
+<ul>
+<li>Tail recursion can often be <b>optimized</b> by the compiler. e.g., use <code>g++ -O3 foo.cpp</code>. <code>-O2</code> represents that the compiler should optimize the code with optimization-level 3.</li>
+</ul>
+
+<p>Examples: Is this tail recursive?
+<pre>
+def mystery(n):
+  if (n < 10):
+    return n
+  else:
+    a = n/10
+    b = n %10
+    return mystery(a + b)
+</pre>
+Answer: yes
+
+<p>What about:
+<pre>
+def fact(n):
+  if n <= 1:
+    return 1
+  else:
+    return n * fact(n - 1)
+</pre>
+Answer: no
+
+<p>Can we rewrite factorial so that it becomes tail-recursive? Tail-recursive factorial:
+<pre>
+def factorial_helper(n, accum):
+  if n <= 1:
+    return accum
+  else:
+    return factorial(n - 1, accum * n)
+
+def factorial(n):
+  return factorial_helper(n, 1)
+</pre>
+Tail recursive solutions often end up passing partial computations as parameters that would otherwise be computed after the recursive call.
+
+<p>Compare with non-recursive factorial (sometimes looking at the non-recursive version of a function can help you find the tail recursive solution):
+<pre>
+def factorial(n):
+  accum = 1
+  for i in range(n+1):
+    accum = accum * i
+  return accum
+</pre>
+The tail-recursive version often looks like a non-recursive version with a variable or a parameter keeping track of the partial computations. The difference is: the loop is replaced by recursive call.
+
+<p>Another tail-recursion example: <code>fib(n)</code>
+<pre>
+def fib_helper(n, i, fib_i, fib_prev):
+  if i == n:
+    return fib_i
+  else:
+    return fib_helper(n, i + 1, fib_i + fib_prev, fib_i)
+
+def fib(n):
+  return fib_helper(n, 1, 1, 0)
+</pre>
+This implementation is similar to the following non-recursive implementation:
+<pre>
+def fib(n):
+  i = 1
+  fib_i = 1
+  fib_prev = 0
+  while (i != n):
+    new_i = i + 1
+    new_fib_i = fib_i + fib_prev
+    new_fib_prev = fib_i
+    fib_i = new_fib_i
+    fib_prev = new_fib_prev
+    i = new_i
+  return fib_i
+}
+</pre>
+
+<p>Another tail-recursive implementation of <code>fib(n)</code> with fewer arguments to helper function:
+<pre>
+def fib_helper(n, fib_n, fib_prev):
+  if n == 1:
+    return fib_n
+  else:
+    return fib_helper(n - 1, fib_n + fib_prev, fib_n)
+
+def fib(n):
+  return fib_helper(n, 1, 0)
+</pre>
+This implementation is similar to the following non-recursive implementation:
+<pre>
+def fib(n):
+  fib_i = 1
+  fib_prev = 0
+  while n != 1:
+    new_n = n - 1
+    new_fib_i = fib_i + fib_prev
+    new_fib_prev = fib_i
+    fib_i = new_fib_i
+    fib_prev = new_fib_prev
+    n = new_n
+  return fib_i
+</pre>
+
+<p>Notice the similarity of tail-recursive implementation to the non-recursive implementation (that uses loops). In general, any loop can be converted to a tail-recursive implementation.  In fact, some programming languages do not support loops and only support recursion --- typically programmers write tail-recursive implementations of their programs in such languages.

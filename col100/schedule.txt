@@ -52,3 +52,5 @@ LEC: <a href=lec/efficiency.html>Understanding Program Efficiency</a>
 ==
 LEC: <a href=lec/efficiency2.html>Program Efficiency Part 2</a>
 ==
+LEC: <a href=lec/tailRecursion.html>Tail Recursion</a>
+==
