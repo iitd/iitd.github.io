@@ -62,13 +62,15 @@ import time
 def c2f(c):
   return c*9/5 + 32
 
-t0 = time.clock()
+t0 = time.perf_counter()
 c2f(100000)
-t1 = time.clock() - t0
+t1 = time.perf_counter() - t0
 print("call took", t1, "s")
 </pre>
 </li>
 </ul>
+Similarly, <pre>time.perf_counter_ns()</pre> reports the current physical
+time in nanoseconds, as an integer value.
 
 <p>Timing programs is inconsistent
 <ul>
