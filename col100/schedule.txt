@@ -9,6 +9,7 @@ HOLIDAY: Aug 19. Rakshabandhan
 HOLIDAY: Oct 7. Mid-semester break
 HOLIDAY: Oct 10. Mid-semester break
 HOLIDAY: Sep 30. No lecture
+HOLIDAY: Oct 31. Deepawali
 
 EVENT: Sep 30. Return of Midterm scripts
 
