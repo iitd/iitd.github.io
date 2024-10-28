@@ -209,6 +209,19 @@ What is the correctness argument?  What assertion can you put at the end of the 
 <li><code>O(log(n))</code></li>
 </ul>
 </li>
+<li> What is the cost of each loop iteration?
+<ul>
+<li> Integer division is <code>O(1)</code></li>
+<li> Construction of result is <code>O(len(result))</code> as it involves a copy, which is <code>O(log n)</code> in the worst case and average case.</li>
+<li> Thus the cost of a loop iteration is <code>O(log n)</code>.</li>
+</ul>
+<li>Total cost: <code>O(log<sup>2</sup> n)</code>.</li>
+</ul>
+
+<p>How can you change the implementation so it takes <code>O(log n)</code> time?
+<ul>
+<li> Let <code>result</code> be a list, initialized to <code>[]</code> and appended-to using the <code>append()</code> function (which is <code>O(1)</code>)</li>
+<li> At the end of the loop, reverse the list (<code>O(len(result))</code>) and join it to form a string (again <code>O(len(result))</code>).</li>
 </ul>
 
 <p>Linear complexity
