@@ -350,6 +350,7 @@ def genSubsets(L):
 Assumptions:
 <ul>
 <li> <code>append()</code> is constant time</li>
+<li> However, <code>small+extra</code> can be <code>O(n)</code> time.</li>
 </ul>
 Method:
 <ul>
@@ -362,13 +363,13 @@ Let's analyze:
 <ul>
 <li> Let <code>t<sub>n</sub></code> denote time to solve problem of size <code>n</code>.</li>
 <li> Let <code>s<sub>n</sub></code> denote size of solution to a problem of size <code>n</code>.</li>
-<li> <code>t<sub>n</sub>=t<sub>n-1</sub>+c1*s<sub>n-1</sub>+c2</code> (where <code>c1,c2</code> are some constants)</li>
-<li> <code>t<sub>n</sub>=t<sub>n-1</code>+c1*2<sup>n-1</sup>+c2</code></li>
-<li> <code>=t<sub>n-2</sub>+c1*2<sup>n-2</sup>+c1*2<sup>n-1</sup>+2*c2</code></li>
-<li> <code>=t<sub>n-k</sub>+c1*2<sup>n-k</sup>+c1*2<sup>n-k-1</sup>+...+2<sup>n-1</sup>+k*c2</code></li>
-<li> <code>=t<sub>0</sub>+c1*2<sup>0</sup>+c1*2<sup>1</sup>+...+c1*2<sup>n-1</sup>+n*c2</code></li>
-<li> <code>=1+c1*2<sup>n</sup>+n*c2</code></li>
-<li> <code>O(2<sup>n</sup>)</code></li>
+<li> <code>t<sub>n</sub>=t<sub>n-1</sub>+c3*n*s<sub>n-1</sub>+c1*s<sub>n-1</sub>+c2</code> (where <code>c1,c2,c3</code> are some constants)</li>
+<li> <code>t<sub>n</sub>&gt;=t<sub>n-1</code>+c1*2<sup>n-1</sup>+c2</code></li>
+<li> <code>&gt;=t<sub>n-2</sub>+c1*2<sup>n-2</sup>+c1*2<sup>n-1</sup>+2*c2</code></li>
+<li> <code>&gt;=t<sub>n-k</sub>+c1*2<sup>n-k</sup>+c1*2<sup>n-k-1</sup>+...+2<sup>n-1</sup>+k*c2</code></li>
+<li> <code>&gt;=t<sub>0</sub>+c1*2<sup>0</sup>+c1*2<sup>1</sup>+...+c1*2<sup>n-1</sup>+n*c2</code></li>
+<li> <code>&gt;=1+c1*2<sup>n</sup>+n*c2</code></li>
+<li> <code>&gt;O(2<sup>n</sup>)</code></li>
 </ul>
 
 <p>Summary of examples of complexity classes
