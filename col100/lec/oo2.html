@@ -1,0 +1,458 @@
+<h3>Today</h3>
+<ul>
+<li> More on classes
+<ul>
+<li> getters and setters</li>
+<li> information hiding</li>
+<li> class variables</li>
+</ul>
+</li>
+<li> Inheritance</li>
+</ul>
+
+<h3>Implementing the class vs. Using the class</h3>
+<ul>
+<li> Write code from two perspectives
+<table>
+<tr><td>Implementing a new object type with a class</td> <td> Using a new object type in code</td></tr>
+<tr>
+<td>
+<ul>
+<li> define the class</li>
+<li> define data attributes (WHAT IS the object)</li>
+<li> define methods (HOW TO use the object)</li>
+</ul>
+</td>
+<td>
+<ul>
+<li>create instances of the object type</li>
+<li>do operations with them</li>
+</ul>
+</td>
+</tr>
+</table>
+</li>
+</ul>
+
+<h3> Class definition of an object type Vs. Instance of a class</h3>
+<table>
+<tr>
+<td> class name is the <em>type</em>: <code>class Coordinate(object)</code></td>
+<td>instance is <em>one specific</em> object: <code>coord = Coordinate(1,2)</code>
+</tr>
+<tr>
+<td>class is defined generically
+<ul>
+<li>use <code>self</code> to refer to some instance while defining the class.</li>
+<li><code>self</code> is a parameter to methods in class definition</li>
+</ul>
+</td>
+<td>
+Data attribute values vary between instances
+<code>c1 = Coordinate(1,2); c2 = Coordinate(3,4)</code>
+<ul>
+<li> <code>c1</code> and <code>c2</code> have different data attribute
+values <code>c1.x</code> and <code>c2.x</code> because they are different
+objects.</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>class defines data and methods <em>common across all instances</em></td>
+<td>instance has the <em>structure of the class</em></td>
+</tr>
+</table>
+
+<h3>Why use OOP and Classes of Objects?</h3>
+<ul>
+<li> Mimic real life</li>
+<li> Group different objects part of the same type:
+<ul>
+<li> Name: Tom, Type: Cat, Age: 1 year old, Colour: grey</li>
+<li> Name: Felix, Type: Cat, Age: 5 year old, Colour: brown</li>
+<li> Name: Jerry, Type: Mouse, Age: 2 years old, Colour: brown</li>
+<li> Name: Mickey, Type: Mouse, Age: 3 years old, Colour: black</li>
+</ul>
+</li>
+</ul>
+
+<h3>Recap: groups of objects have attributes</h3>
+<ul>
+<li> data attributes
+<ul>
+<li> how can you represent your object with data?</li>
+<li> what it is</li>
+<li> for a coordinate: x and y values</li>
+<li> for an animal: age, name</li>
+</ul>
+</li>
+<li> procedural attributes (behaviour, operations, methods)
+<ul>
+<li> how can someone interact with the object?</li>
+<li> what it does</li>
+<li> for a coordinate: find distance between two</li>
+<li> for an animal: make a sound</li>
+</ul>
+</li>
+</ul>
+
+<h3>Recap: How to define a class</h3>
+<pre>
+class Animal(object):
+  def __init__(self, age):
+    self.age = age
+    self.name = None
+
+myanimal = Animal(3)
+</pre>
+
+<h3>Getter and setter methods</h3>
+<pre>
+class Animal(object):
+  def __init__(self, age):
+    self.age = age
+    self.name = None
+
+  def get_age(self):
+    return self.age
+  def get_name(self):
+    return self.name
+
+  def set_age(self, newage):
+    self.age = newage
+  def set_name(self, newname==""):
+    self.name = newname
+
+  def __str__(self):
+    return "animal:" + str(self.name) + ":" + str(self.age)
+</pre>
+<ul>
+<li> <em>getters and setters</em> should be used outside of class to access data attributes</li>
+</ul>
+
+<h3>Recap: An instance and dot notation</h3>
+<ul>
+<li> Instantiation creates an instance of an object
+<pre>
+a = Animal(3)
+</pre>
+</li>
+<li>dot notation used to access attributes (data and methods) though it
+is better to use getters and setters to access attributes: <code>a.age</code> (allowed, but not recommended) vs. <code>a.get_age()</code> (best to use getters and setters).</li>
+</ul>
+
+<h3>Information hiding</h3>
+<ul>
+<li> Author of class definition may <em>change data attribute</em> variable names
+<pre>
+class Animal(object):
+  def __init__(self, age):
+    self.years = age
+  def get_age(self):
+    return self.years
+</pre>
+Replaced <code>age</code> with <code>years</code>.
+</li>
+<li> If you are accessing data attributes outside the class and class definition
+changes, may get errors</li>
+<li> Outside of class, use getters and setters instead. Use <code>a.get_age()</code> NOT <code>a.age</code>
+<ul>
+<li> good style</li>
+<li> easy to maintain code</li>
+<li> prevent bugs</li>
+</ul>
+</li>
+</ul>
+
+<h3>Python not great at Information hiding</h3>
+<ul>
+<li> Allows you to <em>access data</em> from outside class definition
+<pre>
+print(a.age)
+</pre>
+</li>
+<li> Allows you to <em>write the data</em> from outside class definition
+<pre>
+a.age = 'abc'
+</pre>
+</li>
+<li> Allows you to <em>create data attributes</em> for an instance
+from outside class definition
+<pre>
+a.size = "tiny"
+</pre>
+</li>
+<li> It is <em>not good style</em> to do any of these!</li>
+</ul>
+
+<h3>Default arguments</h3>
+<ul>
+<li> <em>Default arguments</em> for formal parameters are used if no actual argument is given
+<pre>
+def set_name(self, newname=""):
+  self.name = newname
+</pre>
+</li>
+<li> Default argument used here
+<pre>
+a = Animal(3)
+a.set_name()
+print(a.get_name())  #prints ""
+</pre>
+</li>
+<li> Argument passed in is used here
+<pre>
+a = Animal(3)
+a.set_name("fluffy")
+print(a.get_name()) #prints "fluffy"
+</pre>
+</li>
+</ul>
+
+<h3>Hierarchies</h3>
+Example:
+<ul>
+<li> Animal
+<ul>
+<li> People
+<ul>
+<li> Student
+</ul>
+</li>
+<li> Cat</li>
+<li> Rabbit</li>
+</ul>
+</li>
+</ul>
+
+<h3>Hierarchies</h3>
+<ul>
+<li> parent class (superclass)</li>
+<li> child class (subclass)
+<ul>
+<li> inherits all data and behaviours of parent class</li>
+<li> add more info</li>
+<li> add more behaviour</li>
+<li> override behaviour</li>
+</ul>
+</li>
+</ul>
+<img src="class-hierarchy-example.png" alt="Class hierarchy example" width=600>
+
+<h3>Inheritance: parent class</h3>
+<pre>
+class Animal(object):
+  def __init__(self, age):
+    self.age = age
+    self.name = None
+  def get_age(self):
+    return self.age
+  def get_name(self):
+    return self.name
+  def set_age(self, newage):
+    self.age = newage
+  def set_name(self, newname = ""):
+    self.name = newname
+  def __str__(self):
+    return "animal:"+str(self.name)+":"+str(self.age)
+</pre>
+
+<h3>Inheritance: Subclass</h3>
+<pre>
+class Cat(Animal):  #inherits all attributes of Animal
+  def speak(self):  #adds new functionality of speak method
+    print("meow")
+  def __str__(self):  #overrides __str__
+    return "cat:"+str(self.name)+":"+str(self.age)
+</pre>
+<ul>
+<li> add new functionality with <code>speak()</code>
+<ul>
+<li> instance of type <code>Cat</code> can be called with new methods</li>
+<li> instance of type <code>Animal</code> throws error if called with
+<code>Cat</code>'s new method</li>
+</ul>
+</li>
+</ul>
+
+<h3>Which method to use?</h3>
+<ul>
+<li> Subclass can have <em>methods with same name</em> as superclass</li>
+<li> For an instance of a class, look for a method name in <em>current class definition</em></li>
+<li> If not found, look for method name <em>up the hierarchy</em> (in parent, then grandparent, and so on)</li>
+<li> Use first method up the hierarchy that you found with that method name</li>
+</ul>
+
+<h3>Example: Person</h3>
+<pre>
+class Person(Animal):  # parent class is Animal
+  def __init__(self, name, age):
+    Animal.__init__(self, age)  # call Animal constructor
+    self.set_name(name)         # call Animal method
+    self.friends = []           # add a new data attribute
+
+  # new methods
+  def get_friends(self):
+    return self.friends
+  def add_friend(self, fname):
+    if fname not in self.friends:
+      self.friends.append(fname)
+  def speak(self):
+    print("hello")
+  def age_diff(self, other):
+    diff = self.age - other.age
+    print(abs(diff), "year difference")
+
+  #override Animal's __str__ method
+  def __str__(self):
+    return "person:"+str(self.name)+":"+str(self.age)
+</pre>
+
+<h3>Example: Student</h3>
+<pre>
+import random  #bring in methods from random class
+
+class Student(Person):   # inherits Person and Animal attributes
+  def __init__(self, name, age, branch=None):
+    Person.__init__(self, name, age)
+    self.branch = branch  # adds new data
+  def change_branch(self, branch):
+    self.branch = branch
+  def speak(self):
+    r = random.random()  # From Python docs: random() method in random class gives back float in [0,1)
+    if r &lt; 0.25:
+      print("I have homework")
+    elif 0.25 &lt;= r &lt; 0.5:
+      print("I need sleep")
+    elif 0.5 &lt;= r &lt; 0.75:
+      print("I should eat")
+    else:
+      print("I am watching YouTube")
+  def __str__(self):
+    return "student:"+str(self.name)+":"+str(self.age)+":"+str(self.major)
+</pre>
+
+<h3>Class variables and the Rabbit subclass</h3>
+<em>Class variables</em> are different from data attributes. Class
+variables and their values are shared between all instances of a Class.
+<pre>
+class Rabbit(Animal):
+  tag = 1
+  def __init__(self, age, parent1=None, parent2=None):
+    Animal.__init__(self, age)
+    self.parent1 = parent1
+    self.parent2 = parent2
+    self.rid = Rabbit.tag  #self.rid is an instance attribute. This assignment accesses class variable Rabbit.tag
+    Rabbit.tag += 1 #incrementing class variable changes it for all instances that may reference it
+</pre>
+In this example, <code>tag</code> used to give a unique ID to each rabbit instance.
+
+<h3>Rabbit Getter Methods</h3>
+<pre>
+class Rabbit(Animal):
+  tag = 1
+  def __init__(self, age, parent1=None, parent2=None):
+    Animal.__init__(self, age)
+    self.parent1 = parent1
+    self.parent2 = parent2
+    self.rid = Rabbit.tag
+    Rabbit.tag += 1
+  def get_rid(self):
+    return str(self.rid).zfill(3)  # zfill is a method on a string to pad the beginning with zeros, e.g., 001 not 1
+
+  # getter methods specific for a Rabbit instance; there are also
+  # get_name and get_age inherited from Animal
+  def get_parent1(self):
+    return self.parent1
+  def get_parent2(self):
+    return self.parent2
+</pre>
+
+<h3>Working with your own types</h3>
+<pre>
+def __add__(self, other):
+  # returning object of same type as this class
+  return Rabbit(0, self, other)  # recall Rabbit's __init__(self, age, parent1, parent2)
+</pre>
+<ul>
+<li> Define <em>+ operator</em> between two Rabbit instances
+<ul>
+<li> Define what something like this does: <code>r4 = r1 + r2</code></li> (where r1 and r2 are Rabbit instances)</li>
+<li> <code>r4</code> is a new Rabbit instance with age <code>0</code></li>
+<li> <code>r4</code> has <code>self</code> as one parent and <code>other</code> as the other parent</li>
+<li> Recall that in <code>__init__</code>, <em>parent1 and parent2 are of type Rabbit</em></li>
+</ul>
+</li>
+</ul>
+
+<h3>Special method to compare two Rabbits</h3>
+Two rabbits are equal if they have the same two parents
+<pre>
+def __eq__(self, other):
+  parents_same = self.parent1.rid == other.parent1.rid and self.parent2.rid == other.parent2.rid
+  parents_opposite = self.parent1.rid == other.parent2.rid and self.parent2.rid == other.parent1.rid
+  return parents_same or parents_opposite
+</pre>
+<ul>
+<li> Compare IDs of parents as IDs are unique</li>
+<li> Note you cannot compare parents' objects directly:
+<ul>
+<li> Example: <code>self.parent1 == other.parent1</code>
+<ul>
+<li> This calls the <code>__eq__</code> method over and over until call it on <code>None</code> and gives an <code>AttributeError</code> when it tries to do <code>None.parent1</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<h3>Object Oriented Programming</h3>
+<ul>
+<li> Create your own <em>collections of data</em></li>
+<li> Organize information</li>
+<li> Division of work</li>
+<li> Access information in a consistent manner</li>
+<li> Add layers of complexity</li>
+<li> Like functions, classes are a mechanism for <b>decomposition</b> and <b>abtraction</b> in programming</li>
+</ul>
+
+<h2>Summary</h2>
+<h3>Key Topics</h3>
+<ul>
+<li> Represent knowledge with data structures</li>
+<li> Iteration and recursion as computational metaphors</li>
+<li> Abstraction of procedures and data types</li>
+<li> Different classes of algorithms, searching and sorting</li>
+<li> Complexity of algorithms</li>
+</ul>
+
+<h3>Overview of course</h3>
+<ul>
+<li> Learn computational modes of thinking</li>
+<li> Begin to master the art of computational problem solving</li>
+<li> Make computers do what you want them to do</li>
+</ul>
+
+<p>Thinking computationally: abstractions, algorithms, automated execution
+<ul>
+<li> Abstraction
+<ul>
+<li> Choosing the right abstractions</li>
+<li> Operating in multiple layers of abstractions simultaneously</li>
+<li> Defining relationships between the abstraction layers</li>
+</ul>
+</li>
+<li> Automation
+<ul>
+<li> Think in terms of mechanizing our abstractions</li>
+<li> Mechanization is possible --- because we have precise and exacting notations and models; and because there is some "machine" that can interpret our notations</li>
+</ul>
+</li>
+<li> Algorithms
+<ul>
+<li> Language for describing automated processes</li>
+<li> And allows abstraction of details</li>
+<li> Language for communicating ideas and processes</li>
+</ul>
+</li>
+</ul>
