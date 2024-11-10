@@ -83,6 +83,39 @@ This method is called a <em>sequential search</em>.
 <li> Sequential search complexity is linear in length of the list. Can we do better?</li>
 </ul>
 
+<h3>Recursive Big-O</h3>
+Below is the "pseudocode" for finding BigO of a non-recursive function.
+Note that this is not real code; this is to show the recursive nature of BigO
+
+<p>
+Self-similarity: find BigO of smaller code blocks and combine them
+The BigO pseudocode does not cover function calls and some other cases (to keep the discussion simple) --- though experiment to expand this
+<pre>
+findBigO(codeSnippet):
+  if codeSnippet is a single statement:
+    return O(1)
+  if codeSnippet is a loop:
+    return number_of_times_loop_runs * findBigO(loop_inside)
+  for codeBlock in codeSnippet:
+    return the_sum_of findBigO(codeBlock)
+</pre>
+<ul>
+<li> What are the subproblems? loop_inside and codeBlock.</li>
+<li> How are the results of subproblems combined? Using "number_of_times_loop_runs" and "the_sum_of"</li>
+<li>Where are the recursive calls? calls to findBigO(loop_inside) and findBigO(codeBlock)</li>
+<li>What is the base case? single statement</li>
+<li>Are we following the 3 rules of recursion? e.g., are we moving towards the base case in the recursive call?</li>
+<li>Example: compute bigO for the following code using this recursive pseudocode:
+<pre>
+for i in range(N * N):
+  for j in range(3, 219):
+    print("sum: ", i + j)
+print("Enjoy COL100");
+</pre>
+Show the working of findBigO on this code snippet.
+</li>
+</ul>
+
 <p>Binary search
 <ol>
 <li> Interested in search for element <code>e</code> in list <code>L</code></li>
@@ -474,35 +507,3 @@ Draw tree.  Show the growth for small values of <code>n</code>.  Claim (without 
 
 </ul>
 
-<h3>Recursive Big-O</h3>
-Below is the "pseudocode" for finding BigO of a function
-Note that this is not real code; this is to show the recursive nature of BigO
-
-<p>
-Self-similarity: find BigO of smaller code blocks and combine them
-The BigO pseudocode does not cover function calls and some other cases (to keep the discussion simple) --- though experiment to expand this
-<pre>
-findBigO(codeSnippet):
-  if codeSnippet is a single statement:
-    return O(1)
-  if codeSnippet is a loop:
-    return number_of_times_loop_runs * findBigO(loop_inside)
-  for codeBlock in codeSnippet:
-    return the_sum_of findBigO(codeBlock)
-</pre>
-<ul>
-<li> What are the subproblems? loop_inside and codeBlock.</li>
-<li> How are the results of subproblems combined? Using "number_of_times_loop_runs" and "the_sum_of"</li>
-<li>Where are the recursive calls? calls to findBigO(loop_inside) and findBigO(codeBlock)</li>
-<li>What is the base case? single statement</li>
-<li>Are we following the 3 rules of recursion? e.g., are we moving towards the base case in the recursive call?</li>
-<li>Example: compute bigO for the following code using this recursive pseudocode:
-<pre>
-for i in range(N * N):
-  for j in range(3, 219):
-    print("sum: ", i + j)
-print("Enjoy COL100");
-</pre>
-Show the working of findBigO on this code snippet.
-</li>
-</ul>

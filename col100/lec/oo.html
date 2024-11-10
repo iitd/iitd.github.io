@@ -48,9 +48,295 @@
 </li>
 </ul>
 
-<h3>Example: [1,2,3,4] has type list
+<h3>Example: [1,2,3,4] has type list</h3>
 <ul>
 <li> How are lists <em>represented internally</em>? Linked list of cells
 <img src="linked-list-rep.png" alt="Linked list representation" width=600>
 </li>
+<li>How to manipulate lists?
+<ul>
+<li> <code>L[i]</code>, <code>L[i:j]</code></li>
+<li> <code>len(), min(), max(), del(L[i])</code></li>
+<li> <code>L.append(), L.extend(), L.count(), L.index(), L.insert(), L.pop(), L.remove(), L.reverse(), L.sort()</code></li>
+</ul>
+<li> Internal representation should be private.</li>
+<li> Correct behaviour may be compromised if you manipulate internal representation directly.</li>
+</ul>
+
+<h3>Advantages of OOP</h3>
+<ul>
+<li> <em>Bundle data into packages</em> together with procedures that work on them through well-defined interfaces.</li>
+<li> <em>Divide-and-conquer</em> development
+<ul>
+<li> Implement and test behaviour of each class separately</li>
+<li> Increased modularity reduces complexity</li>
+</ul>
+</li>
+<li> Classes make it easy to <em>reuse</em> code
+<ul>
+<li> Many Python modules define new classes</li>
+<li> Each class has a separate environment (no collision on function names)</li>
+<li> Inheritance allows subclasses to redefine or extend a selected subset of a superclass' behaviour</li>
+</ul>
+</li>
+</ul>
+
+<h3> Creating and using your own types with Classes</h3>
+<ul>
+<li> Make a distinction between <em>creating a class</em> and <em>using
+an instance</em> of the class</li>
+<li> Creating the class involves:
+<ul>
+<li> Defining the class name</li>
+<li> Defining class attributes</li>
+<li> For example, someone wrote code to implement a list class</li>
+</ul>
+</li>
+<li> Using the class involves:
+<ul>
+<li> Creating new <em>instances</em> of objects</li>
+<li> Doing operations on the instance</li>
+<li> For example, <code>L=[1,2]</code> and <code>len(L)</code>.</li>
+</ul>
+</li>
+</ul>
+
+<h3>Define your own types</h3>
+<ul>
+<li> Use the <code>class</code> keyword to define a new type
+<pre>
+class  Coordinate(object):   # "class keyword"  "name/type Coordinate"  "class parent object"
+  # define attributes here
+</pre>
+</li>
+<li> Similar to <code>def</code>, indent code to indicate which statements are a part of the <em>class definition</em>.</li>
+<li> The word <code>object</code> means that a <code>Coordinate</code> object is
+also a Python object and inherits all its attributes (inheritance next lecture)
+<ul>
+<li> <code>Coordinate</code> is a subclass of <code>object</code></li>
+<li> <code>object</code> is a superclass of <code>Coordinate</code></li>
+</ul>
+</li>
+</ul>
+
+<h3>What are attributes?</h3>
+<ul>
+<li> Data and procedures that "<em>belong</em>" to the class</li>
+<li> Data attributes
+<ul>
+<li> Think of data as other objects that make up the class</li>
+<li> For example, a coordinate is made up of two numbers</li>
+</ul>
+</li>
+<li> Methods (procedural attributes)
+<ul>
+<li> Think of methods as functions that work with this class</li>
+<li> How to interact with the object</li>
+<li> For example, you can define a <em>distance</em> between two
+coordinate objects but there is no meaning to a distance between two
+list objects</li>
+</ul>
+</li>
+</ul>
+
+<h3>Defining how to create an instance of a class</h3>
+<ul>
+<li> First, have to define <em>how to create an instance</em> of object</li>
+<li> Use a <em>special method called __init__</em> to initialize
+some data attributes
+<pre>
+class Coordinate(object):
+  # special method to create an instance. __ is double underscore
+  def __init__(self, x, y):  # "self" is a parameter to refer to an instance of the class.
+                             # "x" and "y" are data to initialize a Coordinate object
+    self.x = x  #x is a data attribute for every Coordinate object
+    self.y = y  #y is a data attribute for every Coordinate object
+</pre>
+</li>
+</ul>
+
+<h3>Actually creating an instance of a class</h3>
+<pre>
+c = Coordinate(3, 4)  # create a new object of type Coordinate and pass in 3 and 4 to the __init__ method
+origin = Coordinate(0, 0)
+print(c.x)  # use the dot to access an attribute of instance c
+print(origin.x)  # similarly, access an attribute of instance origin
+</pre>
+<ul>
+<li> Data attributes of an instance are called <em>instance variables</em></li>
+<li> Do not provide argument for <code>self</code>, Python does this automatically</li>
+</ul>
+
+<h3>What is a method?</h3>
+<ul>
+<li> Procedural attribute, like a <em>function that works only with this class</em></li>
+<li> Python always passes the object as the first argument
+<ul>
+<li> convention is to use <code>self</code> as the name of the first argument of all methods</li>
+</ul>
+</li>
+<li> The "." operator is used to access any attribute
+<ul>
+<li> A data attribute of an object</li>
+<li> A method of an object</li>
+</ul>
+</li>
+</ul>
+
+<h3>Define a method for the Coordinate class</h3>
+<pre>
+class Coordinate(object):
+  def __init__(self, x, y):
+    self.x = x
+    self.y = y
+  def distance(self, other): # self refers to the instance on which this method is called
+                            # other is another parameter to the function call
+    x_diff_sq = (self.x - other.x)**2  #dot notation to access data
+    y_diff_sq = (self.y - other.y)**2
+    return (x_diff_sq + y_diff_sq)**0.5
+</pre>
+<ul>
+<li> other than <code>self</code> and dot notation, methods behave
+just like functions (take params, do operations, return).</li>
+</ul>
+
+<h3>How to use a method</h3>
+The following is an example of a method definition:
+<pre>
+def distance(self, other):
+  # code here
+</pre>
+
+<p>Using a class:
+<ul>
+<li> Conventional way
+<pre>
+c = Coordinate(3, 4)
+zero = Coordinate(0, 0)
+print(c.distance(zero))
+# "c" is an object to call method on
+# "distance" is the name of the method
+# "zero" represents parameters not including self; self is implied to be c
+</pre>
+</li>
+<li>This is equivalent to
+<pre>
+c = Coordinate(3, 4)
+zero = Coordinate(0, 0)
+print(Coordinate.distance(c, zero)) #Coordinate
+# "Coordinate" is a name of class
+# "distance" is the name of the method
+# "zero" represents parameters including an object to call the method on, representing self
+</pre>
+</li>
+</ul>
+
+<h3>Print representation of an object</h3>
+<pre>
+&gt;&gt;&gt; c = Coordinate(3,4)
+&gt;&gt;&gt; print(c)
+&lt; __main__.Coordinate object at 0x7fa918510488
+</pre>
+<ul>
+<li> <em>uninformative</em> print representation by default</li>
+<li> define a <code>__str__</code> method when used to <code>print</code>
+on your class object</li>
+<li> you choose what it does! Say that when we print a <code>Coordinate</code> object, want to show
+<pre>
+&gt;&gt;&gt; print(c)
+&lt;3,4&gt;
+</pre>
+</li>
+</ul>
+
+<h3>Defining your own print method</h3>
+<pre>
+class Coordinate(object):
+  def __init__(self, x, y):
+    self.x = x
+    self.y = y
+
+  def distance(self, other):
+    x_diff_sq = (self.x - other.x)**2
+    y_diff_sq = (self.y - other.y)**2
+    return (x_diff_sq + y_diff_sq)**0.5
+
+  def __str__(self): # __str__ is the name of a special method
+    return "&lt;"+str(self.x)+","+str(self.y)+"&gt;"  #the return value must be a string
+</pre>
+
+<h3>Wrapping your head around types and classes</h3>
+<ul>
+<li> Can ask for the type of an object instance
+<pre>
+&gt;&gt;&gt; c = Coordinate(3,4)
+&gt;&gt;&gt; print(c)
+&lt;3,4&gt;     #return value of the __str__ method
+&gt;&gt;&gt; print(type(c))
+&lt;class __main__.Coordinate&gt;  #type of object c is a class Coordinate
+</pre>
+</li>
+<li> This makes sense since:
+<pre>
+&gt;&gt;&gt; print(Coordinate)
+&lt;class __main__.Coordinate&gt;  #a Coordinate is a class
+&gt;&gt;&gt; print(type(Coordinate))
+&lt;type 'type'&gt;  #a Coordinate class is a type of object
+</pre>
+</li>
+<li> use <code>isinstance()</code> to check if an object is a <code>Coordinate</code>:
+<pre>
+&gt;&gt;&gt; print(isinstance(c, Coordinate))
+True
+</pre>
+</li>
+</ul>
+
+<h3>Special Operators</h3>
+<ul>
+<li> <code>+,-,==,&lt;,&gt;,len(),print, and many others</code> 
+<br><a href=https://docs.python.org/3/reference/datamodel.html#basic-customization>https://docs.python.org/3/reference/datamodel.html#basic-customization</a>
+</li>
+<li> like <code>print</code>, can override these to work with your class</li>
+<li> define them with double underscores before/after
+<pre>
+__add__(self, other)   # self + other
+__sub__(self, other)   # self - other
+__eq__(self, other)    # self == other
+__lt__(self, other)    # self &lt; other
+__len__(self)          # len(self)
+__str__(self)          # print(self)
+... and others
+</pre>
+</li>
+</ul>
+
+<h3>Example: fractions</h3>
+<ul>
+<li> Create a <em>new type</em> to represent a number as a fraction</li>
+<li> <em>Internal representation</em> is two integers
+<ul>
+<li>numerator</li>
+<li>denominator</li>
+</ul>
+</li>
+<li> <em>Interface</em> a.k.a. <em>methods</em> a.k.a <em>how to interact</em> with <code>Fraction</code> objects
+<ul>
+<li> add, subtract</li>
+<li> print representation, convert to a float</li>
+<li> invert the fraction</li>
+</ul>
+</li>
+</ul>
+
+<h3>The power of OOP</h3>
+<ul>
+<li> <em>Bundle together objects</em> that share
+<li> Common attributes and</li>
+<li> Procedures that operate on those attributes</li>
+</li>
+<li> Use <em>abstraction</em> to make a distinction between how to implement
+an object vs how to use the object</li>
+<li> Build <em>layers</em> of object abstractions that inherit behaviours from other classes of objects</li>
+<li> Create your <em>own classes of objects</em> on top of Python's basic classes</li>
 </ul>
