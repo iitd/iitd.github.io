@@ -1,0 +1,19 @@
+<h3>Pipelining</h3>
+<p>discuss two examples in the book.
+<p>Show how we can sweep a 135 degree line for one of them, but only a 150 degree can sweep the SOR example. By sweeping we mean that all iteration instances that lie on the line can be executed simultaneously (in parallel), but different instances of the line (in the sweep direction) must be synchronized after previous instance of the line.
+
+<p>The angle of the dependency edges in a 2D iteration space lies within [0,180) degrees.
+
+<p>The angle of line is strictly greater than the greatest angle of the dependency edge in the dependency graph.
+
+<p>If we can bring the loop nest to a form such that all data dependences are [0,90], then we can sweep any line with angle &gt;90 degrees to obtain a pipelining parallelism. In particular, the 135 degree line makes the most sense as it seems to have the maximum parallelism.
+
+<p>All dependencies are between [0,90] iff the outer two loops are <em>fully permutable</em>.
+
+We are interested in finding a transform that preserves the relative ordering of all data dependencies in the outer loop, and makes the outer iterations of the loop fully permutable.
+
+<p>If we get such a transform (e.g., through an oracle), we need to transform the loop. We will discuss how to identify the transform later.
+
+<p>Introduce a new variable that represents the new coordinate axis, and make it the outer loop; paste the original loop nest as the body of this outer loop and use Fourier-Motzkin to eliminate empty iterations. This is okay to do (pasting loop nest as body of outer loop) because the outer loop order preserves all data dependencies ordering as in original program.  This would not have been okay if the outer loop order did not preserve data dependencies ordering of the original program.
+
+<p>For fully permutable loops, the transforms that put any of the axes at the top, also preserve the data dependency order. To identify the code for different permutations of the fully permutable loop, simply put the desired loop at the top, and use Fourier Motzkin as above (after pasting the loop nest as the body of the loop).

@@ -1,0 +1,142 @@
+<h2>Data Reuse</h2>
+From array access functions, we derive two kinds of information:
+<ul>
+<li><em>Data reuse</em>: identify sets of iterations that access the same data or same cache-line.</li>
+<li><em>Data dependence</em>: Two (not necessarily distinct) accesses have a data-dependence if instances of the accesses may refer to the same memory location, and at least one of them is a write; three types: RAW, WAR, WAW
+</ul>
+
+Reuse can further be categorized into <em>self reuse</em> (multiple iterations of the same statement access the same data) or <em>group reuse</em> --- two (potentially same) iterations of different statements access the same data.
+
+<p>Reuse is <em>temporal</em> if exact same data is accessed, and <em>spatial</em> if the same cache-line is accessed.
+
+<p>Example
+<pre>
+float Z[n] ;
+for (i = 0; i &lt; n; i++) {
+  for (j = 0; j &lt; n; j++) {
+    Z[j+1] = (Z[j] + Z[j+1] + Z[j+2])/3;
+  }
+}
+</pre>
+Here, each of Z[j], Z[j + 1], and Z[j + 2] have self spatial-reuse. They also have self temporal-reuse, because the exact same elements are re-used over and over again (once for each iteration of the outer loop).
+<br>In addition, they have group reuse, both temporal and spatial.
+<br>Even though this loop has 4*n^2 accesses, we only need to bring n/c
+cachelines into the cache; we drop a factor of n due to self-spatial reuse,
+a factor of c due to spatial locality, and factor of 4 due to group reuse.
+
+<p>We discuss how to use linear algebra to extract this reuse.
+
+<h3>Self reuse</h3>
+<p>If the data referenced by a static access has k dimensions and the access is nested in a d-depth loop nest, for some d &gt; k, then the same data can
+be reused n^(d-k) times, where n is the number of iterations in each loop.
+The dimensionality of an access corresponds to the <em>rank</em> of the
+coefficient matrix of the access, and we can find which iterations
+refer to the same location by finding the <em>null space</em> of the matrix.
+<pre>
+Fi + f = Fi' + f
+</pre>
+Hence,
+<pre>
+F(i - i') = 0
+</pre>
+Thus two iterations refer to the same element if their difference belongs
+to the null space of F. Trivial solution is i=i' (not meaningful); we are
+interested in other non-zero solutions. Discuss <em>fully-ranked</em> matrices.
+
+<h3>Self-spatial reuse</h3>
+Approximation: consider two array elements share a cache-line if and only if they share the same row in a 2-D array; in general, if they differ only in the last dimension for a d-dimension matrix. For this last row, the accesses are anyways cheaper (once every c accessses), so this approximation is meaningful.
+
+<p>Trick: drop the last row of the co-efficient matrix F; if the rank of the resulting truncated matrix is less than the depth of the loop nest, then we can assure spatial locality by making sure that the innermost loop varies only the last coordinate of the array.
+
+<p>Example: A[3,2*i,7*i+j]; if we truncate the last dimension, the rank of the truncated coefficient matrix F is only 1, and hence there is an opportunity for spatial reuse. In this case, if the inner loop iterates on j, then we exploit spatial reuse (but not if the inner loop iterates on i)
+
+<p>General rule for spatial re-use: In order for there to be spatial reuse,
+the vector [0,0,.. . , 0,1] must be in the null space of the truncated matrix.
+The reason is that if this
+vector is in the null space, then when we fix all loop indexes but the innermost
+one, we know that all dynamic accesses during one run through the inner loop
+vary in only the last array index. If the array is stored in row-major order, then these elements are all near one another, perhaps in the same cache line.
+
+<h3>Group Reuse</h3>
+We compute reuse only across accesses with same coefficient matrices. If the
+coefficient matrices are different, then the amount of reuse would be too
+small to be meaningful.
+
+<p>
+Given two accesses &lt;F,f1&gt; and &lt;F,f2&gt;, reuse of the same data
+requires
+<pre>
+F*i1 + f1 = F*i2 + f2
+</pre>
+or
+<pre>
+F(i1-i2) = f2-f1
+</pre>
+Suppose <b>v</b> is one solution to the equation, then all solutions of
+this equation can be represented as <b>v+w</b> where <b>w</b> is in the
+null-space of F.
+
+<p>Example:
+<pre>
+for (i = 1; i &lt;= n; i++) {
+  for (j = 1; j &lt;= n; j++) {
+    Z[i,j] = Z[i-1,j];
+  }
+}
+</pre>
+has two array accesses both of which have the same coefficient matrix
+<pre>
+[1 0]
+[0 1]
+</pre>
+Each access exhibits self-spatial reuse --- if we erase the bottom row, we get [1 0], and [0 1] is in the nullspace of this matrix. There is no self-temporal reuse. But there is group temporal reuse; formally, discounting the loop bounds, there is reuse if
+<pre>
+[1 0] [i1]   [0]    [1 0] [i2]   [-1]
+[0 1] [j1] + [0]  = [0 1] [j2] + [ 0]
+</pre>
+We get <code>j1=j2</code> and <code>i2 = i1 + 1</code>. Notice however that the reuse distance is very high (n) because <code>i</code> is not the innermost loop index. The reuse helps if the entire row (n) fits in cache.
+
+<b>Relative significance of types of reuse</b>
+<ul>
+<li>Self-temporal reuse gives most benefit: a reference with a k-dimensional null space reuses the same data O(n^k) times.</li>
+<li>Self-spatial reuse is limited by the length of the cacheline</li>
+<li>Group reuse is limited by the number of references in a group sharing the reuse</li>
+</ul>
+
+<h3>Scalar/Loop Pass Interaction</h3>
+Example:
+<pre>
+for (i = 0; i &lt; n; i++) {
+  for (j = 0; j &lt; m; j++) {
+    A[i] += i*B[j];
+  }
+}
+</pre>
+After loop invariant code motion (LICM); in particular, register promotion, this becomes:
+<pre>
+for (i = 0; i &lt; n; i++) {
+  reg = A[i];
+  for (j = 0; j &lt; m; j++) {
+    reg += i*B[j];
+  }
+  A[i] = reg;
+}
+</pre>
+
+<p>However, loop interchange transformation cannot be applied to the latter (while it could be applied to the former). If we apply loop interchange transformation to the former followed by global value numbering (GVN), in particular load partial redundancy elimination (loadPRE), we get:
+<pre>
+for (j = 0; j &lt; m; j++) {
+  for (i = 0; i &lt; n; i++) {
+    A[i] += i*B[j];
+  }
+}
+</pre>
+Performing GVN(LoadPRE) on this, we get
+<pre>
+for (j = 0; j &lt; m; j++) {
+  tmp = B[j]
+  for (i = 0; i &lt; n; i++) {
+    A[i] += i*tmp;
+  }
+}
+</pre>

@@ -1,0 +1,393 @@
+<h3>Lazy code motion</h3>
+
+<p><b>Loop invariant operations</b>
+<pre>
+for (i = 0; i &lt; n; i++) {
+  A[i] = m + n;
+}
+</pre>
+to (loop invariant code motion)
+<pre>
+t = m + n;
+for (i = 0; i &lt; n; i++) {
+  A[i] = t;
+}
+</pre>
+
+<p><b>Partial Redundancy Elimination (aka lazy code motion)</b>
+<p>Subsumes
+<ul>
+	<li>Common subexpression elimination</li>
+	<li>Loop invariant code motion</li>
+	<li>plus new capability
+		<pre>
+BB1-&gt;BB2
+BB1-&gt;BB3
+BB2-&gt;BB4
+BB3-&gt;BB4
+
+BB2: a = b + c
+BB3: b = 7
+BB4: d = b + c
+		</pre>
+		can be changed to
+		<pre>
+BB1-&gt;BB2
+BB1-&gt;BB3
+BB2-&gt;BB4
+BB3-&gt;BB4
+
+BB2: t = b + c
+     a = t
+BB3: b = 7
+     t = b + c
+BB3: d = t
+		</pre>
+		Can we place calculations of <code>b+c</code> such that no path re-executes the same expression? Algorithm based on PLDI92 paper by Knoop et. al. on "Lazy code motion"
+	</li>
+	<li>Propose separate forward and backward passes.</li>
+	<li>Problem: critical edges
+		<pre>
+BB1 --&gt; BB3
+BB2 --&gt; BB3
+BB2 --&gt; BB4
+
+BB1: c = a+b
+BB3: d = a+b
+		</pre>
+		A critical edge:
+		<ul>
+			<li>Source basic block has multiple successors</li>
+			<li>Destination basic block has multiple predecessors</li>
+		</ul>
+	</li>
+	<li>Introduce a new basic block to eliminate critical edges:
+		<pre>
+BB1 --&gt; BB3
+BB2 --&gt; newBB
+BB2 --&gt; BB4
+newBB --&gt; BB4
+
+BB1: t = a+b
+     c = t
+newBB: t = a+b
+BB3: d = t
+		</pre>
+	</li>
+</ul>
+
+<p>Algorithm Prelims:
+<ul>
+	<li>Assume every statement is a basic block</li>
+	<li>We will only place statements at the beginning of a basic block</li>
+	<li>Add a basic block for every edge that leads to a basic block with multiple predecessors</li>
+</ul>
+
+<p>Algorithm Overview:
+<ul>
+	<li>Determine where the expressions are to be computed</li>
+	<li>Consists of four data-flow problems:
+		<ul>
+			<li>Optimal computation (passes 1 and 2)
+				<ul>
+					<li>No calculation of expression that is not used, along any execution path.</li>
+					<li>No redundancy along any execution path.</li>
+				</ul>
+			</li>
+			<li>Operations are executed at the latest possible time to minimize register usage (pass 3)</li>
+			<li>No unnecessary copy assignments (pass 4)</li>
+		</ul>
+	</li>
+</ul>
+
+<h3>Some examples</h3>
+
+<p>Example1:
+<pre>
+BB1--&gt;BB2
+BB1--&gt;BB3
+BB1--&gt;BB4
+BB2--&gt;BB5
+BB3--&gt;BB5
+BB4--&gt;BB6
+
+BB2: x = a + b
+BB5: y = a + b
+BB4: a = 10
+BB6: z = a + b
+</pre>
+change to
+<pre>
+BB1--&gt;BB2
+BB1--&gt;BB3
+BB1--&gt;BB4
+BB2--&gt;BB5
+BB3--&gt;BB5
+BB4--&gt;BB6
+
+BB2: x = a + b
+BB3: t = a + b
+BB5: y = t
+BB4: a = 10
+     t = a + b
+BB6: z = t
+</pre>
+Notice that we put t = a+b where a+b is "needed", i.e., it is needed on all paths in future
+
+<p>Example 2
+<pre>
+BB1--&gt;BB2
+BB2--&gt;BB3
+BB3--&gt;BB2
+BB3--&gt;BB4
+
+BB2: x = a + b
+</pre>
+change to
+<pre>
+BB1--&gt;BB2
+BB2--&gt;BB3
+BB3--&gt;BB2
+BB3--&gt;BB4
+
+BB1: t = a+b
+BB2: x = t
+</pre>
+Again, t=a+b is "needed" on all paths in future
+
+<p>Example 3
+<pre>
+BB1--&gt;BB2
+BB2--&gt;BB3
+BB3--&gt;BB4
+BB4--&gt;BB5
+BB4--&gt;BB6
+BB5--&gt;BB3
+BB6--&gt;BB3
+
+BB1: x = a+b
+BB4: y=a+b
+BB6: a=10
+</pre>
+change to
+<pre>
+BB1--&gt;BB2
+BB2--&gt;BB3
+BB3--&gt;BB4
+BB4--&gt;BB5
+BB4--&gt;BB6
+BB5--&gt;BB3
+BB6--&gt;newBB
+newBB--&gt;BB3
+
+BB1: t = a+b
+     x=t
+BB4: y=t
+BB6: a=10
+newBB: t=a+b
+</pre>
+
+<p>Example 4 (not all redundancy can be eliminated)
+<pre>
+BB1--&gt;BB2
+BB2--&gt;BB3
+BB3--&gt;BB4
+BB4--&gt;BB5
+BB5--&gt;BB3
+BB3--&gt;BB6
+BB6--&gt;exit
+
+BB1: x=a+b
+BB5: y=a+b
+BB6: a=10
+</pre>
+change to
+<pre>
+BB1--&gt;BB2
+BB2--&gt;BB3
+BB3--&gt;BB4
+BB4--&gt;BB5
+BB3--&gt;BB6
+BB6--&gt;newBB
+newBB--&gt;BB3
+BB6--&gt;exit
+
+BB1: t=a+b
+     x=t
+BB5: y=t
+BB6: a=10
+newBB: t=a+b
+</pre>
+There is some redundancy in the transformed code which is unavoidable. Notice that the path from newBB to exit computes a+b even though it was not required. The other option is:
+<pre>
+BB1--&gt;BB2
+BB2--&gt;BB3
+BB3--&gt;BB4
+BB4--&gt;BB5
+BB5--&gt;BB3
+BB3--&gt;BB6
+BB6--&gt;exit
+
+BB1: t=a+b
+     x=t
+BB5: t = a+b
+     y=t
+BB6: a=10
+</pre>
+But now a+b is computed twice on the path B2-&gt;B3-&gt;B4-&gt;B5 (this is the solution that our analysis will yield).
+
+<h3>Pass 1: Needed expressions</h3>
+Data-flow analysis
+<ul>
+	<li> Domain of values: sets of expressions</li>
+	<li>Direction: backward</li>
+	<li>Meet operator: intersection. Dictates the transfer function on successor-predecessor edges</li>
+	<li>Transfer function across an instruction: F(x) = EUse \union (x - EKill). Euse is the set of expressions used by the instruction (e.g., <code>{a+b}</code> for <code>x=a+b</code>). Ekill is the set of expressions <em>killed</em> by this expression, e.g., all expressions containing <code>x</code> are killed by <code>x=a+b</code>.</li>
+	<li>Boundary condition: Needed(exit,in)=empty.</li>
+	<li>Initialization: for all b (not exit), in[b] = set of all expressions</li>
+</ul>
+Notice that while we are doing all expressions at once, we could also have done one expression at a time. In which case, my domain of values would simply be "needed" (definitely-needed) or "not-needed" (can't be sure if needed or not).
+
+<p><b>Proposal 1</b>:
+<ul>
+	<li>Place the expression at the frontier of "needed expressions" (between "not needed" and "needed")
+		<ul>
+			<li>But does it eliminate all redundancies? (e.g., may retain some redundancies)</li>
+			<li>And is that the best placement? (e.g., may be too early)</li>
+		</ul>
+	</li>
+</ul>
+Some examples where proposal1 will fail:
+
+<p>Example1
+<pre>
+BB1-&gt;BB2
+BB2-&gt;BB3
+BB3-&gt;BB4
+BB3-&gt;exit
+
+BB1: x=a+b
+BB4: y=a+b
+</pre>
+Now, <code>a+b</code> is needed at BB4 entry but not needed at BB3 exit. Yet computing <code>t=a+b</code> on the edge BB3-&gt;BB4 is redundant because the expression <code>a+b</code> is already available (or not <em>missing</em>) at BB4.
+
+<p>Example2
+<pre>
+BB1-&gt;BB2
+BB1-&gt;BB3
+BB1-&gt;BB4
+BB2-&gt;BB5
+BB3-&gt;BB5
+
+BB4: a=10
+BB5: y=a+b
+</pre>
+Here, the frontier occurs at the end of BB1 but that is too early to compute <code>t=a+b</code> as we will take up an extra register for a long time unnecessarily!
+
+<p>Example3 (a more convincing example of why you should not compute a value too early)
+<pre>
+BB1-&gt;BB2
+BB1-&gt;BB3
+BB2-&gt;BB4
+BB4-&gt;BB2
+BB4-&gt;BB5
+BB5-&gt;BB6
+BB3-&gt;BB7
+BB7-&gt;BB6
+
+BB3: a=b+c
+BB6: y=b+c
+</pre>
+The frontier is at the end of BB1 but that would eat-up a register for the entire duration of the BB2-BB4 loop which seems too wasteful.
+
+<h3>Pass 2: Missing Expressions</h3>
+<ul>
+	<li>Assume: an expression will be calculated at the earliest point it is needed.</li>
+	<li>Forward pass: Missing expression</li>
+	<li>An expression is missing at <code>p</code> if its value has not been "needed" by any basic block along SOME path reaching <code>p</code>. Will solve the redundancy problem with the first example.</li>
+	<li>Domain of values: sets of expressions</li>
+	<li>Direction: forward</li>
+	<li>Transfer function at instruction b: f(x) = EKill \union (x - Needed.in[b]). It is missing if it has been killed. If it is needed then it is not missing.</li>
+	<li>Meet = union</li>
+	<li>Boundary condition: out[entry] = set of all expressions.</li>
+	<li>Initialization for all other b (not entry): out[b] = empty set.</li>
+</ul>
+
+<h3>Proposal 2</h3>
+<p>Place the expression at the earliest point we need it and is missing
+<ul>
+	<li>earliest(b)=needed.in[b] \intersect missing.in[b]</li>
+	<li>Algorithm: for all basic block b, if <code>x+y \in earliest[b]</code>, at beginning of <code>b</code>, create a new variable <code>t</code>, such that <code>t=x+y</code>, and replace every original <code>x+y</code> by <code>t</code>.</li>
+	<li>But it may be too early! Solves example1 but the problems with example2 and example3 remain.
+</ul>
+
+<h3>Postponed expressions</h3>
+An expression <code>e</code> is postponed at a program point <code>p</code> if: for all paths leading to <code>p</code>, we have seen the earliest placement of <code>e</code> but not a subsequent use. Take the third example again:
+<pre>
+BB1-&gt;BB2
+BB1-&gt;BB3
+BB2-&gt;BB4
+BB4-&gt;BB2
+BB4-&gt;BB5
+BB5-&gt;BB6
+BB3-&gt;BB7
+BB7-&gt;BB6
+
+BB3: a=b+c
+BB6: y=b+c
+</pre>
+Here, <code>b+c</code> is <em>postponed</em> at the beginning of BB3 and on the edge BB5-&gt;BB6.
+<ul>
+	<li>Domain of values: sets of expressions</li>
+	<li>Direction: forward</li>
+	<li>Transfer function for instruction b: f(x)=(earliest[b] \union x) - EUse</li>
+	<li>Meet : Intersection</li>
+	<li>Boundary condition: out[entry] = empty set</li>
+	<li>Initialization for all b (not entry): out[b] = set of all expressions</li>
+</ul>
+<b>Latest</b>: frontier at the end of "postponed" wave.
+<ul>
+	<li><code>latest[b] = (earliest[b] \union postponed.in[b]) \intersection (EUse \union ExprsForWhichSomeSuccessorIsNotPostponedOrEarliest)</code></li>
+	<li>ExprsForWhichSomeSuccessorIsNotThePostponedOrEarliest = \union_over_successors (\not earliest[b] \and \not postponed.in[b]).</li>
+</ul>
+This will solve the issues with Example2 and Example3
+
+<h3>Pass 4: Cleaning up</h3>
+<pre>
+BB1-&gt;BB2
+BB2-&gt;BB3
+
+BB1: x=a+b
+</pre>
+No need to generate temporaries in this case. But our algorithm will. Do a liveness analysis to see
+if the expression is used later (without an intervening <code>latest</code> as a <code>latest</code> indicates
+recomputation).
+<ul>
+	<li>Domain of values: set of expressions</li>
+	<li>Direction: backward</li>
+	<li>Transfer function: f(x) = (EUse \union x) - latest[b]</li>
+	<li>Meet operator: union</li>
+	<li>Boundary condition: in[exit] = empty set
+	<li>Initialization: in[b] = empty set
+</ul>
+
+<h3>Lazy code motion (or partial-redundancy elimination) algorithm</h3>
+<ul>
+	<li>Backward pass to compute needed expressions</li>
+	<li>Forward pass to compute missing expressions</li>
+	<li>Earliest = intersection of needed and missing</li>
+	<li>Forward pass using earliest placement to compute (can be)-postponed expressions</li>
+	<li>Latest = frontier of (can be)-postponed expressions</li>
+	<li>Backward pass to eliminate unused temporary variable assignments</li>
+	<li>For all basic blocks b: if <code>x+y \in (latest[b] \intersect used.out[b])</code>:
+		<ul>
+			<li>at beginning of <code>b</code>: add new <code>t=x+y</code></li>
+			<li>replace original <code>x+y</code> by <code>t</code> only if:
+				<ul>
+					<li><code>x+y \in (EUse \intersect \not(latest[b] \insersect \not(used.out[b])))</code></li>
+					<li>If it is in <code>latest[b]</code> and not in <code>used.out[b]</code>, this use of the expression does not need to be (and has not been) replaced by <code>t</code>, so let it be as it is.</li>
+				</ul>
+			</li>
+		</ul>
+	</li>
+</ul>

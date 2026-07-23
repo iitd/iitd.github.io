@@ -1,0 +1,155 @@
+<h3>Optimization Overview</h3>
+Most complexity in modern compilers is in the optimizer
+<ul>
+	<li>Also by far, the largest phase in terms of compile-time and in terms of source code size (recall: lexing, parsing, semantic analysis, optimization, code generation)
+</ul>
+
+<p>When should we perform optimizations?
+<ul>
+	<li>On AST?
+		<ul>
+			<li>Pro: Machine independent
+			<li>Con: Too high level
+				<ul>
+					<li>Too abstract --- need to have more details to be able to express the "kind" of machine for which the AST needs to be compiled (e.g., register or stack machine or quantum computer)
+				</ul>
+		</ul>
+	<li>On assembly language
+		<ul>
+			<li>Pro: exposes optimization opportunities
+			<li>Con: may be too low level, making optimization difficult (need to undo/redo certain decisions)
+			<li>Con: machine dependent
+			<li>Con: must reimplement optimizations when retargetting
+		</ul>
+	<li>On IR
+		<ul>
+			<li>Pro: can be machine independent, if designed well (can represent a large family of machines)
+			<li>Pro: can expose optimization opportunities, if designed well.
+		  <li>Con: IR design critical for exposing optimization opportunities.
+		</ul>
+</ul>
+
+<p>We will be looking at optimizations on an IR which has the following grammar:
+<pre>
+P --&gt; S P | S
+S --&gt; id := id op id
+       | id := op id
+       | id := id
+       | push id
+       | id := pop
+       | if id relop id goto L
+       | L:
+       | jump L
+</pre>
+<ul>
+	<li> id's are register names
+	<li>constants can replace ids
+	<li>typical operators: +, -, *
+</ul>
+
+<p>A basic bloack is a maximal sequence of instructions with
+<ul>
+	<li>no labels (except at the first instruction), and
+	<li>no jumps (except in the last instruction)
+</ul>
+
+<p>Idea:
+<ul>
+	<li>Cannot jump into a basic block (except at beginning)
+	<li>Cannot jump out of a basic block (except at end)
+	<li>A basic block is a single-entry, single-exit, straight-line code segment
+</ul>
+Once we reach the start of a basic block, we are guaranteed to execute all
+instructions in the BB. Furthermore, the only way into the basic block is
+through the first statement.
+
+<p>Consider the basic block:
+<pre>
+1. L:
+2.   t := 2*x
+3.   w := t + x
+4.   if w &gt; 0 goto L'
+</pre>
+(3) executes only after (2)
+<ul>
+	<li>We can change (3) to w := 3 * x
+		<li> Can we eliminate (2) as well? Need to be sure that <code>t</code> is not used in other basic blocks.
+</ul>
+
+<p>A control-flow graph is a directed graph with
+<ul>
+	<li>Basic blocks as nodes</li>
+	<li>An edge from block A to block B if the execution can pass from the last instruction in A to the first instruction in B
+		<ul>
+			<li>e.g., the last instruction in A is <code>jump Lb</code></li>
+			<li>e.g., the last instruction in A is <code>if id relop id then goto Lb</code></li>
+			<li>e.g., execution can fall-through from block A to block B</li>
+		</ul>
+</ul>
+
+<p>Example control-flow graph:
+<pre>
+BB1:
+  x := 1
+  i := 1
+
+BB1--&gt;BB2
+
+BB2:
+L:
+  x := x * x
+  i := i + 1
+  if i &lt; 10 goto L
+
+BB2 --&gt; BB2
+
+BB2 --&gt; BB3
+</pre>
+
+
+<p>The body of a method (or procedure) can be represented as a control-flow graph. There is one initial node (entry node).  All "return" nodes are terminal.
+
+
+<p>Optimization seeks to improve a program's resource utilization
+<ul>
+	<li>Execution time (most often)</li>
+	<li>Code size</li>
+	<li>Memory usage</li>
+	<li>Network messages sent, disk accesses, etc.</li>
+	<li>Power consumption</li>
+</ul>
+
+<p>Optimization should not alter what the program computes
+<ul>
+	<li>The answer must still be the same.
+</ul>
+
+<p>For languages like C, there are typically three granularities of optimization
+<ul>
+	<li>Local optimizations
+		<ul>
+			<li>Apply to a basic block in isolation</li>
+		</ul>
+	</li>
+	<li>Global optimizations
+		<ul>
+			<li> Apply to a control-flow graph (method body) in isolation</li>
+		</ul>
+	</li>
+	<li>Inter-procedural optimizations
+		<ul>
+			<li>Apply across method boundaries</li>
+		</ul>
+</ul>
+
+<p>Production compilers do all these types of optimizations.  In general, easies to implement local optimizations and hardest to implement inter-procedural optimizations.
+
+<p>In practice, often a conscious decision is made not to implement the fanciest optimization known. Why?
+<ul>
+	<li>Some optimizations are hard to implement</li>
+	<li>Some optimizations are costly in compilation time</li>
+	<li>Some optimizations have low payoff. But hard to establish the payoff. Often one optimization may trigger another one, and this is hard to predict in advance.</li>
+	<li>Many fancy optimizations are all three!</li>
+</ul>
+
+<p>Current state-of-the-art: the goal is "Maximum benefit for minimum cost"

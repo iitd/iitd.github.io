@@ -1,0 +1,457 @@
+<h3>Code Generation 1</h3>
+A higher-level language
+<pre>
+P --&gt; D; P | D
+
+D --&gt; def id(ARGS) = E
+ARGS --&gt; id, ARGS | id
+E --&gt; int | id | if E1 = E2 then E3 else E4 | E1 + E2 | E1 - E2 | id(E1,...,En)
+</pre>
+
+<p>The first function definition <code>f</code> is the entry point
+<ul>
+	<li>The "main" routine
+</ul>
+
+<p>Program for computing the Fibonacci numbers:
+<pre>
+def fib(x) = if x = 1 then 0 else
+             if x = 2 then 1 else
+             fib(x - 1) + fib(x - 2)
+</pre>
+
+<p>For each expression <code>e</code> we generate MIPS code that:
+<ul>
+	<li>Computes the value of <code>e</code> in <code>$a0</code>
+	<li>Preserves <code>$sp</code> and the contents of the stack
+</ul>
+
+<p>We define a code-generation function <code>cgen(e)</code> whose result is the code generated for <code>e</code>
+<ul>
+	<li>The code to evaluate a constant simply copies it into the accumulator:
+	<pre>
+  <code style="color:red">cgen(i) = </code><code style="color:blue">li $a0 i</code>
+  </pre>
+  </li>
+  <ul>
+<li>This preserves the stack, as required
+<li>Color key:
+<ul>
+<li><code style="color:red">RED</code>: compile time
+<li><code style="color:blue">BLUE</code>: run time
+</ul>
+</ul>
+	<li>
+	<pre>
+  <code style="color:red">cgen(e1+e2) =
+cgen(e1)</code><code style="color:blue"> 
+sw $a0 0($sp)
+addiu $sp $sp-4</code><code style="color:red"> 
+cgen(e2)</code><code style="color:blue"> 
+lw $t1 r($sp)
+add $a0 $t1 $a0
+addiu $sp $sp 4</code>
+  </pre>
+	<ul>
+		<li>Establish the two invariants: the accumulator has the value of this expression, and the value of the stack is unchanged.
+	</ul>
+	Another (more precise) way to write this:
+	<pre>
+  <code style="color:red">cgen(e1+e2) =
+cgen(e1)
+print "sw $a0 0($sp)"
+print "addiu $sp $sp-4"
+cgen(e2)
+print "lw $t1 r($sp)"
+print "add $a0 $t1 $a0"
+print "addiu $sp $sp 4"</code>
+  </pre>
+	This latter syntax is a bit more verbose, so we will largely stick to the short-hand notation.
+  </li>
+	<li>"Optimization": Put the result of <code>e1</code> directly in <code>$t1</code>
+	<pre>
+  <code style="color:red">
+cgen(e1+e2) =
+cgen(e1)</code><code style="color:blue"> 
+move $t1 $a0</code><code style="color:red"> 
+cgen(e2)</code><code style="color:blue"> 
+add $a0 $t1 $a0</code>
+	</pre>
+	Is this code correct? Why not? Consider if <code>e2=e3+e4</code>
+	<li>The code for <code>+</code> is a template with "holes" for code for evaluating <code>e1</code> and <code>e2</code>.
+	<li>Stack machine code generation is recursive
+	<ul>
+		<li>Code for <code>e1+e2</code> is code for <code>e1</code> and <code>e2</code> glued together
+	</ul>
+	<li>Code generation can be written as a recursive descent of the AST
+	<ul>
+		<li>At least for expressions
+	</ul>
+	<li>
+	<pre>
+  <code style="color:red">cgen(e1-e2) =
+cgen(e1)</code><code style="color:blue"> 
+sw $a0 0($sp)
+addiu $sp $sp-4</code><code style="color:red"> 
+cgen(e2)</code><code style="color:blue"> 
+lw $t1 r($sp)
+sub $a0 $t1 $a0
+addiu $sp $sp 4</code>
+  </pre>
+</ul>
+
+<p>Dealing with if-then-else constructs:
+<ul>
+	<li>New instruction: <code>beq reg1 reg2 label</code>
+	<ul>
+		<li>Branch to label if <code>reg1=reg2</code>
+	</ul>
+	<li>New instruction: <code>b label</code>
+	<ul>
+		<li>Unconditional jump to label
+	</ul>
+</ul>
+
+<ul>
+	<li>
+	<pre>
+  <code style="color:red">cgen(if e1=e2 then e3 else e4) =
+cgen(e1)</code><code style="color:blue"> 
+sw $a0 0($sp)
+addiu $sp $sp -4</code><code style="color:red"> 
+cgen(e2)</code><code style="color:blue"> 
+lw $t1 4($sp)
+addiu $sp $sp 4
+beq $a0 $t1 true_branch
+...
+false_branch:</code><code style="color:red">
+cgen(e4)</code><code style="color:blue">
+b end_if
+true_branch:</code><code style="color:red">
+cgen(e3)</code><code style="color:blue">
+end_if:</code>
+</ul>
+
+<p>Code for function calls and function definitions depends on the layout of the AR
+
+<p>A very simple AR suffices for this language:
+<ul>
+<li>The result is always in the accumulator
+<ul>
+<li>No need to store the result in the AR
+</ul>
+<li>The activation record holds the actual parameters
+<ul>
+<li>For <code>f(x1,...,xn)</code> push <code>x1,...,xn</code> on the stack
+<li>These are the only variables in this language
+</ul>
+<li>The stack discipline guarantees that on function exit <code>$sp</code> is the same as it was on function entry
+<ul>
+<li>No need for a control link (which is usually needed to find another activation).
+</ul>
+<li>We need the return address
+<li>A pointer to the current activation is useful
+<ul>
+<li>This pointer lives in the register <code>$fp</code> (frame pointer)
+</ul>
+<li>Summary: For this language, an AR with the caller's frame pointer, the actual parameters, and the return address suffices
+<li>Picture: Consider a call to <code>f(x,y)</code>, the AR is:
+<pre>
+FP:
+      old fp  |
+      y       } AR of f
+      x       |
+SP-&gt; RA
+</pre>
+<li>The <em>calling sequence</em> is the instructions (of both caller and callee) to set up a function invocation
+<li>New instruction: <code>jal label</code>
+<ul>
+	<li>Jump to label, save address of next instruction in <code>$ra</code>
+	<ul>
+		<li>Show an example of what the "address of next instruction" means
+	</ul>
+	<li>On x86, the return address is stored on the stack by the "call" instruction
+</ul>
+<li>New instruction: <code>jr reg</code>
+<ul>
+	<li>Jump to the address in register reg
+</ul>
+<li>Code for the "caller side":
+<pre>
+  <code style="color:red">cgen(f(e1,e2,...,en)) =
+</code><code style="color:blue">
+sw $fp 0($sp)
+addiu $sp $sp -4</code><code style="color:red">
+cgen(en)</code><code style="color:blue">
+sw $a0 0($sp)
+addiu $sp $sp - 4
+...</code><code style="color:red">
+cgen(e1)</code><code style="color:blue">
+sw $a0 0($sp)
+addiu $sp $sp - 4
+jal f_entry</code>
+</pre>
+<ul>
+	<li>The caller saves its value of the frame pointer
+	<li>Then it saves the actual parameters in reverse order
+	<li>Finally the caller saves the return	address in register <code>$ra</code>
+	<li>The AR so far is <code>4*n+8</code> bytes long
+</ul>
+<li>Code for the "callee side":
+<pre>
+  <code style="color:red">cgen(def f(x1,x2,...,xn) = e) =
+</code><code style="color:blue">
+f_entry:
+move $fp $sp
+sw $ra 0($sp)
+addiu $sp $sp -4</code><code style="color:red">
+cgen(e)</code><code style="color:blue">
+lw $ra 4($sp)
+addiu $sp $sp <em>z</em>
+lw $fp 0($sp)
+jr $ra
+</code>
+</pre>
+<ul>
+	<li>Note: the frame pointer points to the top, not bottom of the frame
+	<li>The callee pops the return address, the actual arguments and the saved value of the frame pointer
+	<ul>
+		<li>This is just one example strategy. Another strategy could be that the caller pops these elements off the stack, and restores the frame pointer. Both are valid strategies.
+	</ul>
+	<li><em>z</em> = 4*n+8 (size of the activation record)
+</ul>
+<li>Before call:
+<pre>
+FP --&gt;
+
+SP --&gt;
+</pre>
+<li>On entry:
+<pre>
+FP --&gt;
+
+     old fp
+     y
+     x
+SP--&gt; (this is where the return address will go)
+</pre>
+</li>
+<li>Before exit:
+<pre>
+FP --&gt;
+
+     old fp
+     y
+     x
+FP--&gt; ra
+SP--&gt;
+</pre>
+</li>
+<li>After exit:
+<pre>
+FP --&gt;
+
+SP --&gt;
+</pre>
+</li>
+<li> Function calls have preserved the invariant that the stack would be exactly the same after the call, as it was at entry to the call
+</ul>
+
+<p>Variable references are the last construct
+<ul>
+	<li>The "variables" of a function are just its parameters
+	<ul>
+		<li>They are all in the AR
+		<li>Pushed by the caller
+	</ul>
+	<li>Problem: Because the stack grows when intermediate results are saved, the variables are not at a fixed offset from <code>$sp</code>
+	<li>One solution: use a frame pointer
+	<ul>
+		<li>Always points to the return address on the stack
+		<li>Since it does not move it can be used to find the variables
+	</ul>
+	<li>Let <code>xi</code> be the ith (i=1..n) formal parameter of the function for which code is being generated
+	<pre>
+cgen(xi) = lw $a0 z($fp)                   [z = 4*i]
+	</pre>
+	e.g., <code>x</code> at <code>$fp+4</code> and <code>y</code> at <code>$fp+8</code>
+		</li>
+		<li>Another solution: keep track of the current <code>$sp</code> vis-a-vis the value of <code>$sp</code> at function entry, and thus appropriately adjust the addresses of all variables. Pro: one less register (no frame pointer needed now)! Con: much harder to read and debug the code now. Also not possible with VLAs (variable length arrays).
+</ul>
+
+<p>Summary
+<ul>
+<li>The activation record must be designed together with the code generator
+<ul>
+	<li>Can be a <em>convention</em> (allows compatibility) or can be decided at compile-time on a function-to-function basis, but any decision should account for all possible callers/callees for any callee/caller.
+</ul>
+<li>Code generation can be done by recursive traversal of the AST
+<li>While we discussed code generation for a stack machine, production compilers often do different things
+<ul>
+	<li>Emphasis is on keeping values in registers (optimization)
+	<ul>
+		<li>Especially the current stack frame
+	</ul>
+	<li>Intermediate results are laid out in the AR (at fixed offsets for direct access). Not pushed and popped from the stack (can be more expensive as it does not allow value re-use)
+</ul>
+</ul>
+
+<h3>Example</h3>
+<pre>
+def sumto(x) = if x = 0 then 0 else x + sumto(x-1)
+</pre>
+
+<p>
+<ul>
+	<li>
+<pre>
+sumto_entry:
+move $fp $sp
+sw $ra 0($sp)
+addiu $sp $sp -4
+lw $a0 4($fp)
+sw $a0 0($sp)
+addiu $sp $sp -4
+li $a0 0
+lw $t1 4($sp)
+addiu $sp $sp 4
+beq $a0 $t1 true1
+
+false1:
+lw $a0 4($fp)
+sw $a0 0($sp)
+addiu $sp $sp -4
+sw $fp 0($sp)
+addiu $sp $sp -4
+lw $a0 4($fp)              # x
+sw $a0 0($sp)
+addiu $sp $sp -4
+li $a0 1
+lw $t1 4($sp)
+sub $a0 $t1 $a0           # x - 1
+addiu $sp $sp 4
+sw $a0 0($sp)
+addiu $sp $sp -4
+jal sumto_entry
+lw $t1 4($sp)
+add $a0 $t1 $a0
+addiu $sp $sp 4
+b endif1
+
+true1:
+li $a0 0
+
+endif1:
+lw $r1 4(esp)
+addiu $sp $sp 12
+lw $fp 0($sp)
+jr $ra
+</pre>
+<ul>
+	<li>Quite inefficient: pushing and popping on the stack all the time (also called <em>stack traffic</em>)
+	<li>Will discuss more efficient code generation techniques and optimizations later
+</ul>
+</li>
+</ul>
+
+<h3>Temporaries</h3>
+Let's discuss a better way for compilers to manage temporary values. Idea: keep temporaries in the AR. The code generator must assign a fixed location in the AR for each temporary.  (We will later discuss keeping temporaries in registers, which is even more efficient).
+<pre>
+def fib(x) = if x = 1 then 0 else if x = 2 then 1 else fib(x-1) + fib(x-2)
+</pre>
+If we first analyze the code to see how many temporaries we need, we can allocate space for that, instead of pushing and popping it from the stack each time.
+<ul>
+	<li>One temporary for expression <code>x=1</code>
+	<li>One temporary for expression <code>x=2</code>
+	<li>One temporary each for the two recursive calls to <code>fib</code>
+	<li>One temporary for the sum of the two values returned by the recursive calls
+	<li>One temporary for <code>x-1</code>
+	<li>One temporary for <code>x-2</code>
+</ul>
+But many of these temporaries are only needed once and not needed after that. So some of the space can be re-used for the subsequent temporaries. In fact, we can evaluate the whole expression using only two temporaries.
+
+<p>Let <code>NT(e)</code> be the number of temps needed to evaluate <code>e</code>
+
+<p><code>NT(e1+e2)</code>
+<ul>
+	<li>Needs at least as many temporaries as <code>NT(e1)</code>
+	<li>Needs at least as many temporaries as <code>NT(e2) + 1</code>
+	<ul>
+		<li>Need one extra temporary to hold on to value of <code>e1</code>
+	</ul>
+	<li>Space used for temporaries in <code>e1</code> can be reused for temporaries in <code>e2</code>
+	<li><code>NT(e1+e2) = max(NT(e1), 1+NT(e2))</code>
+</ul>
+
+<p>Generalizing, we get a system of equations:
+<pre>
+NT(e1+e2)	= max(NT(e1), 1+NT(e2))
+NT(e1-e2)	= max(NT(e1), 1+NT(e2))
+NT(if e1=e2 then e3 else e4) = max(NT(e1),1+NT(e2), NT(e3), NT(e4)) #once the branch is decided we do not need to hang on to e1/e2
+NT(id(e1,...,en)) = max(NT(e1),...,NT(en))  #the space for the result for ei is saved in the new activation record that we are building and so we do not count them in the space required for the current activation record.
+NT(int) = 0
+NT(id) = 0
+</pre>
+
+<p>Looking at our fib example
+<pre>
+def fib(x) = if (x[0] = 1[0])[1] then 0[0] else if (x[0] = 2[0])[1] then 1[0] else fib((x[0] - 1[0])[1])[1] + fib((x - 2)[1])[1 + 1]
+</pre>
+Show that the entire expression evaluates to NT=2
+
+<p>Once we know the number of temporaries required, we can add that much space for the AR
+<ul>
+	<li>For a function definition f(x1...xn) = e the AR has 2 + n + NT(e) elements
+	<ul>
+		<li>The return address
+		<li>The frame pointer
+		<li>n arguments
+		<li>NT(e) locations for intermediate results
+	</ul>
+</ul>
+
+<p>AR layout
+<pre>
+Old FP
+xn
+..
+x1
+RA
+Temp NT(e)
+Temp NT(e) - 1
+..
+Temp 1
+</pre>
+
+<p>Code generation must know how many temporaries are in use at each point
+<ul>
+	<li>Add a new argument to code generation
+	<ul>
+		<li>the position of the next available temporary
+	</ul>
+	<li>The temporary area is used like a small, fixed-size stack
+	<ul>
+		<li>Instead of pushing and popping at run time, we simply do all that in the compiler (at compile time)
+	</ul>
+	<li> Previous code
+<pre>
+cgen(e1+e2) =
+cgen(e1)
+sw $a0 0($sp)
+addiu $sp $sp -4
+cgen(e2)
+lw $t1 4($sp)
+add $a0 $t1 $a0
+addiu $sp $sp 4
+</pre>
+	<li> New code (avoid stack manipulation instructions)
+<pre>
+cgen(e1+e2, nt) =
+cgen(e1, nt)
+sw $a0 nt($sp)
+cgen(e2, nt+4)
+lw $t1 nt($fp)
+add $a0 $t1 $a0
+</pre>
+
+</ul>

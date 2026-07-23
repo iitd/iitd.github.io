@@ -1,0 +1,355 @@
+<h3>Global constant propagation</h3>
+As an example of a general global transformation involving global dataflow analysis.
+
+<p>Recall: To replace a use of <code>x</code> by a constant <code>k</code>, we
+must know: <em>On every path to the use of <code>x</code>, the last assignment
+	to <code>x</code> is <code>x := k</code></em>.  Let's call this condition AA.
+
+<p>Global constant propagation can be performed at any point where AA holds.
+
+<p>Let's first consider the case of computing AA for a single variable <code>X</code> at all program points. One can potentially repeat this procedure for each variable (inefficient but okay; improvements possible by doing all at once -- later).
+
+<p>To make the problem precise, we associate one of the following values with
+<code>X</code> at every program point:
+<table border="1" width="50%">
+	<col width="200">
+	<tr>
+		<td>value</td>
+		<td>interpretation</td>
+	</tr>
+	<tr>
+		<td>\top</td>
+		<td>This statement never executes (or we have not executed it so far)</td>
+	</tr>
+	<tr>
+		<td>C</td>
+		<td>X = constant C</td>
+	</tr>
+	<tr>
+		<td>\bot</td>
+		<td>X is not a constant</td>
+	</tr>
+</table>
+\bot is our safe situation; we can always say that X is not a constant (means that we do not know if it is a constant or not).
+
+<pre>
+BB1:
+               === X = \bot (at this program point)
+X := 3
+               === X = 3
+B &gt; 0 then goto BB2
+         else goto BB3
+              === X = 3 on both branches
+
+BB2:
+             ==== X = 3
+Y := Z + W
+             ==== X = 3
+X := 4
+             ==== X = 4
+
+BB3:
+             ==== X = 3
+Y := 0
+             ==== X = 3
+
+BB4:
+             ==== X = \bot
+A := 2 * X
+</pre>
+
+<p>Given global constant information, it is easy to perform the optimization
+<ul>
+	<li>Simply inspect the <code>x = ?</code> associated with a statement using <code>x</code></li>
+	<li>If <code>x</code> is a constant at that point, replace all uses of <code>x</code> with that constant.</li>
+	<li>But how do we compute <code>x = ?</code> at each program point.</li>
+</ul>
+
+<p>The analysis of a compicated program can be expressed as a combination of
+simple rules relating the change in information between adjacent statements.
+
+<p>The idea is to "push" or "transfer" information from one statement to
+the next.
+
+<p>For each statement <code>s</code>, we compute information about the value
+of <code>x</code> immediately before and after <code>s</code>
+<ul>
+	<li>Define a function <code>C</code> that stands for "constant information".</li>
+	<li><code>C(x,s,in)</code> = value of <code>x</code> before <code>s</code>.</li>
+	<li><code>C(x,s,out)</code> = value of <code>x</code> after <code>s</code>.</li>
+</ul>
+
+<p>Define a <em>transfer function</em> that transfers information from one statement to another.
+
+<p>In the following rules, let statement <code>s</code> have immediate predecessor statements <code>p1, ..., pn</code>.
+<pre>
+         |
+         |
+         v
+ ---&gt; s &lt;---
+</pre>
+<ol>
+	<li>if C(pi, x, out) = \bot for any i, then C(s, x, in) = \bot. For all we know, the execution may come down that predecessor, and so in that case we can make no prediction about the value of <code>x</code>.</li>
+	<li>if C(pi, x, out) = c and C(pi, x, out) = d and c &lt;&gt; d, then C(s, x, in) = \bot. We saw this in the example that we did by hand.</li>
+	<li>If C(pi, x, out) = c or \top for all i, then C(s, x, in) = c. If we come along a path where x=c, this is trivial to see. For a path with \top, it means that this never executes and so it can be ignored.</li>
+	<li>If C(pi, x, out) = \top for all i, then C(s, x, in) = \top. Every predecessor is unreachable, and so x itself is unreachable.</li>
+</ol>
+
+<p>Rules 1-4 relate the <em>out</em> of one statement to the <em>in</em> of the next statement. Now we need rules relating the <em>in</em> of a statement to the <em>out</em> of the same statement.
+
+<p>If C(s,x,in)=\top then C(s,x,out)=\top, for all s. Let's call this rule 5.
+
+<p>C(x:=c, x, out) = c if <code>c</code> is a constant. This rule (rule 6) has lower priority than the previous rule (rule 5). i.e., this rule applies only if C(x:=c, x, in) = d or \bot.
+
+<p>C(x:=f(...), x, out) = \bot if the value of <code>x</code> cannot be determined to be a constant after this statement.
+
+<p>C(y:=..., x, out) = C(y:=..., x, in) if x&lt;&gt;y
+
+<p><u>Algorithm</u>
+<ul>
+	<li>For every entry <code>s</code> to the program, set <code>C(s,x,in) = \bot</code></li>
+	<li>For every other statement (non-entry), set <code>C(s,x,in)=C(s,x,out)=\top</code>.</li>
+	<li>Repeat until all points satisfy rules 1-8:
+		<ul>
+			<li>Pick <code>s</code> not satisfying 1-8 and update using the appropriate rule.</li>
+		</ul>
+	</li>
+</ul>
+Notice we expect that at some point all rules will be satisfied at all points. This is called the <em>fixed-point</em> and the corresponding solution, the <em>fixed-point solution</em>.
+
+<p>Let's run the algorithm on this example:
+<pre>
+BB1:
+               === X = \bot (at this program point)
+X := 3
+               === X = \top
+B &gt; 0 then goto BB2
+         else goto BB3
+              === X = \top
+
+BB2:
+             ==== X = \top
+Y := Z + W
+             ==== X = \top
+X := 4
+             ==== X = \top
+
+BB3:
+             ==== X = \top
+Y := 0
+             ==== X = \top
+
+BB4:
+             ==== X = \bot
+A := 2 * X
+</pre>
+
+<p>Some guarantees: the fixed-point solution will satisfy the equations at each program point.
+
+<p>Some un-answered questions: what is the guarantee that this analysis will converge?  What is the guarantee that this algorithm will result in the best possible solution for this system of solutions?
+
+<h3>Analysis of loops</h3>
+<pre>
+BB1:
+X := 3
+B &gt; 0 then goto BB2
+         else goto BB3
+
+BB2:
+Y := Z + W
+X := 4
+
+BB3:
+Y := 0
+
+BB4:
+A := 2 * X
+</pre>
+
+Assume there is an edge from BB4 to BB3.
+
+<p>Now, when we are computing C(BB3,x,in), we need to know the value of C(BB4,x,out) and in turn C(BB4, x, in) and so on... And we are in a loop (we get back to C(BB3,x,in)).
+
+<ul>
+	<li>Consider the statement <code>Y:=0</code></li>
+	<li>To compute whether <code>X</code> is constant at this point, we need
+		to know whether <code>X</code> is constant at the two predecessors
+		<ul>
+			<li>X:=3</li>
+			<li>A:=2*X</li>
+		</ul>
+	</li>
+	<li>But info for <code>A:=2*X</code> depends on its predecessors including
+		<code>Y:=0</code>!
+</ul>
+
+<p>Because of cycles, all points must have values at all times.
+
+<p>Intuitively, assigning some initial value allows the analysis to break cycles.
+
+<p>The initial value \top means "So far as we know, control never reaches this point". The initial value is not what is expected at the end but allows us to get going (by breaking the cycle).
+
+<p>Analyzing the example: if we run the algorithm assuming that C(BB4,x,out) is \top, then we will be able to reach a fixed-point solution.
+
+<h3>Orderings</h3>
+<p>We can simplify the presentation of the analysis by ordering the (abstract) values.
+<pre>
+\bot &lt; c &lt; \top
+</pre>
+Drawing a picture with "lower" values drawn lower, we get
+<pre>
+      \top
+  /   / | \  \
+... -1  0  1 ...
+  \   \ | /  /
+      \bot
+</pre>
+Notice that this is a partial order; not all elements are comparable to each other. e.g., 0 and 1 are not comparable.
+
+<p>With orderings defined:
+<ul>
+	<li>\top is the greatest value, \bot is the least.
+	<ul>
+		<li>All constants are in between and incomparable.
+	</ul>
+	<li>Let <em>glb</em> be the greatest-lower bound in this ordering:
+		<ul>
+			<li>glb(\top, 1) = 1</li>
+			<li>glb(\bot, \top) = \bot</li>
+			<li>glb(\bot, 1) = \bot</li>
+			<li>glb(1, 2) = \bot</li>
+		</ul>
+	</li>
+	<li>Rules 1-4 can be written using <code>glb</code>:
+		<ul>
+			<li><code>C(s,x,in) = glb{C(p,x,out) | p is a predecessor of s}</code>.</li>
+		</ul>
+	</li>
+</ul>
+
+<p>Simply saying "repeat until nothing changes" doesn't guarantee that eventually nothing changes (it could oscillate forever for example). The use of glb explains why the algorithm terminates:
+<ul>
+	<li>Values start as \top can only decrease.</li>
+	<li>\top can change to a constant, and a constant to \bot.</li>
+	<li>Thus, <code>C(s,x,_)</code> (for every statement, for every variable) can change at most twice.</li>
+</ul>
+
+<p>Also, we maintain the invariant that the value at any intermediate point of the algorithm is always <em>greater</em> than the best solution value. This is because we initialize all values to \top. Also, we relax minimally --- assuming this invariant is true for the predecessors, it is guaranteed to be true for the successor.
+
+<p>Thus the constant propagation algorithm is linear in program size. Number of steps per variable = Number of C(...) values computed * 2 = Number of program statements * 4 (two C values per program statement, in and out).
+
+<h3>Liveness analysis</h3>
+Once constants have been globally propagated, we would like to eliminate
+dead code.
+<pre>
+BB1:
+X := 3
+B &gt; 0 then goto BB2
+         else goto BB3
+
+BB2:
+Y := Z + W
+
+BB3:
+Y := 0
+
+BB4:
+A := 2 * 3
+</pre>
+After constant-propagating X at BB4, the assignment to X in BB1 is no longer useful. In other words, X:=3 is dead (assuming X not used elsewhere).
+
+<p>Defining what is used (live) and what is not used (dead).
+<pre>
+X := 3
+X := 4
+Y := X
+</pre>
+<ul>
+	<li>The first value of <code>x</code> is <em>dead</em> (never used).</li>
+	<li>The second value of <code>x</code> is <em>live</em> (may be used).</li>
+	<li>Liveness is an important concept.</li>
+</ul>
+
+<p>A variable <code>x</code> is live at statement <code>s</code> if
+<ul>
+	<li>There exists a statement <code>s'</code> that uses <code>x</code>.</li>
+	<li>There is a path from <code>s</code> to <code>s'</code>.</li>
+	<li>That path has no intervening assignment to <code>x</code>.</li>
+</ul>
+
+<p>A statement <code>x:=...</code> is dead code if <code>x</code> is dead after the assignment. Dead statements can be eliminated from the program. But we need liveness information first . . .
+
+<p>We can express liveness in terms of information transferred between adjacent statements, just as in constant propagation.
+
+<p>Liveness is simpler than constant propagation, since it is a boolean property (true or false).
+
+<p>Here the set of values is False (definitely not live) and True (may be live). False &gt; True. The <code>glb</code> function is the boolean-OR function in this set of values.
+
+
+<pre>
+ &lt;------ p -------&gt;
+         |
+         |
+         v
+</pre>
+Rule 1: <code>L(p,x,out) = OR{L(s,x,in) | s is a successor of p}</code>. <code>x</code> is live at <code>p</code> if <code>x</code> is live at one of the successor nodes of <code>p</code>.
+
+<p>Rule 2: s: ... := f(x). L(s,x,in) = true if <code>s</code> refers to <code>x</code> on the RHS.
+
+<p>Rule 3: s: x := e where <code>e</code> does not refer to <code>x</code>. <code>L(x:=e,x,in)=false</code> if <code>e</code> does not refer to <code>x</code>. <code>x</code> is dead before an assignment to <code>x</code> because the current value of <code>x</code> at that point will not be used in the future.
+
+<p>Rule 4: <code>L(s,x,in) = L(s,x,out)</code> if <code>s</code> does not refer to <code>x</code>.
+
+<p><u>Algorithm</u>
+<ol>
+	<li>Let all <code>L(...) = false</code> initially.</li>
+	<li>Repeat until all statements <code>s</code> satisfy rules 1-4
+		<ul>
+			<li>Pick <code>s</code> where one of 1-4 does not hold and update using the appropriate rule.</li>
+		</ul>
+	</li>
+</ol>
+
+<p>Example:
+<pre>
+    ==== L(x) = false
+x := 0
+    ==== L(x) = false
+while (x!= 10) {
+		==== L(x) = false -&gt; true (step 1)
+  x = x + 1;
+    ==== L(x) = false
+}
+    ==== L(x) = false
+return;
+    ==== L(x) = false
+</pre>
+
+<pre>
+    ==== L(x) = false
+x := 0
+		==== L(x) = false -&gt; true (step 3)
+while (x!= 10) {
+		==== L(x) = false -&gt; true (step 1)
+  x = x + 1;
+    ==== L(x) = false -&gt; true (step 2)
+}
+    ==== L(x) = false
+return;
+    ==== L(x) = false
+</pre>
+
+<ul>
+	<li>A value can change from <code>false</code> to <code>true</code>, but not the other way round. So we use the ordering false &gt; true</li>
+
+	<li>Each value can change only once, so termination is guaranteed.</li>
+	<li>Once the analysis is computed, it is simple to eliminate dead code.</li>
+</ul>
+
+<p>Notice that information flowed in the forward direction (in the direction of the program execution) for constant propagation but flowed in the reverse direction (against the direction of the program execution) for liveness analysis. The former types of analyses are called <em>forward dataflow analyses</em>. The latter types of analyses are called <em>backward dataflow analyses</em>.
+
+<h3>Some other analyses that can be modeled as dataflow analyses</h3>
+<ul>
+	<li>Common-subexpression elimination: maintain a set of <em>available expressions</em> of the form x = op(y,z) at each statement. If we see another expression of the type <code>u = op(y,z)</code>, replace by <code>u=x</code>. Available expressions is a forward data-flow analysis. A value is available at a program location only if it is available at all the predecessor program locations, i.e., the available expressions at a statement is the intersection of the available expressions at the predecessors. In other words, the <em>meet</em> operator is intersection. Works best with single-assignment form because can maintain a larger set of available expressions.</li>
+	<li>Copy-propagation: an analysis similar to available-expressions, except only for expressions that are of the form x=y. The main difference is in the transformation (substituting variable names vs. substituting expressions by variable names).</li>
+</ul>

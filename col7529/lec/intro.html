@@ -1,0 +1,90 @@
+<h3>Importance of compiler optimizations</h3>
+<ul>
+<li>A large fraction of most CS courses, programming, data structures, algorithms, operating systems, etc., is about efficiency and optimization.</li>
+<li>Optimizations can be crudely categorized as: algorithm-level (study in data structures and algorithms courses), system-level (study in OS and other systems courses), and code-level optimizations (do not really study them, but a large fraction of developers spend their time on this).</li>
+<li>Compiler optimizations is a meta-level, or a higher-level subject, that aims is to automate these optimizations. This is an ambitious, yet desirable, pursuit.</li>
+<li>Most compiler optimizations today only target code-level optimizations.  Code-level optimizations are often closely dependent on the characteristics of the underlying hardware.  And so, most compiler developers are usually engaged in code-level optimization discussions, not the grander possibilities mentioned above.</li>
+<li>The root of code-level optimizations is due to the occurrence of redundancy in machine architecture and ISA --- the same function can be implemented in multiple ways.  We can draw a venn diagram of all the implementations that may implement a function "f"; the job of an optimizer is to pick an implementation that is better than many others.  Ideally, we would want the best possible implementation, but that is a very hard problem to achieve, not just automatically, but even manually.  And so, we currently just pick an implementation that is in the neighborhood of the original implementation, but is expected to be better.  The number of implementations that are left unexplored is huge, and a very powerful compiler should be able to explore and pick among all of them.</li>
+<li>In that perspective, compiler optimizations has been a very important area for the past 40 years, and in my view, it will continue to remain a very important area going forward.
+</ul>
+
+<h3>Example program</h3>
+Used the following program to illustrate the effect of optimizations.
+<pre>
+//counts the number of ones in an array of booleans
+sum=0;
+for (i = 0; i < n; i++) {
+  if (a[i]) sum++;
+}
+return sum;
+</pre>
+<ul>
+<li> What are some optimizations that are possible here?</li>
+<li> Example: we can unroll the loop as follows
+<pre>
+sum=0;
+m = ((n+7)/8)*8 - 1   //largest multiple of 8 below n
+for (i = 0; i < m; i+=8) {
+  if (a[i]) sum++;
+  if (a[i+1]) sum++;
+  if (a[i+2]) sum++;
+  if (a[i+3]) sum++;
+  if (a[i+4]) sum++;
+  if (a[i+5]) sum++;
+  if (a[i+6]) sum++;
+  if (a[i+7]) sum++;
+}
+for (; i < n; i++) {
+  if (a[i]) sum++;
+}
+return sum;
+</pre>
+</li>
+<li> Why is this an improvement?  It depends on the machine.  This code may be better or worse depending on the underlying machine.
+<p>Worse because:
+<ul>
+<li> More distinct instruction fetches, which can lead to more memory accesses, if the microprocessor had an internal cache, e.g., Intel's Data Stream Buffer.</li>
+<li> Larger code size, so more instruction cache contention.</li>
+<li> Will actually be slower if <code>n</code> is small.</li>
+</ul>
+<p>Better because:
+<ul>
+	<li> Fewer increments of <code>i</code>, seven less increment instructions per iteration of the bigger loop.</li>
+	<li> Fewer comparisons and conditional jumps for <code>i</code> with the upper bound (<code>m</code> or <code>n</code>).  1-2 instructions saved per iteration depending on ISA (compare and jump).</li>
+	<li> More pipelining by the processor because one less conditional jump, so one less branch to predict.  Actually, if the processor is smart enough, it will realize that the increment of <code>i</code> and the branch condition <code>i</code> is independent of the rest of the body of the loop, and so it will probably not have to experience stalls due to that.  Branch prediction logic is also consequential here.</li>
+	<li> Notice that it is important to pre-compute <code>m</code>, so that is another optimization, in addition to unrolling</li>
+	<li> Better opportunity for optimizing the body of the loop, e.g., can read the eight bits into a register, and then lookup that register in a precomputed table that returns the number of ones for that value.  We can also experiment with the number of bits to collate, this becomes a tradeoff between space and time. Also depends on memory access cost versus execution cost of the machine.</li>
+	<li>Can use the <code>popcnt</code> instruction on x86</li>
+	<li>Notice that many of these optimizations depend on the workload characteristics, e.g., typical size of <code>n</code>.  Also, if we know that most of the bits are going to be <code>0</code>, we may be able to optimize better.</li>
+	<li>After all these simple ideas, for this simple problem, we can expect a 10-20x improvement in the running time.</li>
+	<li>This improvement is dependent on the workload.  If a compiler does not have knowledge of the workload, it makes educated guesses, e.g., a loop must be executing at least 10 times.  However, it is clear that the more workload information is available, the more optimization opportunity may be exploited.</li>
+</ul>
+</ul>
+
+<h3>Why is profile-guided optimization not the norm?</h3>
+<ul>
+<li> Given the large improvements that are possible, why do we not provide the compiler with all the workload information?</li>
+<li> For example, every mature project has a test-suite of unit and integration tests, a compiler should accept the command to run these tests, and then identify the best possible optimization? </li>
+<li> While compilers support this today, this is not the de-facto method of usage, in fact, very few projects use the compiler in this mode.</li>
+<li> The reason is that compilers are incredibly complex, and they are rapidly increasing in complexity.  The profile-guided optimization support, while improving, remains weak today.  That is not to say that we will not likely see more adoption of profile-guided optimization in the future, e.g., ten years from now, as the support becomes more mature.
+</ul>
+
+<h3>History and future of compilers</h3>
+<ul>
+	<li> Recently, Linus Torvalds was asked to comment on how LLMs have made coding 10x easier.  He retorted that compilers made coding 1000x easier, and nobody talks about that.</li>
+	<li> In the early days of computing, most programs, e.g., mainframe server, were written in assembly.  People would carefully write assembly functions, maintain docs on which register stores which values for which function, create assembly-level abstractions to be able to manage the complexity, and so on.</li>
+	<li> Higher-level PLs and compilers were thought-of as tools for amateur programmers, who do not care about efficiency and performance.  But it soon became the de-facto way of programming thereafter, with very few assembly programmers left today. Today's compilers can be thought-of as matching or exceeding the generated code quality of handwritten code.</li>
+	<li> One of the key features of a compiler is our trust in its correctness.  A compiler is expected to produce executable code that behaves exactly as the source code, and almost nobody inspects the executable code to check for correctness.  This is one major reason why compilers improve productivity by 1000x, future solutions that try to meet this adoption and productivity bar, must also focus heavily on correctness.</li>
+	<li> Before 1990s, compilers were developed by individual teams (usually within companies), e.g., a team of twenty people.  After 1990s, open source movements gathered stream, and so hundreds of developers started contributing to an ecosystem like GCC.  While it was at around 100K SLOC in 1990, today it is at 20 MLOC, growing at 2MLOC every three years.</li>
+	<li>This complexity is due to the addition of more optimization logic --- solving a larger chunk of the problem we discussed above.  Even after all this, large swaths of the problem space remain untouched.</li>
+	<li>I think there is a way to make progress on this problem, using a combination of AI and FM.</li>
+</ul>
+
+<h3>Overview of a compiler</h3>
+<ul>
+<li>While COL728 is not a pre-requisite to this course, it certainly provides a perspective for this course.</li>
+<li>Made up of parser (to generate Abstract Syntax Tree), Semantic Analyzer (for type checking), IR generation, Optimization over the IR, and finally Code generation and optimization to executable code.</li>
+<li>This code will mostly concern itself with the optimization at the IR level, and the code generation and optimization to executable code, although optimizations are present at all stages.</li>
+<li>Types are constraints imposed by a program on her own code, because the programmer does not trust himself or herself to always write correct code; and so the compiler checks that the code maintains the constraints specified by the programmer.  These include built-in types (int, float, ..), and user-defined types (classes, enumerations, ..).</li>
+<li>In addition to correctness, types help with optimization opportunity, as they inform the compiler about these constraints, e.g., if a compiler knows that a member variable of a class is private, and has access to all the member functions, it can optimize much better.</li>
+</ul>

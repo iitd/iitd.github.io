@@ -1,0 +1,109 @@
+<html>
+<head>
+</head>
+  <head>
+    <title>COL729 Lab 0 : Benchmarking</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="Stylesheet" type="text/css" href="style.css">
+  </head>
+
+
+<body>
+  <h1><font color="blue">COL729 Lab 0 : Benchmarking</font></h1>
+
+  <h2>Due date - 23:55, 31 January 2023</h2>
+  <h3>Weightage: 10%</h3>
+
+  <p>In this assignment, we will benchmark a few common C/C++ applications and examine
+  the effect of different compilers and different compiler optimization levels on program
+  performance.</p>
+
+  <h3>Instructions</h3>
+
+  <ul>
+    <!--
+    <li>Install an Ubuntu 20.04 system</li>
+
+    <li>Install GCC and Clang: <code> sudo apt-get install gcc clang </code> </li>
+
+    <li>Download ICC from <a href=
+    "https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html?operatingsystem=linux&distributions=offline"
+    >intel's website</a>.</li>
+    -->
+    <li>Use the provided credentials for logging-in to the lab machine.</li>
+
+    <li>Install SPEC CPU 2017 benchmark suite.</li>
+    <ul>
+      <li>The SPEC CPU 2017 ISO is already mounted in your home directory.</li>
+      <li>Follow the instructions at
+      <a href="https://www.spec.org/cpu2017/Docs/install-guide-unix.html">https://www.spec.org/cpu2017/Docs/install-guide-unix.html</a>
+        to install and run the CPU 2017 benchmark suite.</li>
+      </li>
+    </ul>
+    <!--
+    <li>Install SPEC CPU 2017 benchmark suite (please note that this is an IITD-internal
+    link only; this benchmark suite is proprietary so please do not share it outside IIT
+    Delhi)
+
+      <ul>
+        <li>Download <a href=
+        "http://poorvi.cse.iitd.ac.in/~sbansal/isos/cpu2017-1_0_5.iso">http://poorvi.cse.iitd.ac.in/~sbansal/isos/cpu2017-1_0_5.iso</a></li>
+
+        <li>Follow instructions at <a href=
+        "https://www.spec.org/cpu2017/Docs/install-guide-unix.html">https://www.spec.org/cpu2017/Docs/install-guide-unix.html</a>
+        to install and run the CPU 2017 benchmark suite</li>
+
+        <li><i>Optional</i>: you can use the commands in this file to run any benchmark
+        individually: <a href="cpu2017_cmdlines.sh">cpu2017_cmdlines.sh</a>.</li>
+      </ul>
+    </li>
+    -->
+
+    <li style="list-style: none"><br /></li>
+
+    <li><b>Learn about benchmarking</b>: Look at the video on "Benchmarking C++ Code" by
+    Bryce Adelstein-Lelbach posted on the <a href="../../references.html">references</a>
+    page.</li>
+
+    <li>Go through the <a href="https://www.spec.org/cpu2017/Docs/overview.html">SPEC-CPU
+    overview</a></li>
+
+    <li>Build SPEC CPU 2017 <i>SPEC-RATE</i> benchmarks <i>for Integers</i> with GCC,
+    Clang, ICC
+
+      <ul>
+        <li>Build with the unoptimised (may not be default) versions of GCC/Clang/ICC for 32-bit and 64-bit x86 architectures.</li>
+
+        <li>Build with different optimization options: -O1, -O2, -O3, etc.</li>
+
+        <li>You may choose to skip the Fortran benchmark (548.exchange2_r).</li>
+
+        <li>Plot your runtime results, make conclusions
+
+          <ul>
+            <li>Plot Scores or Runtimes vs Optimisation levels</li>
+
+            <li>Make separate plots for each benchmark</li>
+
+            <li>A total of 9 graphs are expected, one per benchmark, containing plots
+            for each compiler (GCC/ICC/Clang 32 and 64-bits)</li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li>Please start as early as possible, the benchmarks take <a href="https://www.spec.org/cpu2017/Docs/overview.html#Q11">significant amount of time to finish</a>.</li>
+  </ul>
+  
+  <h3>Turn in</h3>
+  <b>Prepare a report summarizing your findings</b>:
+  <p>Your report should be succinct yet insightful.  It must include discussions on the following questions:</p>
+  <ul>
+    <li>Which are the most consequential and the least consequential optimizations to runtime?</li>
+    <li>Which compilers are better in what aspects?</li>
+    <li>Which are faster: 32-bit or 64-bit executables? Why?</li>
+    <li>How are the various optimisation levels different? How do these differ across compilers?</li>
+    <li>Does the kind of benchmark influence the results between compilers? Why?</li>
+  </ul>
+</body>
+</html>

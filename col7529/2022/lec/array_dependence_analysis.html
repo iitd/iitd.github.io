@@ -1,0 +1,54 @@
+<h2>Array Data-Dependence Analysis</h2>
+
+Three types of dependencies:
+<ul>
+<li>True dependence: RAW</li>
+<li>Anti dependence: WAR</li>
+<li>Output dependence: WAW</li>
+</ul>
+
+<p>A static access in a program depends on another as long as there exists a dynamic instance of the first access that depends on some instance of the second.
+
+<p>Let two static array accesses be represented by &lt;F,f,B,b&gt; in a d-depth loop nest and &lt;F',f',B',b'&gt; in a d'-depth loop nest; then these
+accesses are data-dependent if
+<ol>
+<li>At least one of them is a write reference and</li>
+<li>There exist vectors <b>i</b> in <code>Z^d</code> and <code>i'</code> in <code>Z^d'</code> such that
+<ul>
+<li><b>Bi</b> &gt;= 0</li>
+<li><b>B'i'</b> &gt;= 0</li>
+<li><b>Fi+f</b> = <b>F'i'+f'</b></li>
+</ul>
+</li>
+</ol>
+To search for dependencies between instance of the same static instance, we impose the additional
+constraint that <code>i!=i'</code>.
+
+<p>Example:
+<pre>
+for (i = 1; i&lt;=10; i++) {
+  Z[i] = Z[i-1];
+}
+</pre>
+What are all the data dependencies in this program (between the one read and one write access in the loop body):
+<pre>
+1 &lt;= i &lt;= 10
+1 &lt;= i' &lt;= 10
+i-1 = i'
+</pre>
+
+What about data-dependencies between Z[i] and itself?
+<pre>
+1 &lt;= i &lt;= 10
+1 &lt;= i' &lt;= 10
+i = i
+i != i'
+</pre>
+The last constraint because it is a self-dependency test
+
+<h3>Integer Linear Programming</h3>
+Solving such equations involving equality and inequality relations between integers, requires integer
+linear programming (ILP) algorithms. In general, ILP is NP-hard, but several heuristics can get us
+to good solutions; further, the problem sizes expected in our analyses are fairly small.
+
+We do not discuss techniques to solve ILPs in this course, and just assume that we have tools available to do this.

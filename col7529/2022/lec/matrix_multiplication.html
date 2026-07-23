@@ -1,0 +1,85 @@
+<h3>Matrix-Matrix multiplication</h3>
+Naive implementation
+<pre>
+for (i = 0; i &lt; n; i++) {
+  for (j = 0; j &lt; n; j++) {
+    //reads C(i,j) (can be register-allocated in the inner-most loop if we know that C, A, and B cannot alias)
+    for (k = 0; k &lt; n; k++) {
+      //reads row i, column k of A into cache. cache hit (i,k-1) was read in previous iteration which was adjacent in memory.
+      //reads row k, column j of B into cache. CACHE MISS (k-1,j) is far away from (k,j) giving little spatial locality
+      C[i,j] = C[i,j] + A[i,k]*B[k,j]
+    }
+  }
+}
+</pre>
+Number of memory accesses (cache misses) = n^3 (due to B)
+
+<p>Blocked (tiled) matrix multiply. Consider A, B, C to be NxX matrices of bxb sub-blocks where b=n/N is the block-size.
+<pre>
+for (i = 0; i &lt; N; i++) {
+  for (j = 0; j &lt; N; j++) {
+    //reads block at C(i,j) into cache. Likely to have O(b) misses; one for each row in the block
+    for (k = 0; k &lt; N; k++) {
+      //reads row i of block at A(i,k) into cache. Likely to have O(b) misses; one for each row in the block.
+      //reads column j of block at B(k,j) into cache. Likely to have O(b) misses (one for each row in the block). Notice that the access pattern is still column-major, but the memory-load pattern can be row-major.
+      BLOCK_MULTIPLY(C[i,j], A[i,k], B[k,j], b)
+    }
+  }
+}
+</pre>
+Number of memory accesses: 2 * N^3 * n/N * n/N (read each block of A and B N^3 times) + 2 * N^2 * n/N *n/N (read and write each block of C once in the second nested loop N^2 times). This transformation is called <em>loop tiling</em>.
+
+<p>The improvement = <code>n^3/N*n^2 = n/N = b</code>.  In general, increasing <code>b</code> sounds like a good idea, but only until all three arrays can fit in the cache. Thus if the cache-size is <code>M</code>, then the maximum block-size we can have is <code>sqrt(M/3)</code> (which is also the maximum speedup we can have).
+
+<h2>Matrix Multiplication in depth</h2>
+<pre>
+for (i = 0; i &lt; n; i++) {
+  for (j = 0; j &lt; n; j++) {
+    A[i,j] = 0;
+    for (k = 0; k &lt; n; k++) {
+      A[i,j] += X[i,k]*Y[k,j];
+    }
+  }
+}
+</pre>
+Serial execution of matrix multiplication:
+<ul>
+<li>Show diagram of how arrays X and Y are accessed (row and column major resp.).</li>
+<li>If arrays are in row-major, Y accesses would have zero spatial locality; if in column-major, X accesses would have zero spatial locality. Also re-use distance for Y[k,j] is O(n) which may be much bigger than cache size.</li>
+<li>If <code>c</code> is the umber of cache lines in the cache, and if n columns of Y can survive in cache simultaneously, one iteration of the outer-loop (e.g., i = 0), takes n^2/c cache misses (n^2 elements in Y and spatial locality allows a factor of c).</li>
+<li>If n columns of Y cannot survive in cache simultaneously, one iteration of the outer-loop (e.g., i = 0), takes n^2 cache misses.</li>
+<li>In practice: anywhere between n^2/c and n^2.</li>
+<li>If the entire Y can survive in the cache simultaneously, (and similarly entire X can survive in the cache simultaneously), we get 2*n^2/c cache misses for the whole program.</li>
+<li>If the entire Y cannot survive in the cache simultaneously, but a column of Y can survive in the cache simulaneously, we need to bring the whole Y into cache for every outer iteration of the loop. The number of cache misses is n^2/c + n^3/c -- the first term for X and the second term for Y.</li>
+<li>Worse, if we cannot hold even one column of Y in the cache simultaneously, the number of cache misses is n^2/c + n^3.</li>
+</ul>
+
+<h3>Row-by-row parallelization</h3>
+Scheme: assign <code>n/p</code> rows of A to one processor. With this: each processor needs to access <code>n/p</code> rows of A and X, but the entire Y. Each processor will compute n^2/p elements of A performing n^3/p multiply-and-add operations to do so.
+
+<p>While computation time decreases in proportion to <code>p</code>, the communication cost (total number of cache misses) rises in proportion to <code>p</code>, because Y needs to be loaded in entirety in each processor's cache. The total number of cache misses is n^2/c + p*n^2/c.
+
+<h3>Blocking</h3>
+<pre>
+for (ii = 0; ii &lt; n; ii+=B) {
+  for (jj = 0; jj &lt; n; jj+=B) {
+    for (kk = 0; kk &lt; n; kk+=B) {
+      for (i = ii; i &lt; ii+B; i++) {
+        for (j = jj; j &lt; jj+B; j++) {
+          for (k = kk; k &lt; kk+B; k++) {
+            A[i,j] += X[i,k]*Y[k,j];
+          }
+        }
+      }
+    }
+  }
+}
+</pre>
+We have re-ordered the iteration space significantly, but because the order of iterations does not matter (addition is commutative and associative), this remains correct.
+
+<p>To bring a block of X or Y into the cache, we require B^2/c cache misses. The number of times we need to bring a block into the cache is (n/B)^3. Total number of cache misses = 2n^3/Bc. If B=n, we get 2n^2/c cache accesses; on the other hand if B=100 s.t. all three blocks fit in cache, we can get a significant speedup of O(Bc) [compared to worst-case O(n^3) cache misses].
+
+<p>This blocking can be done at each level of the cache hierarchy with different Bs. e.g., B=8 for L1, 80 for L2, ...
+
+<p>In practice: blocking can improve performance by a factor of 3 on modern machines on a uniprocessor (compute-bound after a point; recall Amdahl's law); for multiprocessors, where a set of blocks are farmed out to each processor, the speedup can be linear in the number of processors.
+

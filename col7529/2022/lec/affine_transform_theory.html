@@ -1,0 +1,224 @@
+<h2>Affine loop transformations through a polyhedral framework</h2>
+<ul>
+<li>Focus on techniques for optimizing the class of numerical applications that use arrays as data structures and access them with simple regular patterns, i.e., <em>affine</em> array accesses with respect to surrounding loop indices.</li>
+<li><em>Affine function</em> (or linear function) is a function of one or more variables x1, .., xn, that can be expressed as a sum of a constant plus constant multiples of the variables: sum_i (c_i * x_i) + c0</li>
+<li>A simple example:
+<pre>
+int A[200];
+for (i = 0; i &lt; 100; i++) {
+  A[2*i] = 4;
+}
+</pre>
+Here the array address is an affine function of the loop iteration variable <code>i</code>.
+<ul>
+<li>Can perform each iteration in parallel with other iterations in this example</li>
+<li>If there was another access A[j] = 0, then we <em>cannot</em> parallelize this loop because we cannot say if A[2*i] may be the same location (may alias) with A[j]. We have to make a conservative assumption; notice that A[j] is not an affine function of the loop iteration variables.</li>
+<li>Similarly, if our body consists of:
+<pre>
+A[2*i] = (A[2*i - 1] * 31) % 23;
+</pre>
+We cannot parallelize this loop either (even though all accesses are affine) because there are <em>data-dependencies</em> across different iterations of the loop.
+</ul>
+</li>
+</ul>
+We use linear algebra and integer linear programming techniques to reason about these things and optimize for parallelism and locality.
+
+<p>We assume in this discussion that all loop iteration variables have a lower and an upper bound. Also, we assume that the iteration variables increment by 1 in each iteration (if the variable iterates by more than 1, we can introduce a new iteration variable, and write the old iteration variable in terms of the new variable, such that we satisfy this property). The space of the loop iteration variables can be represented as a convex polyhedron (in d-dimensional space, where d is the loop-nest depth and the number of loop iteration variables). We can reason about the relationships between different iterations by reasoning about relationships between points in the polyhedral space.
+
+<p>Two categories of transformations: <em>affine</em> and <em>blocking</em>.
+<ul>
+<li>Affine partitioning splits up the polyhedra of iterations into components that can be potentially executed in parallel, or in general can be reordered with respect to each other.</li>
+<li>Blocking creates a hierarchy of iterations, e.g., blocking in our matrix multiplication example above.</li>
+</ul>
+Linear algebra techniques help determine best affine partitions and blocking.
+
+<p>Loop-level parallelism example:
+<pre>
+for (i = 0; i &lt; n; i++) {
+  Z[i] = X[i] * 2;
+}
+</pre>
+Each iteration is logically independent of other iterations. If there are M processors, each processor <code>p</code> can execute the following code:
+<pre>
+b = ceil(n/M);
+for (i = b*p; i &gt; min(n,b*(p+1)); i++) {
+  Z[i] = X[i] * 2;
+}
+</pre>
+This type of a program is also called SPMD (single program multiple data) program, i.e., the same code is executed by all the processors but it is parameterized by an identifier (<code>p</code>) unique to each processor. Typically, one processor, known as the <em>master</em> executes all the serial part of the computation, including synchronizing with all the other processors (including itself). In this example, we need <em>barrier synchronization</em>.
+
+<h3>Affine Transform Theory</h3>
+Three spaces
+<ul>
+<li>Iteration space : set of dynamic execution instances in a computation, i.e., the set of combinations of values taken on by loop indices.</li>
+<li>Data space: set of array elements accessed.</li>
+<li>Processor space: set of processors in the system, each assigned a unique id.</li>
+</ul>
+  
+
+<h3>Iteration spaces</h3>
+Often, iteration spaces are rectangular, e.g., matrix multiply. For d-depth loop next, each iteration variable has a lower bound and upper bound (potentially as functions of iteration variables at lower depths); we can identify these bounds, and represent the space as a convex polyhedron.
+
+Convex polyhedron: if two points are in the polyhedron, then all points on the line connecting the two points are also in the polyhedron.
+
+Example:
+<pre>
+for (i = 0; i &lt; 9; i++) {
+  for (j = i; j &lt; 7 &amp;&amp; j &lt; i + 4; j++) {
+    A[i,j] = 0; //(0,0),(0,1),(0,2),(0,3),(1,1),(1,2),(1,3),(1,4),(2,2),(2,3),(2,4),(2,5),(3,3),(3,4),(3,5),(3,6),(4,4),(4,5),(4,6),(5,5),(5,6),(6,6)
+  }
+}
+</pre>
+Draw the polygon that represents the iteration space.
+
+<p><b>Execution order of loop nests</b>:
+A sequential execution of the loop nest executes the points in the space in ascending lexicographic order. A vector <b>i</b>=[i1,..in] is &lt; <b>i'</b>=[i'1,..i'n'] iff \exists{m} s.t. m &gt;= 0 and m&lt;min(n,n') and [i1..im]=[i'1..i'm] and i_(m+1)&lt;i'_(m+1).
+
+<p><b>Matrix formulation</b>: The iteration space can be formulated in matrix
+form as:
+<pre>
+{i \in Z^d | Bi + b &gt;= 0}
+</pre>
+<ul>
+<li>B is a dxd integer matrix</li>
+<li>b is an integer vctor of length d</li>
+<li>0 is a vector of d 0s</li>
+</ul>
+
+<p><b>Loop invariant variables</b> (aka symbolic constants). Example:
+<pre>
+for (i = 0; i &lt;= n; i++) {
+  ...
+}
+</pre>
+We need to consider <code>n</code> as another loop iteration variable:
+<pre>
+[ -1 1 ] [ i ]  &gt;= [ 0 ]
+[ 1  0 ] [ n ]        [ 0 ]
+</pre>
+Notice that while <code>n</code> is a loop iteration variable, its only constraint is that it is greater than or equal to <code>i</code>.
+
+<p>This representation of the iteration space has no notion of the order
+in which the iteration space needs to be sweeped. If we can determine that
+the loop iterations are independent (for example), we can completely alter
+the order of sweeping, e.g., by swapping the inner and outer loops of the
+previous example:
+<pre>
+for (j = 0; j &lt;= 6; i++) {
+  for (i = max(j-3, 0); i &lt;= j; j++) {
+    A[i,j] = 0; //(0,0),(0,1),(0,2),(0,3),(1,1),(1,2),(1,3),(1,4),(2,2),(2,3),(2,4),(2,5),(3,3),(3,4),(3,5),(3,6),(4,4),(4,5),(4,6),(5,5),(5,6),(6,6)
+  }
+}
+</pre>
+To do this, we need to first identify the potential values that can be taken
+by <code>j</code>, and then identify the potential values that can be taken by
+<code>i</code> for a given value of <code>j</code>. The is done by <em>projecting</em> the convex polyhedron onto the outer dimension of the space. e.g., the
+projection of the 2D space in the example above onto the <code>j</code> axis
+is the line segment from 0 to 7. When we project a 3-dimensional polyhedron
+to a 2D space, we get a polygon in the 2D space. The concept of projection
+is quite useful in many of our analyses, including loop bound generation.
+
+<p><b>Fourier-Motzkin elimination algorithm</b>:
+<ul>
+<li>Input: A polyhedron S with variables x1..xn, specified through a set of linear constraints (conjunction). One given variable xm is to be eliminated.</li>
+<li>Output: A polyhedron S' with all variables except xm that is the projection of S on dimensions other than <em>m</em>th.</li>
+<li>Algorithm:
+<ul>
+<li>For every pair of lower bound and upper bound on xm in C such that:
+<pre>
+L &lt;= c1*xm
+c2*xm &lt;= U
+</pre>
+create the new constraint:
+<pre>
+c2*L &lt; c1*U
+</pre>
+</li>
+<li>S' is the set of constraints S-C, plus all the constraints generated in the step above.</li>
+</ul>
+</li>
+</ul>
+Discuss the example above with this algorithm.
+
+<p><b>Loop bounds generation</b>: All the inequalities involving the
+<em>innermost</em> loop index variables are written as the variable's lower
+and upper bounds. Then project away the dimension representing
+the innermost loop. In the example above (where i is the outer loop index), by considering
+i as the innermost loop index, we get:
+<pre>
+Li = j-3, 0
+Ui = j
+Lj = 0
+Uj = 7
+</pre>
+Now we can visit the iteration space either "horizontally" (lexicographic in (i, j)) or "vertically" (lexicographic in (j, i)).
+
+<p><b>Changing axes</b>:  we can also define a new variable <code>k = j - i</code> and
+sweep the iteration space in lexicographic order with respect to <code>k</code> and <code>j</code>.
+<pre>
+j-k &gt;= j-3
+j-k &gt;= 0
+j-k &lt;= j
+j &gt;= 0
+j &lt;= 7
+</pre>
+This can be simplified to:
+<pre>
+k &lt;= 3,j
+k &gt;= 0
+j &gt;= 0
+j &lt;= 7
+</pre>
+This can easily be expressed with j as the outer loop index. If we now want to make k as the outer loop index, we can first specify j's bounds in terms of k, and then project out j:
+<pre>
+Lj = 0,k
+Uj = 7
+Lk = 0
+Uk = 3
+</pre>
+We get:
+<pre>
+for (k = 0; k &lt; 3; k++) {
+  for (j = k; j &lt;= 7; j++) {
+    A[j-k,j] = 0;
+  }
+}
+</pre>
+
+<h3>Affine array accesses</h3>
+Array access in a loop is <em>affine</em> if
+<ul>
+<li>The bounds of the loop are expressed as affine expressions of the surrounding loop variables and symbolic constants</li>
+<li>The index for each dimension of the array is also an affine expression of surrounding loop variables and symbolic constants</li>
+</ul>
+
+<p>Formally, we represent an array access in a loop nest that uses a vector of index variables <b>i</b> by the four-tuple <code>T = &lt;<b>F,f,B,b</b>&gt;</code>; it maps a vector <b>i</b> within the bounds
+<pre>
+Bi + b &gt; 0
+</pre>
+to the array element location
+<pre>
+Fi + f
+</pre>
+</ul>
+What are F,f (variables i,j) for
+<ul>
+<li>X[i-1] : F = [1 0], f = [-1 0]^T (transpose)</li>
+<li>Y[i,j]: two accesses. F =
+<pre>
+[1 0]
+[0 1]
+</pre>
+f = [0 0]^T
+</li>
+<li>Y[j,j+1]</li>
+<li>Y[1,2]</li>
+<li>Z[1,i,2*i+j]</li>
+</ul>
+In linearized-array representation, each multi-dimensional array
+access is represented in linearized form, e.g. A[i,j] becomes A[n*i+j] which
+is non-affine (quadratic). To deal with these cases, we
+can convert the linear access into a multidimensional access if
+every access can be decomposed into separate dimensions
+with the guarantee that none of the
+components exceeds its bound. 
