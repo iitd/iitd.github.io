@@ -1,3 +1,24 @@
+<h3>Compiler organization</h3>
+<ul>
+<li> Discuss how a compiler is organized into stages: parser (generates AST), semantic analysis (generates typed-AST), IR-generation (generates IR), optimizer (generates IR), codegen-and-opt (generates executable)</li>
+<li>Discuss the different optimization levels of a compiler and what phases/passes are enabled at each level.  Discuss the evaluation criteria of an optimization (payoff [indirect,direct], generality, simplicity [ease-of-implementation]).  e.g., O1 usually includes those optimiztions that score high on all three criteria. Oz optimizes for code size. Discuss examples of optimizations and characterize them, e.g., loop unrolling, pop-count.</li>
+<li>Discuss how a compiler's optimizer is organized into algorithmic passes, each pass takes an IR-program and outputs an IR-program.  While the IR constructs used before a pass may be different from the IR constructs used after a pass, the IR is usually the union of all such constructs. e.g., vectorization instructions do not appear in unoptimized IR, while compiling C programs.</li>
+<li>The organization into passes allows flexibility of rearranging the passes. However, it is usually preferred to organize the passes in a certain order, e.g., loop unrolling should occur earlier in the pipeline.</li>
+<li>Discuss different source languages and their different optimization needs, and thus the need for multiple IRs within a compiler:
+<ul>
+  <li>SQL: need query optimizer that figures out table data structure, join algorithm, e.g., hashtable, natural-vs.-hash-join, etc. Generates a query plan at the end, which is usually compiled to a source language like C/C++, but is best compiled (in mature pipelines) directly to IR like LLVM-IR (as the latter preserves higher-level constructs, e.g., vectorization).</li>
+  <li>OCaml: need memory management optimizer, e.g., do not keep objects if they are no longer used.</li>
+  <li>PyTorch/TensorFlow: need tensor layout, parallelism, and data transfer optimizer.</li>
+</ul>
+</li>
+<li>A machine has a finite register file and memory, and an execution loop that keeps executing one instruction after another.</li>
+<li>Some opcodes in a machine are present because they are easy for a human to understand and code in a  high-level language too, e.g., add/sub...  e.g., it is possible for a machine to have instructions that set a bit in register, in which case, a single addition operation will become a sequence of instructions to implement, say a ripple-carry adder.</li>
+<li>Some opcodes are midway between human understanding and fast execution, e.g., vector addition/subtraction/...</li>
+<li>Some opcodes are highly specialized, e.g., compute the sha1 hash of a memory region, or scatter and gather bytes from a memory</li>
+<li>The IR usually needs to be rich enough to support all these different opcodes during code generation.
+Discuss how even compilers for languages like C/C++ include Machine-IR for machine-dependent optimizations, e.g., if the IR generates an opcode for popcnt, but the architecture does not support it, then inefficient code will get generated.</li>
+<li>A successful paradigm for IR design is three-address code, discussed next</li>
+</ul>
 <h3>Intermediate Language</h3>
 <ul>
 	<li> A language between the source and the target
@@ -63,6 +84,8 @@ igen(e1+e2, t) =
   t = t1 + t2
 </pre>
 Unlimited number of registers, means IR code generation is simple. Contrast with stack machine, where we were using stack slots to save intermediate results (many instructions to save/restore); here we can just coin a new register name, and save results to it.
+
+<p>Homework: write <code>igen</code> for control-flow constructs like if-then, if-then-else, while, and for loops.
 
 <p>LLVM IR is an example of IR.  It resembles three-address code, but with usually higher-level opcodes than assembly.
 <ul>
