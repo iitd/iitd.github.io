@@ -93,3 +93,7 @@ Unlimited number of registers, means IR code generation is simple. Contrast with
 	<li>The same IR may be used for multiple high-level programming languages. e.g., LLVM may be the target for both C and Java programs. Can again increase the complexity of LLVM IR, because we need to try and retain high-level semantics of all supported languages (making them too low-level for simplicity would preclude optimization).
 	<li>Yet, if one can design an IR successfully, it is all perhaps worth the effort. Do all the hard work related to optimization once and reap the benefits everywhere (for all languages, and for all ISAs).
 </ul>
+
+<p>Discuss the reasons for the context being a hardware optimization language: its generality, its complexity (having to worry about hardware), the applicability of ideas to other higher-level optimization stages.
+
+<p>Discuss the history of GCC and LLVM IR. The IR design is so central to compiler development that the whole compiler infrastructure is named after LLVM.

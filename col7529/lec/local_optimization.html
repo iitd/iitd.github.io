@@ -9,7 +9,7 @@
 x := x + 0
 x := x * 1
 </pre>
-Eliminating these instructions are great optimizations as we are removing an entire instruction.
+Eliminating these instructions are great optimizations as we are removing an entire instruction. These transformations may look silly, but they are actually quite general, and are usually created because of the use of compile-time constants, e.g., macros, template parameters, etc.
 
 <p>Some statements can be simplified
 <pre>
@@ -31,9 +31,15 @@ by multiplication.
 x := x * 8  =&gt; x := x &lt;&lt; 3
 x := x * 15  =&gt; t := x &lt;&lt; 4; x := t - x
 </pre>
-Replace multiplication by a power-of-two to a shift-left operation. Can also do this for non powers-of-two. On some machines, left-shift is faster than multiply, but not on all! Modern machines have their own "rewriting logic" in hardware that can deal with these special cases really fast.  In other words, some of these compiler local optimizations may become less relevant on modern hardware.
+Replace multiplication by a power-of-two to a shift-left operation. Can also do this for non powers-of-two. On some machines, left-shift is faster than multiply, but not on all! Modern machines have their own "rewriting logic" in hardware that can deal with these special cases really fast.  In other words, some of these compiler local optimizations may become less relevant on modern hardware.  Yet, some optimizations are always done because they are "harmless" (e.g., the first one) while others may be more controversial (e.g., the second one).
 
 <p>All these transformations are examples of <em>algebraic simplifications</em>.
+
+<p>Some algebraic simplifications transfer from high-school algebra while others do not, because of the finite representation of integers and reals in a computer through bitvectors.  For example, <code>a+(b-a)/2</code> cannot be replaced with <code>(a+b)/2</code> on a computer, as <code>a+b</code> may overflow for large values of <code>a</code> and <code>b</code>. Further, some algebraic simplifications are only legal on a computer, and do not hold for integers or reals, e.g., instead of "Numerator / Constant", use "(Numerator * M) &gt;&gt; shift". Hardware division instructions can take 30 to 100 cycles, whereas a multiplication only takes one to three cycles.
+
+<p>An important detail that we have omitted for simplicity is that LLVM IR has types.  For example, pseudo-register <code>x</code> is of type <code>iN</code> (e.g., <code>i1</code>, <code>i8</code>, <code>i32</code>, ...) or <code>fN</code> for floating point (e.g., <code>f16</code>, <code>f32</code>, <code>f64</code>, <code>f80</code>), or <code>ptr</code> (for pointers).
+
+<p>Another underlying assumption is on the "notion of correctness". A compiler is usually required to preserve bit-correctness, also called bit-precision. This is the default compiler behaviour, even for floating point computations. However, compilers allow you, through a command-line flag, to relax bit-correctness requirements, to enable more optimizations. For example, a compiler may assume associativity of FP addition while performing transformations.
 
 <p>Operations on constants can be computed at compile time
 <ul>

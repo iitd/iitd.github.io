@@ -35,11 +35,15 @@ P --&gt; S P | S
 S --&gt; id := id op id
        | id := op id
        | id := id
-       | push id
-       | id := pop
        | if id relop id goto L
        | L:
        | jump L
+       | id := load (id)
+       | store id, (id)
+       | call name
+       | call id
+       | return id
+       | return
 </pre>
 <ul>
 	<li> id's are register names
@@ -47,7 +51,7 @@ S --&gt; id := id op id
 	<li>typical operators: +, -, *
 </ul>
 
-<p>A basic bloack is a maximal sequence of instructions with
+<p>A basic block is a maximal sequence of instructions with
 <ul>
 	<li>no labels (except at the first instruction), and
 	<li>no jumps (except in the last instruction)
@@ -109,6 +113,8 @@ BB2 --&gt; BB3
 
 <p>The body of a method (or procedure) can be represented as a control-flow graph. There is one initial node (entry node).  All "return" nodes are terminal.
 
+<p>A call instruction is treated like a non-control-flow instruction.  Thus, there can
+be multiple call instructions within a basic block.  This is a deliberate design choice, because (a) we may not have access to the callee's body; (b) drawing control flow edges on the call and return paths may create frivolous program paths, e.g., call by one function and return to the other.  The latter is not a correctness problem, but it thwarts optimization due to the extra potential behaviours that it creates, that were not present in the original program.
 
 <p>Optimization seeks to improve a program's resource utilization
 <ul>
@@ -146,10 +152,10 @@ BB2 --&gt; BB3
 
 <p>In practice, often a conscious decision is made not to implement the fanciest optimization known. Why?
 <ul>
+	<li>Some optimizations are not (enough) generally applicable</li>
 	<li>Some optimizations are hard to implement</li>
 	<li>Some optimizations are costly in compilation time</li>
 	<li>Some optimizations have low payoff. But hard to establish the payoff. Often one optimization may trigger another one, and this is hard to predict in advance.</li>
-	<li>Many fancy optimizations are all three!</li>
 </ul>
 
 <p>Current state-of-the-art: the goal is "Maximum benefit for minimum cost"
