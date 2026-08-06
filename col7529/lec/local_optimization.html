@@ -86,24 +86,84 @@ Called dead-code elimination.
 	<li>Usually other optimizations may result in more dead code</li>
 </ul>
 
+<p><em>Dead code</em> is more general the unreachable code.  A register is <em>live</em> if the value contained in it <em>may</em> be consequential to the
+future execution of the program.  An assignment to a register that is not live can be removed.
+
+<p>Discuss how one would implement dead code elimination and constant folding for a single basic block, using the following example:
+<pre>
+i1: d := 10
+i2: a := w + y
+i3: x := 3 + a
+i4: b := x * 5
+i5: w := 3 + d
+i6: x := w + 1
+i7: d := (x % 1)
+i8: if d goto L
+...
+</pre>
+For liveness, we will walk the basic block backward, maintaining at each point, which registrs are live at each program point. Conservatively assume that all <code>a,b,d,w,x,y</code> are live at the end of the basic block. At the beginning of <code>i8</code>, all are live; <code>i7</code>, all except <code>d</code> are live; <code>i6</code>, all except <code>x,d</code> are live; <code>i5</code>, <code>a,b,y</code> are live; <code>i4</code>, all except <code>a,b,x,y</code> are live; <code>i3</code>, <code>a,d,y</code> are live; <code>i2</code>, <code>d,w,y</code> are live; <code>i1</code>, <code>w,y</code> are live.
+
+<p>Similarly, for constant folding, we will walk the basic block forward, maintaining at each point, which registers are constant (along with constant value) at each point. Let NAC represent the "NotAConstant" determination. At <code>i1</code>, we conservatively assume that all the registers are NAC.  At <code>i2,i3,i4,i5</code>, <code>d=10</code>; <code>i6</code>, <code>d,w</code> are <code>10,13</code>.; <code>i7</code>, <code>d,w,x</code> are <code>10,13,14</code>; <code>i8, exit</code>, <code>d,w,x</code> are <code>0,13,14</code>.
+
+<p>If we make transformations based on any of these analyses, that may change the results of the analysis; e.g., the analysis may need to be run again, usually to obtain more optimization opportunities, e.g., <code>b</code> is dead and after its assignment is removed, <code>x</code> at <code>i3</code> becomes dead too, and its assignment may also be removed.
+
 <p>Some optimizations are simplified if each register occurs only once on the left-hand side of an assignment.
 <ul>
-	<li>Rewrite intermediate code in <em>single assignment</em> form
-	<pre>
-x := z + y
-a := x
-z := 2 * x
-	</pre>
-	Change to
-	<pre>
-b := z + y
-a := b
-x := 2 * b
-	</pre>
+	<li>Rewrite intermediate code in <em>single assignment</em> form, where every register is assigned <em>at most</em> once:
+<pre>
+i1: d1 := 10
+i2: a1 := w + y
+i3: x1 := 3 + a1
+i4: b1 := x1 * 5
+i5: w1 := 3 + d1
+i6: x2 := w1 + 1
+i7: d2 := (x2 % 1)
+i8: if d2 goto L
+...
+</pre>
+<p>Why Static Single Assignment (SSA)?
+<ul>
+<li>Optimization algorithms become simpler and more efficient if each variable has only one definition: instead of tracking (variable-value-at-PC), simply track (variable-value).
+<ul>
+<li>Consider constant folding: instead of maintaining the constant-ness information at every PC for every variable, we can maintain constant-ness for every variable (without the per-PC state).  This effectively brings us from near-quadratic to near-linear complexity.  The number of variables may have increased (which is why it is not exactly linear).</li>
+<li>Consider liveness analysis: instead of maintaining the liveness information at every PC for every variable, we can just maintain liveness of a variable anywhere in the program (i.e., is it used anywhere).</li>
+<li>Question: but why does the non-single-assignment algorithm need to maintain a per-PC state.  For example, why can't the constant folding example work by just maintaining the constantness of the last assignment to a variable (in the forward direction); similarly, why can't liveness track the last use of a variable (in the reverse direction).  Answer: Yes, that is possible for a single basic block, by maintaining a careful ordering of the traversal; but notice that if we maintained per-PC information, then the order in which we <em>transfer</em> the information across an instruction can be arbitrary.  Such arbitrary order possibility becomes necessary for a control-flow graph, where a compiler cannot determine at compile time which branch may be taken (e.g., branch1 may be taken in the first iteration of a loop followed by branch2 in the second iteration).  Thus, single-assignment becomes a necessity for better runtime in the setting of a control-flow graph.</li>
 </ul>
-More complicated in general, due to loops
+</li>
+<li>Unrelated uses of the same variable become independent (eliminates Write-After-Write dependencies).</li>
+<li>More values become available at each program point.</li>
+</ul>
 
-<p>If
+<p>Converting to Single-assignment form
+<ul>
+<li>Replace the target of each assignment with a new variable</li>
+<li>Replace each use of a variable with the version of the variable reaching that point.</li>
+</ul>
+Show an example with a diamond structure.
+
+<p>The need for phi nodes: show a diamond structure where two different versions of the same variable reach the same point.  Define y3=phi(BB1,y1,BB2,y2) at the beginning of the meet point.
+<ul>
+<li>Phi function chooses the version depending on the incoming edge.</li>
+<li>The phi node is present only at the beginning of a basic block.</li>
+</ul>
+
+<p>Show an example with a do-while loop.  Introduce <em>Static</em> Single Assignment (SSA)
+
+<p>Show an example with a while-do loop.
+
+Inserting PHI nodes:
+<em>Path convergence criterion</em>: need Phi node for a variable <code>a</code> at node z iff:
+<ul>
+<li>There is a block x containing definition of <code>a</code>.</li>
+<li>There is a block <code>y!=x</code> containing a definition of <code>a</code>.
+<li>There are non-empty paths Pxz and Pyz from x-to-z and y-to-z respectively.</li>
+<li>Pxz and Pyz don't have any node in common except <code>z</code>.
+	<!--<li>The node <code>z</code> does not appear within <em>both</em> Pxz and Pyz prior to the end. Ok if <code>z</code> appears in only one.-->
+</ul>
+
+<p>We will later learn how to convert a program to SSA form.  LLVM IR is an SSA IR, to take advantage of all the benefits discussed earlier.
+
+<p>Common subexpressions: If
 <ul>
 	<li>Basic block is in single assignment form</li>
 	<li>A definition <code>x := </code> is the first use of <code>x</code> in a block
@@ -128,7 +188,7 @@ w := x
 </pre>
 This optimization is called <em>common-subexpression elimination</em>. This is also another very common and consequential compiler optimization.
 
-<p>If we see <code>w := x</code> appears in a block, replace subsequent uses
+<p>Copy propagation: If we see <code>w := x</code> appears in a block, replace subsequent uses
 of <code>w</code> with uses of <code>x</code>
 <ul>
 	<li>Assumes single assignment form</li>
@@ -152,58 +212,11 @@ other optimizations
 	<li>Dead code elimination. e.g., the copy statement can be eliminated as it is inconsequential.</li>
 </ul>
 
-<p>Example:
-<pre>
-a := 5
-x := 2 * a
-y := x + 6
-t := x * y
-</pre>
-gets transformed to
-<pre>
-a := 5
-x := 10
-y := 16
-t := x &gt;&gt; 4
-</pre>
-We could have also assigned 160 to <code>t</code>. That would be even better.
-
 <p>If <code>w := rhs</code> appears in a basic block and <code>w</code> does not appear anywhere else in the program, THEN the statement <code>w := rhs</code> is dead and can be eliminated.
 <ul>
 	<li>Dead: does not contribute to the program's result</li>
 </ul>
 In our copy-propagation example, one of the assignments is dead and can be eliminated.
-
-<p>Why Static Single Assignment (SSA)?
-<ul>
-<li>Optimization algorithms become simpler and more efficient if each variable has only one definition: instead of tracking (variable-value-at-PC), simply track (variable-value).</li>
-<li>Unrelated uses of the same variable become independent (eliminates Write-After-Write dependencies).</li>
-<li>More values become available at each program point.</li>
-</ul>
-
-<p>Converting to SSA
-<ul>
-<li>Replace the target of each assignment with a new variable</li>
-<li>Replace each use of a variable with the version of the variable reaching that point.</li>
-</ul>
-Show two acyclic examples: one straight-line and one with a diamond structure.
-
-<p>The need for phi nodes: show a diamond structure where two different versions of the same variable reach the same point.  Define y3=phi(y1,y2) at the beginning of the meet point.
-<ul>
-<li>Phi function chooses the version depending on the incoming edge.</li>
-<li>The phi node is present only at the beginning of a basic block.</li>
-</ul>
-
-Inserting PHI nodes:
-<em>Path convergence criterion</em>: need Phi node for a variable <code>a</code> at node z iff:
-<ul>
-<li>There is a block x containing definition of <code>a</code>.</li>
-<li>There is a block <code>y!=x</code> containing a definition of <code>a</code>.
-<li>There are non-empty paths Pxz and Pyz from x-to-z and y-to-z respectively.</li>
-<li>Pxz and Pyz don't have any node in common except <code>z</code>.
-<li>The node <code>z</code> does not appear within <em>both</em> Pxz and Pyz prior to the end. Ok if <code>z</code> appears in only one.
-</ul>
-
 </ul>
 
 <p>
