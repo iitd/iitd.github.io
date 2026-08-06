@@ -35,7 +35,9 @@ Replace multiplication by a power-of-two to a shift-left operation. Can also do 
 
 <p>All these transformations are examples of <em>algebraic simplifications</em>.
 
-<p>Some algebraic simplifications transfer from high-school algebra while others do not, because of the finite representation of integers and reals in a computer through bitvectors.  For example, <code>a+(b-a)/2</code> cannot be replaced with <code>(a+b)/2</code> on a computer, as <code>a+b</code> may overflow for large values of <code>a</code> and <code>b</code>. Further, some algebraic simplifications are only legal on a computer, and do not hold for integers or reals, e.g., instead of "Numerator / Constant", use "(Numerator * M) &gt;&gt; shift". Hardware division instructions can take 30 to 100 cycles, whereas a multiplication only takes one to three cycles.
+<p>Some algebraic simplifications transfer from high-school algebra while others do not, because of the finite representation of integers and reals in a computer through bitvectors.  For example, <code>a+(b-a)/2</code> cannot be replaced with <code>(a+b)/2</code> on a computer, as <code>a+b</code> may overflow for large values of <code>a</code> and <code>b</code>. Similarly, <code>i+1&lt;j+1</code> cannot be replaced with <code>i&lt;j</code> in general, e.g., if <code>i</code> and <code>j</code> are unsigned integers in C.
+
+<p>Further, some algebraic simplifications are only legal on a computer, and do not hold for integers or reals, e.g., instead of "Numerator / Constant", use "(Numerator * M) &gt;&gt; shift". Hardware division instructions can take 30 to 100 cycles, whereas a multiplication only takes one to three cycles.
 
 <p>An important detail that we have omitted for simplicity is that LLVM IR has types.  For example, pseudo-register <code>x</code> is of type <code>iN</code> (e.g., <code>i1</code>, <code>i8</code>, <code>i32</code>, ...) or <code>fN</code> for floating point (e.g., <code>f16</code>, <code>f32</code>, <code>f64</code>, <code>f80</code>), or <code>ptr</code> (for pointers).
 
