@@ -257,32 +257,76 @@ g := 6 * f
 </pre>
 Possible to simplify further, but the compiler may get stuck in "local minima". e.g., should it have changed a + a to 2 * a, it would have had a better optimization opportunity (replacing g = 12*f and eliminating computation of f).
 
-<h3>Peephole optimization</h3>
+<p>There are two questions here:
+<ol>
+	<li> What order to apply the transformations?</li>
+	<li> If we repeat optimizations until no improvement possible, do we expect to converge?</li>
+</ol>
+
+<p>On order of application:
 <ul>
-	<li>Optimizations can be directly applied to assembly code. Typically for optimizations that got missed at IR stage (perhaps due to local minima problem).</li>. At the assembly-level, we have greater visibility into instruction costs and instruction opcodes. E.g., hardware opcodes may be higher-level than IR opcodes.
-	<li>Peephole optimization is effective for improving assembly code
+	<li>The order perhaps becomes less consequential, if we are going to apply the transformations in a loop anyway</li>
+	<li>But even then, the order matters, as one transformation may potentially preclude another. Consider the example <code>x := x * 4; x := x * 3</code>.  This program can transformed through a combination of common-subexpression elimination and constant folding to <code>x := x * 12</code>. However, if we first implement the algebraic simplification <code>x := x * 4 ==&gt; x := x &lt;&lt; 2</code>, then maybe the constant folding transformation can no longer be triggered, as the compiler may not recognize that it can fold a left shift and a multiplication to a single multiplication.</li>
+	<li>It can be argued above that a compiler can be made <em>smarter</em> by getting it to fold a left-shift and a multiplication by a constant, to a multiplication by a folded constant. Consider the example <code>x := y * 5; w := x * 3</li> being transformed first to <code>t := y &lt;&lt; 2; x := t + y; w := t * 3</code>, and now the constant folding becomes harder.  In general, the compiler will have a limited capability or scope of transformations, and a previous transformation can get the program to a state where the best solution falls outside the scope of transformations performed by a compiler.  An infinitely capable compiler should still be able to perform the transformation, but that is not the compiler we have at hand.</li>
+	<li>It is possible for a compiler to try multiple orders of application, and get the best result.  However, compile-time is an important consideration, and is often a productivity drag in today's world.  That said, compilers use sophisticated tricks to alleviate these problems, e.g., somehow maintain this property that <code>x</code> is formed by multiplication of <code>y</code> by a constant, even after the code transformation, e.g., through an extra common-subexpression entry.</li>
+	<li>This is called the <em>phase ordering problem</em>.</li>
+	<li>In general, identifying the order of application that produces the optimizal result is an NP-hard problem under practical formulations of the problem</li>
+</ul>
+
+<p> On convergence:
+<ul>
+	<li>In general, it is possible for the application of transformations to oscillate between two programs, causing the application loop to run forever.</li>
+	<li>If we ensure that a transformation is applied only if it strictly reduces the number of instructions, then we are guaranteed to converge, because in the "worst" case we will eventually eliminate all instructions (in which case we will converge too).</li>
+	<li>To generalize this idea, we can have a <em>cost function</em> that takes as input a program, and outputs a number that represents the cost of that program.  For example the cost function could be the number of instructions in a program. Thus, we will apply a transformation only if it strictly reduces the cost of the program with respect to a cost function.</li>
+	<li>The number of instructions as a program's cost has many problems: e.g., a division is tens of cycles, while a multiply or a shift is 1-3 cycles.  Moreover, recall that some transformations such as vectorization increase the size (number of instructions) of a program (e.g., to implement warm-up or cool-down loops), yet making it significantly faster.</li>
+	<li>Another option is to have a cost for every instruction, and then use an additive model to capture the cost of a basic block.  This has problems too, as it does not consider the fact that the hardware can execute multiple instructions in parallel. For example, a transformation from <code>x := y * 4; z := x * 3</code> to <code>x := y * 4; z := y * 12</code> may seem non-profitable in this model, even though it improves performance by reducing dependencies, and unlocking parallelism.</li>
+	<li>A better option is to have a hardware model, that dictates what the issue width, number of ALUs, etc. are.  Then simulate the instruction sequence on the hardware model to estimate the number of cycles it takes.  This is what is typically done at the very backend of the compiler, where a different model exists for every different chip model (aka ISA implementation), e.g., the chip model may be vastly different for an low-power embedded processor like Intel Atom than a high-performance processor like Intel Cascade Lake. For the final stages of code generation, such a cost model is used; however what about the transformations at the IR level?</li>
+	<li>At the IR level, some approximation of the machine model is used to estimate the cost.   The cost model typically accounts for opcode costs and dependency chain lengths, i.e., features that are machine-agnostic.</li>
+	<li>Every opcode needs to be associated with two values: <em>latency</em> (number of cycles to execute the operation on the given hardware) and <em>throughput</em> (number of operations that can execute in parallel on the given machine).
+	<li>Memory accesses add another level of complexity to the cost model.
 		<ul>
-			<li>The "peephole" is a short sequence of (usually contiguous) instructions</li>
-			<li>The optimizer replaces the sequence with another equivalent one (but faster)</li>
+			<li>A store can be performed asynchronously, as it does not return a register.  Thus, throughput is more important than latency for a store option. For a load, both the latency and throughput are consequential.</li>
+			<li>What if a store is followed by a load, e.g., <code>store (r1), r2; r3 := load(r4)</code>; does the cost of the load depend on the latency of the preceding store. Answer: it depends on the values of address regsiters <code>r1</code> and <code>r4</code>.  If <code>r1</code> and <code>r4</code> refer to the same memory address, then the value that is returned by <code>load</code> is <code>r2</code>; else it is the original contents of the memory location at <code>r4</code>.  This is called <em>aliasing</em>, where the same object in the machine can have more than two names --- here the same memory locations may have names <code>r1</code> and <code>r4</code>.</li>
+			<li>To model cost in the presence of aliasing, the hardware model needs to have a queue of outstanding stores, also called the <em>store buffer</em>, so that the following loads can either obtain their values from the store buffer or go to the memory hierarchy; each possibility has a different cost.  The store buffer is of a finite size, e.g., 4-8 entries, and so the latency of a store also becomes relevant now, as the latency dictates the probability that a load will have to stall or not, e.g., a store followed by a load, where both have the same address with a high probability indicate that the load likely has a low cost.</li>
+			<li>Finally, the caching behaviour of a memory access becomes a significant determining cost. A cost model needs a prediction for every memory access on how likely it is going to be an L1-hit, or an L3-miss, or so on... For example, stack accesses can be predicted to be L1-hits with a high probability, because the compiler itself orchestrates the stack accesses. Also, if the compiler identifies a sequential access pattern, e.g., <code>for i = 0 to n { a[i] += ... }</code>, then it can predict with a high probability that <code>a[i]</code> will be L1-hit, as it will likely be prefetched due to spatial locality.  Similarly, random looking accesses are given a high probability of being a cache miss.</li>
 		</ul>
 	</li>
 </ul>
 
-<p>Peephole optimizations are usually written as replacement rules
+<h3>Peephole optimizations</h3>
+All the transformations we have studied so far, involve the identification of a pattern, and then a transformation (or a replacement for that pattern).  One way to implement
+these pattern-replacement rules is through explicit hand-optimized code, e.g., in C++ to identify a pattern and transform it.  Another way is to define a small
+language for specifying these patterns and their associated desired replacements.  Such a pair of a pattern and its replacement is called a <em>peephole optimization</em>.
+
+<p>A peephole optimization (also called a peephole optimization rule) is typically specified as one sequence of instructions (pattern) to be transformed to another sequence of instructions (replacement).
 <pre>
 i1; i2; i3; ..; in --&gt; j1; j2; ..; jm
 </pre>
+
+For example,
+say <code>x := x + 4; x := x + 3</code> should be replaced with <code>x := x + 7</code>.  It seems wasteful to have specific constants in a peephole optimization rule, so we can generalize the format of a peephole optimization so it supports <em>holes</em> which indicate that any value (e.g., constant) can substitute for that hole (think of a hole as a "variable"). So we generalize the example rule: <code>x := x + C1; x := x + C2</code> to <code>x := x + (C1 + C2)</code>.  Here, <code>C1</code> and <code>C2</code> are compile-time constants, and the computation <code>C1+C2</code> is performed by the compiler at compile time.  Notice that there are subtleties here, e.g., what should happen if <code>C1+C2</code> overflows at compile time? Answer, the behaviour should be identical to that of the original program, so the final result should maintain the addition semantics for the types of the original registers.  For example, it would be valid to have a rule that says: <code>(C1+C2) does not overflow; x := x + C1; x := x + C2</code> to <code>x := x + (C1 + C2)</code>. Here, the compiler is forced to check that <code>C1+C2</code> does not overflow before potentially applying the transformation.
+
+<p>The example peephole optimization rule above can be generalized further, e.g., <code>x := y + C1; x := x + C2</code> to <code>x := y + (C1+C2)</code> is more general, as it allows <code>x</code> and <code>y</code> to refer to the same or different registers.  A more general peephole optimization rule is better as it can <em>trigger</em> in strictly more number of situations.
+
+<p>In fact, the rule can be generalized further to something like: <code>x := y + C1; z := x + C2; x is not live</code>  to <code>z := y + (C1+C2)</code>.  In this generalization, we introduce a third register <code>z</code>, and allow it to be (same or) different to registers <code>x</code>, <code>y</code>. Notice that the <code>x is not live</code> is required because the replacement gets rid of the assignment to <code>x</code>.  Further, notice that the original code still matches this pattern --- if both <code>z</code> and <code>x</code> match to the same register, say <code>r</code>, then the rule triggers even if <code>r</code> is live at the end of the instruction sequence, because <code>z</code> is allowed to be live (requires a slightly more sophisticated logic to interpret the rule).
+
+<p>Notice that through my examples, I have sneaked in <em>constraints</em> in addition to instruction sequences in a peephole optimization.  Examples of constraints above are: <code>C1+C2</code> does not overflow, <code>x is not live</code>, etc.  In general, the language of these constraints (and consequently the language of a peephole optimization) can be made arbitrarily rich.  For example, it may be possible to say that the two instructions present in the pattern may be separated by an arbitrary length sequence of instructions, as long as those instructions obey certain properties.  The richer the language of a peephole optimization, the more general a peephole optimization rule can be made; however this richness comes at a significant cost for the compiler as it needs to interpret and apply the peephole optimization. For example, the application of <code>x is not live</code> requires a compiler to first execute a liveness analysis.  Or the allowance of an arbitrary instruction sequence between the two instructions in the pattern, can require a compiler to perform a search over the basic block that can be linear or quadratic in running time, depending on the implementation.  Arguably, peephole optimization formats can be made arbitrarily rich, and a compiler can be made to support them; however this is rarely done today, instead the common transformations are simply hand-coded in C++ so they execute fast (much faster than interpreting an arbitrarily-rich peephole optimization rule).
+
+<p>As for local optimizations, peephole optimizations are usually applied repeatedly
+for maximum effect.  Just like other local optimizations,
+need to ensure that the replacement rules cannot cause oscillations. e.g., each replacement rule can only "improve" the code.
+
+<p>Originally, the idea of peephole optimizations was first applied to the assembly code (after the code generation and optimization phases, as the final step).  The idea was that 
+at the assembly-level, we have greater visibility into instruction costs and instruction opcodes. e.g., hardware opcodes may be higher-level than IR opcodes.  And so peephole optimizations were effective at improving assembly code.
 Example:
 <pre>
 move $a $b; move $b $a --&gt; move $a $b
 </pre>
 Works if the second instruction is not the target of a jump (i.e., both instructions belong to a basic block).
-
 <p>Another example:
 <pre>
 addiu $a $a i; addiu $a $a j --&gt; addiu $a $a (i+j)
 </pre>
-
 <p>Many (but not all) of the basic block optimizations can be cast as peephole optimizations
 <ul>
 	<li>Example: <code>addiu $a $b 0</code> --&gt; <code>move $a $b</code></li>
@@ -290,13 +334,28 @@ addiu $a $a i; addiu $a $a j --&gt; addiu $a $a (i+j)
 	<li>These two together eliminate <code>addiu $a $a 0</code>.
 </ul>
 
-<p>As for local optimizations, peephole optimizations must be applied repeatedly
-for maximum effect
-<ul>
-	<li>Need to ensure that the replacement rules cannot cause oscillations. e.g., each replacement rule can only "improve" the code.
-</ul>
+<p>Today, peephole optimizations are used at the LLVM IR level, at the Machine-IR level, and at the assembly level, e.g., LLVM IR peephole optimizer (called <em>Instcombine</em>) implements hundreds or thousands of peephole optimizations. They support a restricted language of constraints, e.g., the kind of constraints shown in examples above.
 
-<p>Many simple optimizations can still be applied on assembly language.
+<p>Research efforts have tried to make peephole optimizers much more general, and also discover peephole optimization rules automatically using AI, but these ideas have found only limited adoption in production so far.
+
+<h3>Order of transformations in LLVM IR</h3>
+So far we have studied the following compiler analyses and transformations
+<ol>
+	<li>Algebraic simplifications (AS)</li>
+	<li>Constant folding / propagation (CP)</li>
+	<li>Liveness analysis (LA)</li>
+	<li>Dead code elimination (DCE)</li>
+	<li>Copy propagation (CP)</li>
+	<li>Common Subexpression Elimination (CSE)</li>
+</ol>
+In LLVM, CP is done at construction time, as the IR does not support copy instructions
+at all; in other words, CP is done
+at the very beginning.  CSE is also done while constructing an instruction in the IR, as if an RHS expression
+is already available (in SSA form) as a register, that register is used, instead of creating
+a new register. Similarly, the liveness information is easily maintained at all times, by maintaining
+the "users" of every SSA definition (a user is an instruction that uses that definition). Constant folding or
+propagation is done a few times in the transformation pipeline; DCE is usually done in the later stages, but
+it is also done multiple times, especially after passes such as CP.
 
 <p>"Program optimiztion" is grossly misnamed
 <ul>
