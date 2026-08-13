@@ -19,18 +19,19 @@ must know: <em>On every path to the use of <code>x</code>, the last assignment
 	</tr>
 	<tr>
 		<td>\top</td>
-		<td>This statement never executes (or we have not executed it so far)</td>
+		<td>This statement never executes (or we have not executed it so far).  This statement is unreachable (so far).</td>
 	</tr>
 	<tr>
-		<td>C</td>
-		<td>X = constant C</td>
+		<td>K</td>
+		<td>Whenever this program point is reached, X evaluates to constant K</td>
 	</tr>
 	<tr>
 		<td>\bot</td>
-		<td>X is not a constant</td>
+		<td>X <em>may</em> not a constant, we are not sure if it is a constant.</td>
 	</tr>
 </table>
-\bot is our safe situation; we can always say that X is not a constant (means that we do not know if it is a constant or not).
+\bot is our safe situation and has no information whatsoever; we can always say that X is not a constant (means that we do not know if it is a constant or not).
+\top has the most amount of information.  It says that this program point is unreachable, whereas <code>K</code> says that if it is reached, then <code>X</code> evaluates to constant <code>K</code> (the former implies the latter).  Thus the values at the lower end of the table are "safer" values, whereas the values at the higher end are "more precise" values.  An analysis should aimfor the "most precise" values while being correct; however designing an analysis that is most precise is an undecidable problem in general, and we usually do the best possible with a reasonable amount of effort.
 
 <pre>
 BB1:
@@ -55,7 +56,7 @@ Y := 0
 
 BB4:
              ==== X = \bot
-A := 2 * X
+X := 2 * X
 </pre>
 
 <p>Given global constant information, it is easy to perform the optimization
@@ -69,19 +70,50 @@ A := 2 * X
 simple rules relating the change in information between adjacent statements.
 
 <p>The idea is to "push" or "transfer" information from one statement to
-the next.
+the next.  Initialize all the values in the program above to \top (unreachable so far), except
+the entry value.  Run the analysis.
 
 <p>For each statement <code>s</code>, we compute information about the value
 of <code>x</code> immediately before and after <code>s</code>
 <ul>
 	<li>Define a function <code>C</code> that stands for "constant information".</li>
 	<li><code>C(x,s,in)</code> = value of <code>x</code> before <code>s</code>.</li>
-	<li><code>C(x,s,out)</code> = value of <code>x</code> after <code>s</code>.</li>
+	<li><code>C(x,s,out)</code> = value of <code>x</code> after <code>s</code>.
+		For a statement that has two exits, e.g., a conditional branch, have two values <code>C(x,s,out1)</code> and <code>C(x,s,out2)</code>.</li>
 </ul>
 
-<p>Define a <em>transfer function</em> that transfers information from one statement to another.
+<p>Define a <em>transfer function</em> that transfers information across a statement/instruction. This transfer function
+is derived from the execution semantics of that statement, except that it is different, e.g., to accommodate extra \top
+and \bot values.  There are also other differences as we will see later.  Discuss the transfer functions of <code>X:=K</code>,
+<code>Y:= ...</code>, and <code>if B goto L</code>.
 
-<p>In the following rules, let statement <code>s</code> have immediate predecessor statements <code>p1, ..., pn</code>.
+<p>The analysis is designed so that the order in which the branches are taken becomes inconsequential.
+
+<p>Change the program to remove the X:=4 statement, and run
+the analysis again.  The stopping criteria is when the values stop changing, which is
+als called a <em>fixed point</em>.
+One can potentially do better for this example program, to avoid having to check the
+fixed point, e.g., by carefully ordering the execution of the analysis; but in general, for programs
+with loops or arbitrary cycles, checking a fixed point remains the most general solution.
+
+<p>Change the program to add a loop from BB3 to itself, replacing <code>X:=4</code> with <code>X:=X+1</code>.
+Notice that the loop reaches a fixed point after two iterations.  In general, the analysis is designed such
+that the fixed point is reached after a finite number of steps/iterations.
+
+<p>When we update the value at a program point, that already has a value, and has multiple predecessors, it may
+be tempting to consider the previous value at that analysis to determine the new value.  We do not that in our formulation,
+instead, we always look at the <em>current values</em> only of all the predecessor program points.  So for example when
+we transfer a value to a program point with multiple predecessors, we again look at all its predecessors' current values
+to determine the new value at that program point.
+
+<p>This function that determines the value of a program point based on the value of the predecessor points is called
+the <em>meet operator</em>. The meet operator is only a property of the values being computed, and has nothing to do
+with the program's instructions.  Further, a meet operator only makes sense for multiple predecessors; for a single
+predecessor, we simply copy the value.
+
+<p>Let's discuss the meet operator
+for our constant-information analysis.
+In the following rules, let statement <code>s</code> have immediate predecessor statements <code>p1, ..., pn</code>.
 <pre>
          |
          |
@@ -95,15 +127,28 @@ of <code>x</code> immediately before and after <code>s</code>
 	<li>If C(pi, x, out) = \top for all i, then C(s, x, in) = \top. Every predecessor is unreachable, and so x itself is unreachable.</li>
 </ol>
 
-<p>Rules 1-4 relate the <em>out</em> of one statement to the <em>in</em> of the next statement. Now we need rules relating the <em>in</em> of a statement to the <em>out</em> of the same statement.
+<p>Rules 1-4 relate the <em>out</em> of one statement to the <em>in</em> of the next statement. Now we need rules relating the <em>in</em> of a statement to the <em>out</em> of the same statement.  These
+rules form the <em>meet operator</em>.
 
-<p>If C(s,x,in)=\top then C(s,x,out)=\top, for all s. Let's call this rule 5.
+<p>Our next set of rules will relate the values at the <code>in</code> of a statement to its <code>out</code>.
+<ol>
+	<li>If C(s,x,in)=\top then C(s,x,out)=\top, for all s. Let's call this rule 5.</li>
+	<li>C(x:=k, x, out) = k if <code>k</code> is a constant. This rule (rule 6) has lower priority than the previous rule (rule 5). i.e., this rule applies only if C(x:=k, x, in) = k2 or \bot.</li>
+	<li>C(x:=f(...), x, out) = \bot if the value of <code>x</code> cannot be determined to be a constant after this statement.</li>
+	<li>C(y:=..., x, out) = C(y:=..., x, in) if x&lt;&gt;y</li>
+</ol>
 
-<p>C(x:=c, x, out) = c if <code>c</code> is a constant. This rule (rule 6) has lower priority than the previous rule (rule 5). i.e., this rule applies only if C(x:=c, x, in) = d or \bot.
-
-<p>C(x:=f(...), x, out) = \bot if the value of <code>x</code> cannot be determined to be a constant after this statement.
-
-<p>C(y:=..., x, out) = C(y:=..., x, in) if x&lt;&gt;y
+<p>Two observations:
+<ul>
+	<li>For rule 6, if <code>C(x:=k, x, in)</code> is \top, then we prefer the <code>out</code> value to be \top (over <code>k</code>).  This is because \top has more information than <code>k</code>
+		For example, meet of \top with <code>k2</code> results in <code>k2</code>, whereas a meet of <code>k</code> with <code>k2</code> results in \bot.</li>
+	<li>For rule 7, the characterisation of <code>x:=f(...)</code> can improve the precision of the analysis (thus increasing optimization opportunity):
+		<ul>
+			<li>For example, we can make this more precise by saying that if <code>f</code> is a function of <code>x</code>, and the <code>in</code> value of <code>x</code> is a constant <code>k</code>, then the <code>out</code> value is <code>f(k)</code>, e.g., we did this for <code>X := 2*X</code> in the example program above.</li>
+			<li>We can make this more precise if we do the constant information analysis for all variables at once, in which case we will track the same values (\top,k,\bot) for each variable --- we can improve this slightly by tracking \top only once, instead of per variable.  This makes the analysis more precise, e.g., if the statement is <code>z := f(x,y)</code>, and we know that the <code>in</code> value maps both <code>x</code> and <code>y</code> to constants (say <code>k1</code> and <code>k2</code>), then the <code>out</code> value should map <code>z</code> to <code>f(k1,k2)</code>.</li>
+			<li>This can be made arbitrarily more precise, e.g., have a transfer function for <code>if x==3 goto L</code> create a constant value for <code>x</code> at the incoming edge of <code>L</code>.  In general, only syntactic determinations are made.  As we said earlier, solving this problem with full precision is undecidable.</li>
+		</ul>
+</ul>
 
 <p><u>Algorithm</u>
 <ul>
