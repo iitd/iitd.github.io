@@ -137,6 +137,15 @@ rules form the <em>meet operator</em>.
 	<li>C(x:=f(...), x, out) = \bot if the value of <code>x</code> cannot be determined to be a constant after this statement.</li>
 	<li>C(y:=..., x, out) = C(y:=..., x, in) if x&lt;&gt;y</li>
 </ol>
+This transfer function is the same irrespective of whether the analysis is
+local or global.  Consider how  you will propagate constant information for the example below, and apply the transfer function shown above.
+<pre>
+X := 3
+Y := W+X
+Z := 2 * X
+X := Y + V
+</pre>
+
 
 <p>Two observations:
 <ul>
@@ -192,6 +201,8 @@ A := 2 * X
 <p>Some guarantees: the fixed-point solution will satisfy the equations at each program point.
 
 <p>Some un-answered questions: what is the guarantee that this analysis will converge?  What is the guarantee that this algorithm will result in the best possible solution for this system of solutions?
+
+<p>Notice that the execution of a dataflow analysis proceeds very similar to program execution, e.g., we take loop edges multiple times, etc. The primary difference is that unlike regular execution where the value of a variable can change from a constant k1 to another constant k2 (e.g., due to x := x  1), in a dataflow analysis, the value can only move down, e.g., from k1 to \bottom.
 
 <h3>Analysis of loops</h3>
 <pre>
@@ -279,6 +290,8 @@ Notice that this is a partial order; not all elements are comparable to each oth
 	<li>Thus, <code>C(s,x,_)</code> (for every statement, for every variable) can change at most twice.</li>
 </ul>
 
+<p>It can be proven using coinduction that the value at a program point can only decrease.  Pick an arbitrary program point; assuming this property of non-increasing values holds for all other program points, we show that it holds for the picked program point.  The idea is that both the meet operator and the transfer function map lower input values to lower output values.
+
 <p>Also, we maintain the invariant that the value at any intermediate point of the algorithm is always <em>greater</em> than the best solution value. This is because we initialize all values to \top. Also, we relax minimally --- assuming this invariant is true for the predecessors, it is guaranteed to be true for the successor.
 
 <p>Thus the constant propagation algorithm is linear in program size. Number of steps per variable = Number of C(...) values computed * 2 = Number of program statements * 4 (two C values per program statement, in and out).
@@ -328,7 +341,9 @@ Y := X
 
 <p>Liveness is simpler than constant propagation, since it is a boolean property (true or false).
 
-<p>Here the set of values is False (definitely not live) and True (may be live). False &gt; True. The <code>glb</code> function is the boolean-OR function in this set of values.
+<p>Here the set of values is False (definitely not live) and True (may be live). False &gt; True. The <code>glb</code> function is the boolean-OR function in this set of values.  Notice
+that we did not need separate \top and \bottom values, because there already exists a value that is greater or equal than all other values (False) and there already exists a value that is smaller or equal
+than all other values (True), so we do not need to introduce extra values.
 
 
 <pre>
@@ -393,8 +408,43 @@ return;
 
 <p>Notice that information flowed in the forward direction (in the direction of the program execution) for constant propagation but flowed in the reverse direction (against the direction of the program execution) for liveness analysis. The former types of analyses are called <em>forward dataflow analyses</em>. The latter types of analyses are called <em>backward dataflow analyses</em>.
 
+<p>How to decide the direction?  If the value being computed depends on what may happen in the future (e.g., can the value get used in the future), then we need a backward analysis; if the value being computed depends on what may have happened in the past (e.g., was the register definitely assigned to a constant value in the past), then we need a forward analysis.
+
 <h3>Some other analyses that can be modeled as dataflow analyses</h3>
 <ul>
 	<li>Common-subexpression elimination: maintain a set of <em>available expressions</em> of the form x = op(y,z) at each statement. If we see another expression of the type <code>u = op(y,z)</code>, replace by <code>u=x</code>. Available expressions is a forward data-flow analysis. A value is available at a program location only if it is available at all the predecessor program locations, i.e., the available expressions at a statement is the intersection of the available expressions at the predecessors. In other words, the <em>meet</em> operator is intersection. Works best with single-assignment form because can maintain a larger set of available expressions.</li>
 	<li>Copy-propagation: an analysis similar to available-expressions, except only for expressions that are of the form x=y. The main difference is in the transformation (substituting variable names vs. substituting expressions by variable names).</li>
 </ul>
+
+<h3>Available expressions : single expression/register at a time</h3>
+An assignment of the form <code>x := y+z</code> causes the expression <code>y+z</code> to become available in register <code>x</code>.  Similarly, an assignment to <code>y</code> or <code>z</code> makes the expression <code>y+z</code> to become unavailable in <code>x</code>. One silly dataflow analysis we can design is to check whether expression <code>y+z</code> is available in register <code>x</code> or not; this is silly, because we are designing an analysis for a particular triple (x,y,z) which is quite impractical; later we will generalize this to compute available expressions in register <code>x</code>; and still later, we will generalize this to compute available expressions in all registers.
+
+<p>Direction: Forward
+<p>Set of values: Available/TRUE (<code>y+z</code> is available in <code>x</code>) or NotAvailable/FALSE (<code>y+z</code> is not available in <code>x</code>).
+
+<p>Ordering: <code>FALSE</code> is less than <code>TRUE</code>
+<ul>
+	<li>Thus, meet is logical AND</li>
+</ul>
+
+<p>Transfer functions:  For <code>x := y+z</code>, the out value is TRUE; for <code>x:=f(...)</code>, or <code>y:=g(..)</code>, or <code>z:=h(..)</code>, the out value is FALSE; for all other instructions, the out value is the same as in value.
+
+<p>Initialization: initialize the value at entry to FALSE.  initialize all other values (optimistically) to TRUE.
+
+
+<h3>Copy propagation: single register at a time</h3>
+If a copy <code>x:=y</code> exists, then all future uses of <code>x</code> can be replaced with uses of <code>y</code>.
+<p>At every program point, compute whether register <code>x</code> definitely contains a copy of another register.
+<p>Direction: forward
+<p>Set of values: <code>\top</code> (not yet reached), registers <code>r1</code>, <code>r2</code>, ..., <code>rN</code>, <code>\bottom</code>.
+<p>Ordering: \top &lt; r1,r2,r3,...,rN &lt; \bottom
+<p>Transfer functions: For <code>x := w</code>, out is <code>w</code>; for <code>w := ...</code> and <code>in=w</code>, out is <code>\bottom</code>; for <code>x := f(...)</code>, out is <code>\bottom</code>, for all other statements, out is the same as in.
+<p>Initialization: <code>\bottom</code> at entry, <code>\top</code> at all other program points.
+
+<h3>Available expressions: single register at a time</h3>
+<p>At every program point, compute whether register <code>x</code> definitely contains an expression.
+<p>Direction: forward
+<p>Set of values: <code>\top</code> (not yet reached), expressions <code>e1</code>, <code>e2</code>, ..., <code>eN</code>, <code>\bottom</code>.
+<p>Ordering: \top &lt; e1,e2,e3,...,rN &lt; \bottom (there could be an infinite number of expressions, and that's ok)
+<p>Transfer functions: For <code>x := f(...)</code>, out is <code>f(...)</code>; for <code>w := ...</code> and <code>in</code> contains <code>w</code>, out is <code>\bottom</code>, for all other statements, out is the same as in.
+<p>Initialization: <code>\bottom</code> at entry, <code>\top</code> at all other program points.
