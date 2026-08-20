@@ -7,11 +7,16 @@ d0: y = 3
 d1: x = y + 4
 d2: y = 11
 d3: if e ...
+d4: x = 5
+d5: y = x + 6
+d6: if e2 ...
 </pre>
 If we do CP for each variable separately, then the order of picking the
 variables has an effect on the precision of the final solution. In the
 example above, if we pick <code>y</code> before <code>x</code>, we get a
-more precise solution.
+more precise solution for the first basic block; on the other hand if we pick
+<code>x</code> before <code>y</code>, we get a more precise solution for the
+second basic block.
 
 <p>Consider an alternate representation of constant information using sets
 where all variables are tracked simultaneously.  This representation can
@@ -22,7 +27,12 @@ the single-variable implementation multiple times.
 There are two options for the transfer function for <code>d1</code>: either
 use the <code>in</code> value to determine that <code>x</code> is a constant
 too, or simply represent the transfer function as a GEN/KILL set (as a function
-of the statement, but independent of the input value).
+of the statement, but independent of the input value).  The former is
+more precise than the latter, e.g., the former can have logic that says something
+like: if <code>s: z=x+y</code>, and both <code>x,y</code> are constants in <code>in</code>, then
+<code>f_s(in)</code> assigns <code>z</code> to a constant --- something like this
+cannot be captured in the GEN/KILL set based transfer function as these sets are
+only functions of <code>s</code> and have no visibility into <code>in</code>.
 
 <!--<ul>
 <li>in[d0] = empty set</li>
@@ -81,15 +91,20 @@ While (changes to any OUT occur) {
 }
 </pre>
 
-<p>Summary of reaching definitions
+<p>Summary of constant information analysis
 <table border=1>
-<th><td>Reaching Definitions</td></th>
+<th><td>Constant information</td></th>
 <tr><td>Domain</td><td>Sets of constant definitions</td></tr>
 <tr><td>Transfer function fb(x)</td><td>forward:<br>out[b] = fb(in[b])<br>out[b] = Gen[b] U (x - Kill[b])<br></td></tr>
 <tr><td>Meet operation</td><td>in[b] = n out[predecessors]<br>intersection</td></tr>
 <tr><td>Boundary condition</td><td>out[entry] = empty</td></tr>
 <tr><td>Initial interior points</td><td>out[b] = {(x,\top): for all variables x}</td></tr>
 </table>
+<ul>
+	<li>How is \bot encoded?  By a missing constant definition for that variable</li>
+	<li>Have we added an imprecision in the meet operator (compared to our previous formulation)?  Yes, we now take an intersection at the meet operator, so <code>(x,\top)</code> and <code>(x,3)</code> will meet to return an empty set (bottom), which is more imprecise than our previous meet operator that would have resulted in <code>(x,3)</code>.  It is possible to make the meet operator more precise, by giving special treatment to the \top value, making the analysis more precise and still correct.</li>
+	<li>We have already discussed the imprecision in the transfer function due to the GEN and KILL sets.</li>
+</ul>
 
 <h3>Live Variable analysis</h3>
 <ul>
@@ -110,6 +125,12 @@ While (changes to any OUT occur) {
 </li>
 <li>Meet operator: intersection: out[B] = in[s1] U in[s2] ... U in[sn], for successors s1, .., sn of B</li>
 <li>Boundary condition: in[exit] = empty (or return value as the case might be)</li>
+</ul>
+
+<p>Some observations:
+<ul>
+	<li>How is <code>\top</code> (not live) encoded? By presence in the set.</li>
+	<li>How is <code>\bot</code> (live) encoded? By absence in the set.</li>
 </ul>
 
 <p>Liveness : Iterative algorithm
@@ -134,7 +155,7 @@ While (changes to any IN occur) {
 
 <p>Framework
 <table border=1>
-<th><td>Reaching Definitions</td><td>Live variables</td></th>
+<th><td>Constant information</td><td>Live variables</td></th>
 <tr><td>Domain</td><td>Sets of constant definitions</td><td>Sets of variables</td></tr>
 <tr><td>Direction and Transfer function fb(x)</td><td>forward:<br>out[b] = fb(in[b])<br>out[b] = Gen[b] U (x - Kill[b])<br>in[b] = n out[predecessors]<br></td><td>backward:<br>in[B] = fb(out[B])<br>in[b] = Use[b] U (x - Def[b])<br>out[B] = U in[succ[B]]</tr>
 <tr><td>Meet operation</td><td>intersection</td><td>union</td></tr>
@@ -185,7 +206,7 @@ in[exit] = {d1}
 </pre>
 Will our iterative worklist algorithm generate this answer?
 
-<p>Answer: this is a legal fixed-point solution to the system of equations. However this is not a maximum fixed-point (later).
+<p>Answer: this is a legal fixed-point solution to the system of equations (it satisfies all the rules/constraints of the transfer function and the meet operator). However this is not a maximum fixed-point (later).
 
 <h2>Framework</h2>
 Why do we need a framework:
