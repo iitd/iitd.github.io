@@ -6,7 +6,7 @@
 <li>The organization into passes allows flexibility of rearranging the passes. However, it is usually preferred to organize the passes in a certain order, e.g., loop unrolling should occur earlier in the pipeline.</li>
 <li>Discuss different source languages and their different optimization needs, and thus the need for multiple IRs within a compiler:
 <ul>
-  <li>SQL: need query optimizer that figures out table data structure, join algorithm, e.g., hashtable, natural-vs.-hash-join, etc. Generates a query plan at the end, which is usually compiled to a source language like C/C++, but is best compiled (in mature pipelines) directly to IR like LLVM-IR (as the latter preserves higher-level constructs, e.g., vectorization).</li>
+  <li>SQL: need query optimizer that figures out table data structure, join algorithm, e.g., hashtable, natural-vs.-hash-join, etc. Generates a query plan at the end, which is usually compiled to a source language like C/C++, but is best compiled (in mature pipelines) directly to IR like LLVM-IR (as the latter preserves higher-level constructs, e.g., vectorization, implies boolean operator, ...).</li>
   <li>OCaml: need memory management optimizer, e.g., do not keep objects if they are no longer used.</li>
   <li>PyTorch/TensorFlow: need tensor layout, parallelism, and data transfer optimizer.</li>
 </ul>
