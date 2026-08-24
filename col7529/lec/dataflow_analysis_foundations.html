@@ -223,7 +223,7 @@ Why do we need a framework:
 <li>meet operator (^)</li>
 </ul>
 </li>
-<li>A family of transfer functions (F: V --&gt; F)</li>
+<li>A family of transfer functions F, s.t. f(: V --&gt; V) \in F</li>
 </ul>
 
 <p>
@@ -306,25 +306,6 @@ V = { x | x is a subset of {d1,d2,d3}}, ^ = set-union
 
 <p>Another example: semi-lattice with V = {x | such that x is a subset of {d1, d2, d3}}, ^ = \intersection
 
-<p>One element at a time
-<ul>
-<li>A semi-lattice for data flow problems can get quite large; 2^n elements for n var/definitions, for example</li>
-<li>A useful technique
-<ul>
-<li>define semi-lattice for 1 element</li>
-<li>product of semi-lattices for all elements</li>
-</ul>
-</li>
-<li>Example: union of definitions
-<ul>
-<li>For each element d1, lattice is : {} --&gt; {d1}</li>
-<li>Similarly, for d2, lattice is : {} --&gt; {d2}</li>
-<li>Product lattice is: {} --&gt; {d1},  {} --&gt; {d2}, {d1} --&gt; {d1, d2}, {d2} --&gt; {d1, d2}.</li>
-</ul>
-</li>
-<li>Defining product of lattices: &lt;x1,x2&gt; &le; &lt;y1,y2&gt; iff x1&le;y1 and x2&le;y2</li>
-</ul>
-
 <p><b>Descending chain</b>
 <ul>
 <li>Definition: The <b>height</b> of a lattice is the largest number of &gt; relations that will fit in a descending chain:
@@ -341,15 +322,53 @@ x0 &gt; x1 &gt; x2 &gt; ... &gt; ...
 </ul>
 </ul>
 
+<p><b>Product of semi-lattices</b>.
+One element at a time
+<ul>
+<li>A semi-lattice for data flow problems can get quite large; 2^n elements for n var/definitions, for example</li>
+<li>A useful technique
+<ul>
+<li>define semi-lattice for 1 element</li>
+<li>product of semi-lattices for all elements</li>
+</ul>
+</li>
+<li>Example: union of definitions
+<ul>
+<li>For each element d1, lattice is : {} --&gt; {d1}</li>
+<li>Similarly, for d2, lattice is : {} --&gt; {d2}</li>
+<li>Product lattice is: {} --&gt; {d1},  {} --&gt; {d2}, {d1} --&gt; {d1, d2}, {d2} --&gt; {d1, d2}.</li>
+</ul>
+</li>
+<li>Defining product of lattices: &lt;x1,x2&gt; &le; &lt;y1,y2&gt; iff x1&le;y1 and x2&le;y2</li>
+<li>The height of the product semi-lattice will be equal to the sum of the heights of the individual semi-lattices.</li>
+<li>For DFA problems, we may want to prune the product semi-lattice to remove values that are
+not expected to appear.  For example, in the constant information analysis, a single value's semi-lattice
+has height 2: \top -&gt; k -&gt; \bottom.  Two values' semi-lattice will have height 4: (\top,\top) -&gt; (\top,k) -&gt; (k,k) -&gt; (\bot,k) -&gt; (\bot,\bot).
+However, the values (\top,k) is not required for a precise-enough analysis as if the value is \top for one variable, it must
+be \top for another variable too.  (Recall that during the transfer function definition, we say that
+if the incoming value is \top, then the outgoing value is \top irrespective of what the instruction is).</li>
+</ul>
+
 <h3>Transfer functions</h3>
 <ul>
 <li>A family of transfer functions F</li>
 <li>Basic properties <em>f</em>: V --&gt; V
 <ul>
-<li>Has an identity function, i.e., \Exists f such that f(x) = x for all x.</li>
-<li>Closed under composition, i.e., if f1,f2 \in F, then f1.f2 \in F.</li>
+<li>Has an identity function, i.e., \Exists f such that f(x) = x for all x.
+	<ul>
+		<li>Required because an empty instruction, or a no-op instruction will always need to be supported.</li>
+	</ul>
+</li>
+<li>Closed under composition, i.e., if f1,f2 \in F, then f1.f2 \in F.
+	<ul>
+		<li>Required because a sequence of two or more instructions may be treated as a single instruction at any time.</li>
+	</ul>
+</li>
 </ul>
 </li>
+<li>Notice that GEN/KILL set-based definitions agree with these two properties listed above.  Identity is achieved by using the empty
+	sets.  Closure is ensured by the fact that the composed function can also be represented by
+	<em>some</em> GEN and KILL sets.</li>
 </ul>
 
 <p><b>Monotonicity</b>
