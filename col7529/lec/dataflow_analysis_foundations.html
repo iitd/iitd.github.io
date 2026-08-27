@@ -372,20 +372,54 @@ if the incoming value is \top, then the outgoing value is \top irrespective of w
 </ul>
 
 <p><b>Monotonicity</b>
+Consider the iterative fixed point algorithm.  Recall that we intuitively concluded that the solution keeps
+descending, and because there is a finite number of steps that can be descended, the algorithm will convert.  We
+used a (co)induction argument to conclude that the solution keeps descending: on a meet, if the current inputs are lower
+than previous inputs, then the current output is necessarily lower than the previous outputs (because the meet operator
+is defined as the greatest lower bound).  However, what happens on a transfer across a statement: if it is possible
+that a lower input produces a higher output due to a transfer function f \in F, then we cannot make this argument that
+the solution keeps descending.  To still be able to make this argument, we add a third constraint to F that all
+functions must be monotone.
+
+<p>
 <ul>
 <li>
 A framework (F, V, ^) is monotone iff x &le; y implies f(x) &le; f(y)
 </li>
+<li>Important: monotone framework does <b>not</b> mean that <code>f(x) &le; x</code>.
+<ul>
+<li>e.g., reaching definition for two definitions in a program, d1 and d2. Suppose f: Gen = {d1}; Kill = {d2}; f({}) = {d1} which is not &le; {}.</li>
+<li>x: {} &ge; {d1} &ge; {d1,d2}; f(x): {d1} &ge; {d1} &ge; {d1}.</li>
+<li>No relationship between f(x) and x!</li>
+</ul>
+</li>
 <li>
 Equivalently, a framework (F, V, ^) is monotone iff
 <ul>
-<li>f(x^y) &le; f(x)^f(y)</li>
+	<li>f(x^y) &le; f(x)^f(y) for all x,y \in V and f \in F</li>
 <li>(meet inputs, then apply f) &le; (apply f individually to inputs, then meet results)</li>
 </ul>
 </li>
+<li>This is an interesting way of interpreting monotonicity, as it provides insight into the
+solution produced by an iterative fixed point algorithm. Consider the constant propagation
+DFA with the following program:
+<code>if (...) { x = 2; y = 3; } else { x = 3; y = 2; }; z = x + y;  f(x)^f(y) = 5; f(x^y) = \Bottom</code>.<br>
+entry -&gt; BB1, entry -&gt; BB2, BB1 -&gt; BB3, BB2 -&gt; BB3.
+BB1 has <code>x := 4; y := 3</code> and BB2 has <code>x := 3; y := 4</code>; whereas BB3 has <code>z := x + y</code>.
+<ul>
+	<li>Assume we are tracking all registers simultaneously.</li>
+	<li>At the end of BB1 and BB2, we have values <code>v1={(x,4),(y,3)}</code> and <code>v2={(x,3),(y,4)}</code> respectively.</li>
+	<li>One way is to first meet the values at the beginning of BB3, so that <code>v3=v1^v2={}</code> and then apply BB3's transfer function <code>f</code> to obtain <code>out3=f(v3)={}</code>.</li>
+	<li>Another way is to first apply the transfer function of BB3, so that <code>v4=f(v1)={(x,3),(y,4),(z,7)}</code> and <code>v5=f(v2)={(x,4),(y,3),(z,7)}</code>, and then meet to obtain <code>out4=v4^v5={(z,7)}</code>.</li>
+	<li>The meet-at-the-end procedure is guaranteed to produce a better (or equal) solution, due to the monotonicity property described above, f(x^y) &le; f(x)^f(y)</li>
+	<li>However, the iterative fixed point procedure will meet first in this case.</li>
+</ul>
 </ul>
 
+<p>For some DFA frameworks, it is true that 
+f(x^y) = f(x)^f(y) for all x,y \in V and f \in F. Can you think of some examples?
 <p>Example: reaching definitions: f(x) = Gen \union (x - Kill), ^ = \union
+
 <ul>
 <li>Definition 1: Let x1 &le; x2 (x1 is a superset of x2); f(x1): Gen \Union (x1 - Kill); f(x2): Gen \Union (x2 - Kill)</li>
 <li>Clearly, f(x1) &le; f(x2) (because f(x1) is a superset of f(x2))</li></li>
@@ -398,16 +432,17 @@ Alternatively,
 <li>f(x1)^f(x2) = (Gen \union (x1 - Kill)) \Union (Gen \Union (x2 - Kill))</li>
 <li>(x1 \union x2) - Kill = (x1 - Kill) \union (x2 - Kill)</li>
 <li>hence monotone; actually <b>distributive</b>, because f(x1^x2)=f(x1)^f(x2)</li>
+<li>In fact, every GEN/KILL based framework is distributive.</li>
 </ul>
 </li>
 </ul>
 
-<p>Important: monotone framework does <b>not</b> mean that <code>f(x) &le; x</code>.
-<ul>
-<li>e.g., reaching definition for two definitions in a program, d1 and d2. Suppose f: Gen = {d1}; Kill = {d2}; f({}) = {d1} which is not &le; {}.</li>
-<li>x: {} &ge; {d1} &ge; {d1,d2}; f(x): {d1} &ge; {d1} &ge; {d1}.</li>
-<li>No relationship between f(x) and x!</li>
-</ul>
+<p>Also liveness.  In fact, even for constant propagation, if I use GEN/KILL based
+transfer functions, my framework becomes distributive, as: <code>f(v1) = (v1-KILL)\cup GEN</code> and <code>f(v2) = (v2-KILL)\cup GEN</code>, and so
+<code>f(v1)^f(v2) = f(v1) \cap f(v2) = ((v1-KILL)\cup GEN) \cap ((v2-KILL)\cup GEN) = ((v1 \cap v2) - KILL) \cup GEN</code> which is the same as <code>f(v1^v2)</code>.
+For a distributive framework, it does not matter if we meet earlier or later.  Notice it is not necessary that a distributive framework is
+more precise than a monotone framework for the same problem, e.g., the GEN/KILL based framework for constant propagation is actually less
+precise, yet distributive.
 
 <p><b>Distributivity</b>: A framework (F, V, ^) is distributive if and only if:
 <ul>
@@ -416,8 +451,6 @@ Alternatively,
 Meet input, then apply f is <b>equal to</b> apply the transfer function individually and then merge result.
 
 <p>Distributivity implies monotonicity, but not vice-versa.
-
-<p>Example: the framework for constant propagation is not distributive: example: if (...) { x = 2; y = 3; } else { x = 3; y = 2; }; z = x + y;  f(x)^f(y) = 5; f(x^y) = \Bottom.
 
 <h3>Properties of Iterative Algorithm</h3>
 <ul>
@@ -430,7 +463,10 @@ Meet input, then apply f is <b>equal to</b> apply the transfer function individu
 </li>
 <li>Initialization of interior points to \Top.
 <ul>
-<li>yields <b>Maximum Fixed Point</b> (MFP) solution of equations.
+<li>yields <b>Maximum Fixed Point</b> (MFP) solution of equations.  This
+	is because, we move down by the smallest possible amount at each
+	step (and yet we have not found an FP solution), and so we could not have
+	skipped over another FP solution.
 </ul>
 </li>
 </ul>
@@ -466,7 +502,7 @@ IDEAL data flow solution
 <li>Let f1, .., fm: \in F, fi is the transfer function for node i</li>
 <li>For a path p, fp = fn.f(n-1)...(f1), if p is a path through nodes n1,..,nk</li>
 <li>For an empty path p, fp = identity function</li>
-<li>For each node n: ^fp (boundary value) for <u>all possibly executed paths</u> p reaching n.</li>
+<li>For each node n: ^fp (boundary value) for <u>all possibly executed paths</u> (potentially infinite) p reaching n.</li>
 <li>example: if (sqr(y) &ge; 0) { x = 0; } else { x = 1; }. Here, the ideal solution is that x = 0 at the end of this program.</li>
 <li>However, determining all possibly executed paths is undecidable.</li>
 </ul>
