@@ -9,6 +9,8 @@ Intermediate code uses unlimited temporaries:
 
 <p>The problem: <em>Rewrite the intermediate code to use no more temporaries than there are machine registers</em>
 
+<p>Discuss the typical number of registers in a machine, and the reasons for the small number of registers.
+
 <p>Potential Method:
 <ul>
 	<li>Assign multiple temporaries to each register</li>
@@ -100,12 +102,14 @@ E.g., <code>b</code> and <code>c</code> cannot be in the same register while <co
 
 <p>Our example graph: There is no coloring with less than 4 colors. THere are 4 colorings of the graph. Can assign temporaries to registers using one of the 4 colorings, and change the original program accordingly.
 
+<p>Greedy approach: repeatedly pick a register and colour it, so it does not conflict with its neighbors' colours.
+
 <h3>Spilling</h3>
 What if the graph cannot be colored with the available number of registers? e.g., what if the number of available registers is 3 in our example.
 
 <p>Pick a node as a candidate for spilling. This temporary will "live" in memory. Remove the picked node and all its incident edges from the RIG.
 
-<p>Picking the right node is hard. We will just use heuristics to decide which one to pick. Let's say we pick <code>a</code>. But we are again stuck as the remaining graph is also not 3-colorable. Let's say we now pick <code>f</code>. After removing <code>f</code>, the remaining graph can be colored with three colors. But now we try to add back <code>f</code>. It is possible that after we add back <code>f</code>, the colors of all four neighbors of <code>f</code> allow that <code>f</code> can be colored too. THis is called <em>optimistic coloring</em>. In this example however, optimistic coloring will fail.
+<p>Picking the right node is hard. We will just use heuristics to decide which one to pick. Let's say we pick <code>a</code>. But we are again stuck as the remaining graph is also not 3-colorable. Let's say we now pick <code>f</code>. After removing <code>f</code>, the remaining graph can be colored with three colors. But now we try to add back <code>f</code>. It is possible that after we add back <code>f</code>, the colors of all four neighbors of <code>f</code> allow that <code>f</code> can be colored too. THis is called <em>optimistic coloring</em>. In this example however, optimistic coloring will fail.  Optimistic colouring may succeed if, for example, register X is removed, then register Y is removed; then the graph is coloured; then Y is not added back, but X can still be added back.
 
 <p>If optimistic coloring fails, we spill <code>f</code>:
 <ul>
@@ -120,13 +124,13 @@ What if the graph cannot be colored with the available number of registers? e.g.
 			<li><code>f := load fa</code></li>
 		</ul>
 	</li>
-	<li>After each operation that writes <code>f</code>, insert:
+	<li>After each operation that writes <code>f</code>, e.g., <code>f:= ...</code>, insert:
 		<ul>
 			<li><code>store f, fa</code></li>
 		</ul>
 	</li>
 	<li>Also rename each use of <code>f</code> to separate variables, say <code>f1</code>, <code>f2</code>, ...</li>
-	<li>Recompute liveness and retry
+	<li>Recompute liveness and retry.  Notice that the regions for which <code>f</code> is live have shrunk considerably (just one instruction), thus making the RIG much sparser.
 </ul>
 
 <p>It is possible that even after spilling the RIG is not colorable, in which case we should spill another variable (that has not already been spilled).
@@ -136,7 +140,7 @@ variables. For example, the new variables <code>f1</code>, ... are only live at 
 <p>Does it help if the IR is in SSA form? It does --- because different assignments to the same temporary now become different temporaries, the register allocator can now take different allocation decisions for these different temporaries.
 
 <h3>Limitations of this method of register allocation</h3>
-The primary limitation of this algorithm is that it allocates registers <em>statically</em>. For example, if we have two regions of the program, one where <code>t1</code> is used heavily and another where <code>t1</code> is used sparingly, then it would make sense to register-allocate <code>t1</code> in the first region and spill it in the second region. However the current algorithm makes an all-or-nothing choice.
+The primary limitation of this algorithm is that it allocates registers <em>statically</em>. For example, if we have two regions of the program, one where <code>t1</code> is used heavily and another where <code>t1</code> is used sparingly, then it would make sense to register-allocate <code>t1</code> in the first region and spill it in the second region. However the current algorithm makes an all-or-nothing choice.  The term <em>region</em> needs to be defined more formally, and we will do that later; but for now, let's just think of it as a subprogram with a single entry. On one extreme, every basic block is a region; on the other extreme, the whole program is a region; somewhere in the middle involves treating each loop as a separate region, etc.
 
 <p>Region-based register allocator: partition the program into <em>regions</em>, assign temporaries to registers or memory within each region, and resolve discrepancies at region boundaries. The overall quality of the solution depends heavily on the region partitioning. Some example heuristics:
 <ul>
