@@ -94,6 +94,55 @@ clang -O3 -S -emit-llvm opcodes.c -o opcodes.O3.ll</code></pre>
 
   <h3>Part C: Optimization passes used at each optimization level (5 marks)</h3>
 
+  <p>Use <code>opt</code> to inspect the default optimization pipeline at each
+  level.  Use the same LLVM installation for <code>clang</code> and
+  <code>opt</code>, since pipelines change between LLVM releases.  Record the
+  version reported by <code>opt --version</code>, then run:</p>
+
+  <pre><code>for level in O0 O1 O2 O3; do
+  opt -passes="default&lt;${level}&gt;" -print-pipeline-passes \
+    -disable-output opcodes.O0.ll &gt; passes.${level}.txt
+done
+opt --print-passes &gt; available-passes.txt</code></pre>
+
+  <p>The printed pipeline contains pass-manager adaptors and utility passes as
+  well as transformations.  From each pipeline, extract the transformation
+  passes that can be named in an <code>opt -passes='...'</code> pipeline.  Do not
+  count analyses, analysis invalidation, instrumentation, or adaptors such as
+  <code>module(...)</code>, <code>function(...)</code>, and
+  <code>loop(...)</code> as transformations.  Use <code>opt --print-passes</code>
+  to check pass names; retain repeated occurrences in the ordered list because
+  the same transformation can run at several points in a pipeline.</p>
+
+  <p>In the report, give one table with a column for each of
+  <code>O0</code>, <code>O1</code>, <code>O2</code>, and <code>O3</code>.  For
+  each level, report the ordered transformation-pass list (share a short
+  description for each pass), the number of pass
+  invocations, and the number of distinct transformations.  Then identify:</p>
+
+  <ol>
+    <li>transformations common to all four levels;</li>
+    <li>transformations first introduced at <code>O1</code>, <code>O2</code>, or
+    <code>O3</code>; and</li>
+    <li>transformations whose number or position of invocations changes between
+    levels.</li>
+  </ol>
+
+  <!--<p>Choose one transformation characteristic of each of <code>O1</code>,
+  <code>O2</code>, and <code>O3</code> (three passes total).  For each one, run
+  it by name on <code>opcodes.O0.ll</code>, for example:</p>
+
+  <pre><code>opt -S -passes='PASS-NAME' opcodes.O0.ll -o opcodes.PASS-NAME.ll</code></pre>
+
+  <p>Show a small before/after IR excerpt and explain the change.  If a selected
+  pass needs canonicalization or an enclosing pass manager, supply the smallest
+  working pipeline and state it exactly.  If it makes no change to
+  <code>opcodes.c</code>, construct a minimal C example that exposes the
+  transformation rather than claiming that the pass did not run.  Finally,
+  explain why <code>O0</code> may still contain a small mandatory pipeline and
+  why the observed lists should not be treated as identical across LLVM
+  versions.</p>-->
+
   <h3>Part D: Vector IR produced by optimization (5 marks)</h3>
 
   <p>Create <code>vector.c</code> with three counted loops over arrays:</p>
@@ -141,6 +190,8 @@ clang -O3 -march=native -Rpass=loop-vectorize -Rpass-missed=loop-vectorize \
   include the requested tables, IR excerpts, vectorization remarks, correctness
   results, and explanations.  Generated <code>.ll</code>, object, and shared
   library files should not be included.</p>
+
+  <p>The report should not contain any AI generated text.</p>
 
   <h3>References</h3>
 
