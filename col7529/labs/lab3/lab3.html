@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>COL729 Lab 3 : Writing Compiler Passes</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="Stylesheet" type="text/css" href="style.css">
+  </head>
+
+
+<body>
+  <h1><font color="blue">COL729 Lab 3 : Writing Compiler Passes</font></h1>
+
+  <h2>Due date - 23:55, 27 September 2026</h2>
+  <h3>Weightage: 20 Marks (Actual weightage will be decided later)</h3>
+
+  <h3>Part A: A transformation pass (5 marks)</h3>
+
+  <p>Implement an out-of-tree function-pass plugin for LLVM's new pass manager,
+  named <code>strength-reduce</code>.  It must replace multiplication by a positive
+  power-of-two integer constant with an equivalent <code>shl</code>.  Handle the
+  constant on either side, preserve the integer type and applicable
+  <code>nuw</code>/<code>nsw</code> flags, avoid changing vector multiplications,
+  and return the correct <code>PreservedAnalyses</code> value.  Run it with:</p>
+
+  <pre><code>opt -load-pass-plugin ./libStrengthReduce.so \
+  -passes=strength-reduce -S input.ll -o output.ll
+opt -passes=verify -disable-output output.ll</code></pre>
+
+  <p>Provide positive tests for at least two integer widths and both operand
+  orders, and negative tests for zero, one, a non-power-of-two, a negative
+  constant, and a vector value.  Compare the original and transformed programs'
+  outputs.  Briefly explain why replacing multiplication by zero or one needs
+  different handling and why LLVM poison/overflow flags must not be invented.</p>
+
+  <h3>References</h3>
+  <ul>
+    <li><a href="https://llvm.org/docs/WritingAnLLVMNewPMPass.html">Writing an LLVM pass using the new pass manager</a></li>
+  </ul>
+
+</body>
+</html>

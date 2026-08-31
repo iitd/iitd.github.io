@@ -1,6 +1,5 @@
-<html>
-<head>
-</head>
+<!DOCTYPE html>
+<html lang="en">
   <head>
     <title>COL729 Lab 2 : IR and Compiler Passes</title>
     <meta charset="utf-8">
@@ -12,7 +11,7 @@
 <body>
   <h1><font color="blue">COL729 Lab 2 : IR and Compiler Passes</font></h1>
 
-  <h2>Due date - 23:55, 20 September 2026</h2>
+  <h2>Due date - 23:55, 6 September 2026</h2>
   <h3>Weightage: 20 Marks (Actual weightage will be decided later)</h3>
 
   <p>In this assignment, we will become familiar with the LLVM IR and the optimization
@@ -23,15 +22,132 @@
   <h3>Instructions</h3>
 
   <ul>
-    <li>Use the provided credentials for logging-in to the lab machine, sent to each one of you pesonally over MS Teams. You will use the machine over your alloted timeslots.</li>
+    <li>Work in groups of two.</li>
+    <li>Do not submit compiler-generated files.  Submit the source programs, the
+    source and build instructions for your pass, and a PDF report containing the
+    requested IR excerpts and discussion.</li>
+  </ul>
 
-    <li>Install SPEC CPU 2017 benchmark suite.</li>
-    <ul>
-      <li>The SPEC CPU 2017 ISO is already mounted in your home directory.</li>
-      <li>Follow the instructions at
-      <a href="https://www.spec.org/cpu2017/Docs/install-guide-unix.html">https://www.spec.org/cpu2017/Docs/install-guide-unix.html</a>
-        to install and run the CPU 2017 benchmark suite.</li>
-      </li>
-    </ul>
+  <h3>Part A: Reading unoptimised LLVM IR (5 marks)</h3>
+
+  <p>Write one C file, <code>opcodes.c</code>, containing the following functions.
+  Keep the functions separate and mark them <code>noinline</code> so that their IR
+  remains easy to locate.</p>
+
+  <ol>
+    <li>A function that updates a field of an element of an array of structures.
+    The structure must contain a scalar, a two-dimensional array, and a pointer.
+    Use both a run-time array index and constant field indices.</li>
+    <li>A loop containing an integer arithmetic expression, a floating-point
+    expression, both integer and floating-point comparisons, an
+    <code>if/else</code>, and a loop-carried value.</li>
+    <li>A <code>switch</code> with at least four cases, a call to another function,
+    a ternary expression, and conversions between two integer widths and between
+    an integer and a floating-point type.</li>
+  </ol>
+
+  <p>Generate textual IR without optimization:</p>
+
+  <pre><code>clang -O0 -Xclang -disable-O0-optnone -S -emit-llvm opcodes.c -o opcodes.O0.ll
+opt -S -passes=mem2reg opcodes.O0.ll -o opcodes.mem2reg.ll
+opt -S -passes='mem2reg,simplifycfg' opcodes.O0.ll -o opcodes.canonical.ll</code></pre>
+
+  <p>For every opcode below, locate one occurrence in these files, copy the
+  smallest useful IR excerpt into the report, and explain its operands, result
+  type, and connection to the C source:</p>
+
+  <ul>
+    <li>memory and addressing: <code>alloca</code>, <code>load</code>,
+    <code>store</code>, and <code>getelementptr</code>;</li>
+    <li>arithmetic and comparison: one integer operation, one floating-point
+    operation, <code>icmp</code>, and <code>fcmp</code>;</li>
+    <li>control flow and SSA: <code>br</code>, <code>switch</code>,
+    <code>phi</code>, <code>select</code>, <code>call</code>, and <code>ret</code>;</li>
+    <li>casts: <code>trunc</code> or <code>zext</code>/<code>sext</code>, and
+    <code>sitofp</code>/<code>uitofp</code> or <code>fptosi</code>/<code>fptoui</code>.</li>
+  </ul>
+
+  <p>Draw the control-flow graph of the loop function and annotate the incoming
+  edge associated with each <code>phi</code> operand.  For the structure access,
+  compute the address represented by each index of its
+  <code>getelementptr</code>.  In particular, explain why
+  <code>getelementptr</code> computes an address but does not read memory.</p>
+
+  <h3>Part B: What optimization does to the IR (5 marks)</h3>
+
+  <p>Compile the same file at four optimization levels and retain the IR:</p>
+
+  <pre><code>clang -O1 -S -emit-llvm opcodes.c -o opcodes.O1.ll
+clang -O2 -S -emit-llvm opcodes.c -o opcodes.O2.ll
+clang -O3 -S -emit-llvm opcodes.c -o opcodes.O3.ll</code></pre>
+
+  <p>Create a table, one row per function and optimization level, reporting the
+  number of basic blocks and of each LLVM instruction opcode.  A short script may
+  be used, but it must parse instructions rather than count words in comments or
+  metadata.  Discuss at least three substantial changes, such as promotion from
+  memory to SSA, constant folding, dead-code elimination, branch simplification,
+  inlining, loop unrolling, or changes to <code>getelementptr</code>.  For each
+  change, give before/after excerpts and identify the LLVM pass most likely
+  responsible.  Confirm your claim by running a small, named pipeline with
+  <code>opt -S -passes='...'</code>; do not infer solely from the final
+  <code>-O3</code> output.</p>
+
+  <h3>Part C: Optimization passes used at each optimization level (5 marks)</h3>
+
+  <h3>Part D: Vector IR produced by optimization (5 marks)</h3>
+
+  <p>Create <code>vector.c</code> with three counted loops over arrays:</p>
+
+  <ol>
+    <li><code>c[i] = a[i] * alpha + b[i]</code> for <code>float</code> arrays;</li>
+    <li>an integer reduction (for example, sum or dot product); and</li>
+    <li>a loop which conditionally chooses an element from two arrays and writes
+    the result to a third array.</li>
+  </ol>
+
+  <p>Pass the length as a parameter, use at least 1024 elements in the test
+  driver, and use C's <code>restrict</code> qualifier where it is valid.  First
+  compile with vectorization disabled, then enabled:</p>
+
+  <pre><code>clang -O3 -fno-vectorize -fno-slp-vectorize -S -emit-llvm vector.c -o vector.scalar.ll
+clang -O3 -march=native -Rpass=loop-vectorize -Rpass-missed=loop-vectorize \
+  -S -emit-llvm vector.c -o vector.vector.ll 2&gt; vector.remarks.txt</code></pre>
+
+  <p>Find the vector types (for example, <code>&lt;4 x float&gt;</code>) in the
+  optimised file.  Explain the vector width and trace one vectorised loop through
+  its vector <code>load</code>, arithmetic or comparison, <code>select</code>, and
+  <code>store</code> instructions.  Also locate and explain every vector-specific
+  opcode emitted, including <code>extractelement</code>,
+  <code>insertelement</code>, and <code>shufflevector</code> when present.  Relate
+  reduction code to <code>llvm.vector.reduce.*</code> intrinsics if your LLVM
+  version emits them.</p>
+
+  <p>Vectorization and the exact opcodes depend on the target.  If a loop is not
+  vectorised, use the missed-optimization remark to explain why, modify only that
+  loop to remove the obstacle, and show both versions.  If one of the three
+  vector-specific opcodes above is absent, state which lowering replaced it and
+  add a small fourth loop (such as interleaving or de-interleaving two arrays)
+  that gives the vectoriser an opportunity to generate it.  Do not insert vector
+  instructions into the generated IR by hand.  Finally, check that the scalar and
+  vector executables produce identical results on at least five input sizes,
+  including a size not divisible by the vector width.</p>
+
+  <h3>Turn in</h3>
+
+  <p>Submit a single archive containing <code>opcodes.c</code>,
+  <code>vector.c</code>, your opcode-counting script, the pass source and
+  <code>CMakeLists.txt</code>, the pass tests, a <code>README</code> with exact
+  build/run commands, and the PDF report.  The report must be succinct and must
+  include the requested tables, IR excerpts, vectorization remarks, correctness
+  results, and explanations.  Generated <code>.ll</code>, object, and shared
+  library files should not be included.</p>
+
+  <h3>References</h3>
+
+  <ul>
+    <li><a href="https://llvm.org/docs/LangRef.html">LLVM Language Reference Manual</a></li>
+    <li><a href="https://llvm.org/docs/CommandGuide/opt.html"><code>opt</code> command guide</a></li>
+  </ul>
+
 </body>
 </html>
