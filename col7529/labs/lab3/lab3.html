@@ -33,6 +33,33 @@ opt -passes=verify -disable-output output.ll</code></pre>
   outputs.  Briefly explain why replacing multiplication by zero or one needs
   different handling and why LLVM poison/overflow flags must not be invented.</p>
 
+
+  <h3>Part B : Study Clang's Single Variable Constant Propagation Dataflow Analysis</h3>
+  <ul>
+	  <li>What are <code>LatticeJoinEffect::{Changed,Unchanged}</code> and why are they needed?</li> <!--termination-->
+	  <li>
+  </ul>
+
+
+  <h3>Part C : Study Clang's Unchecked Optional Access Model Dataflow Analysis</h3>
+  <p>Read about Clang's analysis at <a href=https://clang.llvm.org/docs/DataFlowAnalysisIntro.html>https://clang.llvm.org/docs/DataFlowAnalysisIntro.html</a>. Notice the difference in terminology: they use \bottom for \top and vice-versa; also they use the term <em>join</em> instead of "meet" (as discussed in class).  Other than these cosmetic differences, the dataflow analysis fundamentals are identical to those discussed in class.
+
+<p>In Clang's analysis, a program point is identified by a node in the Clang's Abstract Syntax Tree (AST).
+
+  <p>
+  In <code>lib/Analysis/FlowSensitive/Models/UncheckedOptionalAccessModel.cpp</code>
+  <ul>
+	  <li>The lattice type is given by <code>using LatticeTransferState = TransferState<UncheckedOptionalAccessLattice></code>.</li>
+	  <li>The transfer function is implemented in <code>buildTransferMatchSwitch()</code>.</li>
+	  <li>The check function is implemented in <code>buildDiagnoseMatchSwitch()</code>.</li>
+  </ul>
+
+  The <em>value</em> (at each program point) in Clang's analysis is encoded by  <code>using UncheckedOptionalAccessLattice = CachedConstAccessorsLattice<NoopLattice>;</code> in <code>clang/include/clang/Analysis/FlowSensitive/Models/UncheckedOptionalAccessModel.h</code>.  The <code>CachedConstAccessorsLattice</code> maintains two maps, namely <code>ConstMethodReturnValues</code> and <code>ConstMethodReturnStorageLocations</code>.  The former tracks a <em>storage location</em> (e.g., a local variable) of <em>record</em> type (e.g., <code>class</code>, <code>struct</code>, <code>union</code>, ...) to its <em>properties</em>.  One of the properties maps a <code>const</code>-qualified member function to the value it is expected to return (for a value type),  and another maps it to a storage location it is supposed to return (for a reference type).
+
+  <p>The <code>joinConstMethodMap()</code> function in <code>clang/include/clang/Analysis/FlowSensitive/CachedConstAccessorsLattice.h</code> implements the <em>join</em> operator for the semi-lattice.
+
+  <p>Are the values copied at each program point (as we know that has quadratic space complexity)? Answer: The Environment object itself represents the program state (declarations, storage locations, mapped values, and path conditions) at a specific point in time. However, the complex heap-allocated elements within it (such as expressions, formulas, and values) do not live directly inside the environment.  They are allocated in an Arena owned by the long-lived DataflowAnalysisContext.  Environments store lightweight pointers (e.g., Value*, StorageLocation*, Formula*) pointing to these shared arena-allocated entities. When an environment is cloned or updated across CFG edges, only the mapping pointers are passed around—the underlying semantic objects are never duplicated. Inside the Environment, the maps that link program elements to their abstract states (like variable-to-location or location-to-value mappings) use llvm::DenseMap or persistent data structures (like llvm::ImmutableMap in parts of Clang's analysis suite): When moving from statement to statement, transfer functions create a shallow copy or delta modification of the mapping tables. Mappings that remain unchanged between basic blocks point to the exact same pointer addresses in memory.
+
   <h3>References</h3>
   <ul>
     <li><a href="https://llvm.org/docs/WritingAnLLVMNewPMPass.html">Writing an LLVM pass using the new pass manager</a></li>
