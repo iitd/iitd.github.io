@@ -16,8 +16,7 @@
 
   <p>In this assignment, we will become familiar with the LLVM IR and the optimization
   passes implemented by the Clang/LLVM compiler infrastructure at various optimization
-  levels.  We will also implement a simple transformation pass within the Clang/LLVM
-  infrastructure.</p>
+  levels.</p>
 
   <h3>Instructions</h3>
 
@@ -184,9 +183,7 @@ clang -O3 -march=native -Rpass=loop-vectorize -Rpass-missed=loop-vectorize \
   <h3>Turn in</h3>
 
   <p>Submit a single archive containing <code>opcodes.c</code>,
-  <code>vector.c</code>, your opcode-counting script, the pass source and
-  <code>CMakeLists.txt</code>, the pass tests, a <code>README</code> with exact
-  build/run commands, and the PDF report.  The report must be succinct and must
+  <code>vector.c</code>, your opcode-counting script, a <code>README</code> , and the PDF report.  The report must be succinct and must
   include the requested tables, IR excerpts, vectorization remarks, correctness
   results, and explanations.  Generated <code>.ll</code>, object, and shared
   library files should not be included.</p>
