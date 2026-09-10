@@ -613,10 +613,20 @@ This will solve the issues with Example2 and Example3
 
 <h3>Pass 4: Cleaning up</h3>
 <pre>
-BB1-&gt;BB2
-BB2-&gt;BB3
-
-BB1: x=a+b
+       ┌─────────┐
+       │   BB1   │
+       │ x = a+b │
+       └────┬────┘
+            │
+            ▼
+       ┌─────────┐
+       │   BB2   │
+       └────┬────┘
+            │
+            ▼
+       ┌─────────┐
+       │   BB3   │
+       └─────────┘
 </pre>
 No need to generate temporaries in this case. But our algorithm will. Do a liveness analysis to see
 if the expression is used later (without an intervening <code>latest</code> as a <code>latest</code> indicates
