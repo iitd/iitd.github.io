@@ -18,12 +18,19 @@
   <p>Change analysis so that transitively dead values are also considered dead
 
   <h3>Part B: Defined Analysis (5 marks)</h3>
-  <p>Study the analysis.
+  <p>Study the analysis in <code>clang/lib/Analysis/UninitialilzedValues.cpp</code>.
 
   <h3>Part C: Postorder and Reverse postorder analysis(10 marks)</h3>
   <p>The current worklist algorithm picks nodes in arbitrary order. Use postorder and reverse postorder instead.  Measure the improvements for custom microbenchmarks designed to demonstrate the improvements.  Measure the improvements on SPEC benchmarks.
 
   <h3>Part D : Scalability of DFA (10 marks)</h3>
+  <p>In <code>LiveVariables::computeLiveness()</code> [<code>clang/lib/Analysis/LiveVariables.cpp</code>], we see code like the following:
+  <pre>
+  // The analysis currently has scalability issues for very large CFGs.
+  // Bail out if it looks too large.
+  if (cfg->getNumBlockIDs() > 300000)
+    return nullptr;
+  </pre>
   <p>Measure the time taken on SPEC benchmarks.
   <p>Identify scalability limits, identify a program pattern, such that increasing the size of that pattern increases analysis time, what is the fastest growth you can construct (at large values)?
 </body>
