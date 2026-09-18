@@ -33,6 +33,8 @@ opt -passes=verify -disable-output output.ll</code></pre>
   constant, and a vector value.  Compare the original and transformed programs'
   outputs.</p>
 
+  <p>You may use an online search or AI conversation bots to learn about how to write an LLVM pass, but please do not try to get an AI to solve the whole assignment for you.</p>
+
 
   <h3>Part B : Examples of Dataflow Analyses for C++ in Clang Analyzer (5 marks)</h3>
   <p>Read about Clang's analysis at <a href=https://clang.llvm.org/docs/DataFlowAnalysisIntro.html>https://clang.llvm.org/docs/DataFlowAnalysisIntro.html</a>. Notice the difference in terminology: they use \bottom for \top and vice-versa; also they use the term <em>join</em> instead of "meet" (as discussed in class).  Other than these cosmetic differences, the dataflow analysis fundamentals are identical to those discussed in class.  Answer the following questions:
@@ -40,6 +42,7 @@ opt -passes=verify -disable-output output.ll</code></pre>
 	  <li>Which analysis among the examples presented on the webpage is your favourite, and why?  Explain briefly.</li>
 	  <li>Based on your programming experience, can you propose a new analysis that you think will be worthy to implement in Clang?  Your proposal should ideally score high on the metrics used to evaluate a potential optimization: generality, payoff, and ease-of-implementation.  Briefly explain why your proposal scores high on these metrics, use concrete examples wherever possible.</li>
   </ul>
+  <p>Do not use AI for this part</p>
 
   <h3>Part C : Understand Clang's CFG (10 marks)</h3>
   Download and extract the files of <a href=https://github.com/llvm/llvm-project/releases?page=1#release-llvmorg-23.1.0>LLVM 23.1.0</a>. Clang's CFG format is available in <code>llvm-project/clang/include/clang/Analysis/CFG.h</code>.  This consists of:
@@ -85,6 +88,7 @@ ninja -C build clang
   <ul>
 	  <li>Feed it small, deliberately tricky snippets of code (&amp;&amp;, ?:, loops with break/continue, a C++ destructor, a try/catch) and compare the dump to the source. Document the code snippets you tried and the resulting CFGs, and your observations/conclusions on the logic that generates the CFGs.  Try to identify interesting/non-obvious observations.</li>
   </ul>
+  <p>Do not use AI for this part</p>
 
   <h3>Part D : Study Clang's Single Variable Constant Propagation Dataflow Analysis (5 marks)</h3>
   Study the code of <code>llvm-project/clang/unittests/Analysis/FlowSensitive/SingleVarConstantPropagationTest.cpp</code>.  You may also look at the code that implements the generic fixed-point algorithm for a dataflow analysis in <code>runTypeErasedDataflowAnalysis()</code> in <code>clang/lib/Analysis/FlowSensitive/TypeErasedDataflowAnalysis.cpp</code> (headers defined in <code>include/clang/Analysis/FlowSensitive/DataflowAnalysis.h</code>, ...). You may need to execute the code on some example programs to be able to answer the following questions.
@@ -93,6 +97,7 @@ ninja -C build clang
 	  <li>Briefly explain (in english, or using a mathematical expression, or pseudocode) the operation of <code>ConstantPropagationAnalysis::transfer()</code> which implements the transfer function of this dataflow analysis.</li>
 	  <li>What are <code>LatticeJoinEffect::{Changed,Unchanged}</code> and why are they needed?</li> <!--termination-->
   </ul>
+  <p>Do not use AI for this part</p>
 
   <!-- <h3> Part D: Identify dead code arising due to an incorrect shift count (definitely) flowing into a shift operation</h3> --><!-- Misra Rule 12.2 -->
 
