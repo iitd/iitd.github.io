@@ -42,21 +42,52 @@ opt -passes=verify -disable-output output.ll</code></pre>
   </ul>
 
   <h3>Part C : Understand Clang's CFG (10 marks)</h3>
-  Clang's CFG format is available in <code>llvm-project/clang/include/clang/Analysis/CFG.h</code>.  This consists of:
+  Download and extract the files of <a href=https://github.com/llvm/llvm-project/releases?page=1#release-llvmorg-23.1.0>LLVM 23.1.0</a>. Clang's CFG format is available in <code>llvm-project/clang/include/clang/Analysis/CFG.h</code>.  This consists of:
   <ul>
 	  <li> <b>CFGBlock</b>: a basic block, holding an ordered list of CFGElements plus a terminator Stmt*.</li>
 	  <li><b>CFGElement</b>: a tagged union over statement/expression nodes and special "pseudo-statement" kinds you won't find directly in the AST — Initializer, ScopeBegin/ScopeEnd, LifetimeEnds, AutomaticObjectDtor, TemporaryDtor, LoopExit, CleanupFunction, etc. (enum at CFG.h:57-84). These extra kinds are exactly what makes the CFG richer than "just the AST with edges" — it makes implicit destructor calls, temporaries, and scope exits explicit nodes.</li>
 	  <li>CFG itself: owns the blocks, exposes getEntry()/getExit(), iteration, and a dump()/print() method.</li>
 	  <li>CFGBuilder: the class that actually lowers a Stmt*/function body AST into the graph — reading its implementation in <code>clang/lib/Analysis/CFG.cpp</code> is the ground truth for why a given AST construct produces the blocks/edges it does (e.g. how &amp;&amp;/||, ?:, loops, try/catch, and switch fallthrough get lowered).
   </ul>
-  You can dump a CFG for real code using <code>clang -Xclang -analyze -Xclang -analyzer-checker=debug.DumpCFG -fsyntax-only foo.c</code>, or to render it as a graph (needs Graphviz)
-  using <code>clang -Xclang -analyze -Xclang -analyzer-checker=debug.ViewCFG -fsyntax-only foo.c</code>.  Answer the following question:
+  Build the clang executable using the following commands:
+  <ul>
+	  <li>Prerequisites (already satisfied on this machine): CMake ≥3.20, Ninja, a C++17-capable compiler. Python3 is needed for the test suite (lit)</li>
+	  <li> Configure
+		  <pre>
+cmake -G Ninja -S llvm -B build \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" \
+  -DLLVM_TARGETS_TO_BUILD="X86" \
+  -DCMAKE_C_COMPILER=clang-12 -DCMAKE_CXX_COMPILER=clang++-12 \
+  -DLLVM_USE_LINKER=lld \
+  -DLLVM_ENABLE_ASSERTIONS=ON
+		  </pre>
+Key flags:
+<pre>
+- -S llvm -B build: source root is the llvm/ subdirectory, not the repo root; build is wherever you want the build tree (out-of-tree only — never build inside the source dir).
+- LLVM_ENABLE_PROJECTS: which subprojects to build alongside core LLVM (clang, clang-tools-extra, lld, compiler-rt, polly, mlir, etc., semicolon-separated).
+- CMAKE_BUILD_TYPE: Release for speed/size, Debug if you need full debug info to step through code in gdb (much slower build, far more disk — your existing tree uses Debug).
+- LLVM_USE_LINKER=lld: dramatically faster links than GNU ld/gold, worth it especially for Debug builds.
+- LLVM_ENABLE_ASSERTIONS=ON: catches internal invariant violations; on by default for Debug, off by default for Release — turn on explicitly if developing/debugging.
+- Using clang-12/clang++-12 to compile LLVM itself builds noticeably faster than gcc/g++.
+</pre>
+<li> Build
+	<pre>
+cmake --build build              # builds everything configured
+# or, narrower:
+ninja -C build clang
+	</pre>
+	Add <code>-j N</code> to <code>ninja/cmake --build ...</code> -- to cap parallelism if RAM-constrained (each parallel Debug compile/link job can use 1.5–2GB+).
+  </ul>
+
+  Once you build the <code>clang</code> repo, you can dump a CFG for real code using <code>clang -Xclang -analyze -Xclang -analyzer-checker=debug.DumpCFG -fsyntax-only foo.c</code>, or to render it as a graph (needs Graphviz)
+  using <code>clang -Xclang -analyze -Xclang -analyzer-checker=debug.ViewCFG -fsyntax-only foo.c</code>.  You can also add debug statements in the clang code, e.g., using <code>llvm::dbgs() &lt;&lt; "Debug statement: ..."</code>, build and run again.  Answer the following question:
   <ul>
 	  <li>Feed it small, deliberately tricky snippets of code (&amp;&amp;, ?:, loops with break/continue, a C++ destructor, a try/catch) and compare the dump to the source. Document the code snippets you tried and the resulting CFGs, and your observations/conclusions on the logic that generates the CFGs.  Try to identify interesting/non-obvious observations.</li>
   </ul>
 
   <h3>Part D : Study Clang's Single Variable Constant Propagation Dataflow Analysis (5 marks)</h3>
-  Download and extract the files of <a href=https://github.com/llvm/llvm-project/releases?page=1#release-llvmorg-23.1.0>LLVM 23.1.0</a>. Study the code of <code>llvm-project/clang/unittests/Analysis/FlowSensitive/SingleVarConstantPropagationTest.cpp</code>.  You may also look at the code that implements the generic fixed-point algorithm for a dataflow analysis in <code>runTypeErasedDataflowAnalysis()</code> in <code>clang/lib/Analysis/FlowSensitive/TypeErasedDataflowAnalysis.cpp</code> (headers defined in <code>include/clang/Analysis/FlowSensitive/DataflowAnalysis.h</code>, ...). You may need to execute the code on some example programs to be able to answer the following questions.
+  Study the code of <code>llvm-project/clang/unittests/Analysis/FlowSensitive/SingleVarConstantPropagationTest.cpp</code>.  You may also look at the code that implements the generic fixed-point algorithm for a dataflow analysis in <code>runTypeErasedDataflowAnalysis()</code> in <code>clang/lib/Analysis/FlowSensitive/TypeErasedDataflowAnalysis.cpp</code> (headers defined in <code>include/clang/Analysis/FlowSensitive/DataflowAnalysis.h</code>, ...). You may need to execute the code on some example programs to be able to answer the following questions.
   <ul>
 	  <li>Draw the lattice of this dataflow analysis? Use the names of the structs, member fields, or variables in the code to annotate your lattice diagram, to clearly show the correspondences between your diagram and the actual code.</li>
 	  <li>Briefly explain (in english, or using a mathematical expression, or pseudocode) the operation of <code>ConstantPropagationAnalysis::transfer()</code> which implements the transfer function of this dataflow analysis.</li>
