@@ -14,6 +14,27 @@
   <h2>Due date - 23:55, 30 October 2026</h2>
   <h3>Weightage: 40 Marks (Actual weightage will be decided later)</h3>
 
+  <h3>Part A : Study Clang's Unchecked Optional Access Model Dataflow Analysis (5 marks)</h3>
+
+<p>In Clang's analysis, a program point is identified by a node in the Clang's Abstract Syntax Tree (AST).
+
+  <p>
+  In <code>lib/Analysis/FlowSensitive/Models/UncheckedOptionalAccessModel.cpp</code>
+  <ul>
+	  <li>The lattice type is given by <code>using LatticeTransferState = TransferState<UncheckedOptionalAccessLattice></code>.</li>
+	  <li>The transfer function is implemented in <code>buildTransferMatchSwitch()</code>.</li>
+	  <li>The check function is implemented in <code>buildDiagnoseMatchSwitch()</code>.</li>
+  </ul>
+
+  The <em>value</em> (at each program point) in Clang's analysis is encoded by  <code>using UncheckedOptionalAccessLattice = CachedConstAccessorsLattice<NoopLattice>;</code> in <code>clang/include/clang/Analysis/FlowSensitive/Models/UncheckedOptionalAccessModel.h</code>.  The <code>CachedConstAccessorsLattice</code> maintains two maps, namely <code>ConstMethodReturnValues</code> and <code>ConstMethodReturnStorageLocations</code>.  The former tracks a <em>storage location</em> (e.g., a local variable) of <em>record</em> type (e.g., <code>class</code>, <code>struct</code>, <code>union</code>, ...) to its <em>properties</em>.  One of the properties maps a <code>const</code>-qualified member function to the value it is expected to return (for a value type),  and another maps it to a storage location it is supposed to return (for a reference type).
+
+  <p>The <code>joinConstMethodMap()</code> function in <code>clang/include/clang/Analysis/FlowSensitive/CachedConstAccessorsLattice.h</code> implements the <em>join</em> operator for the semi-lattice.
+
+  <p>Are the values copied at each program point (as we know that has quadratic space complexity)? Answer: The Environment object itself represents the program state (declarations, storage locations, mapped values, and path conditions) at a specific point in time. However, the complex heap-allocated elements within it (such as expressions, formulas, and values) do not live directly inside the environment.  They are allocated in an Arena owned by the long-lived DataflowAnalysisContext.  Environments store lightweight pointers (e.g., Value*, StorageLocation*, Formula*) pointing to these shared arena-allocated entities. When an environment is cloned or updated across CFG edges, only the mapping pointers are passed around—the underlying semantic objects are never duplicated. Inside the Environment, the maps that link program elements to their abstract states (like variable-to-location or location-to-value mappings) use llvm::DenseMap or persistent data structures (like llvm::ImmutableMap in parts of Clang's analysis suite): When moving from statement to statement, transfer functions create a shallow copy or delta modification of the mapping tables. Mappings that remain unchanged between basic blocks point to the exact same pointer addresses in memory.
+
+  <p>How are meet-points (or join-points) handled, e.g., how are loops handled, do we have PHI nodes?  Answer: no we do not have PHI nodes in Clang's AST representation.  Instead, we have statements, that include loops, if-then-else statements, etc.  The dataflow analysis infrastructure (implemented in <code>clang/lib/Analysis/FlowSensitive/{TypeErased}DataFlowAnalysis.cpp</code>) interprets a statement based on its semantics, e.g., for <code>if-then-else</code>, the values are transfered on the two respective branches, and joined at the end. Similarly, for loops (<code>while</code>, <code>for</code>, and <code>do-while</code>), the loop body is processed repeatedly, until a fixed point is reached at the loop header.  To prevent infinite analysis loops on unbounded state spaces, the solver limits block visits using parameters like <code>MaxBlockVisits</code>.
+
+
   <h3>Part A: Liveness Analysis (10 marks)</h3>
   <p>Change analysis so that transitively dead values are also considered dead
 
