@@ -16,7 +16,7 @@ if (n &gt; 0) {
   } while (i &lt; n);
 }
 </pre>
-This can be thought-of as a special case of <em>loop peeling</em> (peeling of the first few iterations in the loop header). Here, we peel-off the check of the first iteration. It happens to be a very common optimization in modern compilers as it can be applied to <em>any</em> loop.
+This can be thought-of as a special case of <em>loop peeling</em> (peeling of the first few iterations in the loop header). Here, we peel-off the check of the first iteration. It happens to be a very common optimization in modern compilers as it can be applied to <em>any</em> loop.  Moreover, it allows loop hoisting in the presence of unsafe operations that can cause exceptions, e.g., consider a loop-invariant computation, e.g., A[i] = B[10].  It is not safe to hoist B[10] outside the first loop (before loop inversion) as it is possible that B[10] causes a stray memory access, which was never going to get executed as the loop would not have been entered even once.  This problem does not exist in the inverted loop.
 
 <p>Optimizations that make a loop faster are usually very consequential and so much effort has gone into this.
 
