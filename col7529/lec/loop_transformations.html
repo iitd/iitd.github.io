@@ -1,22 +1,27 @@
 <h3>An example loop transformation: loop inversion</h3>
 <pre>
-t = m + n;
 for (i = 0; i &lt; n; i++) {
-  A[i] = t;
+  A[i] = m + n;  //m+n will not be hoisted out by the PRE algorithm
 }
 </pre>
 to
 <pre>
-t = m + n;
 if (n &gt; 0) {
   i = 0;
+  t = m + n;  //m+n will be hoisted out by the PRE algorithm
   do {
     A[i] = t;
     i++;
   } while (i &lt; n);
 }
 </pre>
-This can be thought-of as a special case of <em>loop peeling</em> (peeling of the first few iterations in the loop header). Here, we peel-off the check of the first iteration. It happens to be a very common optimization in modern compilers as it can be applied to <em>any</em> loop.  Moreover, it allows loop hoisting in the presence of unsafe operations that can cause exceptions, e.g., consider a loop-invariant computation, e.g., A[i] = B[10].  It is not safe to hoist B[10] outside the first loop (before loop inversion) as it is possible that B[10] causes a stray memory access, which was never going to get executed as the loop would not have been entered even once.  This problem does not exist in the inverted loop.
+This can be thought-of as a special case of <em>loop peeling</em> (peeling of the first few iterations in the loop header). Here, we peel-off the check of the first iteration. It happens to be a very common optimization in modern compilers as it can be applied to <em>any</em> loop.
+
+<ul>
+	<li>It eliminates one unconditional branch in the loop body, replacing it with a conditional branch.</li>
+	<li>Moreover, it allows loop hoisting in the presence of unsafe operations that can cause exceptions, e.g., consider a loop-invariant computation, e.g., A[i] = B[10].  It is not safe to hoist B[10] outside the first loop (before loop inversion) as it is possible that B[10] causes a stray memory access, which was never going to get executed as the loop would not have been entered even once.  This problem does not exist in the inverted loop.</li>
+	<li>In fact, if you consider the PRE algorithm we discussed, it will only be able to hoist out "m+n" in the transformed loop.</li>
+</ul>
 
 <p>Optimizations that make a loop faster are usually very consequential and so much effort has gone into this.
 
