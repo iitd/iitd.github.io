@@ -34,20 +34,66 @@ Goal:
 </ul>
 Informally, a natural loop has
 <ul>
-	<li>edges that form at least a cycle.</li>
+	<li>edges that form at least one cycle.</li>
 	<li>a single entry point.</li>
 </ul>
 Example:
 <pre>
-BB1-&gt;BB2
-BB1-&gt;BB3
-BB2-&gt;BB4
-BB3-&gt;BB4
-BB4-&gt;BB5
-BB5-&gt;BB4
-BB5-&gt;BB2
+                 +------+
+                 | BB1  |
+                 +------+
+                  /    \
+                 v      v
+             +------+ +------+
+        ┌───>| BB2  | | BB3  |
+        │    +------+ +------+
+        │        \      /
+        │         \    /
+        │          v  v
+        │        +------+
+        │        | BB4  | <-----
+        │        +------+      |
+        │           |          |
+        │           v          |
+        │        +------+      |
+        └────────| BB5  |      |
+                 +------+      |
+                    |          |
+                    └──────────| BB4
 </pre>
 While BB4-BB5 are a natural loop, BB2-BB4-BB5 are not a natural loop (BB3 can jump into the middle of this loop).
+
+<p>An example with nested loops:
+<pre>
+                 +------+
+                 | BB1  | <----------------
+                 +------+                 |
+                  /    \                  |
+                 v      v                 |
+             +------+ +------+            |
+        ┌───>| BB2  | | BB3  |            |
+        │    +------+ +------+            |
+        │        \      /                 |
+        │         \    /                  |
+        │          v  v                   |
+        │        +------+                 |
+        │        | BB4  | <-----          |
+        │        +------+      |          |
+        │           |          |          |
+        │           v          |          |
+        │        +------+      |          |
+        └────────| BB5  |      |          |
+                 +------+      |          |
+                  | |          |          |
+                  | └──────────| BB4      |
+                  |                       |
+                  |                       |
+		  v                       |
+               +------+                   |
+               | BB6  | ------------------| BB1
+               +------+
+</pre>
+
 
 <p>Most loops in common programs are <em>natural loops</em>.
 
@@ -79,6 +125,9 @@ While BB4-BB5 are a natural loop, BB2-BB4-BB5 are not a natural loop (BB3 can ju
 <h3>Finding dominators</h3>
 A node <code>d</code> dominates <code>n</code> in a graph (<code>d dom n</code>) if every path from the start node to
 <code>n</code> goes through <code>d</code>.
+
+<p>One way to compute dominators is through a dataflow analysis where the set of values V is the sets of basic blocks. (Show
+the expected result of such a dataflow analysis on the examples above).
 <ul>
 	<li>Domain of values: all sets of basic blocks.</li>
 	<li>Direction: forward</li>
@@ -89,7 +138,7 @@ A node <code>d</code> dominates <code>n</code> in a graph (<code>d dom n</code>)
 	<li>Bottom: empty set</li>
 </ul>
 Can do in one reverse postorder pass (can also do in arbitrary order until we reach fixpoint but that would be slower). Reverse postorder is also called depth-first ordering.
-<h3>Depth-first (or reverse postorder) ordering</h3>
+<h3>Depth-first (or reverse postorder) ordering/numbering</h3>
 Here is an algorithm for computing the reverse-postorder:
 <pre>
 void main()
@@ -115,6 +164,9 @@ void search(node n)
 
 //Output: dfn[] contains the depth-first (aka reverse postorder) numbering of each node
 </pre>
+Show the potential results of running the DFN algorithm on the examples above.
+
+<p>
 An edge m-&gt;n is a <em>retreating edge</em> iff dfn[m] &gt; dfn[n] (because this means that during the DFS traversal as in the algorithm above, m was reached through n starting from entry, or time taken by search(m) was a sub-interval of the time taken by search(n)).
 
 Notice that there are multiple depth-first orders possible (depending on the order in which the successors are chosen), and each depth-first order may result in a different set of retreating edges.
@@ -129,10 +181,18 @@ are back edges.
 
 <p>Example of a non-reducible graph:
 <pre>
-BB1-&gt;BB2
-BB1-&gt;BB3
-BB2-&gt;BB3
-BB3-&gt;BB2
+        +-----+
+        | BB1 |
+        +-----+
+         |   \
+         |    \
+         v     v
+     +-----+  +-----+
+     | BB2 |->| BB3 |
+     +-----+  +-----+
+        ^       |
+        |       |
+        +-------+
 </pre>
 
 <p>Example of non-reducible graph in general: often if we reverse
@@ -140,10 +200,16 @@ the edges of a regular CFG, we may often end up with a non-reducible
 flow graph. Intuitively: while  typical programs have loops with single
 entries, those loops sometimes have several exits.
 
-<h3>Depth of a reducible graph</h3>
+<p>Structured control flow including <code>for</code>, <code>while</code>, <code>do-while</code>,
+<code>break</code>, and <code>continue</code>, always produce reducible graphs.  However, if we
+construct the CFG of the optimized code, e.g., optimized assembly code, it is often not reducible,
+i.e., the compiler may have made it irreducible.  For example, it may share common code across loops
+to reduce code size.
+
+<!--<h3>Depth of a reducible graph</h3>
 The <em>depth</em> is the largest number of retreating edges on any
 cycle-free path. For reducible graphs, all retreating edges are back edges.
-Intutively: this is the same as the maximum loop nesting depth of a graph.
+Intutively: this is the same as the maximum loop nesting depth of a graph.-->
 
 <h3>Constructing natural loops</h3>
 Remove <code>d</code> from the graph, find all predecessors of <code>n</code>.
@@ -162,8 +228,16 @@ Remove <code>d</code> from the graph, find all predecessors of <code>n</code>.
 	</li>
 	<li>If two loops share the same header:
 		<ul>
-			<li>Hard to tell which is the inner loop</li>
-			<li>Combine as one.</li>
+			<li>Hard to tell which is the inner loop. Discuss an example of a CFG with two different interpretations:
+				<pre>
+				BB1 --> BB2 --> BB1
+				 |---> BB3 --> BB1
+				</pre>
+				Here, the two different back edges (<code>BB2-&gt;BB1</code> and <code>BB3-&gt;BB1</code>) can be either due to a nested loop (i.e., one may be nested as another) or simply a <code>continue</code> statement in the loop body.
+			</li>
+			<li>If it is a nested loop, then we can analyze each loop separtely, e.g., we can assume that the inner loop executes hundreds of iterations before a single iteration of the outer loop is executed; however if it is a single loop with multiple back edges, then every iteration should be assumed to go either way with similar probabilities.</li>
+			<li>We conservatively combine them as one.  This is conservative as now we may be loosing precision by assuming that the inner loop counter can be reset arbitrarily, and so, for example, we may not be able to identify it as something that increments on every iteration of the loop.  We loose optimization opportunity due to this conservative assumption.</li>
+			<li>For structured control flow, such situations can be avoided by the compiler by ensuring that inner loops always have a separate header.  Later transformation passes may later merge the headers, but the compiler will always be in control then (as it will know the inner/outer loop relationships).</li>
 		</ul>
 </ul>
 
@@ -174,9 +248,18 @@ BB1-&gt;BB2
 BB2-&gt;BB2
 BB2-&gt;BB3
 
-BB1: a=0
-BB2: a = a+1
+BB1: i=0
+BB2: i = i+1
+     if i &lt; n goto BB1
 </pre>
+This is a common pattern. Example optimizations possible by analyzing <code>i</code>'s behaviour:
+<ul>
+	<li>e.g., if the loop has <code>sum=sum+i</code>, then the entire loop may be collapsed to <code>sum=sum+n*(n-1)/2</code>.</li>
+	<li>if the loop has <code>A[j][i]</code> computed through <code>t1=&amp;A; t2 = t1 + j*1000; t3=t2+i*4</code>, then this may be replaced by <code>t4 = t4 + 4</code> in the loop body, where <code>t4</code> is initialized to <code>t1=&amp;A; t4 = t1 + j*1000;</code> <em>before</em> the loop is entered. This eliminates the multiplication operation.</li>
+	<li>The reverse of the transformation discussed above is also an optimization if the machine is a parallel machine, e.g., GPU.  In this case, we would like to eliminate <em>loop carried dependencies</em> on <code>t4</code> so that every iteration can proceed in parallel, e.g., the <code>i</code>th processor can compute <code>t2+i*4</code> independently.</li>
+</ul>
+
+<p>How is such an analysis done:
 <ul>
 	<li>Summarize the loop body with a transfer function fb: m' = fb(m)
 		<ul>
