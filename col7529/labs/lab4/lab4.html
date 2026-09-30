@@ -11,12 +11,43 @@
 <body>
   <h1><font color="blue">COL729 Lab 4 : Writing Compiler Passes</font></h1>
 
-  <h2>Due date - 23:55, 30 October 2026</h2>
-  <h3>Weightage: 40 Marks (Actual weightage will be decided later)</h3>
+  <h2>Due date - 23:55, 10 November 2026</h2>
+  <h3>Weightage: 60 Marks (Actual weightage will be decided later)</h3>
 
-  <h3>Part A : Study Clang's Unchecked Optional Access Model Dataflow Analysis (5 marks)</h3>
+  <h3>Part A : Study Clang's Unchecked Optional Access Model Dataflow Analysis (30 marks)</h3>
 
-<p>In Clang's analysis, a program point is identified by a node in the Clang's Abstract Syntax Tree (AST).
+  In the previous assignment, we were introduced to Clang's control flow graph, and also studied Clang's single-variable
+  constant propagation dataflow analysis.  In this part of the assignment, we will study a more complex dataflow analysis,
+  namely the <em>Unchecked Optional Access Model</em> dataflow analysis.  Here is an example program that motivates this
+  analysis:
+  <pre>
+  #include <optional>
+
+  void demo(std::optional<int> opt, bool cond) {
+    int a = *opt;                     // (1) FLAGGED: opt may be empty here
+
+    if (opt.has_value()) {
+      int b = *opt;                  // (2) OK: has_value() proven true on this branch
+    } else {
+      int c = *opt;                  // (3) FLAGGED: proven empty on this branch
+    }
+
+    if (!opt) {
+      opt = 42;
+    }
+    int d = *opt;                    // (4) OK: both incoming edges guarantee a value
+
+    while (cond) {
+      if (!opt.has_value())          //Consider what happens if this is removed
+        opt = 0;                     //Consider what happens if this is removed
+      int e = *opt;                  // (5) OK: fixed point at loop header proves "has value"
+      opt.reset();
+    }
+  }
+  </pre>
+  You may run this analysis with <code>clang-tidy -checks='-*,bugprone-unchecked-optional-access' demo.cpp -- -std=c++17</code>.
+  Consider what happens if the lines with code <code>if (!opt.has_value()) opt = 0</code> are removed or commented out; what are
+  the warnings we expect in that case?
 
   <p>
   In <code>lib/Analysis/FlowSensitive/Models/UncheckedOptionalAccessModel.cpp</code>
@@ -30,29 +61,77 @@
 
   <p>The <code>joinConstMethodMap()</code> function in <code>clang/include/clang/Analysis/FlowSensitive/CachedConstAccessorsLattice.h</code> implements the <em>join</em> operator for the semi-lattice.
 
-  <p>Are the values copied at each program point (as we know that has quadratic space complexity)? Answer: The Environment object itself represents the program state (declarations, storage locations, mapped values, and path conditions) at a specific point in time. However, the complex heap-allocated elements within it (such as expressions, formulas, and values) do not live directly inside the environment.  They are allocated in an Arena owned by the long-lived DataflowAnalysisContext.  Environments store lightweight pointers (e.g., Value*, StorageLocation*, Formula*) pointing to these shared arena-allocated entities. When an environment is cloned or updated across CFG edges, only the mapping pointers are passed around—the underlying semantic objects are never duplicated. Inside the Environment, the maps that link program elements to their abstract states (like variable-to-location or location-to-value mappings) use llvm::DenseMap or persistent data structures (like llvm::ImmutableMap in parts of Clang's analysis suite): When moving from statement to statement, transfer functions create a shallow copy or delta modification of the mapping tables. Mappings that remain unchanged between basic blocks point to the exact same pointer addresses in memory.
+  <p>Are the values copied at each program point (as we know that has quadratic space complexity)? Answer: The Environment object itself represents the program state (declarations, storage locations, mapped values, and path conditions) at a specific point in time. However, the complex heap-allocated elements within it (such as expressions, formulas, and values) do not live directly inside the environment.  They are allocated in an Arena owned by the long-lived DataflowAnalysisContext.  Environments store lightweight pointers (e.g., Value*, StorageLocation*, Formula*) pointing to these shared arena-allocated entities. When an environment is cloned or updated across CFG edges, only the mapping pointers are passed around, the underlying semantic objects are never duplicated. Inside the Environment, the maps that link program elements to their abstract states (like variable-to-location or location-to-value mappings) use llvm::DenseMap or persistent data structures (like llvm::ImmutableMap in parts of Clang's analysis suite): When moving from statement to statement, transfer functions create a shallow copy or delta modification of the mapping tables. Mappings that remain unchanged between basic blocks point to the exact same pointer addresses in memory.
 
-  <p>How are meet-points (or join-points) handled, e.g., how are loops handled, do we have PHI nodes?  Answer: no we do not have PHI nodes in Clang's AST representation.  Instead, we have statements, that include loops, if-then-else statements, etc.  The dataflow analysis infrastructure (implemented in <code>clang/lib/Analysis/FlowSensitive/{TypeErased}DataFlowAnalysis.cpp</code>) interprets a statement based on its semantics, e.g., for <code>if-then-else</code>, the values are transfered on the two respective branches, and joined at the end. Similarly, for loops (<code>while</code>, <code>for</code>, and <code>do-while</code>), the loop body is processed repeatedly, until a fixed point is reached at the loop header.  To prevent infinite analysis loops on unbounded state spaces, the solver limits block visits using parameters like <code>MaxBlockVisits</code>.
+  <p>How are meet-points (or join-points) handled, e.g., how are loops handled, do we have PHI nodes?  Answer: No, Clang has no PHI nodes/SSA form.  Instead, the dataflow engine (<code>clang/lib/Analysis/FlowSensitive/{TypeErased}DataFlowAnalysis.cpp</code>) is purely CFG-structural, not statement-type-specific: <code>computeBlockInputState()</code> joins the states of <em>all</em> predecessors of any block that has more than one (this is the generic meet/join, used identically for <code>if-then-else</code>, <code>switch</code>, <code>&amp;&amp;</code>/<code>||</code>/<code>?:</code>, and loop merges &mdash; the engine never special-cases which source construct produced the branch, since <code>CFGBuilder</code> has already lowered all of them into the same block/edge primitives discussed in the previous assignment). For a predecessor with a conditional terminator, the branch condition (or its negation) is asserted into a copy of that predecessor's environment before it is joined in, which is what gives path-sensitivity (e.g., <code>has_value()</code> being provably true down one edge and false down the other, as in the example above). A hard cap <code>MaxBlockVisits</code> bounds the total number of block visits regardless, returning a <code>timed_out</code> error if exceeded &mdash; this protects against non-terminating or very slow analyses on pathological/huge CFGs.
 
+  <p><em>Widening</em>: Unlike what we discussed in our lectures, for faster convergence, loop back-edges are handled specially in Clang's dataflow analysis: rather than a plain join, blocks identified by <code>isBackedgeCFGNode()</code> apply <em>widening</em> (<code>widenTypeErased</code>/<code>Env.widen</code>) to guarantee convergence, and the worklist keeps re-visiting the loop header/body until widening reports no change (<code>LatticeJoinEffect::Unchanged</code>).  This separation of "meet behaviour" for forward edges and back edges provides the framework with better control over the convergence properties of the analysis.  Think of the widening operator as a "long downward jump", whereas a join operator is a "short downward jump".  In other words, at back edges, the analysis wants to make longer jumps towards the bottom (or top in Clang's parlance) --- this is done for reducing compile time (at the cost of potential imprecision) and increasing the chances of convergence within <code>MaxBlockVisits</code>.
 
-  <h3>Part A: Liveness Analysis (10 marks)</h3>
-  <p>Change analysis so that transitively dead values are also considered dead
+  <p>Turn in:
+  <ol>
+	  <li>Draw the semi-lattice of this dataflow analysis.</li>
+	  <li>Can you show the mathematical representation of the transfer function for a few statements?</li>
+	  <li>Can you show a mathematical representation of the widening operator?  Can you show an example where widening causes a longer jump than the regular join operator?</li>
+  </ol>
 
+<p>While you may use AI for this part, please use it as sparingly as possible.  Your first few attempts should always be manual --- looking through the code and understanding for yourself will likely help you learn many things (much more than what this assignment is asking).  Remember that the exams may question you on this material.
+
+<h3>Part B: Strongly-live variables (or faint variables elimination) [30 marks]</h3>
+<p>In this assignment, we will change the liveness analysis in <code>clang/lib/Analysis/LiveVariables.cpp</code> so that transitively dead values are also considered dead.
+In the literature, this is also called <em>strongly-live variables</em> analysis, or conversely <em>faint-variables elimination</em>.
+
+<p>In Clang's analysis implementation, <code>DeclRefExpr</code> represents a use of a previously-declared entity — most commonly a variable, but not exclusively.  An expression of type <code>Expr *</code> can be checked if it is a <code>DeclRefExpr</code> using a dynamic cast, such as <code>if (DeclRefExpr *DR = dyn_cast&lt;DeclRefExpr&gt;(LHS)) ...</code>.  Clang identifies liveness for values of <code>DeclRefExpr</code> type.
+
+<p>Observe the following two functions:
+<ul>
+	<li><code>VisitBinaryOperator</code> (that visits binary operators in an expression tree, like addition, subtraction, assignment, etc) handles <code>x = rhs;</code>: it computes Killed and removes <code>x</code> from <code>liveDecls</code> — but it never checks whether <code>x</code> was live before killing it, and never uses that fact for anything.</li>
+	<li><code>VisitDeclRefExpr</code>: for any use of a variable that isn't the LHS target of an assignment, it unconditionally adds the referenced <code>VarDecl</code> to <code>liveDecls</code> — regardless of whether the expression this use feeds into ever produces a live result.</li>
+</ul>
+So today, <code>a = b + c;</code> always marks <code>b</code> and <code>c</code> live, even if <code>a</code> is never used afterward.
+
+<p>
+The expressions <code>b</code>, <code>c</code>, <code>b+c</code>, and <code>a=b+c</code> in a = b + c; are each their own <code>CFGElement</code> in that order, visited as separate steps in <code>runOnBlock</code>'s reverse loop (<code>LiveVariables.cpp</code>). Thus, the reverse sweep first visits <code>a=b+c</code> (through <code>VisitBinaryOperator</code>), and then visits <code>b,c</code> (through <code>VisitDeclRefExpr</code>).  Thus, the liveness of <code>b</code> and <code>c</code> (as computed by the liveness analysis) can benefit from the information of the assignment expression (in particular, the liveness of <code>a</code>).
+
+<p>Use the observations above to implement the strong-liveness analysis as follows:
+<ol>
+	<li> Add a <code>DenseSet&lt;const DeclRefExpr *&gt;</code> to <code>LiveVariablesImpl</code> (parallel to the existing <code>inAssignment</code> set) — call it <code>deadDefRHS</code>.</li>
+	<li>In <code>VisitBinaryOperator</code>, for a plain assignment (<code>=</code>) to a <code>DeclRefExpr</code> LHS: compute <code>bool WasLive = val.isLive(VD);</code> (is the variable live in the current computed value) before the existing kill logic. If <code>!WasLive &amp;&amp; !B-&gt;getRHS()-&gt;HasSideEffects(Ctx)</code>, do one AST walk over <code>B-&gt;getRHS()</code> and insert every <code>DeclRefExpr</code> found into <code>deadDefRHS</code>, something like the following:
+        <pre>
+// every time VisitBinaryOperator processes this assignment (first visit or a re-visit):
+for (each DeclRefExpr *DR found in B->getRHS()'s subtree) {
+  if (!WasLive && !B->getRHS()->HasSideEffects(Ctx))
+    LV.deadDefRHS.insert(DR);
+  else
+    LV.deadDefRHS.erase(DR);
+}
+        </pre>
+Notice that <code>Expr::HasSideEffects(ASTContext&amp;)</code> is Clang's existing conservative helper which accounts for calls, volatile accesses, etc.
+	In your report, can you explain why the call to <code>erase()</code> is needed?
+	<ul>
+		<li>Here is an example implementation for walk the AST of the RHS to identify the constituent <code>DeclRefExpr</code>s.
+			<pre>
+static void collectDeclRefExprs(const Stmt *S,
+                                llvm::SmallVectorImpl<const DeclRefExpr *> &Out) {
+  if (!S)
+    return;
+  if (const auto *DR = dyn_cast<DeclRefExpr>(S))
+    Out.push_back(DR);
+  for (const Stmt *Child : S->children())
+    collectDeclRefExprs(Child, Out);
+}
+			</pre>
+		</li>
+	</ul>
+	</li>
+	<li>In VisitDeclRefExpr, add <code>if (LV.deadDefRHS.contains(DR)) return;</code> before the existing logic that adds to <code>liveDecls</code>, etc.</li>
+</ol>
+Use <code>git diff</code> to generate a patch that contains your implementation, and add it to your report.  Also, answer the questions asked above in your report, along with any other interesting observations you want to make.
+
+<p>While you may use AI for this part, please use it as sparingly as possible.  Your first few attempts should always be manual --- looking through the code and understanding for yourself will likely help you learn many things (much more than what this assignment is asking).  Remember that the exams may question you on this material.
+  <!--
   <h3>Part B: Defined Analysis (5 marks)</h3>
   <p>Study the analysis in <code>clang/lib/Analysis/UninitialilzedValues.cpp</code>.
+  -->
 
-  <h3>Part C: Postorder and Reverse postorder analysis(10 marks)</h3>
-  <p>The current worklist algorithm picks nodes in arbitrary order. Use postorder and reverse postorder instead.  Measure the improvements for custom microbenchmarks designed to demonstrate the improvements.  Measure the improvements on SPEC benchmarks.
-
-  <h3>Part D : Scalability of DFA (10 marks)</h3>
-  <p>In <code>LiveVariables::computeLiveness()</code> [<code>clang/lib/Analysis/LiveVariables.cpp</code>], we see code like the following:
-  <pre>
-  // The analysis currently has scalability issues for very large CFGs.
-  // Bail out if it looks too large.
-  if (cfg->getNumBlockIDs() > 300000)
-    return nullptr;
-  </pre>
-  <p>Measure the time taken on SPEC benchmarks.
-  <p>Identify scalability limits, identify a program pattern, such that increasing the size of that pattern increases analysis time, what is the fastest growth you can construct (at large values)?
 </body>
 </html>
