@@ -397,6 +397,47 @@ the edge from R to itself</li>
 Eventually, all natural loops get reduced to single nodes; the top-level
 program is also a single region at a higher-level of hierarchy.
 
+<h3>Some motivating examples</h3>
+<p>Meet over diamond.
+<pre>
+BB1-&gt;BB2
+BB1-&gt;BB3
+BB2-&gt;BB4
+BB3-&gt;BB4
+
+BB2:
+x = 2
+y = 3
+
+BB3:
+x = 3
+y = 2
+
+BB4:
+z = x + y
+</pre>
+The region formed by this diamond-shaped CFG can have a summary transfer function that is
+more sophisticated than simply running the fixpoint algorithm on it.  For example, we could
+use MOP within small regions, or do a more sophisticated symbolic analysis within this region.
+
+<p>Procedure-call summaries for inter-procedural analysis.
+<pre>
+callee(i) {
+  return i+1;
+}
+
+caller1() {
+  callee(10);
+}
+
+caller2() {
+  callee(20);
+}
+</pre>
+The summary transfer function of the callee can be used to identify the summary transfer function
+of the two <em>calls</em>; the improvement that a summary transfer function brings is that it
+ignores the extra paths that are created in the CFG.
+
 <h3>Example: a semi-lattice of transfer functions</h3>
 <ul>
 	<li>Example: reaching definition: <code>fi(x) = geni \union (x - killi)</code>.</li>
