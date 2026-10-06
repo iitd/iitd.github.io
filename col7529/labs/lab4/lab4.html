@@ -125,7 +125,7 @@ static void collectDeclRefExprs(const Stmt *S,
 	</li>
 	<li>In VisitDeclRefExpr, add <code>if (LV.deadDefRHS.contains(DR)) return;</code> before the existing logic that adds to <code>liveDecls</code>, etc.</li>
 </ol>
-Use <code>git diff</code> to generate a patch that contains your implementation, and add it to your report.  Also, answer the questions asked above in your report, along with any other interesting observations you want to make.
+Use <code>git diff</code> to generate a patch that contains your implementation, and submit it along with your report.  Also, answer the questions asked above in your report, along with any other interesting observations you want to make.
 
 <p>While you may use AI for this part, please use it as sparingly as possible.  Your first few attempts should always be manual --- looking through the code and understanding for yourself will likely help you learn many things (much more than what this assignment is asking).  Remember that the exams may question you on this material.
   <!--
