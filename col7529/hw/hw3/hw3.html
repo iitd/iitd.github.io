@@ -1,0 +1,44 @@
+<html>
+<head>
+</head>
+  <head>
+    <title>COL729 HW 3 : Scalar evolution</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="Stylesheet" type="text/css" href="style.css">
+  </head>
+
+
+<body>
+  <h1><font color="blue">COL729 HW 3 : Scalar evolution</font></h1>
+
+  <h2>Due date - 23:55, 14 Oct 2026</h2>
+  <h3>Weightage: 20 Marks (Actual weightage, We will decide later)</h3>
+
+  <p>We have discussed scalar evolution in class. Consider the following C program:
+<pre>
+int sum(int *a, int n)
+{
+  int s = 0;
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < 4; j++) {
+      s += a[4*i + j];
+    }
+  }
+  return s;
+}
+</pre>
+Convert this program to (slightly optimized) LLVM using the following command:
+<pre>
+clang -O1 -S -emit-llvm -Xclang -disable-llvm-passes t.c -o - | opt -passes="mem2reg,loop-rotate" -S -o t.ll
+</pre>
+The <code>-emit-llvm</code> flag instructs <code>clang</code> to emit LLVM IR; the <code>mem2reg</code> optimization pass converts local variables to pseudo-registers; the <code>loop-rotate</code> optimization pass implements the <em>loop inversion</em> (also called <em>loop rotation</em>) transformation) discussed in class.
+  </p>
+
+<p>Use the following command to print the information related to the <em>Scalar Evolution (SCEV)</em> analysis:
+<pre>
+opt -passes='print<scalar-evolution>' -disable-output t.ll
+</pre>
+
+<p>Interpret the printed scalar evolution results, and briefly explain them in a short report.  Submit the report.
+</body>
