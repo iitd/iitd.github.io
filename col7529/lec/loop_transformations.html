@@ -438,6 +438,23 @@ The summary transfer function of the callee can be used to identify the summary 
 of the two <em>calls</em>; the improvement that a summary transfer function brings is that it
 ignores the extra paths that are created in the CFG.
 
+<h3>Algorithm</h3>
+The algorithm consists of three phases:
+<ol>
+	<li>Constructing the region hierarchy: a region is a subgraph of the CFG, and there are several ways to demarcate regions.  One useful and standard way is to demarcate: basic blocks, loop body, loop (innermost to outermost for both loop body and loop), and then the procedure body.</li>
+	<li>Bottom-up analysis: Construct summary transfer functions, starting from instructions' transfer functions (given) to basic blocks, loop bodies, and so on.  The bottom up analysis needs to be performed separately for each DFA, e.g., separately for available expressions and constant propagation.  During the bottom-up analysis, at every step, given transfer functions of individual nodes/edges, we need to construct the transfer function of the subgraph.  One way to structure this is to define operators on the transfer functions themselves:
+		<ul>
+			<li>When two nodes appear in sequence, with transfer functions f1 and f2 respectively, the trivial transfer fucntion can be formed by <code>f(x) = f2(f1(x))</code>, or simply <code>f1 o f2</code>.  However, our composition operator can be more precise than the trivial function, e.g., if <code>f1</code> and <code>f2</code> use GEN/KILL based computation, but also preserve information about the instruction semantics, then the composition can utilize the instruction semantics, e.g., if the instructions are inverses of each other, the composed function may be identity (whereas the trivial transfer function may conservatively weaken the input value).  Let this composition operator be denoted by "-o-", then it must be true that <code>f1-o-f2(x) &gt;= f2(f1(x))</code>.</li>
+			<li>When two paths, with a common source, meet at a node, then the trivial transfer function of the subgraph would be <code>f(x)=f1(x)^f2(x)</code> where <code>f1</code> and <code>f2</code> are the transfer functions of both paths respectively.  However, we may be able to do better, e.g., if we maintain the path information in <code>f1</code> and <code>f2</code>, we may be able to ensure that <code>(f1^f2)-o-f3 = f3(f1(x))^f3(f2(x)) &gt;= f3(f1(x)^f2(x))</code> to implement localized meet-over-paths.</li>
+			<li>When reasoning about loop iterations, we can define a <em>closure operator</em> (* or kleene-closure) such that, <code>f*(x) &gt;= x^f(x)^f(f(x))^f(f(f(x)))^...</code> (meet over zero or more applications of <code>f</code>).</li>
+			<li>Further, when reasoning about loop iterations, we can now be finer-grained in our analysis.  Instead of just saying that <em>when the program reaches this PC, the value will be X</em>, we can now say that <em>when the program reaches this PC and the loop has iterated n times since it was last entered, the value will be X</em>.  Such finer-grained reasoning was not possible when we did not consider loops specially. We want to define <code>fi</code> such that <code>fi(x) &gt;= f(f(f... i times f(x))</code>.</li>
+		</ul>
+		In all the above operators, for region based analysis to have any advantage, it must be true that the output transfer function is more precise for at least some inputs.  The only exception is the <code>fi</code> (f applied i times), where it suffices even if the output transfer function is equal to the application of <code>f</code> i times --- this is because this is a new granularity that is being enabled by region-based analysis, irrespective of whether the summary transfer function is more precise or not.
+	</li>
+	<li>Top-down analysis: Given a boundary condition (e.g., a value at the entry of the program), we are interested in identifying the value at any point in the program (and optionally for a particular loop iteration).  To do this, we will descend the hierarchy of regions, until we reach that point.  For example, we will first identify the transfer function from the entry of the procedure region to the entry of the loop region, then from the entry of the loop region to the entry of the loop body region, then to the value at the end of (i-1) iterations at the end of the loop body (i.e., at the beginning of ith iteration at the beginning of the loop body), and then the transfer function from the beginning of the loop body to the instruction we are interested in.  If outer loops were encountered from the procedure entry to the inner loop's head, then their iteration numbers may also be considered similarly. This analysis that computes the values using the summary transfer functions is called the top-down analysis.  If all the transfer function operators (composition, meet, ...) were trivial, then the top-down analysis will degenerate to the fixpoint algorithm.</li>
+</ol>
+The use of operators on transfer function, effectively creates a <em>semi-lattice of transfer functions</em>.
+
 <h3>Example: a semi-lattice of transfer functions</h3>
 <ul>
 	<li>Example: reaching definition: <code>fi(x) = geni \union (x - killi)</code>.</li>
@@ -586,7 +603,7 @@ Variables
 	<li>All the variables in the program</li>
 	<li>A normalized index <code>i</code> for each loop, with values 1, 2, ... for 1st, 2nd iterations etc.</li>
 </ul>
-Find variables that are afffine expressions of loop indices and loop-invariant variables. Formulate as a bottom-up region based analysis.
+Find variables that are afffine expressions of loop indices and loop-invariant variables (recall that this is an <em>available expressions</em> analysis). Formulate as a bottom-up region based analysis.
 
 <h3>Transfer function of a statement</h3>
 <ul>
@@ -630,7 +647,7 @@ Find variables that are afffine expressions of loop indices and loop-invariant v
 
 <h3>Closure</h3>
 <ul>
-	<li>Closure of transffer function: f^i</li>
+	<li>Closure of transfer function: f^i</li>
 	<li>Let m1=f(m0), m(i-1) = f^(i-1)(m0), m(i) = fof^(i-1)(m0)</li>
 	<li>After i-1 iterations
 		<ul>

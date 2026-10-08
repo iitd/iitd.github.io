@@ -1,0 +1,50 @@
+<h3>Recurrences for representing the results of induction variables (scalar evolution)</h3>
+
+A recurrence involves a <code>&lt;InitialValue, Operation, Step&gt;</code>.
+Consider the following program:
+<pre>
+int A[..];
+for (i = 0; i < n; i++) { //L
+  p = &A[i];
+  *p = ...;
+}
+</pre>
+Here, the variable <code>p</code> can be represented through a recurrence as <code>{&amp;A, +, 4}&lt;L&gt;</code>.
+
+<p>Another example:
+<pre>
+char A[100][200];
+for (i = 1 to 100) // L0
+  for (j = 1 to 200) //L1
+     p = &A[i][j];
+     *p = ...
+</pre>
+Here, the variable <code>p</code> can be represented through a recurrence as <code>{{&amp;A, +, 200}&lt;L0&gt;, +, 1}&lt;L1&gt;</code>. The initial value of the recurrence corresponding to L1 (inner loop) is given by a recurrence corresponding to L0 (outer loop).
+
+<p>Another example:
+<pre>
+for (i = 0; i < n; i++) {
+  j = i*i;
+}
+</pre>
+In this example, <code>i</code> can be represented by <code>{0,+,1}&lt;L&gt;</code>, and <code>j</code> can be
+represented by <code>{0,+,{1,+,2}&lt;L&gt;}&lt;L&gt;</code>.  Notice that <code>L</code> appears twice for
+a quadratic relation, such that <code>j=0+\sum_i{1+2*i}</code>. This can be extended to an arbitrary
+polynomial.
+
+<p>This can be further generalized to other operators, e.g., multiplication.
+
+<p>Why would we want to represent variables as recurrences?
+<ul>
+	<li> Because they provide a high-level structure composed of small computations as a function of the iteration count of a loop hierarchy. It does not loose information; in fact it recovers information, and it can always be converted back to its unstructured form (e.g., polynomial).</li>
+	<li> Equally importantly, they provide a canonical representation for a scalar variable that is seen to be evolving as the loop iterations execute. A canonical representation facilitates efficient comparisons, analyses, and transformations.</li>
+</ul>
+
+<p>What is the algorithm to convert a quadratic or a polynomial to its recurrence?  While a precise algorithm is out of scope for this discussion, such decomposition of a polynomial expression into linear expressions is based on well-known algebraic identities.
+
+<h3>Loop trip count</h3>
+If the loop exit condition is <code>i&lt;n</code> and the transfer function of a loop body indicates that
+<code>i</code> is a basic induction variable, s.t., <code>m1(i) = m0(i) + c</code>, then the loop trip
+count can be identified as <code>(n &gt; i) ? floor((n - i0)/c) : 0</code>, where <code>i0</code> is m0(i) [the mapping for <code>i</code>
+at loop entry before the first iteration.  Notice that the loop exit condition itself is based on the summary transfer function
+of the loop body (it may be the result of the composition of multiple individual instructions).
