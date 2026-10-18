@@ -107,6 +107,24 @@ in program text statically).
 <p>The time requirement of the SSA and flow-insensitive analysis is also typically significantly less than the
 time requirement of a flow-sensitive analysis, as we will discuss later.
 
+<h3>A flow-sensitive can often be converted to a smaller and faster SSA+flow-insensitive analysis</h3>
+If the <em>tracked program values</em> are SSA-ized, then MFP_{SSA+FI} = MFP_{FS}.
+<ul>
+<li>precision(SSA + flow insensitive) = precision(flow sensitive)</li>
+<li>speed(SSA + flow insensitive) &gt;&gt; precision(flow sensitive); usually asymptotically faster, but depends on the exact DFA</li>
+<li>space(SSA + flow insensitive) &lt;&lt; precision(flow sensitive); usually asymptotically faster, but depends on the exact DFA</li>
+</ul>
+
+<h3>Not all DFAs retain precision after SSA + flow-insensitive analysis</h3>
+<ul>
+<li>Notice that we require the "tracked program values" to be SSA-ized. One of the resulting requirements is
+that the value has been made independent of the location.  Because SSA creates a different version for every
+assignment, DFAs that relate variables to values (or other variables) fall under this category. However, DFAs
+where location is inherent in the definition of the analysis, this precision preservation does not hold.</li>
+<li>Constant propagation and common-subexpression elimination are examples of DFAs where precision is retained.</li>
+<li>Liveness, reaching-definitions, needed expressions, etc. are examples of DFAs where precision is not retained.</li>
+</ul>
+
 <h3>Typical implementation of a flow-insensitive analysis</h3>
 <ol>
 <li>Use a single global value</li>

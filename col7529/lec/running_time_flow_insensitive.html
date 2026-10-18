@@ -1,0 +1,26 @@
+<h3>Running time of a flow-sensitive vs. flow-insensitive analysis</h3>
+
+<p>Number of transfer/meet invocations is O(n*h) for a flow-sensitive analysis:
+<ul>
+<li>For a flow-sensitive analysis, we know that the maximum number of updates that can happen are <code>O(n*h)</code> where
+<code>n</code> is the program size, and <code>h</code> is the height of the semi-lattice.</li>
+<li>For a flow-insensitive + SSA analysis, it is likely that the size of a value increases by a factor of <code>s</code>, where <code>s</code> is the average number of assignments per variable.  This in turn may increase the height <code>h</code> of the semi-lattice (depending on the DFA). Moreover, the size of the program <code>n</code> may increase due to the introduction of <em>phi nodes</em> (say <code>p</code> phi nodes are added). Consequently, if we implement a flow-sensitive analysis on the SSA program, the resulting running time is expected to be worse than executing it on the original program.  For the purposes of the rest of the discussion, we will assume that <code>s</code> and <code>p</code> are relatively small compared to <code>|V|</code> and <code>n</code> respectively.</li>
+<li>In Kildall's algorithm, every time we pick a worklist item, we either update the DFA value (which gets counted in O(n*h)) or we discard the item (because no updation was performed).  The maximum number of such discard events is at most <code>d</code> times the number of updates (where <code>d</code> is the out/in-degree of a node in the CFG).  For this analysis we will assume  that the average degree <code>d</code> is relatively small compared to <code>n</code>.  Thus, the overall number of calls to a transfer-function or the meet-function in a flow-sensitive analysis is <code>O(n*h)</code> under these assumptions.</li>
+</ul>
+
+<p>Number of transfer/meet invocations is again O(n*h) for a flow-insensitive analysis on the SSA program (under the assumptions stated above):
+<ul>
+<li>There is only one global value which can have at most <code>h</code> updates.</li>
+<li>For each update, we may have to transfer and meet over each instruction in the program, which means that we still have <code>O(n*h)</code> calls to the transfer and meet functions. This is identical to the asymptotic number for a flow-sensitive analysis.</li>
+</ul>
+
+<li>Let's now look at the time taken by a single call to the transfer or meet function or a meet function:
+<ul>
+<li>In the flow-sensitive analysis, this involves looking at all the values that may have changed (irrespective of the values
+referenced in the current statement) and transferring (or meeting them).  For a constant-propagation DFA for example, this may be O(n) for a single call.</li>
+<li>In the flow-insensitive analysis, this involves looking at only those values that are referenced in the current statement ---  for both the transfer and meet functions.  For a constant propagation analysis, this is O(1) for a single call.</li>
+</ul>
+In general, the complexity of a single transfer or meet function call is expected to be asymptotically smaller (by up to a
+factor of the size of the values being tracked).  For some DFAs, this may not be true, e.g., if the size of a value is
+always constant-sized; but for many DFAs (e.g., constant propagation, common-subexpression elimination, range analysis, pointer
+analysis, etc), this yields asympotic improvements by a factor of up to <code>O(n)</code>.
