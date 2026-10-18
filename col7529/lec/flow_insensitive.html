@@ -1,1 +1,121 @@
 <h3>Flow-sensitive vs. flow-insensitive analysis</h3>
+
+In a flow-sensitive analysis, the order of statements matters, which is encoded
+in the control flow graph.  All our DFA discussions so far were
+examples and characterizations of flow-sensitive
+analyses.
+
+<p>In a flow-insensitive analysis, the order of statements does not matter. The
+analysis results are the same regardless of the statement order.
+
+<p>Examples of flow-sensitive analyses:
+<ul>
+<li>Constant propagation</li>
+<li>Liveness</li>
+<li>Reaching definitions</li>
+<li>Available expressions</li>
+</ul>
+
+<p>Examples of flow-insensitive analyses:
+<ul>
+<li>Variables used or modified in a program P =  M(P)
+<ul>
+<li>
+<pre>
+GEN(x:= e) = {x}<br>
+KILL(*) = \emptyset<br>
+f_s(in) = in \cup{} GEN(s)
+</pre>
+</li>
+<li>Meet operator: union</li>
+<li>Example program:
+<pre>
+if (...) {
+  x := ...
+} else {
+  y := ...
+}
+z := ...
+</li>
+<li>Final solution: {x, y, z}</li>
+<li>Order of statements does not matter: M(s1;s2) = M(s1)\cup{}M(s2) = M(s2;s1)</li>
+</ul>
+<li>Opcodes used in a program</li>
+</ul>
+
+<p>In a flow-insensitive analysis, only a single global DFA value state is required.  In contrast,
+a DFA value state is maintained per program point (in/out of every program statement)
+in a flow-sensitive DFA.
+Thus, in a flow-insensitive, at every step we execute {\em both transfer and meet}: we transfer
+the global value over the statement and meet the output with the global value.
+
+<p>For flow-insensitive analyses, because the order
+is inconsequential, we can treat the program as a bag of instructions.
+We iterate over the instructions in any order, but each instruction must be
+considered in every top-level iteration.
+
+<p>It is possible to convert a flow-sensitive analysis to a flow-insensitive analysis
+by maintaining only a single global value and pretending that any of the program
+statements can execute non-deterministically and iteratively.  In doing this conversion,
+the MFP (maximum fixed point) solution obtained through Kildall's algorithm on the flow-insensitive
+graph will be equal or less precise than the solution obtained for the original flow-sensitive analysis.
+
+<p>Example (Liveness):
+<pre>
+entry..
+y := y+z
+v := w+...
+x := v+...
+..exit
+</pre>
+The flow-sensitive solution will have a different set of live registers at every program point, e.g. <code>{w,y,z}</code>
+at entry.  However, the flow-insensitive solution will have a single set of live registers, namely <code>{v,w,y,z}</code> ---
+the flow-insensitive solution would simply union the <em>use sets</em> of all statements.  Notice that MFP_FI (flow insensitive MFP) &lt;= MFP_FS (flow sensitive MFP) for this example.
+
+<p>Example (Constant Propagation):
+<pre>
+int f(n):
+      step = 2
+      sum = 0
+      i = 0
+.loop:
+      if i &gt; n goto .end
+      i += step
+      sum += i
+      goto .loop
+.end:
+      return sum
+</pre>
+Flow-sensitive solution will identify different constant variables at different points, e.g., sum=0 before the loop begins.
+However, the flow-insensitive solution would only yield a less precise
+solution, namely <code>{ step: 2 }</code>.  Notice however that if we convert this program
+to SSA, then the flow-insensitive solution has the same precision as the flow-sensitive analysis: <code>{ step0: 2, sum0: 0, i0: 0 }</code>.  When running the flow-insensitive analysis, the transfer function over a phi-instruction involves meeting the
+values of the RHS variables to obtain the value of the LHS variable.
+
+<p>Notice that the (flow-insensitive + SSA) solution is equally precise as the flow-sensitive solution, except
+in a more concise representation. For example, the flow-sensitive analysis would infer that step, sum, and i are constants
+before the loop, and only step is a constant within the loop.  Correspondingly, the flow-insensitive analysis on SSA-ized
+program also
+encodes the same information. (Notice that the SSA-program will introduce phi nodes for i and sum).
+
+<p>The space requirement of the SSA and flow-insensitive analysis is significantly less than the space
+requirement of the flow-sensitive analysis --- the latter requires O(n) space per variable (n is the
+program size), whereas the former
+requires O(s) space per variable (<code>s</code> is the average number of times a single variable is assigned
+in program text statically).
+
+<p>The time requirement of the SSA and flow-insensitive analysis is also typically significantly less than the
+time requirement of a flow-sensitive analysis, as we will discuss later.
+
+<h3>Typical implementation of a flow-insensitive analysis</h3>
+<ol>
+<li>Use a single global value</li>
+<li>Run the DFA fixed-point procedure on the original CFG just like before (e.g., in RPO or PO or regions).  This
+reduces the number of iterations, or increases transfer precision in the case of regions. There are minor
+changes to the algorithm though:
+<ul>
+<li>When transferring over a statement, we also meet simultaneously.  Consequently, we do not nothing for an actual meet point in the CFG</li>
+<li>In the original algorithm, we would only add the successors to the worklist upon a change due to a transfer; in the new algorithm, add all other statements to the worklist upon a change due to a transfer.  This is because a change due to the current statement may result in no change in the transfer of the successor statement, but may cause a change in a downstream statement. e.g., <code>x = y + z; a : = b + c;</code>: a change in <code>x</code>'s value will not effect a change in the output of the next instruction, but may have a change in a downstream instruction that uses <code>x</code>.</li>
+</ul>
+</li>
+</ol>
