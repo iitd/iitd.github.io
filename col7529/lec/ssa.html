@@ -1,0 +1,49 @@
+<h3>Static Single Assignment (SSA) Form</h3>
+A single program is in SSA form if: <em>each variable is the target of exactly one assignment statement in the program text</em>.
+
+<p>Which values to version?
+<ul>
+<li>Scalars? <code>iN</code>, <code>iN*8</code>, <code>fN</code>, ...</li>
+<li>Arrays?  A[], *x, ...
+<ul>
+<li> Any operation of the type p[i] or *p that can potentially write to A[i] or *x will then cause a new version of the array (A[]) or the object (*x) to be created.</li>
+<li> For example, a statement of the form <code>*p = 42</code> will be written to: <code>*p = 42, A2=A1[*p=42], (*x)_2 = *x_1[*p=42], ...</code>.</li>
+<li>Properties (e.g., constant-ness) may then be tracked separately for A1, A2, (*x)_1, (*x)_2, and so on.</li>
+<li>In the absence of such versioning, there is a single A and (*x) that get tracked.  If we are implementing a
+flow-insensitive analysis, their values at different program points will get conflated (using the meet operator) making
+the analysis less precise than desired.</li>
+</ul>
+</li>
+<li> I/O devices? console, printer, ...
+<ul>
+<li> Properties (e.g., colour state) may then be tracked for every "version" (state as identified statically) of a device.</li>
+</ul>
+</ul>
+Versioning at higher granularities presents a tradeoff between precision improvement and complexity.  Complexity here includes programmability (IR complexity), and also time and space complexity.
+
+<p>Usually, e.g., in LLVM IR, the versioning is only done for scalar pseudo-registers.  Memory and other stateful resources
+are much more complex to version.
+
+<h3>Translation to SSA (high level)</h3>
+Replace the original program with a new program with the same CFG using the following steps:
+<ol>
+<li>For non-empty paths <code>x--&gt;z</code> and <code>y--&gt;z</code> where <code>z</code> is a convergence point,
+add a <em>trivial phi node</em>, e.g., <code>z: v = \phi(v, v, ..., v)</code>.</li>
+<li>Each mention of a variable <code>v</code> is replaced by a new version, say <code>v_l</code> (at location <code>l</code>), which now leaves the program in SSA form, such that:
+<ul>
+<li>At all uses of a variable <code>v</code> (in the original program) and the corresponding <code>v_l</code> (in the new program), the read value must be identical.</li>
+</ul>
+</li>
+</ol>
+
+<p>There are many ways to add phi nodes and version the variables to obtain an SSA program, but we want the <em>Minimal SSA program</em> where the number of inserted phi nodes is as small as possible.  For example, if x--&gt;z--&gt;w and y--&gt;z--&gt;w are two paths, then a phi node should only be added to <code>z</code>, but not to <code>w</code>.  Minimizing the number of phi nodes avoids an increase in the program size, making all future analyses faster.
+
+<p><em>Pruned SSA</em>: Forego placing a phi node at a convergence point z if no more uses of v in or after z (i.e., v is dead at the beginning of z).  This requires a backward liveness analysis, and is a further optimization on minimal SSA.
+
+<h3>Sketch of the SSA translation algorithm</h3>
+This algorithm is based on the the paper by R. Cytron, J. Ferrante, B. Rosen, M. Wegman, K. Zadeck, "Efficiently Computing
+Static Single Assignment Form and the Control Dependence Graph", ACM TOPLAS vol. 13, no. 4, Oct. 1991, pp. 451-490.
+<ol>
+<li>Identify the minimal set of convergence points and place trivial phi nodes (<b>dominance frontiers</b>).</li>
+<li>Rename the mentions of a variable v such that the use-def and def-use relationships remain unchanged (<b>variable renaming</b>).</li>
+</ol>
