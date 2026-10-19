@@ -1,2 +1,50 @@
 <h2>Translation to Static Single Assignment (SSA) Form</h2>
 <h3>Dominance Frontiers</h3>
+The first step of the SSA translation algorithm is to identify the minimal set of convergence points at which trivial phi nodes need to be placed.  This is done by computing the <em>dominance frontiers</em> of the nodes in the CFG.
+
+<p><b>Strict dominance</b>: X <em>strictly dominates</em> Y (written <code>X sdom Y</code>) if X dominates Y and X &ne; Y.
+<ul>
+<li>Recall that the dominator relation is reflexive (every node dominates itself), but the strict dominance relation is not reflexive.</li>
+<li>We write <code>X !sdom Y</code> to say that X does not strictly dominate Y; this relation is the complement of <code>sdom</code>.  For example, <code>B !sdom B</code> always holds; and if B does not dominate C, then <code>B !sdom C</code>.</li>
+</ul>
+
+<p><b>Dominance Frontier</b>: The dominance frontier of a node X, written <code>DomF(X)</code>, is the set of all nodes Y such that:
+<ul>
+<li>X does not strictly dominate Y (<code>X !sdom Y</code>), but</li>
+<li>X dominates some predecessor P of Y.</li>
+</ul>
+<pre>
+DomF(X) = { Y | X !sdom Y  and  X dom P for some P in pred(Y) }
+</pre>
+
+<p>Intuition: if X dominates P and P--&gt;Y is an edge, then there exists a path X--&gt;...--&gt;P--&gt;Y where all the nodes from X to P are dominated by X (because every path from entry to P must go through X, and this includes the paths that go through the intermediate nodes).  Y is the <em>first</em> node on this path that is not strictly dominated by X.  In other words, look at all outgoing paths from X; on each path, the first node that X does not strictly dominate belongs to the dominance frontier of X.  This is why the word <em>frontier</em> is used: it is the boundary at which X's (strict) dominance ends.
+<ul>
+<li>A node Z further down the path that is also not strictly dominated by X is <em>not</em> in <code>DomF(X)</code> if none of Z's predecessors are dominated by X.</li>
+<li>Y may be dominated by X and yet be in <code>DomF(X)</code>, if Y = X.  e.g., if X is a loop header, then X may be in its own dominance frontier.</li>
+</ul>
+
+<h3>Example</h3>
+Consider the following CFG (with edges <code>entry--&gt;A</code>):
+<pre>
+A --&gt; B, C
+B --&gt; D
+C --&gt; E
+D --&gt; B, F, G
+E --&gt; E, G
+G --&gt; F
+</pre>
+Here, A dominates all nodes; B strictly dominates D; and C strictly dominates E.  No other strict dominance relationships exist; e.g., F is not dominated by B because of the path <code>A--&gt;C--&gt;E--&gt;G--&gt;F</code>.
+
+<ul>
+<li><code>DomF(A) = {}</code>: The only node not strictly dominated by A is A itself, but A's only predecessor is entry, which A does not dominate.</li>
+<li><code>DomF(B) = {B, F, G}</code>:
+  <ul>
+  <li>D is strictly dominated by B, so D is not in <code>DomF(B)</code>.</li>
+  <li>F is not strictly dominated by B (path <code>A--&gt;C--&gt;E--&gt;G--&gt;F</code>), but F's predecessor D is dominated by B.  Similarly for G.</li>
+  <li>B does not strictly dominate itself, but B dominates D, which is a predecessor of B (through the back edge <code>D--&gt;B</code>).  So B is in its own dominance frontier.</li>
+  </ul>
+</li>
+<li><code>DomF(C) = {G}</code>: C strictly dominates E, so E is not in the frontier.  C does not strictly dominate G, but C dominates E, which is a predecessor of G.</li>
+<li><code>DomF(D) = {B, F, G}</code>: D does not strictly dominate any of its successors B, F, G; and D (which dominates itself) is a predecessor of each of them.</li>
+<li><code>DomF(E) = {E, G}</code>: G is not strictly dominated by E, but its predecessor E is dominated by E.  Also, E is not strictly dominated by E, but its predecessor E (through the self-loop <code>E--&gt;E</code>) is dominated by E.  Here, X, Y, and P (in the definition) are all the same node E.</li>
+</ul>
