@@ -116,28 +116,22 @@ c = &#39;c = %r; print(c %% c)&#39;; print(c % c)</code></pre>
 <h2 id="moral">Moral</h2>
 <p>Quote from Ken Thompson: “The moral is obvious. You can’t trust code that you did not totally create yourself. (Especially code from companies that employ people like me.) No amount of source-level verification or scrutiny will protect you from using untrusted code. In demonstrating the possibility of this kind of attack, I picked on the C compiler. I could have picked on any program-handling program such as an assembler, a loader, or even hardware microcode. As the level of program gets lower, these bugs will be harder and harder to detect. A well-installed microcode bug will be almost impossible to detect.”</p>
 <h2 id="detour-reasoning-about-correctness-using-invariants">Detour: reasoning about correctness using invariants</h2>
+<p>Testing is unlikely to expose this problem, as testing only attempts a small subset of the input/output pairs</p>
 <p>Before we can talk about checking that two programs are equivalent, let’s see how we can <em>prove</em> that a single program is correct. Consider the following function that multiplies two numbers using repeated addition:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="co">// precondition: b &gt;= 0</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a><span class="dt">int</span> mult(<span class="dt">int</span> a, <span class="dt">int</span> b) {</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>  <span class="dt">int</span> r = <span class="dv">0</span>;</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>  <span class="dt">int</span> i = <span class="dv">0</span>;</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>  <span class="cf">while</span> (i &lt; b) {</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>    r = r + a;</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>    i = i + <span class="dv">1</span>;</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a>  }</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a>  <span class="cf">return</span> r;</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a>}</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a><span class="co">// postcondition: return value == a * b</span></span></code></pre></div>
-<p>Testing can only check a few values of <code>a</code> and <code>b</code>. To argue that the postcondition holds for <em>all</em> inputs, we identify a <em>loop invariant</em>: a property that is true every time control reaches the loop head (the <code>while</code> condition check). For this loop, the invariant is:</p>
-<p><span class="math display">\[r = a \times i \quad\text{and}\quad 0 \le i \le b\]</span></p>
-<p>We prove three things about the invariant:</p>
-<ol type="1">
-<li><strong>Initialization (base case)</strong>: When we first reach the loop head, <span class="math inline">\(r = 0\)</span> and <span class="math inline">\(i = 0\)</span>. So <span class="math inline">\(r = a \times 0\)</span> holds, and <span class="math inline">\(0 \le 0 \le b\)</span> holds because of the precondition <span class="math inline">\(b \ge 0\)</span>.</li>
-<li><strong>Preservation (inductive step)</strong>: Assume the invariant holds at the loop head and the loop condition <span class="math inline">\(i &lt; b\)</span> is true. After one iteration, the new values are <span class="math inline">\(r&#39; = r + a\)</span> and <span class="math inline">\(i&#39; = i + 1\)</span>. Then <span class="math inline">\(r&#39; = a \times i + a = a \times (i + 1) = a \times i&#39;\)</span>. Also, <span class="math inline">\(i &lt; b\)</span> implies <span class="math inline">\(i&#39; = i + 1 \le b\)</span>. So the invariant holds again at the loop head.</li>
-<li><strong>Exit (using the invariant)</strong>: The loop exits when <span class="math inline">\(i &lt; b\)</span> is false, i.e., <span class="math inline">\(i \ge b\)</span>. Combined with the invariant <span class="math inline">\(i \le b\)</span>, we get <span class="math inline">\(i = b\)</span>. So <span class="math inline">\(r = a \times i = a \times b\)</span>, which is exactly the postcondition.</li>
-</ol>
-<p>By induction on the number of loop iterations, the program is correct for <em>every</em> input satisfying the precondition, not just the ones we tested. (We also need termination to show that <code>mult</code> actually returns: <span class="math inline">\(b - i\)</span> is a non-negative integer that strictly decreases on every iteration, so the loop cannot run forever.)</p>
-<p>Notice that the hard, creative part is <em>guessing</em> the invariant; once it is written down, checking the three conditions is mechanical, and can be done automatically by a tool (e.g., an SMT solver).</p>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>    <span class="co">// preservation (loop invariant): i &lt; b and r = a*i</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>    r = r + a;</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a>    i = i + <span class="dv">1</span>;</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a>  }</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a>  <span class="cf">return</span> r;</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a>}</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true"></a><span class="co">// postcondition: return value == a * b</span></span></code></pre></div>
+<p>By induction on the number of loop iterations, the program can be shown to be correct for <em>every</em> input satisfying the precondition, not just the ones we tested.</p>
+<p>Notice that the hard, creative part is <em>guessing</em> the invariant; once it is written down, checking the three conditions is mechanical, and can be done automatically by a tool (e.g., a theorem prover).</p>
 <p><strong>Connection to equivalence checking</strong>: Instead of comparing <code>mult</code> against a mathematical specification (<span class="math inline">\(a \times b\)</span>), we could compare it against <em>another program</em>, e.g., an optimized version produced by a compiler. An equivalence checker runs both programs side by side and looks for invariants that <em>relate</em> the states of the two programs (e.g., “variable <code>r</code> in program 1 equals register <code>eax</code> in program 2 at these two corresponding points”). If such relational invariants can be proven using the same base case + inductive step argument, the two programs are equivalent.</p>
 <h2 id="equivalence-checker-between-source-code-and-executable-code-or-between-two-source-programs">Equivalence checker between source code and executable code; or between two source programs</h2>
 </body>
