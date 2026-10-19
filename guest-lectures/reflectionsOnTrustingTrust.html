@@ -135,7 +135,7 @@ c = &#39;c = %r; print(c %% c)&#39;; print(c % c)</code></pre>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true"></a><span class="co">// postcondition: return value == a * b</span></span></code></pre></div>
 <p>By induction on the number of loop iterations, the program can be shown to be correct for <em>every</em> input satisfying the precondition, not just the ones we tested.</p>
 <p>Notice that the hard, creative part is <em>guessing</em> the invariant; once it is written down, checking the three conditions is mechanical, and can be done automatically by a tool (e.g., a theorem prover).</p>
-<p><strong>Connection to equivalence checking</strong>: Instead of comparing <code>mult</code> against a mathematical specification (<span class="math inline">\(a \times b\)</span>), we could compare it against <em>another program</em>, e.g., an optimized version produced by a compiler. An equivalence checker runs both programs side by side and looks for invariants that <em>relate</em> the states of the two programs (e.g., “variable <code>r</code> in program 1 equals register <code>eax</code> in program 2 at these two corresponding points”). If such relational invariants can be proven using the same base case + inductive step argument, the two programs are equivalent.</p>
 <h2 id="equivalence-checker-between-source-code-and-executable-code-or-between-two-source-programs">Equivalence checker between source code and executable code; or between two source programs</h2>
+<p>In equivalence checking, we use a similar proof that resembles induction, but across two programs. Show <code>strlen_glibc_fixed</code> equivalence proof (C-to-C), and one of the bzip2 functions (C-to-assembly).</p>
 </body>
 </html>
