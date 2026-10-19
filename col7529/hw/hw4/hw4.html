@@ -1,0 +1,38 @@
+<html>
+<head>
+</head>
+  <head>
+    <title>COL7529 HW 4 : SSA conversion in LLVM</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="Stylesheet" type="text/css" href="style.css">
+  </head>
+
+
+<body>
+  <h1><font color="blue">COL7529 HW 4 : SSA conversion in LLVM</font></h1>
+
+  <h2>Due date - 23:55, 25 Oct 2026</h2>
+  <h3>Weightage: 20 Marks (Actual weightage, We will decide later)</h3>
+
+  <p>We have discussed SSA conversion in class, and discussed minimal and pruned-SSA forms of
+  the program. Answer the following question, and submit a short report:
+  <ul>
+	  <li>Does LLVM use pruned SSA?  Use an example C program <code>foo.c</code>, and compile it using the following
+command to demonstrate the presence or absence of a Phi-node to justify your answer.
+<pre>
+clang -O1 -S -emit-llvm foo.c -o -
+</pre>
+	  </li>
+
+<!--
+	  <li>We discussed how SSA can be implemented for memory objects too.  LLVM implements Memory-SSA that
+		  is sligthly different from the discussion we had in class.  You may use the following command to observe the MemorySSA annotations for an LLVM file <code>foo.ll</code>.
+<pre>
+opt -passes='print<memory-ssa>' -disable-output foo.ll
+</pre>
+Summarize how MemorySSA is 
+
+<p>Interpret the printed scalar evolution results, and briefly explain them in a short report.  Submit the report.
+-->
+</body>
