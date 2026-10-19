@@ -74,4 +74,38 @@ Quote from Ken Thompson:
 "The moral is obvious. You can't trust code that you did not totally create yourself. (Especially code from companies that employ people like me.) No amount of
 source-level verification or scrutiny will protect you from using untrusted code. In demonstrating the possibility of this kind of attack, I picked on the C compiler. I could have picked on any program-handling program such as an assembler, a loader, or even hardware microcode. As the level of program gets lower, these bugs will be harder and harder to detect. A well-installed microcode bug will be almost impossible to detect."
 
+## Detour: reasoning about correctness using invariants
+
+Before we can talk about checking that two programs are equivalent, let's see how we can _prove_ that a single program is correct.  Consider the following function that multiplies two numbers using repeated addition:
+
+```c
+// precondition: b >= 0
+int mult(int a, int b) {
+  int r = 0;
+  int i = 0;
+  while (i < b) {
+    r = r + a;
+    i = i + 1;
+  }
+  return r;
+}
+// postcondition: return value == a * b
+```
+
+Testing can only check a few values of `a` and `b`.  To argue that the postcondition holds for _all_ inputs, we identify a _loop invariant_: a property that is true every time control reaches the loop head (the `while` condition check).  For this loop, the invariant is:
+
+$$r = a \times i \quad\text{and}\quad 0 \le i \le b$$
+
+We prove three things about the invariant:
+
+1. **Initialization (base case)**: When we first reach the loop head, $r = 0$ and $i = 0$.  So $r = a \times 0$ holds, and $0 \le 0 \le b$ holds because of the precondition $b \ge 0$.
+2. **Preservation (inductive step)**: Assume the invariant holds at the loop head and the loop condition $i < b$ is true.  After one iteration, the new values are $r' = r + a$ and $i' = i + 1$.  Then $r' = a \times i + a = a \times (i + 1) = a \times i'$.  Also, $i < b$ implies $i' = i + 1 \le b$.  So the invariant holds again at the loop head.
+3. **Exit (using the invariant)**: The loop exits when $i < b$ is false, i.e., $i \ge b$.  Combined with the invariant $i \le b$, we get $i = b$.  So $r = a \times i = a \times b$, which is exactly the postcondition.
+
+By induction on the number of loop iterations, the program is correct for _every_ input satisfying the precondition, not just the ones we tested.  (We also need termination to show that `mult` actually returns: $b - i$ is a non-negative integer that strictly decreases on every iteration, so the loop cannot run forever.)
+
+Notice that the hard, creative part is _guessing_ the invariant; once it is written down, checking the three conditions is mechanical, and can be done automatically by a tool (e.g., an SMT solver).
+
+**Connection to equivalence checking**: Instead of comparing `mult` against a mathematical specification ($a \times b$), we could compare it against _another program_, e.g., an optimized version produced by a compiler.  An equivalence checker runs both programs side by side and looks for invariants that _relate_ the states of the two programs (e.g., "variable `r` in program 1 equals register `eax` in program 2 at these two corresponding points").  If such relational invariants can be proven using the same base case + inductive step argument, the two programs are equivalent.
+
 ## Equivalence checker between source code and executable code; or between two source programs

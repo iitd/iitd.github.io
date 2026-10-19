@@ -1,3 +1,83 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>reflectionsOnTrustingTrust</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" type="text/javascript"></script>
+</head>
+<body>
 <h1 id="quine">Quine</h1>
 <p>A quine is a computer program which takes no input and produces a copy of its own source code as its only output. The standard terms for these programs in the computability theory and computer science literature are “self-replicating programs”, “self-reproducing programs”, and “self-copying programs”.</p>
 <pre><code># Example C. Note that %r will quote automatically.
@@ -32,7 +112,33 @@ c = &#39;c = %r; print(c %% c)&#39;; print(c % c)</code></pre>
 <img src="thompson3.3.png" title="Two Trojans in Compiler Source Code" alt="" /><figcaption>Two Trojans in the Compiler Source Code</figcaption>
 </figure>
 <p>In this, the second pattern matches to check if we are compiling a compiler. Further the “bug2” that is inserted is a <em>quine</em> that contains both the trojans as the payload.</p>
-<p>Once you have compiled this compiler into an executable <span class="math inline"><em>C</em></span>, you can now remove the trojans from the compiler source code. If the compiler source code is compiled using <span class="math inline"><em>C</em></span>, then it will always have the trojan (even if the source code seems correct on a manual review). Further, this is a perpetuates as the compiler has <em>learned</em> the trojan.</p>
+<p>Once you have compiled this compiler into an executable <span class="math inline">\(C\)</span>, you can now remove the trojans from the compiler source code. If the compiler source code is compiled using <span class="math inline">\(C\)</span>, then it will always have the trojan (even if the source code seems correct on a manual review). Further, this is a perpetuates as the compiler has <em>learned</em> the trojan.</p>
 <h2 id="moral">Moral</h2>
 <p>Quote from Ken Thompson: “The moral is obvious. You can’t trust code that you did not totally create yourself. (Especially code from companies that employ people like me.) No amount of source-level verification or scrutiny will protect you from using untrusted code. In demonstrating the possibility of this kind of attack, I picked on the C compiler. I could have picked on any program-handling program such as an assembler, a loader, or even hardware microcode. As the level of program gets lower, these bugs will be harder and harder to detect. A well-installed microcode bug will be almost impossible to detect.”</p>
+<h2 id="detour-reasoning-about-correctness-using-invariants">Detour: reasoning about correctness using invariants</h2>
+<p>Before we can talk about checking that two programs are equivalent, let’s see how we can <em>prove</em> that a single program is correct. Consider the following function that multiplies two numbers using repeated addition:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="co">// precondition: b &gt;= 0</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a><span class="dt">int</span> mult(<span class="dt">int</span> a, <span class="dt">int</span> b) {</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>  <span class="dt">int</span> r = <span class="dv">0</span>;</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>  <span class="dt">int</span> i = <span class="dv">0</span>;</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>  <span class="cf">while</span> (i &lt; b) {</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>    r = r + a;</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>    i = i + <span class="dv">1</span>;</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a>  }</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a>  <span class="cf">return</span> r;</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a>}</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a><span class="co">// postcondition: return value == a * b</span></span></code></pre></div>
+<p>Testing can only check a few values of <code>a</code> and <code>b</code>. To argue that the postcondition holds for <em>all</em> inputs, we identify a <em>loop invariant</em>: a property that is true every time control reaches the loop head (the <code>while</code> condition check). For this loop, the invariant is:</p>
+<p><span class="math display">\[r = a \times i \quad\text{and}\quad 0 \le i \le b\]</span></p>
+<p>We prove three things about the invariant:</p>
+<ol type="1">
+<li><strong>Initialization (base case)</strong>: When we first reach the loop head, <span class="math inline">\(r = 0\)</span> and <span class="math inline">\(i = 0\)</span>. So <span class="math inline">\(r = a \times 0\)</span> holds, and <span class="math inline">\(0 \le 0 \le b\)</span> holds because of the precondition <span class="math inline">\(b \ge 0\)</span>.</li>
+<li><strong>Preservation (inductive step)</strong>: Assume the invariant holds at the loop head and the loop condition <span class="math inline">\(i &lt; b\)</span> is true. After one iteration, the new values are <span class="math inline">\(r&#39; = r + a\)</span> and <span class="math inline">\(i&#39; = i + 1\)</span>. Then <span class="math inline">\(r&#39; = a \times i + a = a \times (i + 1) = a \times i&#39;\)</span>. Also, <span class="math inline">\(i &lt; b\)</span> implies <span class="math inline">\(i&#39; = i + 1 \le b\)</span>. So the invariant holds again at the loop head.</li>
+<li><strong>Exit (using the invariant)</strong>: The loop exits when <span class="math inline">\(i &lt; b\)</span> is false, i.e., <span class="math inline">\(i \ge b\)</span>. Combined with the invariant <span class="math inline">\(i \le b\)</span>, we get <span class="math inline">\(i = b\)</span>. So <span class="math inline">\(r = a \times i = a \times b\)</span>, which is exactly the postcondition.</li>
+</ol>
+<p>By induction on the number of loop iterations, the program is correct for <em>every</em> input satisfying the precondition, not just the ones we tested. (We also need termination to show that <code>mult</code> actually returns: <span class="math inline">\(b - i\)</span> is a non-negative integer that strictly decreases on every iteration, so the loop cannot run forever.)</p>
+<p>Notice that the hard, creative part is <em>guessing</em> the invariant; once it is written down, checking the three conditions is mechanical, and can be done automatically by a tool (e.g., an SMT solver).</p>
+<p><strong>Connection to equivalence checking</strong>: Instead of comparing <code>mult</code> against a mathematical specification (<span class="math inline">\(a \times b\)</span>), we could compare it against <em>another program</em>, e.g., an optimized version produced by a compiler. An equivalence checker runs both programs side by side and looks for invariants that <em>relate</em> the states of the two programs (e.g., “variable <code>r</code> in program 1 equals register <code>eax</code> in program 2 at these two corresponding points”). If such relational invariants can be proven using the same base case + inductive step argument, the two programs are equivalent.</p>
 <h2 id="equivalence-checker-between-source-code-and-executable-code-or-between-two-source-programs">Equivalence checker between source code and executable code; or between two source programs</h2>
+</body>
+</html>
