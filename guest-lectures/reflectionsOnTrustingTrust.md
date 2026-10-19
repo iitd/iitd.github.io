@@ -101,6 +101,6 @@ By induction on the number of loop iterations, the program can be shown to be co
 
 Notice that the hard, creative part is _guessing_ the invariant; once it is written down, checking the three conditions is mechanical, and can be done automatically by a tool (e.g., a theorem prover).
 
-**Connection to equivalence checking**: Instead of comparing `mult` against a mathematical specification ($a \times b$), we could compare it against _another program_, e.g., an optimized version produced by a compiler.  An equivalence checker runs both programs side by side and looks for invariants that _relate_ the states of the two programs (e.g., "variable `r` in program 1 equals register `eax` in program 2 at these two corresponding points").  If such relational invariants can be proven using the same base case + inductive step argument, the two programs are equivalent.
-
 ## Equivalence checker between source code and executable code; or between two source programs
+
+In equivalence checking, we use a similar proof that resembles induction, but across two programs.  Show `strlen_glibc_fixed` equivalence proof (C-to-C), and one of the bzip2 functions (C-to-assembly).
