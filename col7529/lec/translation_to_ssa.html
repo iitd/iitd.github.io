@@ -48,3 +48,174 @@ Here, A dominates all nodes; B strictly dominates D; and C strictly dominates E.
 <li><code>DomF(D) = {B, F, G}</code>: D does not strictly dominate any of its successors B, F, G; and D (which dominates itself) is a predecessor of each of them.</li>
 <li><code>DomF(E) = {E, G}</code>: G is not strictly dominated by E, but its predecessor E is dominated by E.  Also, E is not strictly dominated by E, but its predecessor E (through the self-loop <code>E--&gt;E</code>) is dominated by E.  Here, X, Y, and P (in the definition) are all the same node E.</li>
 </ul>
+
+<h3>Computing Dominance Frontiers</h3>
+<p><b>Recap: dominator tree and immediate dominators</b>.  In the dominator tree, X dominates Y iff there is a path from X to Y in the tree.  X <em>immediately dominates</em> Y (written <code>X idom Y</code>) if X sdom Y and there is no node C such that X sdom C and C sdom Y.  Because the immediate dominator of a node is unique, we can treat <code>idom</code> as a function from nodes to nodes: <code>idom(Y)</code> is the parent of Y in the dominator tree.  For the example above, the dominator tree is:
+<pre>
+A --&gt; B, C, F, G
+B --&gt; D
+C --&gt; E
+</pre>
+i.e., <code>idom(B) = idom(C) = idom(F) = idom(G) = A</code>, <code>idom(D) = B</code>, and <code>idom(E) = C</code>.
+
+<p>Some properties follow directly from the tree representation:
+<ul>
+<li>If <code>X dom Y</code>, then <code>idom(X) dom Y</code> (if there is a path from X to Y in the tree, there is also one from X's parent to Y).</li>
+<li>If <code>X sdom Y</code>, then <code>idom(X) sdom Y</code>.</li>
+<li>If <code>X !dom Y</code> (or <code>X !sdom Y</code>), then nothing can be said about whether <code>idom(X)</code> dominates (strictly dominates) Y.  e.g., C does not dominate F but <code>idom(C) = A</code> does; whereas E does not dominate F and neither does <code>idom(E) = C</code>.</li>
+</ul>
+
+<p><b>Naive algorithm</b>: For each node X, perform a depth-first search on the CFG starting at X; on each path, stop at the first node that is not strictly dominated by X and add it to <code>DomF(X)</code>.  Each DFS takes linear time, and we perform one for each of the N nodes, so the running time is quadratic.
+
+<p>The naive algorithm recomputes each dominance frontier from scratch, even though <code>DomF(X)</code> is related to the dominance frontiers of X's children in the dominator tree.  Note that if <code>Y in DomF(X)</code>, Y may or may not be in <code>DomF(idom(X))</code>: e.g., <code>F in DomF(B)</code> but <code>F not in DomF(A)</code> (<code>idom(B) = A</code>); whereas <code>F in DomF(D)</code> and also <code>F in DomF(B)</code> (<code>idom(D) = B</code>).  We define two relations to capture this.
+
+<p><b>DomF<sub>up</sub></b>: The nodes in <code>DomF(X)</code> that are "passed up" to <code>DomF(idom(X))</code>:
+<pre>
+DomF_up(X) = { Y in DomF(X) | Y in DomF(idom(X)) }
+           = { Y in DomF(X) | idom(X) !sdom Y }
+</pre>
+To see why the two definitions are equivalent: if <code>Y in DomF(X)</code>, then X dominates some predecessor P of Y, so <code>idom(X)</code> also dominates P.  Thus, if <code>idom(X) !sdom Y</code>, then <code>Y in DomF(idom(X))</code> by definition.  (The converse is similar.)  The second form is easy to check: given <code>DomF(X)</code>, keep only the nodes not strictly dominated by X's parent.
+<ul>
+<li><code>DomF_up(E) = {G}</code>: <code>DomF(E) = {E, G}</code>; <code>idom(E) = C</code> strictly dominates E but not G.</li>
+<li><code>DomF_up(D) = {B, F, G}</code>: <code>DomF(D) = {B, F, G}</code>; <code>idom(D) = B</code> strictly dominates none of these (B dominates B, but does not strictly dominate it).</li>
+</ul>
+
+<p><b>DomF<sub>local</sub></b>: The nodes in <code>DomF(X)</code> that are immediate successors of X in the CFG:
+<pre>
+DomF_local(X) = { Y in succ(X) | Y in DomF(X) }
+              = { Y in succ(X) | X !sdom Y }
+</pre>
+To see why: if Y is a successor of X and <code>X !sdom Y</code>, then X dominates a predecessor of Y (namely X itself, as dominance is reflexive), so <code>Y in DomF(X)</code>.
+<ul>
+<li><code>DomF_local(B) = {}</code>: B's only successor D is strictly dominated by B.  (Recall <code>DomF(B) = {B, F, G}</code>, but none of these are immediate successors of B.)</li>
+<li><code>DomF_local(D) = {B, F, G}</code>: all three successors are not strictly dominated by D.</li>
+<li><code>DomF_local(E) = {E, G}</code>.</li>
+</ul>
+
+<p><b>Theorem</b>:
+<pre>
+DomF(X) = DomF_local(X)  &cup;  &cup;<sub>Z in children(X)</sub> DomF_up(Z)
+</pre>
+where <code>children(X)</code> are the children of X in the <em>dominator tree</em> (and <code>succ(X)</code> in <code>DomF_local</code> refers to successors in the <em>CFG</em>).  Intuitively, a node in X's dominance frontier is either an immediate successor of X that X does not strictly dominate, or is passed up from the dominance frontier of a node immediately dominated by X.  In terms of the naive algorithm: the DFS from X either stops at the very first step (an immediate successor), or proceeds through a node strictly dominated by X, and so through one of X's children in the dominator tree.
+<ul>
+<li><code>DomF(A)</code>: <code>DomF_local(A) = {}</code> as both successors B and C are strictly dominated by A.  A's children in the dominator tree are B, C, F, G; nothing in their dominance frontiers is passed up, because A strictly dominates every node other than itself.  So <code>DomF(A) = {}</code>.</li>
+<li><code>DomF(B)</code>: <code>DomF_local(B) = {}</code>; B's only child in the dominator tree is D, and <code>DomF_up(D) = {B, F, G}</code>.  So <code>DomF(B) = {B, F, G}</code>.</li>
+</ul>
+
+<p><b>Algorithm</b>: Compute the dominance frontiers in a single bottom-up traversal of the dominator tree, so that the dominance frontiers of X's children are available when computing <code>DomF(X)</code>:
+<pre>
+for each X in a bottom-up traversal of the dominator tree:
+  DF(X) := {}
+  for each Y in succ(X):              // DomF_local
+    if idom(Y) &ne; X:
+      DF(X) := DF(X) &cup; {Y}
+  for each Z in children(X):          // DomF_up
+    for each Y in DF(Z):
+      if idom(Y) &ne; X:
+        DF(X) := DF(X) &cup; {Y}
+</pre>
+The check <code>X !sdom Y</code> reduces to <code>idom(Y) &ne; X</code> in both loops:
+<ul>
+<li>In the local loop, Y is a CFG successor of X, so if X strictly dominates Y, X must be Y's immediate dominator (any node strictly between X and Y in the dominator tree would have to lie on the edge X--&gt;Y).</li>
+<li>In the up loop, Y is in the dominance frontier of a child Z of X; if X strictly dominates Y, then (since Z does not strictly dominate Y) X must be Y's immediate dominator.</li>
+</ul>
+For example, <code>DF(D)</code> and <code>DF(E)</code> are computed first; then <code>DF(B)</code> reuses <code>DF(D)</code>, <code>DF(C)</code> reuses <code>DF(E)</code>, and <code>DF(A)</code> reuses the dominance frontiers of B, C, F, and G.
+
+<p><b>Running time</b>:
+<ul>
+<li>The local loop examines each outgoing edge of each node exactly once: <code>O(E)</code> in total.</li>
+<li>The up loop iterates over each child Z of each node X (N children in total, as this is a tree), and for each child, over <code>DF(Z)</code>: <code>O(&sum;<sub>X</sub> |DF(X)|)</code> in total.</li>
+</ul>
+So the total running time is <code>O(E + &sum;<sub>X</sub> |DF(X)|)</code>.  If dominance frontiers are small (e.g., constant-sized), this is linear in the size of the CFG.  However, a single dominance frontier can be as large as N, so in the worst case this can still be quadratic.  We characterize <code>&sum;<sub>X</sub> |DF(X)|</code> in more detail later.
+
+<h3>Placing Phi Nodes</h3>
+The second step of the SSA translation is the placement of <em>trivial</em> phi nodes.  Consider an assignment <code>v := ...</code> at node X, and let <code>Y in DomF(X)</code>.  Because Y is not strictly dominated by X, there must be another path to Y on which a different definition of v potentially reaches Y; this other definition is either another assignment to v, or the initial value of v at program entry.  In either case, a phi node for v is needed at Y.
+
+<p>We stage the placement of phi nodes in two steps:
+<ol>
+<li>Place a <em>trivial</em> phi node <code>v := &phi;(v, v, ..., v)</code> at Y, where the number of arguments is the number of incoming edges of Y.  This is effectively a no-op instruction.</li>
+<li>Later, rename the variables so that the program is in SSA form.</li>
+</ol>
+Placing phi nodes only at the dominance frontiers satisfies the requirement for <em>minimal SSA</em>.
+
+<p>Some observations:
+<ul>
+<li><b>Transitivity</b>: A phi node placed at Y is itself an assignment to v.  So if <code>Z in DomF(Y)</code>, then a phi node for v must also be placed at Z, and so on, until all phi nodes required by this transitive dominance-frontier relationship have been placed.</li>
+<li><b>At most one phi node per variable per node</b>: A phi node sits at the beginning of a basic block, and a block needs at most one phi node for each variable.  e.g., if Z is in both <code>DomF(X)</code> and <code>DomF(Y)</code>, only one phi node for v is placed at Z.</li>
+<li><b>Per-variable</b>: Phi nodes are placed separately and independently for each variable:
+<pre>
+placePhis(P):
+  for each variable v in P:
+    P := placePhisForVar(P, v)
+  return P
+</pre>
+</li>
+</ul>
+
+<p><b>Algorithm</b>: <code>placePhisForVar(P, v)</code> maintains three sets (represented as maps from nodes to booleans):
+<ul>
+<li><code>W</code> (worklist): nodes whose <code>DomF</code> needs to be examined.  It may shrink (when a node is picked) and grow (when a phi node is added).</li>
+<li><code>consideredAlready</code>: nodes that have <em>ever</em> been in the worklist.  It only grows.  A node's <code>DomF</code> needs to be examined at most once.</li>
+<li><code>hasAlready</code>: nodes that already have a phi node for v, to avoid placing duplicate phi nodes.</li>
+</ul>
+<pre>
+placePhisForVar(P, v):
+  W := nodes with assignments to v
+  consideredAlready := W
+  hasAlready := {}
+  while W &ne; {}:
+    take X from W                         // W[X] := false
+    for each Y in DomF(X):
+      if Y not in hasAlready:
+        place trivial phi node v := &phi;(v, ..., v) at Y
+        hasAlready := hasAlready &cup; {Y}
+        if Y not in consideredAlready:    // transitive step
+          W := W &cup; {Y}
+          consideredAlready := consideredAlready &cup; {Y}
+</pre>
+
+<p><b>Pruned SSA</b>: Recall that pruned SSA additionally requires that a phi node for v is placed at Y only if v is <em>live</em> at Y (i.e., v may be used downstream).  The algorithm above can be adapted to pruned SSA by additionally checking whether v is live at Y before placing the phi node.  The liveness analysis can be run a priori, and only needs to be conservative; the more precise the liveness analysis, the more phi nodes may be eliminated.
+
+<h3>Example</h3>
+Consider a CFG with assignments to v at nodes X and W, and with the following dominance frontiers:
+<pre>
+DomF(X) = {Y}
+DomF(Y) = {Z}
+DomF(Z) = {U, X}
+DomF(U) = {}
+DomF(W) = {Z}
+</pre>
+<table border="1" cellpadding="4">
+<tr><th>Step</th><th>W</th><th>consideredAlready</th><th>hasAlready</th></tr>
+<tr><td>Initialize</td><td>{X, W}</td><td>{X, W}</td><td>{}</td></tr>
+<tr><td>Pick X; place phi at Y; add Y to worklist</td><td>{Y, W}</td><td>{X, W, Y}</td><td>{Y}</td></tr>
+<tr><td>Pick Y; place phi at Z; add Z to worklist</td><td>{Z, W}</td><td>{X, W, Y, Z}</td><td>{Y, Z}</td></tr>
+<tr><td>Pick Z; place phis at U and X; add U to worklist (X has been considered already)</td><td>{U, W}</td><td>{X, W, Y, Z, U}</td><td>{Y, Z, U, X}</td></tr>
+<tr><td>Pick U; <code>DomF(U)</code> is empty</td><td>{W}</td><td>{X, W, Y, Z, U}</td><td>{Y, Z, U, X}</td></tr>
+<tr><td>Pick W; Z already has a phi node</td><td>{}</td><td>{X, W, Y, Z, U}</td><td>{Y, Z, U, X}</td></tr>
+</table>
+The worklist is now empty, and the minimal set of phi nodes for v has been placed at Y, Z, U, and X.  Note that X is not added to the worklist again when a phi node is placed at X: its dominance frontier has already been examined.
+
+<h3>Running Time of Phi Placement</h3>
+Define:
+<ul>
+<li><code>A<sub>orig</sub>(X)</code>: the number of original assignments in basic block X; <code>A<sub>orig</sub> = &sum;<sub>X</sub> A<sub>orig</sub>(X)</code>.</li>
+<li><code>A<sub>&phi;</sub>(X)</code>: the number of assignments added due to phi nodes in X.</li>
+<li><code>A<sub>final</sub>(X) = A<sub>orig</sub>(X) + A<sub>&phi;</sub>(X)</code>; <code>A<sub>final</sub> = &sum;<sub>X</sub> A<sub>final</sub>(X)</code>.</li>
+</ul>
+The number of phi nodes added to a single basic block can be as large as <code>A<sub>orig</sub></code> (e.g., all assignments in all other blocks may need a phi node in this block).  So <code>A<sub>orig</sub>(X) &le; A<sub>final</sub>(X) &le; ~A<sub>orig</sub></code>.  Summing over all basic blocks (whose number is roughly proportional to <code>A<sub>orig</sub></code>):
+<pre>
+A_orig  &le;  A_final  &le;  ~A_orig<sup>2</sup>
+</pre>
+i.e., the total number of final assignments can be quadratic in the number of original assignments.
+
+<p>Across all variables, the statement <code>take X from W</code> executes (at most) <code>A<sub>final</sub></code> times, as nodes with phi nodes added by the algorithm are also added to the worklist.  Each time, the inner loop executes <code>|DomF(X)|</code> times.  So the total work is:
+<pre>
+&sum;<sub>X</sub> A_final(X) &times; |DomF(X)|  =  A_final &times; (weighted average DomF size)
+</pre>
+where the average of <code>|DomF(X)|</code> is weighted by the number of assignments <code>A<sub>final</sub>(X)</code> in X.
+<ul>
+<li><code>A<sub>final</sub></code> is between linear and quadratic in the size of the original program.</li>
+<li>The weighted average <code>DomF</code> size is between constant and linear (it can be as large as the number of basic blocks).</li>
+</ul>
+So the overall running time is between linear and cubic.  We will characterize when this is linear (as is typical in practice) later.
