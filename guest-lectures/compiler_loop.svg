@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 300" width="780" height="300" font-family="Helvetica, Arial, sans-serif" font-size="16">
+  <rect width="780" height="300" fill="#fff"/>
+
+  <!-- Compiler source code -->
+  <rect x="20" y="40" width="200" height="70" rx="8" fill="#e8f0fe" stroke="#1a56b0" stroke-width="2"/>
+  <text x="120" y="70" text-anchor="middle">Compiler</text>
+  <text x="120" y="92" text-anchor="middle">source code</text>
+
+  <!-- Generated compiler executable code -->
+  <rect x="500" y="40" width="200" height="70" rx="8" fill="#fde8e8" stroke="#b01a1a" stroke-width="2"/>
+  <text x="600" y="70" text-anchor="middle">Compiler</text>
+  <text x="600" y="92" text-anchor="middle">executable code</text>
+
+  <!-- Compiler executable code used for compilation -->
+  <rect x="260" y="200" width="200" height="70" rx="8" fill="#fde8e8" stroke="#b01a1a" stroke-width="2"/>
+  <text x="360" y="230" text-anchor="middle">Compiler</text>
+  <text x="360" y="252" text-anchor="middle">executable code</text>
+
+  <!-- source -> executable -->
+  <line x1="220" y1="75" x2="488" y2="75" stroke="#333" stroke-width="2"/>
+  <text x="360" y="64" text-anchor="middle" font-style="italic">compiled to</text>
+
+  <!-- compiler used to compile -->
+  <line x1="360" y1="200" x2="360" y2="88" stroke="#333" stroke-width="2"/>
+  <text x="368" y="150" font-style="italic">compiled using</text>
+
+  <!-- back arrow: generated executable becomes the compiler used next time -->
+  <path d="M600,110 L600,235 L472,235" fill="none" stroke="#b01a1a" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="608" y="180" fill="#b01a1a" font-style="italic">used to compile</text>
+  <text x="608" y="200" fill="#b01a1a" font-style="italic">the next version</text>
+
+  <!-- arrowheads -->
+  <polygon points="500,75 486,68 486,82" fill="#333"/>
+  <polygon points="360,76 353,90 367,90" fill="#333"/>
+  <polygon points="460,235 474,228 474,242" fill="#b01a1a"/>
+</svg>

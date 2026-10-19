@@ -68,6 +68,8 @@ In this, the second pattern matches to check if we are compiling a compiler.  Fu
 
 Once you have compiled this compiler into an executable $C$, you can now remove the trojans from the compiler source code.  If the compiler source code is compiled using $C$, then it will always have the trojan (even if the source code seems correct on a manual review).  Further, this is a perpetuates as the compiler has _learned_ the trojan.
 
+![The compiler compiles itself: the generated executable is used to compile the next version of the compiler](compiler_loop.svg "Compiler Bootstrapping Loop")
+
 ## Moral
 
 Quote from Ken Thompson:

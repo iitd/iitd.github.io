@@ -113,6 +113,9 @@ c = &#39;c = %r; print(c %% c)&#39;; print(c % c)</code></pre>
 </figure>
 <p>In this, the second pattern matches to check if we are compiling a compiler. Further the “bug2” that is inserted is a <em>quine</em> that contains both the trojans as the payload.</p>
 <p>Once you have compiled this compiler into an executable <span class="math inline">\(C\)</span>, you can now remove the trojans from the compiler source code. If the compiler source code is compiled using <span class="math inline">\(C\)</span>, then it will always have the trojan (even if the source code seems correct on a manual review). Further, this is a perpetuates as the compiler has <em>learned</em> the trojan.</p>
+<figure>
+<img src="compiler_loop.svg" title="Compiler Bootstrapping Loop" alt="" /><figcaption>The compiler compiles itself: the generated executable is used to compile the next version of the compiler</figcaption>
+</figure>
 <h2 id="moral">Moral</h2>
 <p>Quote from Ken Thompson: “The moral is obvious. You can’t trust code that you did not totally create yourself. (Especially code from companies that employ people like me.) No amount of source-level verification or scrutiny will protect you from using untrusted code. In demonstrating the possibility of this kind of attack, I picked on the C compiler. I could have picked on any program-handling program such as an assembler, a loader, or even hardware microcode. As the level of program gets lower, these bugs will be harder and harder to detect. A well-installed microcode bug will be almost impossible to detect.”</p>
 <h2 id="detour-reasoning-about-correctness-using-invariants">Detour: reasoning about correctness using invariants</h2>
