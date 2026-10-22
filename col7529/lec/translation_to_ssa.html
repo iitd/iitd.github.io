@@ -58,6 +58,9 @@ C --&gt; E
 </pre>
 i.e., <code>idom(B) = idom(C) = idom(F) = idom(G) = A</code>, <code>idom(D) = B</code>, and <code>idom(E) = C</code>.
 
+<p>We assume that we already have access to the <code>idom</code> relation that has been obtained in near-linear time.  Recall that the DFA-based algorithm that we
+discussed had a quadratic time complexity (it computes all dominators, not just the immediate dominator, and so the output size itself can be quadratic).  There exist more efficient algorithms, e.g., <a href=https://dl.acm.org/doi/pdf/10.1145/357062.357071>Lengauer-Tarjan algorithm</a>.
+
 <p>Some properties follow directly from the tree representation:
 <ul>
 <li>If <code>X dom Y</code>, then <code>idom(X) dom Y</code> (if there is a path from X to Y in the tree, there is also one from X's parent to Y).</li>
@@ -117,7 +120,12 @@ for each X in a bottom-up traversal of the dominator tree:
 The check <code>X !sdom Y</code> reduces to <code>idom(Y) &ne; X</code> in both loops:
 <ul>
 <li>In the local loop, Y is a CFG successor of X, so if X strictly dominates Y, X must be Y's immediate dominator (any node strictly between X and Y in the dominator tree would have to lie on the edge X--&gt;Y).</li>
-<li>In the up loop, Y is in the dominance frontier of a child Z of X; if X strictly dominates Y, then (since Z does not strictly dominate Y) X must be Y's immediate dominator.</li>
+<li>In the up loop, Y is in the dominance frontier of a child Z of X; if X strictly dominates Y, then (since Z does not strictly dominate Y) X must be Y's immediate dominator.
+	<ul>
+		<li>If X is not Y's immediate dominator, there must exist another node L that is Y's immediate dominator.  L must then be dominated by X. Also, L must dominate Z, but then that is a contradiction, as X was Z's immediate dominator.  Thus, no such L can exist; and so X must be Y's immediate dominator, if X dominates Y.</li>
+	</ul>
+
+</li>
 </ul>
 For example, <code>DF(D)</code> and <code>DF(E)</code> are computed first; then <code>DF(B)</code> reuses <code>DF(D)</code>, <code>DF(C)</code> reuses <code>DF(E)</code>, and <code>DF(A)</code> reuses the dominance frontiers of B, C, F, and G.
 
@@ -126,7 +134,7 @@ For example, <code>DF(D)</code> and <code>DF(E)</code> are computed first; then 
 <li>The local loop examines each outgoing edge of each node exactly once: <code>O(E)</code> in total.</li>
 <li>The up loop iterates over each child Z of each node X (N children in total, as this is a tree), and for each child, over <code>DF(Z)</code>: <code>O(&sum;<sub>X</sub> |DF(X)|)</code> in total.</li>
 </ul>
-So the total running time is <code>O(E + &sum;<sub>X</sub> |DF(X)|)</code>.  If dominance frontiers are small (e.g., constant-sized), this is linear in the size of the CFG.  However, a single dominance frontier can be as large as N, so in the worst case this can still be quadratic.  We characterize <code>&sum;<sub>X</sub> |DF(X)|</code> in more detail later.
+So the total running time is <code>O(E + &sum;<sub>X</sub> |DF(X)|)</code>.  If dominance frontiers are small (e.g., constant-sized), this is linear in the size of the CFG.  However, a single dominance frontier can be as large as N, so in the worst case this can still be quadratic.  However, if the output size is smaller (e.g., linear), then the running time is also smaller --- the running time is proportional to the output size (which is the best any algorithm can do any way).  We characterize <code>&sum;<sub>X</sub> |DF(X)|</code> in more detail later.
 
 <h3>Placing Phi Nodes</h3>
 The second step of the SSA translation is the placement of <em>trivial</em> phi nodes.  Consider an assignment <code>v := ...</code> at node X, and let <code>Y in DomF(X)</code>.  Because Y is not strictly dominated by X, there must be another path to Y on which a different definition of v potentially reaches Y; this other definition is either another assignment to v, or the initial value of v at program entry.  In either case, a phi node for v is needed at Y.
