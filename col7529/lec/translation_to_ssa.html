@@ -50,7 +50,9 @@ Here, A dominates all nodes; B strictly dominates D; and C strictly dominates E.
 </ul>
 
 <h3>Computing Dominance Frontiers</h3>
-<p><b>Recap: dominator tree and immediate dominators</b>.  In the dominator tree, X dominates Y iff there is a path from X to Y in the tree.  X <em>immediately dominates</em> Y (written <code>X idom Y</code>) if X sdom Y and there is no node C such that X sdom C and C sdom Y.  Because the immediate dominator of a node is unique, we can treat <code>idom</code> as a function from nodes to nodes: <code>idom(Y)</code> is the parent of Y in the dominator tree.  For the example above, the dominator tree is:
+<p><b>Recap: dominator tree and immediate dominators</b>.  In the dominator tree, X dominates Y iff there is a path from X to Y in the tree.  X <em>immediately dominates</em> Y (written <code>X idom Y</code>) if X sdom Y and there is no node C such that X sdom C and C sdom Y.
+
+<p>The immediate dominator of a node is unique, as it can be shown that if a node X has two dominators D1 and D2, one of them must dominate the other (or else we will have a path from D1 to X that does not go through D2). Thus, we can treat <code>idom</code> as a function from nodes to nodes: <code>idom(Y)</code> is the parent of Y in the dominator tree.  For the example above, the dominator tree is:
 <pre>
 A --&gt; B, C, F, G
 B --&gt; D
