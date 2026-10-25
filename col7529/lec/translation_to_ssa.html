@@ -229,3 +229,104 @@ where the average of <code>|DomF(X)|</code> is weighted by the number of assignm
 <li>The weighted average <code>DomF</code> size is between constant and linear (it can be as large as the number of basic blocks).</li>
 </ul>
 So the overall running time is between linear and cubic.  We will characterize when this is linear (as is typical in practice) later.
+
+<h3>Versioning Variables</h3>
+The third (and final) step of the SSA translation is to <em>rename</em> the mentions of each variable, so that every variable version is assigned at most once in the static text of the program.  At this point, the trivial phi nodes have already been placed; the user definitions (e.g., <code>a := b + c</code>) and the phi nodes are both processed in the same traversal.
+
+<p><b>Idea</b>: Perform a depth-first search (DFS) traversal of the CFG.  During the traversal, keep track of the <em>current version</em> of each variable in a map <code>vmap</code>:
+<ul>
+<li>If a variable is <em>used</em> in the current node, rename that use with the variable's current version.</li>
+<li>If a variable is <em>assigned</em> in the current node, give the assigned variable a new version, which becomes the current version for the subsequent instructions.</li>
+</ul>
+Like any DFS, a <code>visited</code> set ensures that every node is visited at most once.
+
+<p><b>Algorithm</b>:
+<pre>
+vmap := { v &rarr; 0 for each variable v }     // every variable starts at version 0
+DFS(entry, vmap)
+
+DFS(n, vmap):
+  visited := visited &cup; {n}
+  rename n's variables using vmap:
+    for each instruction in n (in order), e.g., a := b + c:
+      rename the non-phi uses (b, c) with their current versions in vmap   // e.g., b0, c3
+      for the assigned variable a (also for phi nodes at the start of n):
+        give a a new version, e.g., a4, and set vmap[a] := 4
+  vmap' := vmap after all the assignments in n   // copy of vmap with versions of
+                                                  // variables modified in n incremented
+  for each successor s of n:
+    if s contains phi nodes:
+      for each phi node v := &phi;(..., v, ...) in s:
+        rename only the argument corresponding to the edge n--&gt;s, using vmap'
+    if s not in visited:
+      DFS(s, vmap')
+</pre>
+Notice the slight twist for phi nodes: when visiting n, we do not rename the phi uses (arguments) in n itself; instead, we rename the phi arguments in n's <em>successors</em> that correspond to the incoming edge from n.  Recall that a trivial phi node at s has one argument per incoming edge of s; exactly one of these corresponds to the edge <code>n--&gt;s</code>, and the value flowing along this edge is given by <code>vmap'</code>, the map after all the assignments in n have been completed.  Because every edge <code>n--&gt;s</code> is examined when n is visited (whether or not s has already been visited), all phi arguments are eventually renamed.
+
+<p>Note: <code>vmap</code> is passed by value, i.e., each DFS call gets its own copy of the current versions along its DFS path.  However, the new versions must be <em>fresh</em> across the entire program, not just along the current path: e.g., if two sibling nodes B and C both assign to <code>a</code> and both start with <code>vmap[a] = 0</code>, simply incrementing <code>vmap[a]</code> would produce <code>a1</code> in both B and C.  So, in an implementation, the new version number is drawn from a global per-variable counter, while <code>vmap</code> records which version is current on the path being traversed.
+
+<p>Why is the version obtained from the DFS path correct?  Consider a use of v at node Y without a phi node for v, and let the last definition of v on the DFS path to Y be at node Z.  If Z did not dominate Y, then Y is reachable from Z without Z strictly dominating it, and so some node between Z and Y on this path would be in the (iterated) dominance frontier of Z, and would thus contain a phi node for v, which is a later definition on the path; a contradiction.  So the last definition on the DFS path dominates Y, and is the unique definition that reaches Y along every path.
+
+<p>The DFS visits every node at most once, and examines every edge once, so the number of DFS steps is <code>O(V + E)</code>, where V and E are the number of nodes and edges of the CFG.
+
+<h3>Running Time of Versioning</h3>
+Counting DFS steps is not enough, as each step may perform a non-constant amount of work (renaming all mentions in a basic block).  So we count the number of <em>mentions</em> of variables, where a mention is either a use or a def of a variable.
+<ul>
+<li><code>M<sub>orig</sub>(X)</code>: the number of mentions in basic block X in the original program; <code>M<sub>orig</sub> = &sum;<sub>X</sub> M<sub>orig</sub>(X)</code>.  Because the original program is in three-address code, each instruction has only a constant number (two or three) of mentions, so <code>M<sub>orig</sub></code> is proportional to the size of the program n.</li>
+<li><code>M<sub>&phi;</sub>(X)</code>: the number of mentions due to the newly-added phi nodes in X.  For each new phi assignment <code>a := &phi;(a, a, ..., a)</code> added to X, <code>M<sub>&phi;</sub>(X) += indegree(X)</code>, as the phi function has one argument per incoming edge of X.</li>
+<li><code>M<sub>final</sub>(X) = M<sub>orig</sub>(X) + M<sub>&phi;</sub>(X)</code>; <code>M<sub>final</sub> = &sum;<sub>X</sub> M<sub>final</sub>(X)</code>.</li>
+</ul>
+
+<p>How large can <code>M<sub>final</sub></code> be?
+<ul>
+<li>As discussed earlier, the number of new phi assignments can be up to <code>O(n<sup>2</sup>)</code>, where n is the number of assignments in the original program: up to <code>O(n)</code> different variables may reach a basic block with different versions on different incoming edges, each requiring a separate phi node; and there are <code>O(n)</code> basic blocks.  Typically, however, the number of new assignments is linear in n.</li>
+<li>The in-degree of a node is typically <code>O(1)</code> (e.g., two), but in the worst case can be <code>O(n)</code>.</li>
+</ul>
+Multiplying the number of new assignments (n to n<sup>2</sup>) with the in-degree (1 to n), <code>M<sub>final</sub></code> is between <code>O(n)</code> (typical) and <code>O(n<sup>3</sup>)</code> (worst case).  This blow-up is possible because a phi instruction, unlike a three-address instruction, can have more than a constant (up to <code>O(n)</code>) number of mentions.
+
+<p>The versioning step looks at each mention once and renames it, so its running time is <code>O(M<sub>final</sub>)</code>, i.e., between <code>O(n)</code> and <code>O(n<sup>3</sup>)</code>.
+
+<h3>Overall Running Time of Translation to SSA</h3>
+<table border="1" cellpadding="4">
+<tr><th>Step</th><th>Running time</th><th>Typical</th><th>Worst case</th></tr>
+<tr><td>1. Computing dominance frontiers</td><td><code>O(E + &sum;<sub>X</sub> |DomF(X)|)</code>, i.e., (E + V) &times; average DomF size</td><td><code>O(n)</code></td><td><code>O(n<sup>2</sup>)</code></td></tr>
+<tr><td>2. Placing phi nodes</td><td><code>A<sub>final</sub></code> &times; (weighted average DomF size)</td><td><code>O(n)</code></td><td><code>O(n<sup>3</sup>)</code></td></tr>
+<tr><td>3. Versioning variables</td><td><code>O(M<sub>final</sub>)</code></td><td><code>O(n)</code></td><td><code>O(n<sup>3</sup>)</code></td></tr>
+</table>
+Here, E and V are <code>O(n)</code>; the dominance frontier of a node can be between constant and <code>O(n)</code> in size; and <code>A<sub>final</sub></code> is between n and n<sup>2</sup>.
+
+<h3>When is the Translation Linear?</h3>
+There is a large gap between the typical case (linear) and the worst case (cubic).  To get a sense of when each occurs:
+
+<p><b>Theorem</b>: If a program contains only <code>if-then-else</code> and <code>while-do</code> loops (i.e., <code>while (cond) { body }</code>), then <code>|DomF(X)| &le; 2</code> for every node X.
+
+<p>The proof is out of scope for our discussion (see the original paper: <a href=https://dl.acm.org/doi/10.1145/115372.115320>Cytron, Ferrante, Rosen, Wegman, and Zadeck, Efficiently Computing Static Single Assignment Form and the Control Dependence Graph, TOPLAS 1991</a>).  Some examples:
+<ul>
+<li><code>if-then-else</code>: <code>A --&gt; T, F</code>; <code>T --&gt; J</code>; <code>F --&gt; J</code>.  Here, <code>DomF(T) = DomF(F) = {J}</code> and <code>DomF(A) = DomF(J) = {}</code>.</li>
+<li><code>while-do</code>: <code>H --&gt; B, X</code>; <code>B --&gt; H</code>, where H is the loop header that evaluates the condition, B is the loop body, and X is the exit.  Here, <code>DomF(H) = DomF(B) = {H}</code>.</li>
+<li>A <code>while-do</code> loop inside the then-branch of an <code>if-then-else</code>: <code>A --&gt; H, F</code>; <code>H --&gt; B, J</code>; <code>B --&gt; H</code>; <code>F --&gt; J</code>.  Here, <code>DomF(H) = {H, J}</code>: H dominates B, a predecessor of H; and H dominates itself, a predecessor of J, but does not strictly dominate J.  This is the maximum size (two).</li>
+</ul>
+Thus, for such programs, the average dominance frontier size is at most two, and so the first step takes linear time; the second step also takes roughly linear time, and so on.
+
+<p><b>Repeat-until (do-while) loops</b>: In the real world, programs also have <code>repeat-until</code> or <code>do-while</code> loops.  Here, the loop header does not have two branches (it has a single successor); instead, the node at the end of the loop body (the source of the back edge) has two outgoing branches: the back edge and the loop exit.  With such loops, the size of the dominance frontier of a node can be as high as <code>O(n)</code>.
+
+<p>Example: three nested <code>do-while</code> loops with loop headers A (outermost), B, and C (innermost):
+<pre>
+A --&gt; B
+B --&gt; C
+C --&gt; D
+D --&gt; C, E     // innermost loop: back edge D--&gt;C
+E --&gt; B, F     // middle loop: back edge E--&gt;B
+F --&gt; A, G     // outer loop: back edge F--&gt;A
+</pre>
+Every node is dominated by all the nodes before it (the dominator tree is the chain A, B, C, D, E, F, G).  Computing bottom-up:
+<ul>
+<li><code>DomF(F) = {A}</code>: F does not strictly dominate A, and F is a predecessor of A.  (G is strictly dominated by F.)</li>
+<li><code>DomF(E) = DomF_local(E) &cup; DomF_up(F) = {B} &cup; {A} = {A, B}</code>.</li>
+<li><code>DomF(D) = DomF_local(D) &cup; DomF_up(E) = {C} &cup; {A, B} = {A, B, C}</code>.</li>
+</ul>
+In general, for a loop nest of depth k, the dominance frontier of a node (here, the end of the innermost loop body) can be as large as k, which can in turn be as large as <code>O(n)</code>.  So, in pathological cases, translation to SSA can become quadratic, or in the worst case, cubic.
+
+<p>Why not simply disallow <code>repeat-until</code> and <code>do-while</code> loops in the language?  That is not a solution, because compiler transformations themselves often convert <code>while-do</code> loops into <code>do-while</code> loops: e.g., <em>loop inversion</em> converts a <code>while-do</code> loop into a guarded <code>repeat-until</code> loop (other examples include loop unrolling and loop splitting).  A typical compiler maintains the program in SSA form across such transformations, so even if the original program contains only <code>while-do</code> loops, the intermediate programs in the transformation pipeline will contain <code>do-while</code> loops, and the bound of two on the dominance frontier size no longer holds.
+
+<p>However, the pathological cases where the dominance frontiers are large arise only when loop nests are very deep, which is not typically the case.  Hence, in practice, this is not a big problem, and the translation to SSA algorithm discussed here is commonly used.
