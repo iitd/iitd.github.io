@@ -187,7 +187,15 @@ placePhisForVar(P, v):
 <p><b>Pruned SSA</b>: Recall that pruned SSA additionally requires that a phi node for v is placed at Y only if v is <em>live</em> at Y (i.e., v may be used downstream).  The algorithm above can be adapted to pruned SSA by additionally checking whether v is live at Y before placing the phi node.  The liveness analysis can be run a priori, and only needs to be conservative; the more precise the liveness analysis, the more phi nodes may be eliminated.
 
 <h3>Example</h3>
-Consider a CFG with assignments to v at nodes X and W, and with the following dominance frontiers:
+Draw the CFG and convert to SSA for the following program.
+<pre>
+i = 0
+do {
+  i++;
+} while (i &lt; n);
+return i;
+</pre>
+<!--Consider a CFG with assignments to v at nodes X and W, and with the following dominance frontiers:
 <pre>
 DomF(X) = {Y}
 DomF(Y) = {Z}
@@ -204,7 +212,7 @@ DomF(W) = {Z}
 <tr><td>Pick U; <code>DomF(U)</code> is empty</td><td>{W}</td><td>{X, W, Y, Z, U}</td><td>{Y, Z, U, X}</td></tr>
 <tr><td>Pick W; Z already has a phi node</td><td>{}</td><td>{X, W, Y, Z, U}</td><td>{Y, Z, U, X}</td></tr>
 </table>
-The worklist is now empty, and the minimal set of phi nodes for v has been placed at Y, Z, U, and X.  Note that X is not added to the worklist again when a phi node is placed at X: its dominance frontier has already been examined.
+The worklist is now empty, and the minimal set of phi nodes for v has been placed at Y, Z, U, and X.  Note that X is not added to the worklist again when a phi node is placed at X: its dominance frontier has already been examined.-->
 
 <h3>Running Time of Phi Placement</h3>
 Define:
