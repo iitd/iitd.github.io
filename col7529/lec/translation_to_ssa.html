@@ -259,7 +259,7 @@ DFS(n, vmap):
     for each instruction in n (in order), e.g., a := b + c:
       rename the non-phi uses (b, c) with their current versions in vmap   // e.g., b0, c3
       for the assigned variable a (also for phi nodes at the start of n):
-        give a a new version, e.g., a4, and set vmap[a] := 4
+        give a a new version using a global map from variable to assignment-versions, e.g., a4, and set vmap[a] := 4
   vmap' := vmap after all the assignments in n   // copy of vmap with versions of
                                                   // variables modified in n incremented
   for each successor s of n:
@@ -269,11 +269,11 @@ DFS(n, vmap):
     if s not in visited:
       DFS(s, vmap')
 </pre>
+<p>Note: <code>vmap</code> is passed by value, i.e., each DFS call gets its own copy of the current versions along its DFS path.  However, the new versions must be <em>fresh</em> across the entire program, not just along the current path: e.g., if two sibling nodes B and C both assign to <code>a</code> and both start with <code>vmap[a] = 0</code>, simply incrementing <code>vmap[a]</code> would produce <code>a1</code> in both B and C.  So, in an implementation, the new version number is drawn from a global map (another per-variable counter) as shown in the algorithm, while <code>vmap</code> records which version is current on the path being traversed.
+
 Notice the slight twist for phi nodes: when visiting n, we do not rename the phi uses (arguments) in n itself; instead, we rename the phi arguments in n's <em>successors</em> that correspond to the incoming edge from n.  Recall that a trivial phi node at s has one argument per incoming edge of s; exactly one of these corresponds to the edge <code>n--&gt;s</code>, and the value flowing along this edge is given by <code>vmap'</code>, the map after all the assignments in n have been completed.  Because every edge <code>n--&gt;s</code> is examined when n is visited (whether or not s has already been visited), all phi arguments are eventually renamed.
 
-<p>Note: <code>vmap</code> is passed by value, i.e., each DFS call gets its own copy of the current versions along its DFS path.  However, the new versions must be <em>fresh</em> across the entire program, not just along the current path: e.g., if two sibling nodes B and C both assign to <code>a</code> and both start with <code>vmap[a] = 0</code>, simply incrementing <code>vmap[a]</code> would produce <code>a1</code> in both B and C.  So, in an implementation, the new version number is drawn from a global per-variable counter, while <code>vmap</code> records which version is current on the path being traversed.
-
-<p>Why is the version obtained from the DFS path correct?  Consider a use of v at node Y without a phi node for v, and let the last definition of v on the DFS path to Y be at node Z.  If Z did not dominate Y, then Y is reachable from Z without Z strictly dominating it, and so some node between Z and Y on this path would be in the (iterated) dominance frontier of Z, and would thus contain a phi node for v, which is a later definition on the path; a contradiction.  So the last definition on the DFS path dominates Y, and is the unique definition that reaches Y along every path.
+<p>Notice that the version obtained from DFS is correct because we have already placed PHI nodes where there could have been a conflict.  Consider a use of v at node Y without a phi node for v, and let the last definition of v on the DFS path to Y be at node Z.  If Z did not dominate Y, then Y is reachable from Z without Z strictly dominating it, and so some node between Z and Y on this path would be in the (iterated) dominance frontier of Z, and would thus contain a phi node for v, which is a later definition on the path; a contradiction.  So the last definition on the DFS path dominates Y, and is the unique definition that reaches Y along every path.
 
 <p>The DFS visits every node at most once, and examines every edge once, so the number of DFS steps is <code>O(V + E)</code>, where V and E are the number of nodes and edges of the CFG.
 
