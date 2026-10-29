@@ -1,0 +1,293 @@
+<h2>Aliasing and Pointer Analysis</h2>
+Memory objects and pointers are among the most consequential aspects of compiler optimization for imperative languages that involve memory allocation, such as C, C++, and Java.
+
+<h3>Memory Objects</h3>
+Consider a variable declaration in C:
+<pre>
+int x;
+</pre>
+This declaration allocates a region of memory starting at some address <code>addr</code>.  Assuming that the size of an integer is four bytes on our machine, the region spans <code>[addr, addr+4)</code>, i.e., the four bytes at <code>addr</code>, <code>addr+1</code>, <code>addr+2</code>, and <code>addr+3</code>.  The address of <code>x</code> (<code>&amp;x</code>) points to the beginning of this region, i.e., <code>&amp;x</code> and <code>addr</code> are the same value.  Such a region of memory is called an <em>object</em>.
+
+<p>Similarly, a dynamic allocation using the <code>new</code> construct:
+<pre>
+p = new X;
+</pre>
+allocates a new memory object spanning <code>[addr, addr+sizeof(X))</code> and returns a pointer <code>p</code> to the beginning of this region, i.e., <code>p</code> and <code>addr</code> are the same value.
+
+<p>An object need not be a contiguous region of memory.  e.g., if <code>X</code> is a compound type (a class or a struct), <code>p</code> may point to the root node of a data structure that itself contains pointers to other regions; collectively, all these regions may be considered a single object.  Thus, an <em>object</em> is a region, or a set of regions, of memory.
+
+<h3>Aliasing</h3>
+Let <code>x</code> represent an object of four bytes spanning <code>[addr, addr+4)</code>, and let <code>p</code> point to a single byte within this region, say <code>addr+1</code>:
+<pre>
+int x;
+char *p = (char *)&amp;x + 1;
+</pre>
+Here, <code>&amp;x</code> points to the object, and the object itself is <code>x</code>, which represents a region of four bytes.  Similarly, <code>p</code> points to an object, and the object itself is <code>*p</code>, which represents a region of one byte (the size is determined by the type of <code>p</code>).
+
+<p>In this example, <code>*p</code> and <code>x</code> <em>alias</em>, because the regions of memory represented by them overlap (i.e., their intersection is non-empty).  This definition applies to both contiguous and non-contiguous objects.
+
+<p><b>Aliasing</b>: Two or more names for the same region of memory.  In the example above, the byte at <code>addr+1</code> has two names: one is derived from the variable <code>x</code> (e.g., <code>*((char *)&amp;x + 1)</code>), and the other is <code>*p</code>.  <code>*p</code> and <code>x</code> alias iff the memory regions named by them overlap.
+
+<p><b>Terminology subtlety: we talk about aliasing of objects, not pointers</b>.  If pointers <code>p1</code> and <code>p2</code> point to the same object, we say that <code>*p1</code> and <code>*p2</code> alias; we do not say that <code>p1</code> and <code>p2</code> alias.  Similarly, in the example above, we say that <code>*p</code> aliases with <code>x</code>; we do not say that <code>p</code> aliases with <code>&amp;x</code>.  Notice that <code>p1</code> is just an address, whereas <code>*p1</code> represents a region of memory: it encodes both the start address and the size of the region (determined by the type of <code>p1</code>), and, for a non-contiguous object, all the regions that constitute that object.  Two objects alias if their regions overlap.  It is a common mistake to talk about aliasing of pointers; whenever we say aliasing, we are talking about aliasing of objects.
+
+<h3>Why Aliasing Matters</h3>
+Consider the following program:
+<pre>
+x = new X;
+x.f = 42;
+y = x.f;
+assert(y == 42);
+</pre>
+A standard dataflow analysis can confirm that the assertion always holds, i.e., <code>y</code> is always equal to 42.
+
+<p>Now consider another program where <code>p</code> is computed through some complicated function of <code>x</code> (or of <code>&amp;x</code>), such that <code>*p</code> may alias with <code>*x</code>:
+<pre>
+x = new X;
+p = ...;      // some complicated computation
+x.f = 42;
+p.f = 0;
+y = x.f;
+assert(y == 42);    // ?
+</pre>
+Is it okay to assert <code>y == 42</code>?  No: if <code>*p</code> aliases with <code>*x</code>, then <code>y</code> is 0; otherwise, <code>y</code> is 42.  We say that <code>p.f</code> and <code>x.f</code> <em>may alias</em>.  Unless the compiler can establish that <code>*p</code> and <code>*x</code> do not alias, it must make the conservative assumption that they may alias.  e.g., while constant propagation can replace all subsequent uses of <code>y</code> with 42 in the first program, it cannot do so in the second program.
+
+<p>Thus, because of aliasing, many compiler analyses that would otherwise be straightforward become more complicated.  For this reason, it is important for a compiler to perform <em>alias analysis</em> to identify, in a best-effort way, as many non-aliasing relationships as possible.  e.g., a robust compiler should be able to determine that <code>*p</code> never aliases with <code>*x</code>, if that is indeed true for the program.  This falls under the umbrella of <em>pointer analysis</em> in a compiler.
+
+<p>Now consider a third program, where <code>p</code> is directly assigned <code>x</code>:
+<pre>
+x = new X;
+p = x;
+x.f = 42;
+p.f = 0;
+y = x.f;
+assert(y == 0);
+</pre>
+Is it okay to assert <code>y == 0</code>?  Yes: here, we are sure that <code>p</code> and <code>x</code> point to the same object, i.e., <code>*p</code> and <code>*x</code> definitely alias (in fact, they fully overlap and represent the same object).  Thus, the write to <code>p.f</code> is also a write to <code>x.f</code>, and reading <code>x.f</code> into <code>y</code> is guaranteed to yield 0.  For the compiler to reason that <code>y == 0</code> (e.g., for constant propagation), it needs to know that <code>p.f</code> and <code>x.f</code> definitely alias.  We say that <code>p.f</code> and <code>x.f</code> <em>must alias</em>.
+
+<h3>May-Alias and Must-Alias Analyses</h3>
+<ul>
+<li><b>May-alias</b>: can two objects (e.g., <code>*p</code> and <code>*x</code>) potentially alias?</li>
+<li><b>Must-alias</b>: do two objects definitely alias?</li>
+</ul>
+Both problems are undecidable in general, and so we can only hope for a best-effort analysis.
+
+<p><b>Soundness</b>:
+<ul>
+<li>A <em>sound may-alias analysis</em> captures all pairs that may alias at runtime, but may also include some <em>spurious</em> pairs that never alias at runtime.  It is always safe to say that two objects may alias if we are not sure.  e.g., in the program below, <code>*x</code> and <code>*y</code> clearly do not alias, because the language semantics ensure that the two allocations do not overlap:
+<pre>
+x = new X;
+y = new X;
+</pre>
+But an imprecise may-alias analysis may include the pair <code>(*x, *y)</code> in its may-alias set; this is sound but imprecise.  An <em>unsound</em> may-alias analysis would incorrectly claim that two objects do not alias even though they may alias at runtime.</li>
+<li>A <em>sound must-alias analysis</em> may miss some pairs that must alias, but every pair that it captures definitely aliases at runtime.  e.g., in the program below, <code>*x</code> and <code>*y</code> must alias:
+<pre>
+x = new X;
+y = x;
+</pre>
+But an imprecise must-alias analysis may not include the pair <code>(*x, *y)</code> in its must-alias set; this is sound but imprecise.  An <em>unsound</em> must-alias analysis would include wrong entries in the must-alias set.</li>
+</ul>
+Trivial solutions: "everything may alias with everything else" is a sound may-alias solution; "nothing must alias with anything else" is a sound must-alias solution.  Both are sound but completely imprecise (and hence useless).
+
+<p>In a compiler, we never compromise soundness, because an unsound analysis may cause the compiler to perform incorrect optimizations.  Since the problem is undecidable, we cannot hope for a fully precise analysis, but we want as high a precision as possible:
+<ul>
+<li>For may-alias, we want to minimize the number of spurious pairs.</li>
+<li>For must-alias, we want to minimize the number of missing pairs.</li>
+</ul>
+As is common in compilers, there is a trade-off between running time and precision: some algorithms are fast but imprecise; if an application cares more about precision and can afford a longer running time, then slower and more precise algorithms may be used.
+
+<h3>Examples: Importance of Alias Analysis</h3>
+<p><b>memcpy</b>: The C library function <code>memcpy(dst, src, n)</code> copies <code>n</code> bytes from <code>[src, src+n)</code> to <code>[dst, dst+n)</code>.  A basic implementation is:
+<pre>
+void *memcpy(char *dst, char *src, size_t n) {
+  for (size_t i = 0; i &lt; n; i++) {
+    dst[i] = src[i];
+  }
+  return dst;
+}
+</pre>
+<code>memcpy</code> is one of the most commonly used and performance-critical functions in the software stack.  Real implementations are typically hundreds of lines of code, involving vectorization (e.g., copying four or eight bytes at a time) and specialized code for special cases.  But if the regions <code>[src, src+n)</code> and <code>[dst, dst+n)</code> overlap (alias), such optimizations may become incorrect: e.g., copying a chunk of bytes in one go may read bytes that should have already been overwritten through <code>dst</code>.  To avoid a slow implementation just because of this corner case, the C library designers specify that the source and destination regions must not overlap: it is <em>undefined behaviour</em> to call <code>memcpy</code> with overlapping regions.  This example shows how aliasing pervades the systems stack, not just within a compiler but also in library design.
+
+<p><b>Accumulating an array</b>:
+<pre>
+void accumulate(int *a, int n, int *sum) {
+  for (int i = 0; i &lt; n; i++) {
+    *sum += a[i];
+  }
+}
+</pre>
+This loop can be made much faster than the naive implementation, e.g., by register-allocating <code>*sum</code> (and writing it back to memory only at the very end), and by vectorizing the loop (reading eight values of <code>a</code> at once and summing them using vector instructions).  But these optimizations are legal only if <code>*sum</code> cannot alias with any <code>a[i]</code>.  In the absence of other information, the compiler is forced to make the conservative assumption that <code>*sum</code> may alias with <code>a[i]</code>, in which case all these optimizations are illegal.  This shows how much difference good may-alias information can make to compiler optimization.
+
+<h3>Basic Rules for May-Alias</h3>
+<ul>
+<li>Two separately declared variables <code>x</code> and <code>y</code> do not alias: by the language semantics, two distinct declarations are given distinct (non-overlapping) regions of memory.</li>
+<li>For two separate allocations <code>x = new ...</code> and <code>y = new ...</code>, <code>*x</code> and <code>*y</code> do not alias, i.e., <code>(*x, *y)</code> does not belong to the may-alias set.</li>
+</ul>
+Such rules form the basis of the transfer functions used to develop a pointer analysis.  We discuss how pointer analyses are implemented in subsequent modules.
+
+<h3>Points-To Information</h3>
+One way of determining which objects may alias is through <em>points-to information</em>: for each pointer, we want to determine the set of memory objects that it may point to.  e.g., <code>p1</code> may point to one of the objects <code>o<sub>1</sub>, o<sub>2</sub>, ..., o<sub>k1</sub></code>, and <code>p2</code> may point to one of the objects <code>q<sub>1</sub>, q<sub>2</sub>, ..., q<sub>k2</sub></code>.  This information is computed by a <em>points-to analysis</em>.
+
+<p>For example, consider the statements:
+<pre>
+p = &amp;x;
+x = &amp;y;
+</pre>
+From the first statement, we know that <code>p</code> may point to the object <code>x</code>; from the second, that <code>x</code> may point to <code>y</code>.  Thus, the points-to relation is <code>p --&gt; x --&gt; y</code>.  In other words, the objects in the points-to sets may themselves appear on the left-hand side of the points-to relation (e.g., <code>x</code> is both pointed to, and may point to other objects).  Also, the points-to sets of different pointers may overlap (have a non-empty intersection).
+
+<p><b>Approximating may-alias using points-to sets</b>: May-alias information is among the most important information that a compiler needs to perform transformations (as seen in the <code>memcpy</code> and <code>accumulate</code> examples).  A typical approach in compilers is to first compute, for each pointer, the set of all objects that it may point to.  Let <code>pointsTo(p)</code> denote this set.  Then:
+<pre>
+*p1 and *p2 may alias  iff  pointsTo(p1) &cap; pointsTo(p2) &ne; {}
+</pre>
+This is a sound approximation of may-alias information, assuming that the points-to sets are sound (i.e., <code>pointsTo(p)</code> includes all the objects that <code>p</code> may potentially point to at runtime).  The only pairs left out of the may-alias set are those whose points-to sets are disjoint, i.e., the pointers point to distinct objects; such pairs definitely cannot alias.
+
+<h2>Abstract Objects for Pointer Analysis</h2>
+A points-to analysis identifies all the objects that a pointer may point to (and objects may, in turn, point to other objects).  However, the number of objects created dynamically by a program may be unbounded.  Consider the following program that creates a linked list of <code>k</code> nodes:
+<pre>
+struct LNode {
+  int v;
+  LNode *next;
+};
+
+LNode *createList(int k) {
+  LNode *head = nullptr;
+  for (int i = 0; i &lt; k; i++) {
+    LNode *n = new LNode;
+    n-&gt;v = i;
+    n-&gt;next = head;
+    head = n;
+  }
+  return head;
+}
+</pre>
+The number of times the allocation <code>new LNode</code> executes depends on the number of loop iterations, which in turn depends on the parameter <code>k</code>.  In general, a program may have arbitrary logic preceding an allocation, and it is undecidable to determine how many times a loop executes; hence it is undecidable to determine the total number of objects that a program may create at runtime.
+
+<p>The actual (runtime) points-to graph for this program is:
+<pre>
+head --&gt; o<sub>k</sub> --next--&gt; o<sub>k-1</sub> --next--&gt; ... --next--&gt; o<sub>1</sub> --next--&gt; null
+</pre>
+i.e., <code>head</code> points to the most recently allocated object, whose <code>next</code> pointer points to the second most recently allocated object, and so on, until the oldest object whose <code>next</code> pointer is null.  The number of objects in this graph is unknown at compile time.  This picture can be drawn at runtime, but at compile time we do not know its size or shape.  A compile-time analysis needs to reason about a bounded number of objects.
+
+<h3>Abstract Objects</h3>
+An <b>abstract object</b> represents a set of runtime objects.  e.g., all the runtime objects created for a linked list may be represented by a single abstract object.  The set of runtime objects represented by an abstract object may have a bounded size (known at compile time) or an unbounded size.
+<ul>
+<li>We <em>partition</em> the runtime objects created by the program into abstract objects.  e.g., all the objects of the linked list may form one abstract object, all the objects of a binary search tree may form another, and so on.</li>
+<li>For a compile-time analysis to work, the set of abstract objects must be <b>finite</b>.  Whatever scheme we use to partition runtime objects into abstract objects must ensure this.</li>
+<li>Corollary: a single abstract object may represent an unbounded number of runtime objects (because a finite number of abstract objects must together represent a potentially unbounded number of runtime objects).</li>
+</ul>
+Any partition of runtime objects is a valid choice of abstract objects, as long as the set of abstract objects is finite.  We discuss three ideas below; some of them are popular because they are practically useful on real programs.
+
+<p>In a points-to graph over abstract objects, an edge from <code>A</code> to <code>B</code> means that a value stored in (some runtime object represented by) <code>A</code> may be a pointer to (some runtime object represented by) <code>B</code>.  An edge from a variable <code>p</code> to <code>A</code> means that <code>p</code> may point to an object represented by <code>A</code>.  The fewer the edges (while remaining sound), the more precise the analysis.
+
+<h3>Recency Abstraction</h3>
+In the linked-list example, we reasoned about objects in terms of the time of their creation: the most recently allocated object, the second most recently allocated object, and so on.  The <em>recency abstraction</em> partitions runtime objects based on their time of creation.  Given parameters <code>n</code> and finite numbers <code>k<sub>1</sub>, k<sub>2</sub>, ..., k<sub>n</sub></code>, at any point in the program execution:
+<ul>
+<li>For <code>i in 1..n</code>, abstract object <code>A<sub>i</sub></code> represents the last <code>k<sub>i</sub></code> runtime objects created before the <code>&sum;<sub>j=1</sub><sup>i-1</sup> k<sub>j</sub></code> objects represented by <code>A<sub>1</sub>, ..., A<sub>i-1</sub></code>.  e.g., <code>A<sub>1</sub></code> represents the last <code>k<sub>1</sub></code> allocations; <code>A<sub>2</sub></code> represents the <code>k<sub>2</sub></code> allocations before those; and so on.</li>
+<li><code>A<sub>last</sub></code> represents all runtime objects created before the last <code>&sum;<sub>j=1</sub><sup>n</sup> k<sub>j</sub></code> allocations.</li>
+</ul>
+<pre>
+                                                    program execution timeline ---&gt;
+| ...... A<sub>last</sub> ...... | k<sub>n</sub> allocs: A<sub>n</sub> | ... | k<sub>2</sub> allocs: A<sub>2</sub> | k<sub>1</sub> allocs: A<sub>1</sub> |  &lt;-- now
+</pre>
+Each of <code>A<sub>1</sub>, ..., A<sub>n</sub></code> represents a finite number of runtime objects, but <code>A<sub>last</sub></code> represents a potentially unbounded number of runtime objects.
+
+<p><b>Example</b>: For <code>createList</code>, let <code>n = 2</code> and <code>k<sub>1</sub> = k<sub>2</sub> = 1</code>, i.e., we track the most recently allocated object (<code>A<sub>1</sub></code>), the second most recently allocated object (<code>A<sub>2</sub></code>), and all the objects allocated before these two (<code>A<sub>last</sub></code>).  Since the set of abstract objects is finite and known at compile time, we can draw the complete points-to graph.  The best answer that an analysis could produce at the end of the program is:
+<pre>
+head --&gt; A<sub>1</sub> --next--&gt; A<sub>2</sub> --next--&gt; A<sub>last</sub> --next--&gt; A<sub>last</sub>
+</pre>
+i.e., <code>head</code> points to the most recently allocated object, which points to the second most recently allocated object, which points to an object in <code>A<sub>last</sub></code>, which (through its <code>next</code> pointer) may point to another object in <code>A<sub>last</sub></code>.
+
+<p>Abstraction makes the problem tractable but loses information.  e.g., the self-edge on <code>A<sub>last</sub></code> suggests that an object in <code>A<sub>last</sub></code> may point to itself, whereas in the original program, no list node points to itself.  Because <code>A<sub>last</sub></code> represents multiple runtime objects, the edge from <code>A<sub>last</sub></code> to <code>A<sub>last</sub></code> conflates "points to another object in <code>A<sub>last</sub></code>" with "points to itself".
+
+<p><b>Weakness of the recency abstraction</b>: Now suppose that the program also has a function <code>createTree</code> that, depending on some parameter, creates a tree with zero, one, two, or more nodes:
+<pre>
+main() {
+  head = createList(...);
+  root = createTree(...);
+}
+</pre>
+At compile time, we cannot predict how many allocations <code>createTree</code> makes.  So, at the end of <code>main</code>:
+<ul>
+<li>If <code>createTree</code> made no allocations, <code>head</code> points to <code>A<sub>1</sub></code>.</li>
+<li>If <code>createTree</code> made exactly one allocation, <code>head</code> points to <code>A<sub>2</sub></code>.</li>
+<li>If <code>createTree</code> made more than one allocation, <code>head</code> points to <code>A<sub>last</sub></code>.</li>
+</ul>
+So the analysis must conservatively determine that <code>head</code> may point to <code>A<sub>1</sub></code>, <code>A<sub>2</sub></code>, or <code>A<sub>last</sub></code>.  Perhaps the analysis can determine that the last node allocated by <code>createTree</code> is the root, so that <code>root</code> points to <code>A<sub>1</sub></code> (if it points to anything at all).  Similarly, the edges between <code>A<sub>1</sub></code>, <code>A<sub>2</sub></code>, and <code>A<sub>last</sub></code> become imprecise: <code>A<sub>1</sub></code>, <code>A<sub>2</sub></code>, and <code>A<sub>last</sub></code> may each represent list nodes or tree nodes.  This points-to graph is much less satisfactory: the structure of the data structures is lost, and it seems that <code>head</code> (and each abstract object) may point almost anywhere; e.g., <code>*head</code> and <code>*root</code> may alias, as both may point to <code>A<sub>1</sub></code>.
+
+<p>In general, if it is not possible to determine how many allocations happen in a program fragment, we must conservatively assume that any number of allocations may happen in that fragment, and this causes spurious edges in the points-to graph.
+
+<h3>Type Abstraction</h3>
+Group runtime objects into abstract objects based on the type of the allocation.  e.g., all objects of type <code>LNode</code> are represented by the abstract object <code>LNode</code>, and all objects of type <code>TNode</code> (tree nodes allocated by <code>createTree</code>) are represented by the abstract object <code>TNode</code>.  The points-to graph for <code>main</code> becomes:
+<pre>
+head --&gt; LNode --next--&gt; LNode
+root --&gt; TNode --left/right--&gt; TNode
+</pre>
+This is much better than the recency abstraction: <code>head</code> never points to a <code>TNode</code>; <code>root</code> never points to an <code>LNode</code>; an <code>LNode</code> never points to a <code>TNode</code>, and vice versa.  In particular, <code>*head</code> and <code>*root</code> do not alias.
+
+<p><b>Weakness of the type abstraction</b>: Consider the following program (the statements are labeled by their PC, which we use later).  Assume that <code>Z</code> is a type derived from <code>Y</code> (so that <code>z</code>, declared of type <code>Y*</code>, may point to either):
+<pre>
+1: x = new X;
+2: y = new Y;
+3: x.f = y;
+4: z = new Y;
+5: z.g = x;
+6: z.f = y;
+7: z = new Z;
+</pre>
+In this discussion, we ignore the order of statements (i.e., the analysis is <em>flow-insensitive</em>): we keep adding edges until a fixed point is reached.  We build the points-to graph under the type abstraction, where the abstract objects are <code>X</code>, <code>Y</code>, and <code>Z</code>:
+<ul>
+<li>Statements 1 and 2: <code>x --&gt; X</code> and <code>y --&gt; Y</code>.</li>
+<li>Statement 3 (<code>x.f = y</code>): an object in <code>X</code> may contain (in field <code>f</code>) a pointer to an object in <code>Y</code>: <code>X --&gt; Y</code>.  (The field names are not shown in the points-to graph.)</li>
+<li>Statement 4: <code>z --&gt; Y</code>.  Imprecision already: both <code>y</code> and <code>z</code> point to <code>Y</code>, so <code>*y</code> and <code>*z</code> may alias, whereas the program never assigns the pointer held in <code>y</code> to <code>z</code>.</li>
+<li>Statement 7: <code>z --&gt; Z</code>.</li>
+<li>Statement 5 (<code>z.g = x</code>): whatever <code>z</code> points to (<code>Y</code> or <code>Z</code>) may contain a pointer to whatever <code>x</code> points to (<code>X</code>): <code>Y --&gt; X</code> and <code>Z --&gt; X</code>.  The edge <code>Y --&gt; X</code> is spurious: it suggests that <code>X</code> may be reachable through <code>y</code>, whereas in the program it is reachable only through <code>z</code>.</li>
+<li>Statement 6 (<code>z.f = y</code>): <code>Y --&gt; Y</code> and <code>Z --&gt; Y</code>.  Again, the self-edge on <code>Y</code> is spurious.</li>
+</ul>
+<pre>
+x --&gt; X          X --&gt; Y
+y --&gt; Y          Y --&gt; X, Y
+z --&gt; Y, Z       Z --&gt; X, Y
+</pre>
+Many spurious edges are added due to the type abstraction.
+
+<h3>Allocation-Site Abstraction</h3>
+Label each statement in the program with its PC.  All runtime objects allocated at the same allocation site (the PC of the allocation statement) are represented by one abstract object, named by that PC.  Notice that statements 2 and 4 in the program above allocate objects of the same type <code>Y</code>, but they are different allocation sites, and so give rise to different abstract objects (<code>2</code> and <code>4</code>).  For the same program:
+<ul>
+<li>Statements 1 and 2: <code>x --&gt; 1</code> and <code>y --&gt; 2</code>.</li>
+<li>Statement 3 (<code>x.f = y</code>): <code>1 --&gt; 2</code>.</li>
+<li>Statement 4: <code>z --&gt; 4</code>.  This is where the precision improves: under the type abstraction, <code>y</code> and <code>z</code> both pointed to <code>Y</code>; now <code>y</code> points to <code>2</code> and <code>z</code> points to <code>4</code>, so <code>*y</code> and <code>*z</code> cannot alias.</li>
+<li>Statement 5 (<code>z.g = x</code>): <code>4 --&gt; 1</code>.</li>
+<li>Statement 6 (<code>z.f = y</code>): <code>4 --&gt; 2</code>.</li>
+<li>Statement 7: <code>z --&gt; 7</code>.  Now that <code>z</code> may also point to <code>7</code>, statements 5 and 6 must be reconsidered (we iterate to a fixed point, as in a dataflow analysis): <code>7 --&gt; 1</code> and <code>7 --&gt; 2</code>.</li>
+</ul>
+<pre>
+x --&gt; 1          1 --&gt; 2
+y --&gt; 2          4 --&gt; 1, 2
+z --&gt; 4, 7       7 --&gt; 1, 2
+</pre>
+We will see an algorithm to compute such points-to graphs automatically later; here, we are primarily interested in the different abstractions and their trade-offs.  The number of edges in the two graphs cannot be directly compared (the number of abstract objects differs), but fewer aliasing relationships are possible in the allocation-site graph than in the type-abstraction graph: e.g., <code>*y</code> and <code>*z</code> cannot alias under the allocation-site abstraction, but may alias under the type abstraction.
+
+<p><b>The list and tree example</b>: With the allocation-site abstraction, there is one allocation site in <code>createList</code> (say, site 1, allocating <code>LNode</code>) and one in <code>createTree</code> (say, site 2, allocating <code>TNode</code>):
+<pre>
+head --&gt; 1 --next--&gt; 1
+root --&gt; 2 --left/right--&gt; 2
+</pre>
+This allows us to rule out many points-to and aliasing relationships, and works well for this example, unlike the recency abstraction.
+
+<p><b>Weakness of the allocation-site abstraction</b>: Suppose <code>createList</code> is called twice:
+<pre>
+main() {
+  head  = createList(...);
+  head2 = createList(...);
+  root  = createTree(...);
+}
+</pre>
+Both lists are allocated at the same allocation site (site 1), so:
+<pre>
+head  --&gt; 1 --next--&gt; 1
+head2 --&gt; 1
+root  --&gt; 2 --left/right--&gt; 2
+</pre>
+This is still better than the recency abstraction, but it is imprecise: it implies that <code>*head</code> may alias with <code>*head2</code>, whereas the code shows that this is not the case.  We will see ways to reduce such imprecision later.
+
+<h3>Combining Abstractions</h3>
+Multiple abstractions can be combined.  e.g., if a recency abstraction creates abstract objects <code>A<sub>1</sub>, ..., A<sub>n</sub></code> and an allocation-site abstraction creates abstract objects <code>B<sub>1</sub>, ..., B<sub>m</sub></code>, we can use their Cartesian product (<code>n &times; m</code> abstract objects) to potentially obtain more precision than either abstraction alone.  Any abstraction is acceptable as long as the total number of abstract objects is finite.  However, there is a trade-off: Cartesian products can quickly make the number of abstract objects exponential; more abstract objects may give better precision, but at the cost of a higher running time of the points-to analysis.
