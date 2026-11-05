@@ -1,0 +1,248 @@
+<h2>Andersen's algorithm</h2>
+
+<h3>Computing the Points-To Graph</h3>
+In the examples so far, we informally showed how the points-to graph is constructed using a given object abstraction.  We now describe an algorithm that constructs the points-to graph automatically, given an abstraction for memory objects.
+
+<h4>Points-To Analysis as a Dataflow Analysis</h4>
+We use a forward dataflow analysis:
+<ul>
+<li><b>Values</b>: the value of the analysis is a points-to graph.  Using an adjacency-list representation, the graph is a map from an abstract object to a set of abstract objects, i.e., a value in <code>V &rarr; 2<sup>V</sup></code>, where <code>V</code> is the set of abstract objects (and pointer variables).  e.g., if <code>x</code> may point to <code>y</code> or <code>z</code>, then the map contains <code>x &rarr; {y, z}</code>.</li>
+<li><b>Meet operator</b>: union of edges.  e.g., if <code>x</code> may point to <code>y</code> on one path and to <code>z</code> on another path, then after the meet, <code>x</code> may point to either <code>y</code> or <code>z</code>.</li>
+<li><b>Flow-insensitive analysis on the SSA representation</b>: this is a relatively expensive dataflow analysis, so we use a <a href="flow_insensitive.html">flow-insensitive analysis</a> on the SSA representation, which is usually as precise as a flow-sensitive analysis on the non-SSA representation, but typically much faster.  i.e., there is a single global value (a single points-to graph), we may pick the statements in any order, and we meet eagerly: transferring across a statement adds edges to the single global points-to graph, and this addition of edges is the meet with the existing value.</li>
+<li><b>Transfer functions</b>: the general shape of a transfer function for an assignment <code>e1 := e2</code> is that all the objects that <code>e2</code> may point to must belong to the points-to set of <code>e1</code>.  If <code>e2</code> points to some object <code>y</code> when the statement executes, then <code>e1</code> may now also point to <code>y</code>.  The transfer function adds all objects that <code>e2</code> may point to into the points-to set of <code>e1</code>.</li>
+</ul>
+This algorithm, which computes the points-to graph represented as a map from each object to a set of objects, is called <b>Andersen's algorithm</b>, after the person who first proposed it.
+
+<h4>The Language</h4>
+We describe the algorithm for a C-like language that supports the following operations:
+<pre>
+p := &amp;x         (address of a variable)
+p := e          (assign an expression, e.g., a + b, to a variable)
+*p := e         (assign through a pointer)
+p := *e         (dereference the value computed by an arbitrary expression)
+p := new ...    (dynamic allocation)
+var x           (local variable declaration; types are omitted)
+</pre>
+<code>*p := e</code> subsumes field assignments of the form <code>p-&gt;f := q</code>, and <code>p := *e</code> subsumes field reads of the form <code>p := e-&gt;f</code>: a dereference of a field is treated as though the entire object has been dereferenced.
+
+<h4>Canonicalization</h4>
+To simplify the analysis, we canonicalize these different syntaxes into a common syntax.
+<ul>
+<li><b>Variable declarations become allocations</b>: we are not concerned about scope and lifetime issues in this analysis, so a local variable declaration can be treated just like any other dynamic allocation.  For a declaration <code>var x</code>, we pretend that there is a pointer <code>px</code> initialized to the pointer returned by an allocation of the type of <code>x</code>:
+<pre>
+var x      becomes      px := new ...
+</pre>
+Every occurrence of <code>&amp;x</code> is replaced with <code>px</code> (the address of <code>x</code>), and every use of <code>x</code> is replaced with <code>*px</code>.  i.e., for each C-like variable, we pretend that we know its address, and every access to the variable dereferences that address.</li>
+<li><b>Complex assignments are broken down</b>: an assignment <code>*e1 := e2</code>, where <code>e1</code> and <code>e2</code> are expressions, is broken down into smaller statements that first compute the LHS, then compute the RHS, and then perform the assignment:
+<pre>
+v1 := e1
+v2 := e2
+*v1 := v2
+</pre>
+These three statements represent the original operation.  It is easier to define transfer functions for the smaller statements.</li>
+</ul>
+
+<h4>Object Abstraction</h4>
+An unbounded number of objects may be created at runtime by <code>new</code>, so we need an abstraction that gives us a finite set of abstract objects at compile time.  We use the <b>allocation-site abstraction</b>: each <code>new</code> statement in the program (identified by its PC) gives rise to one abstract object.  In general, Andersen's algorithm is independent of the exact object abstraction, but we use this concrete abstraction because the transfer functions can be slightly different depending on the object abstraction.
+
+<h4>Running Example</h4>
+Consider the following program.  Recall that we are doing a flow-insensitive analysis, so the program is just an unordered bag of statements:
+<pre>
+var p;
+var q;
+p := new ...;
+q := new ...;
+r := &amp;p;
+s := new ...;
+*r := s;
+t := &amp;q;
+u := *t;
+p := q;
+</pre>
+The program contains variable declarations, allocations using <code>new</code>, the <code>&amp;</code> operator, assignments of the form <code>*r := s</code>, dereferences of the form <code>u := *t</code>, and copies of the form <code>p := q</code>.
+
+<p>After canonicalization, <code>var p</code> becomes <code>ap := new ...</code> (where <code>ap</code> represents the address of <code>p</code>), and <code>var q</code> becomes <code>aq := new ...</code>.  <code>p := new ...</code> becomes <code>*ap := new ...</code>, which is further broken down into <code>v1 := new ...</code> and <code>*ap := v1</code>.  <code>r := &amp;p</code> becomes <code>r := ap</code>.  <code>p := q</code> becomes <code>*ap := *aq</code>, which is further broken down into <code>v3 := *aq</code> and <code>*ap := v3</code>.  Labeling each statement with its PC:
+<pre>
+ 1: ap := new ...
+ 2: aq := new ...
+ 3: v1 := new ...
+ 4: *ap := v1
+ 5: v2 := new ...
+ 6: *aq := v2
+ 7: r := ap
+ 8: s := new ...
+ 9: *r := s
+10: t := aq
+11: u := *t
+12: v3 := *aq
+13: *ap := v3
+</pre>
+
+<h4>Transfer Functions</h4>
+We write <code>x &rarr; a</code> to represent the fact that <code>a</code> belongs to the points-to set of <code>x</code>, and <code>pt(x)</code> for the points-to set of <code>x</code>.  There are four rules.
+
+<p><b>Allocation (<code>p := new ...</code> at PC <code>l</code>)</b>: <code>l &isin; pt(p)</code>.  e.g., if <code>x &rarr; a</code> before the statement <code>x := new ...</code> at PC <code>l</code>, then after transferring across it, <code>x</code> may point to either <code>a</code> or <code>l</code>: we add the edge <code>x &rarr; l</code> to the points-to graph.
+
+<p>Adding an edge (rather than replacing the existing edges) is called a <b>weak update</b>: we add a new value to an existing set.  In contrast, a <b>strong update</b> would overwrite the existing set with the new value, e.g., change <code>x &rarr; a</code> to <code>x &rarr; l</code>.  Because we are doing a flow-insensitive analysis, which consumes the statements in an arbitrary order and meets eagerly, strong updates would be unsound.  Weak updates are sound: we conservatively say that <code>x</code> may point to whatever it was pointing to earlier, plus whatever it may point to by virtue of this statement.
+
+<p><b>Assign (<code>*p := q</code>)</b>: <code>pt(*p) &supe; pt(q)</code>, i.e., for each <code>a &isin; pt(p)</code>, <code>pt(a) &supe; pt(q)</code>.  e.g., for <code>*x := y</code>, if <code>x &rarr; a</code>, <code>x &rarr; b</code>, <code>a &rarr; d</code>, and <code>y &rarr; c</code>, then after the transfer, both <code>a</code> and <code>b</code> may additionally point to <code>c</code>: <code>a &rarr; c, d</code> and <code>b &rarr; c</code>.
+
+<p><b>Copy (<code>p := q</code>)</b>: <code>pt(p) &supe; pt(q)</code>.  e.g., for <code>x := y</code>, if <code>x &rarr; a</code> and <code>y &rarr; b</code>, then after the transfer, <code>x</code> may point to either <code>a</code> or <code>b</code>, and <code>y</code> still points only to <code>b</code>.
+
+<p><b>Dereference (<code>p := *q</code>)</b>: <code>pt(p) &supe; pt(*q)</code>, i.e., for each <code>a &isin; pt(q)</code>, <code>pt(p) &supe; pt(a)</code>.  e.g., for <code>x := *y</code>, if <code>x &rarr; a</code>, <code>y &rarr; b, c</code>, <code>b &rarr; d</code>, and <code>c &rarr; e</code>, then after the transfer, <code>x</code> may point to whatever <code>b</code> and <code>c</code> may point to, in addition to what it pointed to earlier: <code>x &rarr; a, d, e</code>.
+
+<h4>Running Andersen's Algorithm on the Example</h4>
+<ul>
+<li>Statements 1, 2, 3 (allocation): <code>ap &rarr; 1</code>, <code>aq &rarr; 2</code>, <code>v1 &rarr; 3</code>.</li>
+<li>Statement 4 (<code>*ap := v1</code>, assign): whatever <code>ap</code> points to (<code>1</code>) may now point to whatever <code>v1</code> points to (<code>3</code>): <code>1 &rarr; 3</code>.</li>
+<li>Statement 5 (allocation): <code>v2 &rarr; 5</code>.</li>
+<li>Statement 6 (<code>*aq := v2</code>, assign): <code>2 &rarr; 5</code>.</li>
+<li>Statement 7 (<code>r := ap</code>, copy): <code>r &rarr; 1</code>.</li>
+<li>Statement 8 (allocation): <code>s &rarr; 8</code>.</li>
+<li>Statement 9 (<code>*r := s</code>, assign): <code>r</code> points to <code>1</code>, so <code>1 &rarr; 8</code>.</li>
+<li>Statement 10 (<code>t := aq</code>, copy): <code>t &rarr; 2</code>.</li>
+<li>Statement 11 (<code>u := *t</code>, dereference): <code>t</code> points to <code>2</code>, and <code>2</code> points to <code>5</code>, so <code>u &rarr; 5</code>.</li>
+<li>Statement 12 (<code>v3 := *aq</code>, dereference): <code>aq</code> points to <code>2</code>, and <code>2</code> points to <code>5</code>, so <code>v3 &rarr; 5</code>.</li>
+<li>Statement 13 (<code>*ap := v3</code>, assign): <code>ap</code> points to <code>1</code>, so <code>1 &rarr; 5</code>.</li>
+</ul>
+The resulting points-to graph:
+<pre>
+ap --&gt; 1         1 --&gt; 3, 5, 8
+aq --&gt; 2         2 --&gt; 5
+v1 --&gt; 3
+v2 --&gt; 5
+r  --&gt; 1
+s  --&gt; 8
+t  --&gt; 2
+u  --&gt; 5
+v3 --&gt; 5
+</pre>
+We keep repeating this procedure for all the statements, in an arbitrary order, until we reach a fixed point, i.e., until no more edges are added.  You can check that the graph above is a fixed point.  Thus, Andersen's algorithm is a forward dataflow analysis that uses the four rules above as transfer functions and union of edges as the meet operator.
+
+<h3>Generalizing Andersen's Algorithm to More Constructs</h3>
+Andersen's algorithm, as discussed so far, considers four kinds of statements: allocation <code>p := new ...</code>, copy <code>p := q</code>, assign <code>*p := q</code>, and dereference <code>p := *q</code> (after canonicalization, <code>p := &amp;x</code> becomes a copy).  Real programming languages have more constructs that manipulate pointers.  We now generalize the algorithm to handle some of these constructs.
+
+<h4>Pointer Arithmetic, Address-Taken Fields, and Address-Taken Array Elements</h4>
+Languages like C allow pointer arithmetic, and taking the address of a field or of an array element:
+<pre>
+p = q + i;
+p = &amp;q-&gt;f;
+p = &amp;a[i];
+</pre>
+What happens to the points-to information in the presence of such statements?
+
+<p>Suppose <code>q</code> points to (the beginning of) some object.  After <code>p = q + i</code>, <code>p</code> may point anywhere within the object that <code>q</code> points to: the distance between <code>q</code> and <code>p</code> is <code>i</code>.  Similarly, after <code>p = &amp;q-&gt;f</code>, <code>p</code> points to the field <code>f</code> within the larger object that <code>q</code> points to.  And if <code>a</code> is an array, after <code>p = &amp;a[i]</code>, <code>p</code> points to the <code>i</code>th element within the array, i.e., at a distance of <code>i</code> times the element size (e.g., <code>i*4</code>) from the beginning of the array.
+
+<p>In all these cases, <code>p</code> points to the <em>same object</em> as the one that <code>q</code> (or <code>a</code>) points to; the only difference is that <code>p</code> may point to the middle of that object.  We treat this as <code>p</code> pointing to the same abstract object as <code>q</code>.  i.e., when we say that <code>p</code> points to an abstract object, we really mean that <code>p</code> points to either the beginning or the middle of that abstract object.
+
+<p><b>What if the pointer goes out of bounds?</b>  e.g., due to an overflow, <code>q + i</code> may point outside the object that <code>q</code> points to.  In C (and in higher-level languages), pointing beyond the boundary of an object in this way is undefined behavior (UB), and such a program is illegal.  Illegal does not necessarily mean that the compiler throws an error; rather, it is the programmer's responsibility to ensure that this situation never arises, i.e., that pointer arithmetic, an address-taken field, or an address-taken array element never yields a pointer beyond the boundary of the object that the original pointer (<code>q</code> or <code>a</code>) pointed to.
+
+<p>Thus, assuming the absence of UB, we can safely say that, after each of these statements, <code>p</code> points within an object that <code>q</code> (or <code>a</code>) pointed to before the execution of the statement.  Using this fact, we treat all three constructs as simple copies:
+<table border=1 cellpadding=4>
+<tr><th>Statement</th><th>Treated as</th></tr>
+<tr><td><code>p = q + i</code></td><td><code>p = q</code></td></tr>
+<tr><td><code>p = &amp;q-&gt;f</code></td><td><code>p = q</code></td></tr>
+<tr><td><code>p = &amp;a[i]</code></td><td><code>p = a</code></td></tr>
+</table>
+These transfer functions assume that pointers cannot go out of bounds (otherwise, the behavior is undefined).
+
+<h4>Field-Insensitive Analysis</h4>
+Higher-level languages like Java and C# do not allow pointer arithmetic, but we can still have field accesses.  Consider the following program, where <code>new</code> allocates a new memory object, and we use the allocation-site abstraction (each statement is labeled with its allocation site):
+<pre>
+1: x = new;
+2: x-&gt;f = new;
+3: x-&gt;g = new;
+</pre>
+Statement 1 makes <code>x</code> point to abstract object <code>1</code>, which represents all objects allocated at allocation site 1.
+
+<p>Statement 2 (<code>x-&gt;f = new</code>) updates the field <code>f</code> of the object that <code>x</code> points to, so that it points to the newly allocated object; i.e., field <code>f</code> of object <code>1</code> may point to abstract object <code>2</code>.  In other words, the contents of the object pointed to by <code>x</code> may point to <code>2</code>, which is as good as saying <code>*x = new</code>.  The only difference between <code>*x = new</code> and <code>x-&gt;f = new</code> is that the former overwrites the entire object, whereas the latter updates only one field of the object.  But in either case, the object contains a pointer that may point to abstract object <code>2</code>.  So we simply treat such statements as <code>*x = new</code>.  Similarly, <code>x-&gt;g = new</code> also becomes <code>*x = new</code>.
+
+<p>The resulting points-to graph using Andersen's algorithm is:
+<pre>
+x --&gt; 1
+1 --&gt; 2, 3
+</pre>
+i.e., <code>x</code> points to <code>1</code>, and the object allocated at site 1 may point to objects allocated at site 2 or at site 3.
+
+<p>This is called a <b>field-insensitive analysis</b>: we ignore the fact that the pointer to <code>2</code> can only live in field <code>f</code>, and the pointer to <code>3</code> can only live in field <code>g</code>.  Instead, we approximate the whole object as a single abstract object whose contents may point to either <code>2</code> or <code>3</code>.  The analysis is not sensitive to the fact that different pointers may be stored in different fields.
+
+<p><b>Implication</b>: Now consider the statement:
+<pre>
+y = x-&gt;g;
+</pre>
+This reads the contents of the object pointed to by <code>x</code> and stores them in <code>y</code>.  In a field-insensitive analysis, this is treated as <code>y = *x</code>.  Since <code>x</code> points to <code>1</code>, and <code>1</code> may contain pointers to <code>2</code> or <code>3</code>, we get:
+<pre>
+y --&gt; 2, 3
+</pre>
+This is imprecise: <code>y</code> only reads the field <code>g</code>, and <code>g</code> can only point to <code>3</code>.  A more precise analysis should have told us that <code>y</code> can only point to <code>3</code>, and not to <code>2</code>.
+
+<h4>Field-Sensitive Analysis</h4>
+We can do better, provided the language does not allow pointer arithmetic or address-taken fields.  In the presence of pointer arithmetic or address-taken fields, it becomes very hard to determine whether a pointer may point anywhere in the middle of an object, or to field <code>f</code>, or to field <code>g</code>.  e.g., for <code>p = q + i</code>, if <code>i</code> is not a compile-time constant, it is hard to say whether <code>p</code> points to field <code>f</code> or to field <code>g</code>.
+
+<p>Languages like Java and C# do not allow pointer arithmetic or address-taken fields.  For such languages, we can track the contents of each field of each abstract object separately.  For the same program:
+<pre>
+1: x = new;
+2: x-&gt;f = new;
+3: x-&gt;g = new;
+</pre>
+we can say that the field <code>f</code> of abstract object <code>1</code> may point to <code>2</code>, and the field <code>g</code> of abstract object <code>1</code> may point to <code>3</code>.  To represent this in the points-to graph, we label each edge with the field through which the pointer may be stored:
+<pre>
+x --&gt; 1
+1 --f--&gt; 2
+1 --g--&gt; 3
+</pre>
+Through <code>f</code>, <code>1</code> may point to <code>2</code>; through <code>g</code>, <code>1</code> may point to <code>3</code>.  But through <code>g</code>, <code>1</code> may not point to <code>2</code>: if <code>g</code> is dereferenced, only <code>3</code> will be obtained.  This points-to graph is more precise than the one computed by the field-insensitive analysis.
+
+<p><b>Implication</b>: For <code>y = x-&gt;g</code>, <code>y</code> reads the contents of field <code>g</code> of the object pointed to by <code>x</code>.  The object pointed to by <code>x</code> is <code>1</code>, and the field being dereferenced is <code>g</code>, which may only point to <code>3</code>.  So:
+<pre>
+y --&gt; 3
+</pre>
+The field-sensitive constraints differentiate based on field names: we know that field <code>g</code> is being dereferenced, so <code>y</code> may only point to <code>3</code>, and not to <code>2</code>.
+
+<p>Field-sensitive analysis is easiest in the absence of pointer arithmetic and address-taken fields.  In general, it is possible even in their presence, but the analysis becomes more complex.  Field-sensitive analyses are thus typically easier and more practical to implement for languages that do not allow pointer arithmetic and address-taken fields, such as Java and C#.
+
+<h3>Running Time of Andersen's Algorithm</h3>
+We now discuss the running time of Andersen's algorithm.  We will make some approximations: we will do a worst-case analysis of how much time the algorithm can take, and also discuss the typical time that the analysis may take.
+
+<h4>Problem Size</h4>
+Let <code>n</code> be the size of the program, e.g., the number of statements in the program.  We assume:
+<ul>
+<li>The number of abstract objects is <code>O(n)</code>.  Roughly, the number of allocation statements grows with the size of the program.  If we are doing a field-sensitive analysis, the number of fields gets multiplied with the number of allocation sites, but we still assume that the total is <code>O(n)</code>.  The abstract objects form the nodes of the points-to graph, so the points-to graph has <code>O(n)</code> nodes.</li>
+<li>Each statement generates a constraint.  Writing <code>p</code> as shorthand for the points-to set of <code>p</code>, the constraints are of the following forms:
+<table border=1 cellpadding=4>
+<tr><th>Statement</th><th>Constraint</th><th>Meaning</th></tr>
+<tr><td><code>p = q</code> (copy)</td><td><code>p &supe; q</code></td><td>whatever <code>q</code> may point to, <code>p</code> may point to</td></tr>
+<tr><td><code>*p = q</code> (assignment through a pointer)</td><td><code>*p &supe; q</code></td><td>whatever <code>q</code> may point to, <code>*p</code> may point to</td></tr>
+<tr><td><code>p = *q</code> (dereference)</td><td><code>p &supe; *q</code></td><td>whatever <code>*q</code> may point to, <code>p</code> may point to</td></tr>
+</table>
+Most of the program is made up of statements that resemble either assignments, copies, or dereferences, so there are <code>O(n)</code> such constraints.</li>
+</ul>
+
+<h4>Fixed-Point Computation by Relaxation</h4>
+Andersen's algorithm identifies a fixed-point solution for these <code>O(n)</code> constraints.  Whenever a constraint is not satisfied, we <em>relax</em> the current solution.  e.g., for the copy constraint <code>p &supe; q</code>, we check whether the constraint is already satisfied; if not, we add elements from the points-to set of <code>q</code> to the points-to set of <code>p</code>, so that the constraint becomes satisfied.  This addition of elements to the points-to set of <code>p</code> is called relaxing the solution.
+
+<p>Recall that adding abstract objects to the points-to set of <code>p</code> is equivalent to adding edges to the points-to graph.  Since the points-to graph has <code>O(n)</code> nodes, it can have at most <code>O(n<sup>2</sup>)</code> edges.  Relaxing involves growing the points-to sets of some pointers (e.g., growing the points-to set of <code>*p</code> using the constraint <code>*p &supe; q</code>), i.e., adding edges to the points-to graph.
+
+<p>Also, the points-to set of any single pointer (e.g., the points-to set of <code>q</code> or of <code>*p</code>) contains at most <code>O(n)</code> abstract objects, because that is the total number of abstract objects.  i.e., a node in the points-to graph has at most <code>O(n)</code> outgoing edges.
+
+<h4>Cost of Relaxing One Constraint</h4>
+We now consider the worst-case time to relax each kind of constraint individually.
+<ul>
+<li><b>Copy, <code>p &supe; q</code></b>: may require the addition of <code>O(n)</code> edges.  <code>q</code> may have up to <code>O(n)</code> outgoing edges, and we must ensure that <code>p</code> also has outgoing edges to each of those abstract objects.  Checking or inserting all of them takes <code>O(n)</code> time in the worst case.</li>
+<li><b>Assignment through a pointer, <code>*p &supe; q</code></b>: may require the addition of <code>O(n<sup>2</sup>)</code> edges.  Both <code>q</code> and <code>p</code> may have <code>O(n)</code> outgoing edges, and for each outgoing edge of <code>p</code>, we must add all the outgoing edges of <code>q</code> to the abstract object that <code>p</code> points to:
+<pre>
+for all l &isin; q:
+  for all m &isin; p:
+    add l to m
+</pre>
+There are two quantifiers, each ranging over <code>O(n)</code> elements: we may need to add <code>O(n)</code> elements to each of <code>O(n)</code> sets, making a total of <code>O(n<sup>2</sup>)</code> edges.  e.g., if <code>q</code> points to <code>{1, 2, 3, ...}</code> and <code>p</code> points to <code>{a, b, c, ...}</code>, then each of <code>1, 2, 3, ...</code> must be added to the points-to set of <code>a</code>, of <code>b</code>, of <code>c</code>, and so on.</li>
+<li><b>Dereference, <code>p &supe; *q</code></b>: may require <code>O(n<sup>2</sup>)</code> work, by a similar argument.  <code>q</code> may point to <code>O(n)</code> abstract objects, each of which may point to <code>O(n)</code> abstract objects, making a total of <code>O(n<sup>2</sup>)</code> two-hop outgoing edges.  The number of distinct abstract objects that <code>p</code> can point to is still at most <code>O(n)</code> (that is the total number of nodes in the graph), but each of the <code>O(n<sup>2</sup>)</code> two-hop edges must be checked to ensure that the constraint is satisfied, which is an <code>O(n<sup>2</sup>)</code> operation.</li>
+</ul>
+To summarize, the last two constraints are the culprits: the worst-case time to relax the solution so that it satisfies one constraint is <code>O(n<sup>2</sup>)</code>.
+
+<h4>Total Running Time</h4>
+There are <code>O(n)</code> constraints, and each needs to be checked for relaxation at least once, so the worst-case time is <code>O(n<sup>3</sup>)</code>.  This is a rough analysis; a more precise analysis is available in David McAllester's paper <em>On the Complexity Analysis of Static Analyses</em>, which includes a theorem that the fixed-point solution for Andersen's algorithm can be obtained in <code>O(n<sup>3</sup>)</code> time.
+
+<p><b>Implications</b>: <code>O(n<sup>3</sup>)</code> is a very disappointing running time.  Programs can be very large (thousands to millions of lines of code), and if compilation takes hours or days due to an <code>O(n<sup>3</sup>)</code> time complexity, it is a non-starter.  For this reason, Andersen's algorithm is not very practical for the purposes of compilation, but it is often used for other purposes like verification and program analysis.  We will see a faster alternative to Andersen's algorithm next.
+
+<p>Moreover, even the average or typical case is roughly quadratic to cubic.  We need to relax <code>O(n)</code> constraints regardless, and even if each relaxation takes <code>O(n)</code> time on average, the total is already <code>O(n<sup>2</sup>)</code>.  Even quadratic time is very bad: for a million-line program, quadratic time can take hours or more.  It would be acceptable if the worst case were cubic but the typical case were linear; but here, even the typical case is at least quadratic.  For this reason, Andersen's algorithm is considered a heavyweight (expensive) algorithm for pointer analysis.
