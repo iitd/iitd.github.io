@@ -1,0 +1,241 @@
+<h2>Object-Sensitive Pointer Analysis</h2>
+
+We have seen that a call-context-sensitive points-to analysis is more precise than a call-context-insensitive analysis.  We now introduce a new idea, by first showing the limitations of call contexts.
+
+<h3>Recap: The Running Example with Call Contexts</h3>
+Recall the following program.  There is a class <code>Memory</code> with a field <code>m</code>; <code>D1</code> and <code>D2</code> are two derived classes of a common base class that declares a virtual function <code>f</code>, and <code>D1::f</code> and <code>D2::f</code> are its two implementations.  The main program sets <code>m</code> to objects of the two different derived classes, then calls <code>getM</code>, and then calls the virtual function <code>f</code>:
+<pre>
+class Memory {
+  Base *m;
+  void setM(Base *sm) { this-&gt;m = sm; }
+  Base *getM()        { return this-&gt;m; }
+};
+
+main() {
+LM1: m1 = new Memory;
+LM2: m2 = new Memory;
+LD1: m1-&gt;setM(new D1);
+LD2: m2-&gt;setM(new D2);
+LR1: r1 = m1-&gt;getM();
+LR2: r2 = m2-&gt;getM();
+     r1-&gt;f();
+     r2-&gt;f();
+}
+</pre>
+A call-context-sensitive analysis with a <b>call-context depth of one</b> is able to precisely identify that <code>r1-&gt;f()</code> calls <code>D1::f</code> and <code>r2-&gt;f()</code> calls <code>D2::f</code>.  Knowing this statically, the compiler can generate faster code at the dispatch of these functions (e.g., a direct call instead of a virtual dispatch).
+
+<p>This works because the call contexts at the two call sites of <code>setM</code> are different (<code>LD1</code> and <code>LD2</code>).  The pointer variables in <code>setM</code> (<code>this</code> and <code>sm</code>) are versioned based on the call context, e.g., <code>sm<sub>LD1</sub></code> and <code>sm<sub>LD2</sub></code>.  As a result, the corresponding updates are also versioned: through the <code>LD1</code> version, the field <code>m</code> of the first <code>Memory</code> object is updated, and through the <code>LD2</code> version, the field <code>m</code> of the second <code>Memory</code> object is updated.  This is why we get a precise answer.
+
+<h3>Limitation of Call Contexts: A Helper Function</h3>
+Let us change the example a little.  Instead of updating <code>m</code> directly, <code>setM</code> calls a helper function <code>h</code>, and <code>h</code> updates <code>m</code>:
+<pre>
+class Memory {
+  Base *m;
+  void setM(Base *sm) {
+LH: this-&gt;h(sm);
+  }
+  void h(Base *hm)    { this-&gt;m = hm; }
+  Base *getM()        { return this-&gt;m; }
+};
+</pre>
+We have increased the call depth on this path (from <code>setM</code> to the actual update of <code>m</code>) from one to two.  With a call-context depth of one, the analysis now becomes imprecise.
+
+<ul>
+<li>If we increase the call-context depth to two, the analysis becomes precise again.  But increasing the call-context depth has a multiplicative effect on the running time of the analysis (e.g., it can go from <code>n</code> to <code>n<sup>2</sup></code>), and so this is usually not done.</li>
+<li>Moreover, no matter what call-context depth we use, we can always construct a program on which the analysis gives imprecise results, by making the call depth (call-stack depth) of the program greater than the call-context depth of the analysis.</li>
+</ul>
+
+<h4>Analysis with Call-Context Depth One</h4>
+We label the call site of <code>h</code> as <code>LH</code>, and version all the variables based on their call sites:
+<ul>
+<li>Variables of <code>setM</code> (<code>this</code>, <code>sm</code>) are versioned using its two call sites, <code>LD1</code> and <code>LD2</code>.</li>
+<li>Variables of <code>getM</code> (<code>this</code>) are versioned using its two call sites, <code>LR1</code> and <code>LR2</code>.</li>
+<li>Variables of <code>h</code> (<code>this</code>, <code>hm</code>) are versioned using its call sites; but there is only one call site, <code>LH</code>.  Even though <code>setM</code> may be called through two different call sites, <code>h</code> is called through only one call site.  So there is only one version, <code>this<sub>LH</sub></code>, of the <code>this</code> pointer in <code>h</code>.</li>
+</ul>
+This single version is the source of the precision problem.  Both <code>Memory</code> objects become potential pointees of <code>this<sub>LH</sub></code>, and so the analysis concludes that the field of each <code>Memory</code> object may point to the other one's pointee.
+
+<p>Below, an abstract object is named by its call context followed by its allocation site; e.g., <code>L0M1</code> is the object allocated at site <code>LM1</code> in context <code>0</code> (the context of the top-level <code>main</code> function).
+
+<p><b>Without <code>h</code></b> (the original, precise solution): <code>this<sub>LR1</sub></code> of <code>getM</code> points to <code>L0M1</code>, and <code>this<sub>LR2</sub></code> points to <code>L0M2</code>; similarly, <code>this<sub>LD1</sub></code> and <code>this<sub>LD2</sub></code> of <code>setM</code> point to the respective objects.  As a result, <code>r1</code> may point only to a <code>D1</code> object, and <code>r2</code> may point only to a <code>D2</code> object, and the virtual function calls are resolved precisely.
+
+<p><b>With <code>h</code></b>: the fixed-point computation proceeds as follows.
+<ol>
+<li><code>h</code> has only one version of its <code>this</code> pointer, <code>this<sub>LH</sub></code> (the one context in which it is called), but it is reached on two call paths.  So <code>this<sub>LH</sub></code> may point to either <code>L0M1</code> or <code>L0M2</code>.  This is the first place where something points to both <code>Memory</code> objects.</li>
+<li>Similarly, there is only one version of <code>hm</code>, <code>hm<sub>LH</sub></code>, which may point to either <code>L0D1</code> or <code>L0D2</code>.</li>
+<li>Transferring across <code>this-&gt;m = hm</code> in <code>h</code>: because <code>this<sub>LH</sub></code> may point to either <code>L0M1</code> or <code>L0M2</code>, and <code>hm<sub>LH</sub></code> may point to either <code>L0D1</code> or <code>L0D2</code>, it appears that <code>L0M1</code> may point (through field <code>m</code>) to <code>L0D2</code>, and that <code>L0M2</code> may point to <code>L0D1</code>.  The imprecision accumulates.
+<pre>
+L0M1 --m--&gt; L0D1, L0D2
+L0M2 --m--&gt; L0D1, L0D2
+</pre></li>
+<li>Finally, at the <code>getM</code> calls, <code>this-&gt;m</code> may point to either a <code>D1</code> object or a <code>D2</code> object.  So <code>r1<sub>0</sub></code> may point to either <code>L0D1</code> or <code>L0D2</code> (an extra edge <code>r1<sub>0</sub> &rarr; L0D2</code>), and likewise <code>r2<sub>0</sub></code> gets an extra edge <code>r2<sub>0</sub> &rarr; L0D1</code>.</li>
+</ol>
+This is an imprecise solution: the compiler can no longer statically resolve the calls to the virtual function <code>f</code>.
+
+<h3>Object Contexts</h3>
+The problem is that, on the call from <code>setM</code> to the helper <code>h</code>, the call context changes from <code>LD1</code> to <code>LH</code> (or, on the other call path, from <code>LD2</code> to <code>LH</code>).  One approach to avoid this is to increase the call-context depth, but that is too expensive.
+
+<p>Another idea: instead of the call context, use some other context that makes more sense, or is likely to give better results.  We can group the contexts in any way we like; usually, contexts are engineered carefully so that they give the most precision for the least running time of the analysis.
+
+<p>The idea is to use an <b>object context</b>.  If there is a transition from one function to another function within the same object, then we assume that the (object) context does not change.  In our example, the call context changes because the last call site changes, but the <code>this</code> object under which we are executing has not changed.
+<ul>
+<li>We track the <code>this</code> object under which the function body is being analyzed; if the <code>this</code> object remains the same, we keep that context.</li>
+<li>This is only possible for object-oriented languages.</li>
+<li><b>Rationale</b>: the program's behaviour is likely to be similar within a single object, and different across different objects.</li>
+<li>This likely works better than call contexts, at least for object-oriented languages, because the pattern of calling helper functions (within the same object) is very common in such languages.</li>
+</ul>
+Just like the call context, the object context is a heuristic that may or may not work.  There are examples where object contexts work worse than call contexts, and examples (like the one above) where object contexts work better.  But in general, for object-oriented languages, object contexts typically work better than call contexts.
+
+<h4>Assigning Object Contexts: Abstract Objects as Contexts</h4>
+Just as for call contexts, we need a finite number of statically identifiable contexts.  For call contexts, we look at all the call sites (or, for depth two, all the call-site pairs that can potentially appear in the program).
+
+<p>But the number of runtime objects is unbounded: there can be an unbounded number of allocations of a particular class, and a member function may be invoked on each of those objects.  So the same function may be called under an unbounded number of object contexts.
+
+<p>We already know how to deal with this: we use <b>abstract objects</b> as the object contexts.  e.g., using the allocation-site abstraction, all objects allocated at an allocation site are grouped under the same abstract object, and that abstract object is used as the context under which a member function of that object is analyzed.
+
+<p>In our example, the allocation site <code>LM1</code> acts both as an allocation site (an abstract object, i.e., a node in the points-to graph, as before) and as an object context for member function calls through that object:
+<ul>
+<li><code>m1</code> points to abstract object <code>LM1</code>, so for the call <code>m1-&gt;setM(...)</code>, <code>setM</code> is analyzed in the object context <code>LM1</code>.  If <code>m1</code> could point to multiple abstract objects, we would analyze <code>setM</code> in each of those abstract-object contexts.</li>
+<li>For <code>m2-&gt;setM(...)</code>, <code>setM</code> is analyzed in the context <code>LM2</code>.</li>
+<li>Similarly, <code>getM</code> is analyzed in contexts <code>LM1</code> and <code>LM2</code>.</li>
+<li><code>h</code> is also analyzed in the same two contexts <code>LM1</code> and <code>LM2</code>.  On the transition from <code>setM</code> to <code>h</code>, we do not look at the call site; we look at the abstract object of the <code>this</code> pointer at the call (<code>LM1</code> or <code>LM2</code>), and <code>h</code> is analyzed under that same context.</li>
+</ul>
+Compare with the call contexts: <code>LD1</code>/<code>LD2</code> for <code>setM</code>, <code>LH</code> for <code>h</code>, and <code>LR1</code>/<code>LR2</code> for <code>getM</code>.  Because we changed the definition of a context, the object contexts are completely different.  The big improvement is that we now have <em>two</em> contexts for <code>h</code>, and in each, it is precisely known whether <code>this</code> refers to the first or the second <code>Memory</code> object.
+
+<h4>Allocation Sites under Object Contexts</h4>
+<code>main</code> does not execute in any object, so we use the context <code>0</code> for <code>main</code>.  The allocations <code>m1 = new Memory</code> and <code>m2 = new Memory</code> give:
+<pre>
+m1<sub>0</sub> --&gt; LM1
+m2<sub>0</sub> --&gt; LM2
+</pre>
+There is a slight difference from the call-context analysis, where we named the object <code>L0M1</code> (remembering the context <code>0</code> in which the allocation was performed).  We assume an <b>object-context depth of one</b>.  We need a finite number of object contexts, so we cannot keep track of all the object contexts that we came through.  The allocation itself represents a new context, so the old context (<code>0</code>) is forgotten and the abstract object is just <code>LM1</code>.  i.e., a call context grows across a <em>call</em>, whereas an object context grows across an <em>allocation</em>.
+
+<h3>Running the Object-Sensitive Analysis on the Example</h3>
+<ul>
+<li><code>m1 = new Memory</code> (<code>LM1</code>), <code>m2 = new Memory</code> (<code>LM2</code>): <code>m1<sub>0</sub> &rarr; LM1</code>, <code>m2<sub>0</sub> &rarr; LM2</code>.</li>
+<li><code>m1-&gt;setM(new D1)</code>: <code>new D1</code> creates the abstract object <code>LD1</code>.  <code>m1<sub>0</sub></code> points to <code>LM1</code>, so <code>setM</code> is analyzed in context <code>LM1</code>:
+  <ul>
+  <li>argument: <code>sm<sub>LM1</sub> &rarr; LD1</code>.</li>
+  <li><code>this</code> pointer: during a member-function dispatch, the formal <code>this</code> is also updated, to point to the receiving object: <code>this<sup>setM</sup><sub>LM1</sub> &rarr; LM1</code>.</li>
+  </ul>
+  Similarly, <code>m2-&gt;setM(new D2)</code> gives <code>sm<sub>LM2</sub> &rarr; LD2</code> and <code>this<sup>setM</sup><sub>LM2</sub> &rarr; LM2</code>.</li>
+<li><code>this-&gt;h(sm)</code> in <code>setM</code>: <code>h</code> is called under the same <code>this</code> object, so its context is whatever the receiving object is, i.e., <code>LM1</code> (whatever <code>this<sup>setM</sup><sub>LM1</sub></code> may point to).  This is where precision improves:
+  <ul>
+  <li>argument: <code>hm<sub>LM1</sub> &supe; sm<sub>LM1</sub></code>, so <code>hm<sub>LM1</sub> &rarr; LD1</code>.</li>
+  <li><code>this</code> pointer: <code>this<sup>h</sup><sub>LM1</sub> &supe; this<sup>setM</sup><sub>LM1</sub></code>, so <code>this<sup>h</sup><sub>LM1</sub> &rarr; LM1</code>.</li>
+  </ul>
+  The same happens for the <code>LM2</code> context: <code>hm<sub>LM2</sub> &rarr; LD2</code> and <code>this<sup>h</sup><sub>LM2</sub> &rarr; LM2</code>.  If the receiver could point to multiple abstract objects, each of them would be a context, and we would perform these transfers for each of those contexts independently.</li>
+<li><code>this-&gt;m = hm</code> in <code>h</code>: draw an edge from whatever <code>this</code> may point to, to whatever <code>hm</code> may point to (labeled <code>m</code> in a field-sensitive analysis):
+<pre>
+LM1 --m--&gt; LD1
+LM2 --m--&gt; LD2
+</pre></li>
+<li><code>r1 = m1-&gt;getM()</code>: <code>this<sup>getM</sup><sub>LM1</sub> &rarr; LM1</code>, and dereferencing <code>this-&gt;m</code> follows the <code>m</code> edge, which leads only to <code>LD1</code>.  So <code>r1<sub>0</sub> &rarr; LD1</code>.  Similarly, <code>this<sup>getM</sup><sub>LM2</sub> &rarr; LM2</code> and <code>r2<sub>0</sub> &rarr; LD2</code>.</li>
+</ul>
+The final solution:
+<pre>
+m1<sub>0</sub> --&gt; LM1 --m--&gt; LD1
+m2<sub>0</sub> --&gt; LM2 --m--&gt; LD2
+r1<sub>0</sub> --&gt; LD1
+r2<sub>0</sub> --&gt; LD2
+</pre>
+This is a precise solution: <code>r1-&gt;f()</code> can be resolved to <code>D1::f</code>, and <code>r2-&gt;f()</code> to <code>D2::f</code>.  It is as precise as the call-context-sensitive solution (depth one) for the program without the helper function <code>h</code>.
+
+<p>Moreover, there could be an arbitrary (unbounded) number of nested helper-function calls within a single class to its own member functions, and the object-sensitive analysis would still be precise, without having to increase the depth of the analysis.  This illustrates why we expect an object-sensitive analysis to work better in practice, at least for object-oriented languages.
+
+<h3>Formalizing the Transfer Functions</h3>
+We now formalize the transfer functions for the object-sensitive analysis.  The rules are very similar to those of the other points-to analyses we have seen (e.g., the call-context-sensitive analysis), and we use Andersen's analysis, i.e., we track the full points-to set of every abstract object.  The only difference is in the way we track the context across function calls and across allocation statements.
+
+<p>Notation: <code>pt(p<sub>C</sub>)</code> denotes the points-to set of variable <code>p</code> in context <code>C</code>.
+
+<h4>Allocation</h4>
+In object context <code>C</code>, transferring across the allocation statement <code>p := new ...</code> at allocation site <code>L</code>:
+<pre>
+L &isin; pt(p<sub>C</sub>)
+</pre>
+In the call-context-sensitive analysis, we would have said <code>L<sub>C</sub> &isin; pt(p<sub>C</sub>)</code>.  Here we use <code>L</code>, not <code>L<sub>C</sub></code>: the context <code>C</code> is itself an allocation site, so <code>L<sub>C</sub></code> would keep track of two allocation sites.  With an object-context depth of one, we keep track of only a single allocation site, so we forget <code>C</code> and keep just <code>L</code>.  (We generalize this to depth <code>d</code> below.)
+
+<h4>Function Call Dispatch</h4>
+Let <code>o</code> be an object of class <code>O</code>.  In context <code>C</code>, consider the call:
+<pre>
+t := o.f(x)
+</pre>
+where <code>o</code> is the receiving object, <code>f</code> is a member function, <code>x</code> is the actual argument, and <code>t</code> receives the return value (a call without a return value is a special case).  Let the definition of <code>f</code> in class <code>O</code> be:
+<pre>
+O::f(a) = e
+</pre>
+where <code>a</code> is the formal argument and <code>e</code> is the body of the function.  Suppose that, in context <code>C</code>, <code>o</code> may point to abstract objects (allocation sites) <code>K1</code> and <code>K2</code>, i.e., <code>pt(o<sub>C</sub>) = {K1, K2}</code>.  (This generalizes to any number of abstract objects.)
+
+<p>Because <code>o</code> may point to <code>K1</code> or <code>K2</code>, the callee is evaluated in both of these object contexts.  For context <code>K1</code>, we apply the copy rule from the actual argument to the formal argument (as though <code>a<sub>K1</sub> := x<sub>C</sub></code>), and from the receiving object to the <code>this</code> pointer of the callee:
+<pre>
+pt(a<sub>K1</sub>)    &supe; pt(x<sub>C</sub>)
+pt(this<sub>K1</sub>) &supe; pt(o<sub>C</sub>)
+</pre>
+and identically for context <code>K2</code>:
+<pre>
+pt(a<sub>K2</sub>)    &supe; pt(x<sub>C</sub>)
+pt(this<sub>K2</sub>) &supe; pt(o<sub>C</sub>)
+</pre>
+Finally, the body <code>e</code> must be evaluated in both contexts, <code>K1</code> and <code>K2</code>, i.e., all the transfers within <code>e</code> are performed both in context <code>K1</code> and in context <code>K2</code>.  Recall that the more contexts something is evaluated in, the more edges we add to the points-to graph (i.e., the less precision we have).
+
+<h4>Function Return</h4>
+Suppose that, inside the body <code>e</code>, the statement <code>return b</code> is evaluated in context <code>K</code>, where <code>K &isin; pt(o<sub>C</sub>)</code> (e.g., <code>K1</code> or <code>K2</code> above).  Then the value of <code>b</code> in context <code>K</code> is used to update <code>t</code> in the caller's context <code>C</code>:
+<pre>
+pt(t<sub>C</sub>) &supe; pt(b<sub>K</sub>)
+</pre>
+i.e., on the return path, we apply the copy rule from the returned value <code>b</code> (in the callee's context) to the register <code>t</code> that holds the return value in the caller (in the caller's context).  This is done for each callee context: if there are two callee contexts <code>K1</code> and <code>K2</code>, then <code>pt(t<sub>C</sub>)</code> is updated using both <code>pt(b<sub>K1</sub>)</code> and <code>pt(b<sub>K2</sub>)</code>.
+
+<h3>Example: Appending to a Linked List</h3>
+Consider a list class <code>L</code> with a field <code>next</code>, and a member function <code>append(k)</code> that appends <code>k</code> new nodes to the list (recursively: append one node, and then append <code>k-1</code> nodes to it):
+<pre>
+class L {
+  L *next;
+  void append(int k) {
+    if (k &lt;= 0) return;
+A2: n = new L;
+    this-&gt;next = n;
+C2: n-&gt;append(k-1);
+  }
+};
+
+main() {
+A1: l = new L;
+C1: l-&gt;append(10);
+}
+</pre>
+The allocation sites are <code>A1</code> (in <code>main</code>) and <code>A2</code> (in <code>append</code>); the call sites are <code>C1</code> (in <code>main</code>) and the recursive call <code>C2</code>.  (We use <code>.</code> and <code>-&gt;</code> interchangeably.)  We write <code>this<sup>append</sup></code> for the <code>this</code> variable of the <code>append</code> function, and use <code>0</code> as the context of <code>main</code>.  We assume a field-insensitive analysis.
+<ul>
+<li><code>A1: l = new L</code> (in context <code>0</code>): <code>l<sub>0</sub> &rarr; A1</code>.</li>
+<li><code>C1: l-&gt;append(10)</code>: the receiving object <code>l<sub>0</sub></code> may point to <code>A1</code>, so <code>append</code> is evaluated in context <code>A1</code>, and its <code>this</code> points to whatever <code>l<sub>0</sub></code> points to: <code>this<sup>append</sup><sub>A1</sub> &rarr; A1</code>.</li>
+<li><code>if (k &lt;= 0) return</code>: nothing to do (no pointers involved, and no value is returned).</li>
+<li><code>A2: n = new L</code> (in context <code>A1</code>): <code>n<sub>A1</sub> &rarr; A2</code>.</li>
+<li><code>this-&gt;next = n</code> (in context <code>A1</code>): whatever <code>this<sup>append</sup><sub>A1</sub></code> points to (<code>A1</code>) may now point to whatever <code>n<sub>A1</sub></code> points to (<code>A2</code>): <code>A1 &rarr; A2</code>.</li>
+<li><code>C2: n-&gt;append(k-1)</code> (in context <code>A1</code>): <code>n<sub>A1</sub></code> points to <code>A2</code>, so <code>append</code> is now evaluated in context <code>A2</code>: <code>this<sup>append</sup><sub>A2</sub> &rarr; A2</code>.</li>
+<li>Evaluating the body of <code>append</code> again, in context <code>A2</code>:
+  <ul>
+  <li><code>A2: n = new L</code>: <code>n<sub>A2</sub> &rarr; A2</code>.  Recall that we forget the context at an allocation site: with a depth-one object-sensitive analysis, the object is <code>A2</code>, not <code>A2<sub>A2</sub></code>.</li>
+  <li><code>this-&gt;next = n</code>: <code>this<sup>append</sup><sub>A2</sub></code> points to <code>A2</code>, and <code>n<sub>A2</sub></code> points to <code>A2</code>, so we draw a cyclic edge <code>A2 &rarr; A2</code>.</li>
+  <li><code>C2: n-&gt;append(k-1)</code>: <code>n<sub>A2</sub></code> points to <code>A2</code>, so <code>append</code> is evaluated in context <code>A2</code> again, which adds nothing new.</li>
+  </ul></li>
+</ul>
+The fixed-point solution (you can check that it is a fixed point):
+<pre>
+l<sub>0</sub> --&gt; A1 --&gt; A2 --+
+                 ^      |
+                 +------+
+
+this<sup>append</sup><sub>A1</sub> --&gt; A1          n<sub>A1</sub> --&gt; A2
+this<sup>append</sup><sub>A2</sub> --&gt; A2          n<sub>A2</sub> --&gt; A2
+</pre>
+i.e., the variable <code>l</code> of <code>main</code> may point to an object allocated at <code>A1</code>; an object allocated at <code>A1</code> may point to an object allocated at <code>A2</code>; and an object allocated at <code>A2</code> may point to another object allocated at <code>A2</code>.  The graph also seems to imply that an object allocated at <code>A2</code> may point to itself, which is actually not true, but that is the imprecision we get in this points-to analysis.
+
+<h3>Generalizing to Depth-<code>d</code> Object Sensitivity</h3>
+So far, we have considered a depth-one object-sensitive analysis.  It is easy to generalize this to a depth-<code>d</code> object-sensitive analysis, where a context is a string of up to <code>d</code> allocation sites.  We define a <b>bounded concatenation</b> operator <code>&oplus;<sub>d</sub></code> that keeps only the <code>d</code> most recent allocation sites:
+<pre>
+l1 l2 ... ld  &oplus;<sub>d</sub>  l(d+1)  =  l2 ... l(d+1)       (forget l1)
+l1 ... le     &oplus;<sub>d</sub>  l       =  l1 ... le l         (if e &lt; d, keep all)
+</pre>
+The allocation rule becomes: in context <code>C</code>, for <code>p := new ...</code> at allocation site <code>L</code>,
+<pre>
+C &oplus;<sub>d</sub> L &isin; pt(p<sub>C</sub>)
+</pre>
+With <code>d = 1</code>, we get exactly the rule we had before.  With <code>d = 2</code> or <code>3</code>, we can tolerate longer strings.  Everything else remains the same; the only thing that changes is what happens at an allocation site.  e.g., with <code>d = 2</code>, an abstract object records that "this object was allocated at this allocation site, in the context of an object that was allocated at that allocation site".

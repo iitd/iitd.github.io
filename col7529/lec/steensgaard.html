@@ -1,0 +1,97 @@
+<h2>Steensgaard's algorithm</h2>
+
+We saw that <a href="andersen_algo.html">Andersen's algorithm</a> can take quadratic to cubic time in the size of the program.  We now discuss another very popular algorithm, called <b>Steensgaard's algorithm</b>, after the person who proposed it.
+<ul>
+<li>It takes near-linear time in the size of the program, and linear space in the size of the program.</li>
+<li>Like Andersen's algorithm, it is a <em>may</em>-points-to analysis; it adds some extra heuristics (tricks) to make the analysis faster and the points-to information smaller.</li>
+<li>Steensgaard's algorithm is used in compilers like LLVM.  Compilers can afford linear-time algorithms, but they cannot afford quadratic-to-cubic time algorithms.</li>
+</ul>
+
+<h3>Space: From Linear Per Node to Constant Per Node</h3>
+Recall that Andersen's algorithm requires <code>O(n<sup>2</sup>)</code> space just to represent the may-points-to relationships: if there are <code>O(n)</code> nodes in the points-to graph, then there can be up to <code>O(n<sup>2</sup>)</code> edges.  (We also saw that computing this graph can take <code>O(n<sup>3</sup>)</code> time in the worst case.)  i.e., Andersen's algorithm requires up to <code>O(n)</code> space for each object, register, or address, because each of them can have up to <code>O(n)</code> outgoing edges, one for each thing that it may point to.
+
+<p>Steensgaard's algorithm requires only <em>constant</em> space for each object, register, or address.
+
+<h3>The Key Idea: Unification</h3>
+Whenever a node has more than one outgoing edge, e.g., <code>p</code> points to both <code>q</code> and <code>r</code>, we <b>merge</b> (or <b>unify</b>) the abstract objects <code>q</code> and <code>r</code> into a single abstract object, which we call <code>{q,r}</code>:
+<pre>
+p --&gt; q              p --&gt; {q,r}
+p --&gt; r      becomes
+</pre>
+
+<p><b>Insight</b>: if an object <code>p</code> may point to two different abstract objects <code>q</code> and <code>r</code>, then <code>q</code> and <code>r</code> are likely to behave similarly.  So we do not need to track their points-to sets separately; instead, we merge them into a single compound object, and pretend that they are a single abstract object.
+
+<p><b>Cost</b>: this comes at the cost of precision.  After unification, anything that <code>r</code> may point to, <code>q</code> may also point to, and vice versa.
+
+<h4>Unification is Transitive</h4>
+When two nodes are unified, their outgoing edges are also merged, and so the targets of those outgoing edges must also be unified, and so on.  e.g., suppose the original points-to graph is:
+<pre>
+p --&gt; q, r
+q --&gt; s, t
+r --&gt; u
+s, t, u --&gt; v, w     (each of s, t, u may point to v or w)
+</pre>
+Because <code>q</code> and <code>r</code> are unified, the unified node <code>{q,r}</code> may point to <code>s</code>, <code>t</code>, or <code>u</code>; so these are unified into a single abstract object <code>{s,t,u}</code>.  Transitively, whatever <code>{s,t,u}</code> may point to is unified into <code>{v,w}</code>.  The resulting graph is:
+<pre>
+p --&gt; {q,r} --&gt; {s,t,u} --&gt; {v,w}
+</pre>
+The big graph with many edges is reduced to a much smaller graph with only three edges.  This is the key change from Andersen's algorithm: the points-to information becomes much smaller, potentially at a loss of precision.  The hope is that this loss of precision is small for typical programming patterns; this was shown empirically, and that is why this is a popular algorithm.
+
+<p>To summarize, Steensgaard's algorithm relies on the heuristic that all the pointees of a single object are likely to have similar points-to sets (similar behaviour).  So we avoid tracking them separately: we unify them into a single node, track them as a single abstract object, and unify their outgoing edges as well, transitively.
+
+<h3>A Precision Improvement: Do Not Unify Non-Pointers</h3>
+A commonly used variant of Steensgaard's algorithm improves precision slightly.  Among all the pointees (outgoing edges) of a node, we unify only those pointees that are themselves pointers; we do not unify pointees that are not pointers.
+
+<p>e.g., in the example above, suppose <code>u</code> is not a pointer (e.g., <code>u</code> is an integer, a scalar); then <code>u</code> cannot have any outgoing edges of its own.  When <code>q</code> and <code>r</code> are unified, the outgoing edges of <code>{q,r}</code> go to <code>s</code>, <code>t</code>, and <code>u</code>.  <code>s</code> and <code>t</code> are unified, because they are pointers that may further point to other things; but <code>u</code> is left alone:
+<pre>
+p --&gt; {q,r} --&gt; {s,t} --&gt; {v,w}
+        |
+        +-----&gt; u
+</pre>
+<b>General rule</b>: if a pointee is not a pointer (i.e., it has no outgoing edges of its own), then do not unify it.
+
+<p>This helps because it avoids unnecessary outgoing edges from non-pointers.  In the earlier graph, the points-to graph said that <code>u</code> may also point to <code>v</code> or <code>w</code>, even though <code>u</code> is not even a pointer.  This simple improvement avoids this precision loss, and it seems to work well when evaluated empirically on real-world programs.
+
+<h3>Space and Time Complexity</h3>
+We analyze the simple Steensgaard's algorithm, i.e., without the precision improvement discussed above.
+
+<h4>Space</h4>
+A node can have at most one outgoing edge: if it had multiple outgoing edges, we would have unified their targets into a single node (and we do this across all edges, transitively).  So only a constant amount of space is required for every node in the graph, and the number of edges in the points-to graph is <code>O(n)</code> in the worst case.
+
+<p>This is a significant improvement over the <code>O(n<sup>2</sup>)</code> worst-case space complexity of Andersen's algorithm.  For a program with millions of lines of code, <code>O(n)</code> is of the order of a million, but <code>O(n<sup>2</sup>)</code> is of the order of a million squared, which may overflow our hardware resources.
+
+<h4>Time</h4>
+The time complexity is determined by the cost of the transfer function for each statement.  e.g., consider:
+<pre>
+x := *y
+</pre>
+Suppose the current points-to graph is:
+<pre>
+y --&gt; a
+a --&gt; b
+x --&gt; c
+</pre>
+We look at what <code>y</code> points to (<code>a</code>), and then at what <code>a</code> points to (<code>b</code>).  So <code>x</code> may now also point to <code>b</code>.  But <code>x</code> was already pointing to <code>c</code>, so <code>x</code> now has two outgoing edges, and we unify <code>b</code> and <code>c</code> into a single node.  The new points-to graph is:
+<pre>
+y --&gt; a --&gt; {b,c}
+x --&gt; {b,c}
+</pre>
+What work was required for this transfer?
+<ol>
+<li><b>Identify the node associated with the RHS</b> (here <code>*y</code>).  Because every node has at most one outgoing edge, <code>y</code> has at most one outgoing edge (to <code>a</code>), and <code>a</code> has at most one outgoing edge (to <code>b</code>).  So there is exactly one such node (<code>b</code>), unlike Andersen's algorithm where there could be up to <code>O(n)</code> such nodes.</li>
+<li><b>Create an edge</b> from <code>x</code> to that node: at most one edge needs to be created, so this is a constant-time operation.</li>
+<li><b>Unify, if required</b>: <code>x</code> may already have had (at most) one outgoing edge; after adding the new edge, we unify the two targets.  At most one unification needs to be done.</li>
+</ol>
+The exact cost of identification and unification depends on the data structure used to represent the unified nodes.  A natural choice is the <b>union-find</b> data structure (from your data structures class):
+<ul>
+<li><b>Unification</b> (union) is <code>O(1)</code>: it just involves adding an edge.</li>
+<li><b>Identification</b> (find) of the node (equivalence class) associated with a variable involves traversing edges to find the root of its cluster, short-circuiting (path compression) as we go.  This takes <code>O(&alpha;(n))</code> amortized time, where <code>&alpha;</code> is the inverse Ackermann function, which grows extremely slowly (slower than <code>log n</code>).</li>
+</ul>
+With <code>n</code> statements, there are at most <code>O(n)</code> transfers, so the total time is <code>O(n &alpha;(n))</code>.  This is almost linear time (slightly higher than linear, but less than <code>O(n log n)</code>), which is a significant improvement over the quadratic-to-cubic time of Andersen's algorithm.  That is why Steensgaard's algorithm is typically used in compilers.
+
+<h3>Historical Notes</h3>
+<ul>
+<li>Steensgaard's algorithm was proposed in 1996 (Bjarne Steensgaard, <em>Points-to Analysis in Almost Linear Time</em>, POPL 1996).</li>
+<li>Its empirical evaluation showed that it scaled to programs of the order of a million lines of code (e.g., Microsoft Word), an order of magnitude improvement in scalability over the state of the art at that time.</li>
+<li>The algorithm, as originally proposed, was field-insensitive.  It can also be made field-sensitive, in which case the tight space and time complexity bounds need to be loosened a little.</li>
+</ul>
